@@ -272,4 +272,40 @@ export default app;`;
       throw new Error(`RAM usage ${data.data} exceeds limit ${limit}`);
     }
   }
+
+  /**
+   * Step: Verify agent output contains text
+   */
+  @Step('The agent output contains <text>')
+  async agentOutputContains(text: string) {
+    const result = ab(`eval "window.__browserbox.runtime.lastOutput" --json`);
+    const data = JSON.parse(result);
+    if (!data.data || !data.data.includes(text)) {
+      throw new Error(`Agent output does not contain "${text}": ${data.data}`);
+    }
+  }
+
+  /**
+   * Step: Run script in QuickJS tier
+   */
+  @Step('I run runtime quickjs <path>')
+  async runQuickJS(path: string) {
+    ab(`eval "window.__browserbox.runtime.runQuickJSFile('${path}')" --json`);
+  }
+
+  /**
+   * Step: Run script with policy
+   */
+  @Step('I run runtime run --policy <policy> <path>')
+  async runWithPolicy(policy: string, path: string) {
+    ab(`eval "window.__browserbox.runtime.runWithPolicy('${path}', '${policy}')" --json`);
+  }
+
+  /**
+   * Step: Mock AI API responses
+   */
+  @Step('I mock AI API responses')
+  async mockAIResponses() {
+    ab('network route "**/v1/chat/completions" --body \'{"choices":[{"message":{"content":"Hello from mock AI"}}]}\'');
+  }
 }
