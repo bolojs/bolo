@@ -3,6 +3,7 @@ import { VfsBus } from '@browser-containers/vfs-bus';
 import { SWSandbox } from '@browser-containers/sw-sandbox';
 import { PackageManager } from '@browser-containers/npm';
 import { RuntimeWorker, SandboxPool, ShellService, type ShellResult } from '@browser-containers/runtime';
+import { boot, type BrowserContainer } from '@browser-containers/runtime';
 import Terminal from './Terminal';
 import Preview from './Preview';
 
@@ -14,6 +15,8 @@ declare global {
       install(pkgs?: string[]): Promise<ShellResult>;
       vfs: { writeFile(path: string, content: string): Promise<void> };
       preview: { loadUrl(url: string): void };
+      boot: typeof boot;
+      container?: BrowserContainer;
     };
     __browserbox_ready: boolean;
   }
@@ -45,6 +48,8 @@ export default function App() {
 
       shell = new ShellService({ vfs, packageManager, runtimeWorker, sandboxPool });
 
+      const container = await boot({ workdirName: '/home/web' });
+
       window.__browserbox = {
         install: (pkgs?: string[]) =>
           shell!.execute(`npm install ${pkgs?.join(' ') ?? ''}`),
@@ -53,6 +58,8 @@ export default function App() {
             vfs!.writeFile(path, new TextEncoder().encode(content)),
         },
         preview: { loadUrl: (url: string) => setPreviewUrl(url) },
+        boot,
+        container,
       };
       window.__browserbox_ready = true;
 

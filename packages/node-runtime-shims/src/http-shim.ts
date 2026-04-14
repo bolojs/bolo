@@ -1,12 +1,35 @@
 import type { SWSandbox } from '@browser-containers/sw-sandbox';
-import { EventEmitter } from 'events';
+import { createEventsShim } from '@browser-containers/node-web-shims';
 
-export const createHttpShim = (sandbox: SWSandbox) => {
+const { EventEmitter } = createEventsShim();
+
+export interface HttpShimOptions {
+  onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
+}
+
+export const createHttpShim = (sandbox: SWSandbox, options?: HttpShimOptions) => {
+  const { onPortEvent } = options ?? {};
+
   const createServer = (handler?: (req: IncomingMessage, res: ServerResponse) => void) => {
     const server = new EventEmitter() as unknown as Server;
+    let listening = false;
+    let serverPort = 0;
 
     server.listen = (port?: number, host?: string, callback?: () => void) => {
-      sandbox.onFetch(async (req) => {
+      const actualPort = port ?? 3000;
+      const url = `http://localhost:${actualPort}`;
+
+      listening = true;
+      serverPort = actualPort;
+
+      onPortEvent?.('server-ready', { port: actualPort, url });
+      onPortEvent?.('port-open', { port: actualPort, url });
+
+      const fetchHandler = async (req: Request) => {
+        if (!listening) {
+          return new Response('Server closed', { status: 503 });
+        }
+
         const url = new URL(req.url);
         const request: IncomingMessage = {
           url: url.pathname + url.search,
@@ -42,9 +65,19 @@ export const createHttpShim = (sandbox: SWSandbox) => {
           offset += chunk.length;
         }
         return new Response(body, { status, headers });
-      });
+      };
+
+      sandbox.onFetch(fetchHandler);
 
       if (callback) callback();
+      return server;
+    };
+
+    server.close = () => {
+      if (listening) {
+        onPortEvent?.('port-close', { port: serverPort });
+        listening = false;
+      }
       return server;
     };
 
@@ -68,9 +101,10 @@ export interface ServerResponse {
 
 export interface Server {
   listen(port?: number, host?: string, callback?: () => void): Server;
+  close(): Server;
   on(event: string, listener: (...args: any[]) => void): Server;
 }
 
-export const createNetShim = (sandbox: SWSandbox) => {
-  return createHttpShim(sandbox);
+export const createNetShim = (sandbox: SWSandbox, options?: HttpShimOptions) => {
+  return createHttpShim(sandbox, options);
 };

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@browser-containers/npm": "workspace:*",
+    "@browser-containers/node-web-shims": "workspace:*",
     "@browser-containers/runtime": "workspace:*",
     "@browser-containers/sw-sandbox": "workspace:*",
     "@browser-containers/vfs-bus": "workspace:*",

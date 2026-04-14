@@ -1,8 +1,15 @@
 import type { RuntimeMessage, RunScriptOptions } from './runtime-worker.js';
 
+declare global {
+  var __httpShimOptions: unknown | undefined;
+}
+
 const post = (msg: RuntimeMessage) => self.postMessage(msg);
 
-const runUserCode = (code: string, _opts: RunScriptOptions) => {
+const runUserCode = (code: string, opts: RunScriptOptions) => {
+  if (opts.httpShimOptions) {
+    __httpShimOptions = opts.httpShimOptions;
+  }
   const wrapped = `
     (function() {
       const originalLog = console.log;

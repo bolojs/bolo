@@ -31,7 +31,7 @@ export class PackageManager {
     this.cwd = options.cwd ?? DEFAULT_CWD;
     this.stdout = options.stdout;
     this.stderr = options.stderr;
-    this.fs = createFsFromVolume(this.vfs['vol']) as any;
+    this.fs = createFsFromVolume(this.vfs['vol']) as ReturnType<typeof createFsFromVolume>;
   }
 
   /**
@@ -155,7 +155,8 @@ export class PackageManager {
   private async getInstalledPackages(): Promise<string[]> {
     try {
       const nodeModulesPath = `${this.cwd}/node_modules`;
-      return await this.vfs.readdir(nodeModulesPath);
+      const entries = await this.vfs.readdir(nodeModulesPath);
+      return typeof entries[0] === 'string' ? (entries as string[]) : (entries as { name: string }[]).map((e) => e.name);
     } catch (error) {
       return [];
     }

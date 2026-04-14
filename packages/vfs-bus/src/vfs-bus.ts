@@ -8,6 +8,12 @@ export interface VfsBusMiddleware {
   (ctx: { path: string; operation: string }, next: () => void): void;
 }
 
+export interface DirEnt {
+  name: string;
+  isFile(): boolean;
+  isDirectory(): boolean;
+}
+
 const EVICT_AFTER_MS = 5 * 60 * 1000;
 
 export class VfsBus {
@@ -141,10 +147,18 @@ export class VfsBus {
     }
   }
 
-  async readdir(path: string): Promise<string[]> {
+  async readdir(path: string, options?: { withFileTypes?: boolean }): Promise<string[] | DirEnt[]> {
     this.touchAccessTime(path);
 
     if (this.hot.existsSync(path)) {
+      if (options?.withFileTypes) {
+        const entries = this.hot.readdirSync(path, { withFileTypes: true }) as any[];
+        return entries.map(e => ({
+          name: e.name,
+          isFile: () => e.isFile(),
+          isDirectory: () => e.isDirectory(),
+        }));
+      }
       return this.hot.readdirSync(path) as string[];
     }
 
@@ -161,10 +175,38 @@ export class VfsBus {
           this.touchAccessTime(fullPath);
         }
       }
+
+      if (options?.withFileTypes) {
+        const hotEntries = this.hot.readdirSync(path, { withFileTypes: true }) as any[];
+        return hotEntries.map(e => ({
+          name: e.name,
+          isFile: () => e.isFile(),
+          isDirectory: () => e.isDirectory(),
+        }));
+      }
+
       return entries;
     } catch {
       throw new Error(`ENOENT: ${path}`);
     }
+  }
+
+  async rename(oldPath: string, newPath: string): Promise<void> {
+    if (!this.hot.existsSync(oldPath)) {
+      throw Object.assign(new Error(`ENOENT: ${oldPath}`), { code: 'ENOENT' });
+    }
+
+    if (this.hot.existsSync(newPath)) {
+      throw Object.assign(new Error(`EEXIST: ${newPath}`), { code: 'EEXIST' });
+    }
+
+    this.runMiddleware(oldPath, 'rename', () => {
+      this.hot.renameSync(oldPath, newPath);
+    });
+
+    this.emit('rename', oldPath);
+    this.notifyWatchers(oldPath, 'unlink');
+    this.notifyWatchers(newPath, 'add');
   }
 
   on(event: 'write' | 'delete' | 'rename', handler: VfsBusHandler) {

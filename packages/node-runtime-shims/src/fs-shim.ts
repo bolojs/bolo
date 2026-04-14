@@ -23,7 +23,8 @@ export const createFsShim = (vfs: VfsBus) => {
   };
 
   const readdir = async (path: string): Promise<string[]> => {
-    return await vfs.readdir(path);
+    const entries = await vfs.readdir(path);
+    return typeof entries[0] === 'string' ? (entries as string[]) : (entries as { name: string }[]).map((e) => e.name);
   };
 
   const exists = async (path: string): Promise<boolean> => {

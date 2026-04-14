@@ -4,6 +4,7 @@ import type { SWSandbox } from "@browser-containers/sw-sandbox";
 export interface RunScriptOptions {
   filename?: string;
   args?: string[];
+  httpShimOptions?: { onPortEvent?: (event: string, data: { port: number; url?: string }) => void };
 }
 
 export type RuntimeMessage =
