@@ -11,7 +11,16 @@
     "format": "oxfmt --check src",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@browser-containers/vfs-bus": "workspace:*",
+    "@browser-containers/sw-sandbox": "workspace:*",
+    "@browser-containers/node-web-shims": "workspace:*",
+    "@browser-containers/node-runtime-shims": "workspace:*"
+  },
   "devDependencies": {
-    "typescript": "^5.8.0"
+    "@types/node": "^22.0.0",
+    "happy-dom": "^17.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
   }
 }

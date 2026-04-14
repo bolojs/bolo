@@ -1,7 +1,24 @@
 const pendingRequests = new Map<number, { req: Request; port: MessagePort }>();
 let mainPort: MessagePort | null = null;
 
-export function initSW(swGlobal: ServiceWorkerGlobalScope): void {
+interface SWGlobal {
+  addEventListener(type: 'install', listener: () => void): void;
+  addEventListener(
+    type: 'activate',
+    listener: (event: { waitUntil(p: Promise<void>): void }) => void,
+  ): void;
+  addEventListener(
+    type: 'message',
+    listener: (event: { data?: { type: string }; ports?: MessagePort[] }) => void,
+  ): void;
+  skipWaiting(): void;
+  clients: {
+    claim(): Promise<void>;
+    matchAll(options: { type: 'window' }): Promise<ReadonlyArray<{ postMessage(message: unknown): void }>>;
+  };
+}
+
+export function initSW(swGlobal: SWGlobal): void {
   swGlobal.addEventListener('install', () => {
     swGlobal.skipWaiting();
   });
