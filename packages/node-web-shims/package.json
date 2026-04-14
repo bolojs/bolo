@@ -30,5 +30,6 @@
   },
   "dependencies": {
     "unenv": "^1.10.0"
-  }
+  },
+  "license": "Apache-2.0"
 }
