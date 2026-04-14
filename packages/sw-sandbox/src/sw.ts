@@ -9,7 +9,7 @@ interface SWGlobal {
   ): void;
   addEventListener(
     type: 'message',
-    listener: (event: { data?: { type: string }; ports?: MessagePort[] }) => void,
+    listener: (event: { data?: { type: string }; ports?: MessagePort[]; source?: { postMessage(message: unknown): void } }) => void,
   ): void;
   skipWaiting(): void;
   clients: {
@@ -47,6 +47,10 @@ export function initSW(swGlobal: SWGlobal): void {
         });
         handleFetch(requestId, req, mainPort!);
       };
+      // Send SW_READY back to the client so pages that load after the SW is
+      // already active (and therefore missed the activate-time broadcast) can
+      // still complete initialization.
+      event.source?.postMessage({ type: 'SW_READY' });
     }
   });
 }

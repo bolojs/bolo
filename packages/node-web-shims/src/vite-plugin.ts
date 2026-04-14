@@ -1,3 +1,4 @@
+import { realpathSync } from "node:fs";
 import type { Plugin } from "vite";
 
 /**
@@ -22,7 +23,12 @@ export const nodeWebShims = (): Plugin => {
     enforce: "pre",
     resolveId(id) {
       if (id.startsWith("node:")) {
-        return id.replace("node:", "");
+        const pkgRoot = new URL("..", import.meta.url).pathname;
+        return `${pkgRoot}/dist/${id.slice("node:".length)}.js`;
+      }
+      if (id.startsWith("unenv/")) {
+        const pkgRoot = new URL("..", import.meta.url).pathname;
+        return realpathSync(`${pkgRoot}/node_modules/${id}`);
       }
       return null;
     },

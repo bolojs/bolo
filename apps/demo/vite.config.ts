@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { nodeWebShims } from '@browser-containers/node-web-shims/vite-plugin';
 
 export default defineConfig({
   plugins: [
     solidPlugin(),
+    nodeWebShims(),
     // Polyfill `buffer`, `process`, and `global` so third-party deps (memfs,
     // npm-in-browser) that import bare Node built-ins work in the browser bundle.
     nodePolyfills({

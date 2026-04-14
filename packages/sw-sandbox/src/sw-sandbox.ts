@@ -25,10 +25,10 @@ export class SWSandbox {
     if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
       throw new Error('ServiceWorker not supported');
     }
-    await navigator.serviceWorker.register(this.swPath);
-    const registration = await navigator.serviceWorker.ready;
 
-    await new Promise<void>((resolve) => {
+    // Set up the SW_READY listener *before* awaiting registration so we
+    // cannot miss the message if the service worker activates quickly.
+    const swReadyPromise = new Promise<void>((resolve) => {
       const onMessage = (event: MessageEvent) => {
         if (event.data?.type === 'SW_READY') {
           navigator.serviceWorker.removeEventListener('message', onMessage);
@@ -37,6 +37,10 @@ export class SWSandbox {
       };
       navigator.serviceWorker.addEventListener('message', onMessage);
     });
+
+    await navigator.serviceWorker.register(this.swPath);
+    const registration = await navigator.serviceWorker.ready;
+    await swReadyPromise;
 
     const channel = new MessageChannel();
     this.messagePort = channel.port1;

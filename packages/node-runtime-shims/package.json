@@ -13,10 +13,12 @@
   },
   "dependencies": {
     "@browser-containers/vfs-bus": "workspace:*",
-    "@browser-containers/sw-sandbox": "workspace:*"
+    "@browser-containers/sw-sandbox": "workspace:*",
+    "@browser-containers/node-web-shims": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.0",
+    "unenv": "^1.10.0",
     "vite": "^8.0.8",
     "vitest": "^3.0.0"
   },

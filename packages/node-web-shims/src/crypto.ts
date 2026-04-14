@@ -1,5 +1,7 @@
 // @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
-import crypto from "unenv/runtime/node/crypto";
+export * from "unenv/runtime/node/crypto/index.mjs";
+// @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
+import crypto from "unenv/runtime/node/crypto/index.mjs";
 
 /**
  * Creates a node:crypto shim using WebCrypto API via unenv.
