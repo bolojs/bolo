@@ -1,12 +1,3 @@
 {
-  "files": [],
-  "references": [
-    { "path": "packages/types" },
-    { "path": "packages/vfs" },
-    { "path": "packages/runtime" },
-    { "path": "packages/network" },
-    { "path": "packages/npm" },
-    { "path": "packages/vite-worker" },
-    { "path": "packages/demo" }
-  ]
+  "files": []
 }

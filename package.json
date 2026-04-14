@@ -2,18 +2,20 @@
   "name": "browser-containers",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.26.1",
   "scripts": {
-    "build": "tsc --build",
+    "build": "turbo run build",
     "test": "vitest run",
     "validate": "bash -c 'echo -n \"Format: \"; (oxfmt --check packages/*/src 2>/dev/null && echo \"✅\") || echo \"❌\"; echo -n \"Lint: \"; (oxlint packages/*/src 2>/dev/null && echo \"✅\") || echo \"❌\"; echo -n \"Typecheck: \"; (tsc --noEmit 2>/dev/null && echo \"✅\") || echo \"❌\"'",
-    "clean": "rm -rf dist packages/*/dist node_modules/.cache",
-    "lint": "oxlint packages/*/src",
-    "format": "oxfmt --check packages/*/src",
-    "typecheck": "tsc --build"
+    "clean": "rm -rf dist packages/*/dist node_modules/.cache .turbo",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
     "oxlint": "^1.0.0",
     "oxfmt": "^0.16.0",
+    "turbo": "^2.4.0",
     "typescript": "^5.8.0",
     "vitest": "^3.0.0"
   }
