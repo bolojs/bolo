@@ -1,0 +1,21 @@
+{
+  "name": "@browser-containers/e2e",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "E2E tests for browser-containers using Gauge + gauge-ts",
+  "scripts": {
+    "test:e2e": "gauge run",
+    "test:e2e:verbose": "gauge run --verbose",
+    "install:gauge": "npm install -g @getgauge/cli"
+  },
+  "dependencies": {
+    "agent-browser": "^0.25.4",
+    "@getgauge/cli": "^1.6.30",
+    "gauge-ts": "^0.3.6"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "typescript": "^5.8.0"
+  }
+}

@@ -1,0 +1,83 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.26.1
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Install Gauge CLI
+        run: npm install -g @getgauge/cli
+
+      - name: Install agent-browser
+        run: npm install -g agent-browser
+
+      - name: Install demo app dependencies
+        run: cd apps/demo && pnpm install
+
+      - name: Start demo app
+        run: |
+          cd apps/demo
+          pnpm run dev &
+          echo $! > /tmp/demo.pid
+          # Wait for demo app to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:5173 > /dev/null; then
+              echo "Demo app is ready"
+              break
+            fi
+            echo "Waiting for demo app... ($i/30)"
+            sleep 2
+          done
+
+      - name: Install E2E dependencies
+        run: cd tests/e2e && npm install
+
+      - name: Run E2E tests
+        run: |
+          cd tests/e2e
+          pnpm run test:e2e
+
+      - name: Stop demo app
+        if: always()
+        run: |
+          if [ -f /tmp/demo.pid ]; then
+            kill $(cat /tmp/demo.pid) || true
+          fi
+
+      - name: Upload E2E test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-reports
+          path: |
+            tests/e2e/reports/
+            tests/e2e/logs/
+          retention-days: 7
