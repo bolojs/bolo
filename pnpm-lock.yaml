@@ -153,10 +153,20 @@ importers:
         version: 3.2.4(@types/node@25.6.0)(happy-dom@17.6.3)(lightningcss@1.32.0)(sass@1.99.0)
 
   packages/vite-server:
+    dependencies:
+      '@browser-containers/vfs-bus':
+        specifier: workspace:*
+        version: link:../vfs-bus
+      '@sebastianwessel/quickjs':
+        specifier: ^2.2.0
+        version: 2.3.1(tslib@2.8.1)(typescript@5.9.3)
     devDependencies:
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.6.0)(happy-dom@17.6.3)(lightningcss@1.32.0)(sass@1.99.0)
 
   packages/wasm-registry:
     dependencies:
@@ -484,6 +494,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@jitl/quickjs-ffi-types@0.31.0':
+    resolution: {integrity: sha512-1yrgvXlmXH2oNj3eFTrkwacGJbmM0crwipA3ohCrjv52gBeDaD7PsTvFYinlAnqU8iPME3LGP437yk05a2oejw==}
 
   '@jitl/quickjs-ffi-types@0.32.0':
     resolution: {integrity: sha512-v9T+GQpmk43VDJ7d72sf0Nexhk+ArvtUihW27dy7lqAl0zBObFKtSBBIm5RBjwIhE8VwsPPm9PNuvPvNqLWUEg==}
@@ -1085,6 +1098,15 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@sebastianwessel/quickjs@2.3.1':
+    resolution: {integrity: sha512-9KgC3oFWntp/ohd82l1UHNS5lEQ3tM/2UEdC6z0fp5BAx7MbxJOwkocvZDJVv+p7TwjQ6aPYetBz+8eFA4d1AA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      typescript: '>= 5.5.4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@swc/wasm-web@1.15.24':
     resolution: {integrity: sha512-c2n9Q8Xqz6N2YwIwc1n1xMn66VpRDru8b00T8rSvbNsGDCX6wo1xd2qFP0fTHSthXzTipjSxY+VoF2xj/E2nrg==}
 
@@ -1444,12 +1466,18 @@ packages:
     resolution: {integrity: sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw==}
     engines: {node: ^10 || ^12 || >=14}
 
+  quickjs-emscripten-core@0.31.0:
+    resolution: {integrity: sha512-oQz8p0SiKDBc1TC7ZBK2fr0GoSHZKA0jZIeXxsnCyCs4y32FStzCW4d1h6E1sE0uHDMbGITbk2zhNaytaoJwXQ==}
+
   quickjs-emscripten-core@0.32.0:
     resolution: {integrity: sha512-QFnPfjFey8EqknSrSxe1hZrf1/8z7/6s1QzGOmKo6++02r7QRRX7ZoyNaZh7JuVjWsVW87KnQrbZqnHkOAzUyg==}
 
   quickjs-emscripten@0.32.0:
     resolution: {integrity: sha512-So0Sqw869y/S2oE3Nuc0uT3Dhqgvsj8FSrwBdsuTosVsG8ME5/OcudU1GxsrIFdFABgy17GHnTVO9TYV/bLQcA==}
     engines: {node: '>=16.0.0'}
+
+  rate-limiter-flexible@7.4.0:
+    resolution: {integrity: sha512-IJopePGO6HnMWVdeLCihnxXZ0WCW0mxXiU5LE3bZ00GHESsCaAvgD8hN/ATIJeZhnrVdU5cfRyS1uV63Vmc4zg==}
 
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
@@ -1907,6 +1935,8 @@ snapshots:
   '@esbuild/win32-x64@0.27.7':
     optional: true
 
+  '@jitl/quickjs-ffi-types@0.31.0': {}
+
   '@jitl/quickjs-ffi-types@0.32.0': {}
 
   '@jitl/quickjs-wasmfile-debug-asyncify@0.32.0':
@@ -2331,6 +2361,16 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.1':
     optional: true
 
+  '@sebastianwessel/quickjs@2.3.1(tslib@2.8.1)(typescript@5.9.3)':
+    dependencies:
+      memfs: 4.57.1(tslib@2.8.1)
+      quickjs-emscripten-core: 0.31.0
+      rate-limiter-flexible: 7.4.0
+    optionalDependencies:
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - tslib
+
   '@swc/wasm-web@1.15.24': {}
 
   '@turbo/darwin-64@2.9.6':
@@ -2714,6 +2754,10 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
+  quickjs-emscripten-core@0.31.0:
+    dependencies:
+      '@jitl/quickjs-ffi-types': 0.31.0
+
   quickjs-emscripten-core@0.32.0:
     dependencies:
       '@jitl/quickjs-ffi-types': 0.32.0
@@ -2725,6 +2769,8 @@ snapshots:
       '@jitl/quickjs-wasmfile-release-asyncify': 0.32.0
       '@jitl/quickjs-wasmfile-release-sync': 0.32.0
       quickjs-emscripten-core: 0.32.0
+
+  rate-limiter-flexible@7.4.0: {}
 
   readdirp@4.1.2: {}
 

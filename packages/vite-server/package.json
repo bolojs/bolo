@@ -11,7 +11,12 @@
     "format": "oxfmt --check src",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@browser-containers/vfs-bus": "workspace:*",
+    "@sebastianwessel/quickjs": "^2.2.0"
+  },
   "devDependencies": {
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
   }
 }
