@@ -1,5 +1,5 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { SWSandbox } from '@browser-containers/sw-sandbox';
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { SWSandbox } from "@browser-containers/sw-sandbox";
 
 export interface RunScriptOptions {
   filename?: string;
@@ -7,11 +7,11 @@ export interface RunScriptOptions {
 }
 
 export type RuntimeMessage =
-  | { type: 'RUN_SCRIPT'; code: string; opts: RunScriptOptions }
-  | { type: 'STDOUT'; data: string }
-  | { type: 'STDERR'; data: string }
-  | { type: 'EXIT'; code: number }
-  | { type: 'HEARTBEAT' };
+  | { type: "RUN_SCRIPT"; code: string; opts: RunScriptOptions }
+  | { type: "STDOUT"; data: string }
+  | { type: "STDERR"; data: string }
+  | { type: "EXIT"; code: number }
+  | { type: "HEARTBEAT" };
 
 export class RuntimeWorker {
   private worker: Worker | null = null;
@@ -27,19 +27,22 @@ export class RuntimeWorker {
   ) {}
 
   async runScript(code: string, opts: RunScriptOptions = {}): Promise<void> {
-    this.worker = new Worker(new URL('./worker-script.ts', import.meta.url), { type: 'module' });
-    this.worker.onmessage = (ev: MessageEvent<RuntimeMessage>) => {
-      const msg = ev.data;
-      if (msg.type === 'STDOUT') this.onStdout?.(msg.data);
-      else if (msg.type === 'STDERR') this.onStderr?.(msg.data);
-      else if (msg.type === 'EXIT') {
-        this.onExit?.(msg.code);
-        this.dispose();
-      } else if (msg.type === 'HEARTBEAT') {
-        this.missedHeartbeats = 0;
+    this.worker = new Worker(new URL("./worker-script.js", import.meta.url), { type: "module" });
+    this.worker.onmessage = ({ data }: MessageEvent<RuntimeMessage>) => {
+      switch (data.type) {
+        case "STDOUT":
+          return this.onStdout?.(data.data);
+        case "STDERR":
+          return this.onStderr?.(data.data);
+        case "EXIT":
+          this.onExit?.(data.code);
+          return this.dispose();
+        case "HEARTBEAT":
+          this.missedHeartbeats = 0;
+          return;
       }
     };
-    this.worker.postMessage({ type: 'RUN_SCRIPT', code, opts } satisfies RuntimeMessage);
+    this.worker.postMessage({ type: "RUN_SCRIPT", code, opts } satisfies RuntimeMessage);
     this.startWatchdog();
   }
 

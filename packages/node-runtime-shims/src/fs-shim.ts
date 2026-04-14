@@ -55,7 +55,11 @@ export const createFsShim = (vfs: VfsBus) => {
       isSymbolicLink: () => false,
       isFIFO: () => false,
       isSocket: () => false,
-      size: isFile ? Buffer.byteLength(content as string) : 0,
+      size: isFile
+        ? content instanceof Uint8Array
+          ? content.byteLength
+          : new TextEncoder().encode(content as string).byteLength
+        : 0,
       mtime: new Date(),
       atime: new Date(),
       ctime: new Date(),
