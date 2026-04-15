@@ -1,13 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ShellService, type ShellServiceDeps } from './shell-service.js';
 
-vi.mock('@browser-containers/vite-server', () => ({
-  BrowserViteServer: vi.fn().mockImplementation(() => ({
-    start: vi.fn().mockResolvedValue(undefined),
-    onFetch: vi.fn().mockResolvedValue(new Response('ok')),
-  })),
-}));
-
 const createMockDeps = (): ShellServiceDeps => ({
   vfs: {
     readFile: vi.fn().mockResolvedValue('console.log("hello")'),
@@ -69,8 +62,8 @@ describe('ShellService', () => {
 
     const result = await shell.execute('npm run dev');
     expect(deps.sandbox?.onFetch).toHaveBeenCalledOnce();
-    expect(deps.events?.emit).toHaveBeenCalledWith('port', 3000, 'open', 'http://localhost:3000');
-    expect(deps.events?.emit).toHaveBeenCalledWith('server-ready', 3000, 'http://localhost:3000');
+    expect(deps.events?.emit).toHaveBeenCalledWith('port', 3000, 'open', '/__preview/');
+    expect(deps.events?.emit).toHaveBeenCalledWith('server-ready', 3000, '/__preview/');
     expect(result.exitCode).toBe(0);
   });
 

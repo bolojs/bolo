@@ -2,7 +2,7 @@ import type { VfsBus } from '@browser-containers/vfs-bus';
 import type { FileSystemTree } from './container-types.js';
 
 export interface MountAPI {
-  mountTree(tree: FileSystemTree): Promise<void>;
+  mountTree(tree: FileSystemTree, basePath?: string): Promise<void>;
 }
 
 export function createMount(vfs: VfsBus): MountAPI {

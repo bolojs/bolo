@@ -69,6 +69,7 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
       packageManager,
       runtimeWorker,
       sandboxPool,
+      workdir,
     });
 
     const fs = createFileSystem(vfs);

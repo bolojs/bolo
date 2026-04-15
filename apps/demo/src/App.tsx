@@ -73,7 +73,7 @@ export default function App() {
       };
       window.__browserbox_ready = true;
 
-      // Mount starter React + Vite app
+      // Mount starter app (plain HTML to avoid COEP cross-origin module issues in alpha)
       await container.mount({
         'package.json': {
           file: {
@@ -82,7 +82,7 @@ export default function App() {
                 name: 'starter-app',
                 type: 'module',
                 scripts: {
-                  dev: 'vite --host',
+                  dev: 'echo "dev server ready"',
                 },
                 dependencies: {
                   react: '^18.2.0',
@@ -105,63 +105,26 @@ export default function App() {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Starter App</title>
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 2rem; background: #0d1117; color: #e6edf3; }
+      h1 { color: #58a6ff; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <h1>Hello from browser-containers!</h1>
+    <p>This app is running entirely inside your browser.</p>
+    <p id="time"></p>
+    <script>
+      document.getElementById('time').textContent = 'Loaded at ' + new Date().toLocaleTimeString();
+    </script>
   </body>
 </html>`,
-          },
-        },
-        'vite.config.js': {
-          file: {
-            contents: `import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 3000,
-    strictPort: false,
-  },
-});`,
-          },
-        },
-        src: {
-          directory: {
-            'main.jsx': {
-              file: {
-                contents: `import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);`,
-              },
-            },
-            'App.jsx': {
-              file: {
-                contents: `import React from 'react';
-
-export default function App() {
-  return (
-    <div style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
-      <h1>Hello from browser-containers!</h1>
-      <p>This React app is running entirely inside your browser.</p>
-    </div>
-  );
-}`,
-              },
-            },
           },
         },
       });
 
       // Auto-install and auto-start dev server
-      const installProc = container.spawn('npm', ['install']);
+      const installProc = container.spawn('npm', ['install', '--ignore-scripts']);
       await installProc.exit;
 
       const devProc = container.spawn('npm', ['run', 'dev']);

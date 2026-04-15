@@ -99,7 +99,7 @@ export class SWSandbox {
   async handleInterceptedRequest(requestId: number, req: Request): Promise<Response> {
     for (const handler of this.fetchHandlers) {
       const url = new URL(req.url);
-      if (url.origin === this.origin) {
+      if (url.origin === this.origin || url.hostname === 'localhost') {
         try {
           return await handler(req);
         } catch {

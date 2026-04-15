@@ -77,7 +77,7 @@ describe('BrowserContainer', () => {
   it('mount() delegates to mountApi.mountTree()', async () => {
     const tree: FileSystemTree = { 'test.txt': { file: { contents: 'hello' } } };
     await container.mount(tree);
-    expect(deps.mountApi.mountTree).toHaveBeenCalledWith(tree);
+    expect(deps.mountApi.mountTree).toHaveBeenCalledWith(tree, deps.workdir);
   });
 
   it('mount() throws after teardown', async () => {
@@ -101,7 +101,7 @@ describe('BrowserContainer', () => {
     const tree: FileSystemTree = { 'a.txt': { file: { contents: 'x' } } };
     vi.mocked(deps.exportApi.exportTree).mockResolvedValue(tree);
     const result = await container.export();
-    expect(deps.exportApi.exportTree).toHaveBeenCalled();
+    expect(deps.exportApi.exportTree).toHaveBeenCalledWith(deps.workdir);
     expect(result).toBe(tree);
   });
 

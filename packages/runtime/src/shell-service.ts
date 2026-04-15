@@ -12,6 +12,7 @@ export interface ShellServiceDeps {
   packageManager: PackageManager;
   runtimeWorker: RuntimeWorker;
   sandboxPool: SandboxPool;
+  workdir?: string;
 }
 
 export interface ShellResult {
@@ -107,13 +108,46 @@ export class ShellService {
         return 1;
       }
       try {
-        const segments = ['@browser-containers', 'vite-server'];
-        const { BrowserViteServer } = await import(segments.join('/'));
-        const server = new BrowserViteServer({ vfs: this.deps.vfs, root: '/' });
-        await server.start();
-        this.deps.sandbox.onFetch(async (req) => server.onFetch(req.url, req));
-        this.deps.events?.emit('port', 3000, 'open', 'http://localhost:3000');
-        this.deps.events?.emit('server-ready', 3000, 'http://localhost:3000');
+        const root = this.deps.workdir ?? '/';
+        const previewPrefix = '/__preview/';
+        this.deps.sandbox.onFetch(async (req) => {
+          const url = new URL(req.url);
+          if (!url.pathname.startsWith(previewPrefix)) {
+            throw new Error('not handled');
+          }
+          let pathname = url.pathname.slice(previewPrefix.length) || '/';
+          if (pathname === '/') pathname = '/index.html';
+          const filePath = root + pathname;
+          try {
+            const content = await this.deps.vfs.readFile(filePath);
+            const ext = pathname.split('.').pop() ?? '';
+            const mimeTypes: Record<string, string> = {
+              html: 'text/html',
+              js: 'application/javascript',
+              mjs: 'application/javascript',
+              css: 'text/css',
+              json: 'application/json',
+              svg: 'image/svg+xml',
+              png: 'image/png',
+              jpg: 'image/jpeg',
+              jpeg: 'image/jpeg',
+            };
+            const contentType = mimeTypes[ext] ?? 'application/octet-stream';
+            const body = content instanceof Uint8Array ? (content as unknown as BodyInit) : String(content);
+            return new Response(body, {
+              status: 200,
+              headers: {
+                'Content-Type': contentType,
+                'Cross-Origin-Embedder-Policy': 'require-corp',
+                'Cross-Origin-Opener-Policy': 'same-origin',
+              },
+            });
+          } catch {
+            return new Response('Not found', { status: 404 });
+          }
+        });
+        this.deps.events?.emit('port', 3000, 'open', previewPrefix);
+        this.deps.events?.emit('server-ready', 3000, previewPrefix);
         return 0;
       } catch (err) {
         output.stderr(err instanceof Error ? err.message : String(err));

@@ -50,7 +50,7 @@ export function initSW(swGlobal: SWGlobal): void {
 
   swGlobal.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
-    if (url.hostname !== 'localhost') {
+    if (!url.pathname.startsWith('/__preview/')) {
       return;
     }
     if (!isReady || !mainPort) {

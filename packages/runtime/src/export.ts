@@ -2,7 +2,7 @@ import type { VfsBus } from '@browser-containers/vfs-bus';
 import type { FileSystemTree } from './container-types.js';
 
 export interface ExportAPI {
-  exportTree(): Promise<FileSystemTree>;
+  exportTree(basePath?: string): Promise<FileSystemTree>;
 }
 
 export function createExport(vfs: VfsBus): ExportAPI {

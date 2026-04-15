@@ -9,6 +9,7 @@ export interface ShellService {
 export const createChildProcessShim = (registry?: WasmRegistry, shell?: ShellService) => {
   const spawn = (command: string, args?: string[], _options?: Record<string, unknown>) => {
     const child: ChildProcess = {
+      stdin: { write: () => {}, end: () => {} },
       stdout: { on: () => {} },
       stderr: { on: () => {} },
       on: (event: string, handler: (code: number) => void) => {
@@ -51,6 +52,7 @@ export const createChildProcessShim = (registry?: WasmRegistry, shell?: ShellSer
 };
 
 export interface ChildProcess {
+  stdin: { write: (data: string) => void; end: () => void };
   stdout: { on: (event: string, handler: (...args: any[]) => void) => void };
   stderr: { on: (event: string, handler: (...args: any[]) => void) => void };
   on: (event: string, handler: (...args: any[]) => void) => void;

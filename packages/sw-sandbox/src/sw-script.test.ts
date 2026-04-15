@@ -57,7 +57,7 @@ describe('SW script behavior', () => {
     initSW(swGlobal);
 
     fetchHandler?.({
-      request: new Request('http://localhost:3000/queued'),
+      request: new Request('http://localhost:4173/__preview/3000/queued'),
       respondWith,
     });
     expect(respondWith).toHaveBeenCalledTimes(1);
@@ -77,7 +77,7 @@ describe('SW script behavior', () => {
     expect(mockPort.postMessage).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'FETCH_REQUEST',
-        request: expect.objectContaining({ url: 'http://localhost:3000/queued', method: 'GET' }),
+        request: expect.objectContaining({ url: 'http://localhost:4173/__preview/3000/queued', method: 'GET' }),
       }),
     );
   });
@@ -106,7 +106,7 @@ describe('SW script behavior', () => {
     messageHandler?.({ data: { type: 'INIT_PORT' }, ports: [mockPort] });
 
     fetchHandler?.({
-      request: new Request('http://localhost:3000/'),
+      request: new Request('http://localhost:4173/__preview/3000/'),
       respondWith,
     });
 
@@ -115,7 +115,7 @@ describe('SW script behavior', () => {
     expect(mockPort.postMessage).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'FETCH_REQUEST',
-        request: expect.objectContaining({ url: 'http://localhost:3000/', method: 'GET' }),
+        request: expect.objectContaining({ url: 'http://localhost:4173/__preview/3000/', method: 'GET' }),
       }),
     );
     expect(respondWith).toHaveBeenCalled();

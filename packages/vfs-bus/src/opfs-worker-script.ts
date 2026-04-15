@@ -1,21 +1,4 @@
 export const opfsWorkerScript = `
-interface OpfsRequest {
-  id: number;
-  method: 'readFile' | 'writeFile' | 'mkdir' | 'readdir' | 'rm' | 'exists';
-  path: string;
-  content?: Uint8Array;
-}
-
-interface OpfsResponse {
-  id: number;
-  ok: true;
-  data?: Uint8Array | string[] | boolean;
-} | {
-  id: number;
-  ok: false;
-  error: string;
-}
-
 function ensureDir(dirHandle, path) {
   if (!path) return Promise.resolve(dirHandle);
   const [head, ...rest] = path.split('/').filter(Boolean);
@@ -218,7 +201,9 @@ async function handle(msg) {
   }
 }
 
-backend = await detectBackend();
+(async () => {
+  backend = await detectBackend();
+})();
 
 self.onmessage = (e) => {
   handle(e.data).then(resp => self.postMessage(resp));

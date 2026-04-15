@@ -14,6 +14,18 @@ export default defineConfig({
       globals: { Buffer: true, global: true, process: true },
     }),
   ],
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+  preview: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
   build: { target: 'esnext' },
   // RuntimeWorker uses `new Worker(new URL('./worker-script.ts', import.meta.url), …)`.
   // Excluding the package from pre-bundling keeps that URL pattern intact so Vite

@@ -45,7 +45,7 @@ export class BrowserContainer {
     if (this.tornDown) {
       throw new Error('Container has been torn down');
     }
-    await this.deps.mountApi.mountTree(tree);
+    await this.deps.mountApi.mountTree(tree, this.workdir);
   }
 
   on(event: 'port', listener: (port: number, type: 'open' | 'close', url: string) => void): Unsubscribe;
@@ -58,7 +58,7 @@ export class BrowserContainer {
     if (this.tornDown) {
       throw new Error('Container has been torn down');
     }
-    return this.deps.exportApi.exportTree();
+    return this.deps.exportApi.exportTree(this.workdir);
   }
 
   async teardown(): Promise<void> {
