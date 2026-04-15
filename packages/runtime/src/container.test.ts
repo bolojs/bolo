@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserContainer, type BrowserContainerDeps } from './container.js';
-import type { FileSystemAPI, FileSystemTree, Process } from './container-types.js';
+import type { FileSystemAPI, FileSystemTree } from './container-types.js';
 import type { ContainerEvents } from './events.js';
 import type { VfsBus } from '@browser-containers/vfs-bus';
 import type { MountAPI } from './mount.js';

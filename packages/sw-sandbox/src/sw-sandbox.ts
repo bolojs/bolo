@@ -1,7 +1,5 @@
 export type FetchHandler = (req: Request) => Promise<Response>;
 
-let requestIdCounter = 0;
-
 export class SWSandbox {
   private origin: string;
   private swPath: string;

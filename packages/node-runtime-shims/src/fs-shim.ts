@@ -10,7 +10,7 @@ export const createFsShim = (vfs: VfsBus) => {
     return result;
   };
 
-  const writeFile = async (path: string, data: string | Uint8Array, opts?: { encoding?: string }): Promise<void> => {
+  const writeFile = async (path: string, data: string | Uint8Array, _opts?: { encoding?: string }): Promise<void> => {
     await vfs.writeFile(path, data);
   };
 

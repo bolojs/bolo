@@ -20,8 +20,6 @@ export interface ShellResult {
   exitCode: number;
 }
 
-const OUTPUT_CALLBACKS = Symbol('outputCallbacks');
-
 interface OutputCallbacks {
   stdout: (data: string) => void;
   stderr: (data: string) => void;
@@ -101,7 +99,7 @@ export class ShellService {
   }
 
   private async routeNpmRun(args: string[], output: OutputCallbacks): Promise<number> {
-    const [scriptName, ...scriptArgs] = args;
+    const scriptName = args[0];
 
     if (scriptName === 'dev') {
       if (!this.deps.sandbox) {
