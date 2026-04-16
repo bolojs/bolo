@@ -10,7 +10,9 @@
     "clean": "rm -rf dist packages/*/dist node_modules/.cache .turbo",
     "lint": "turbo run lint",
     "format": "turbo run format",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "test:e2e": "pnpm --filter @browser-containers/e2e test",
+    "test:e2e:verbose": "pnpm --filter @browser-containers/e2e test:verbose"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

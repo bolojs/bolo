@@ -9,34 +9,47 @@ const mockRegistration = {
   installing: null,
   waiting: null,
 };
-let messageHandlers: Array<(event: MessageEvent) => void> = [];
-let swReadyResolver: (() => void) | null = null;
+let port1MessageHandlers: Array<(event: MessageEvent) => void> = [];
+let portReadyTrigger: (() => void) | null = null;
+
+class MockMessageChannel {
+  port1 = {
+    addEventListener: vi.fn((type: string, handler: (event: MessageEvent) => void) => {
+      if (type === 'message') {
+        port1MessageHandlers.push(handler);
+        if (portReadyTrigger) {
+          portReadyTrigger();
+        }
+      }
+    }),
+    removeEventListener: vi.fn(),
+    postMessage: vi.fn(),
+    onmessage: null as ((event: MessageEvent) => void) | null,
+  } as unknown as MessagePort;
+  port2 = {} as MessagePort;
+}
 
 function setupMockNavigator() {
-  messageHandlers = [];
-  swReadyResolver = null;
+  port1MessageHandlers = [];
+  portReadyTrigger = null;
   Object.defineProperty(globalThis, 'navigator', {
     value: {
       serviceWorker: {
         register: vi.fn().mockResolvedValue(mockRegistration),
         ready: Promise.resolve(mockRegistration),
-        addEventListener: vi.fn((_type: string, handler: (event: MessageEvent) => void) => {
-          messageHandlers.push(handler);
-          if (_type === 'message' && swReadyResolver) {
-            swReadyResolver();
-          }
-        }),
+        addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
       },
     },
     writable: true,
     configurable: true,
   });
+  globalThis.MessageChannel = MockMessageChannel as unknown as typeof MessageChannel;
 }
 
-function simulateSwReady() {
-  for (const handler of messageHandlers) {
-    handler({ data: { type: 'SW_READY' } } as MessageEvent);
+function simulatePortReady() {
+  for (const handler of port1MessageHandlers) {
+    handler({ data: { type: 'PORT_READY' } } as MessageEvent);
   }
 }
 
@@ -49,20 +62,20 @@ beforeEach(() => {
 describe('SWSandbox', () => {
   it('creates instance via SWSandbox.create()', async () => {
     const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
-    swReadyResolver = simulateSwReady;
+    portReadyTrigger = simulatePortReady;
     const sandbox = await createPromise;
 
     expect(sandbox).toBeInstanceOf(SWSandbox);
     expect(navigator.serviceWorker.register).toHaveBeenCalledWith('/sw.js');
     expect(mockSw.postMessage).toHaveBeenCalledWith(
       { type: 'INIT_PORT' },
-      expect.arrayContaining([expect.any(MessagePort)]),
+      expect.arrayContaining([expect.anything()]),
     );
   });
 
   it('stores fetch handlers via onFetch()', async () => {
     const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
-    swReadyResolver = simulateSwReady;
+    portReadyTrigger = simulatePortReady;
     const sandbox = await createPromise;
 
     const handler = vi.fn().mockResolvedValue(new Response('handled'));
@@ -77,7 +90,7 @@ describe('SWSandbox', () => {
 
   it('returns 404 when no handler matches', async () => {
     const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
-    swReadyResolver = simulateSwReady;
+    portReadyTrigger = simulatePortReady;
     const sandbox = await createPromise;
 
     const req = new Request('http://localhost:3000/api/missing');
@@ -88,7 +101,7 @@ describe('SWSandbox', () => {
 
   it('skips handlers that throw and tries next', async () => {
     const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
-    swReadyResolver = simulateSwReady;
+    portReadyTrigger = simulatePortReady;
     const sandbox = await createPromise;
 
     const failingHandler = vi.fn().mockRejectedValue(new Error('fail'));
@@ -106,7 +119,7 @@ describe('SWSandbox', () => {
 
   it('stores policy registry via setPolicyRegistry()', async () => {
     const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
-    swReadyResolver = simulateSwReady;
+    portReadyTrigger = simulatePortReady;
     const sandbox = await createPromise;
 
     const registry = new Map<string, unknown>([['network', true]]);
@@ -127,7 +140,7 @@ describe('SWSandbox', () => {
 
   it('handleFetchRequest reconstructs Request, handles it, and posts FETCH_RESPONSE', async () => {
     const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
-    swReadyResolver = simulateSwReady;
+    portReadyTrigger = simulatePortReady;
     const sandbox = await createPromise;
 
     const handler = vi.fn().mockResolvedValue(new Response('hello from handler', { status: 200 }));
@@ -154,7 +167,7 @@ describe('SWSandbox', () => {
 
   it('handleFetchRequest returns 404 when no handler matches', async () => {
     const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
-    swReadyResolver = simulateSwReady;
+    portReadyTrigger = simulatePortReady;
     const sandbox = await createPromise;
 
     const postMessageSpy = vi.fn();

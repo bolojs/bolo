@@ -12,7 +12,8 @@
     "./vite-plugin": {
       "types": "./dist/vite-plugin.d.ts",
       "import": "./dist/vite-plugin.js"
-    }
+    },
+    "./dist/*": "./dist/*"
   },
   "scripts": {
     "build": "tsc",

@@ -16,3 +16,4 @@ tmp/
 .osgrep
 *.log
 .gauge/
+tests/e2e/screenshots/

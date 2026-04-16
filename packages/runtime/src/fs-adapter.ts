@@ -22,6 +22,10 @@ export function createFileSystem(vfs: VfsBus): FileSystemAPI {
     await vfs.rm(path, { recursive: true });
   }
 
+  async function exists(path: string): Promise<boolean> {
+    return vfs.exists(path);
+  }
+
   async function readdir(path: string, options?: { withFileTypes?: boolean }): Promise<string[] | DirEnt[]> {
     const entries = await vfs.readdir(path, options);
     if (options?.withFileTypes) {
@@ -59,5 +63,5 @@ export function createFileSystem(vfs: VfsBus): FileSystemAPI {
     return { close: () => watcher.close() };
   }
 
-  return { readFile, writeFile, mkdir, rm, readdir, rename, watch };
+  return { readFile, writeFile, mkdir, rm, exists, readdir, rename, watch };
 }

@@ -16,6 +16,7 @@
   },
   "include": [
     "steps/**/*.ts",
+    "lib/**/*.ts",
     "*.ts"
   ],
   "exclude": [

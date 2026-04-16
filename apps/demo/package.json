@@ -12,15 +12,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@browser-containers/npm": "workspace:*",
     "@browser-containers/node-web-shims": "workspace:*",
+    "@browser-containers/npm": "workspace:*",
     "@browser-containers/runtime": "workspace:*",
     "@browser-containers/sw-sandbox": "workspace:*",
     "@browser-containers/vfs-bus": "workspace:*",
     "@browser-containers/vite-server": "workspace:*",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
-    "solid-js": "^1.9.0"
+    "solid-js": "^1.9.0",
+    "unenv": "^1.10.0"
   },
   "devDependencies": {
     "portless": "latest",

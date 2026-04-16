@@ -26,18 +26,19 @@ export class SWSandbox {
     await navigator.serviceWorker.register(this.swPath);
     const registration = await navigator.serviceWorker.ready;
 
-    await new Promise<void>((resolve) => {
-      const onMessage = (event: MessageEvent) => {
-        if (event.data?.type === 'SW_READY') {
-          navigator.serviceWorker.removeEventListener('message', onMessage);
+    const channel = new MessageChannel();
+    this.messagePort = channel.port1;
+
+    const portReady = new Promise<void>((resolve) => {
+      const onPortMessage = (event: MessageEvent) => {
+        if (event.data?.type === 'PORT_READY') {
+          this.messagePort!.removeEventListener('message', onPortMessage);
           resolve();
         }
       };
-      navigator.serviceWorker.addEventListener('message', onMessage);
+      this.messagePort!.addEventListener('message', onPortMessage);
     });
 
-    const channel = new MessageChannel();
-    this.messagePort = channel.port1;
     this.messagePort.onmessage = (event: MessageEvent) => {
       const { type, requestId, response, error, request } = event.data as {
         type?: string;
@@ -47,7 +48,15 @@ export class SWSandbox {
         request?: { url: string; method: string; headers: Record<string, string>; body?: string };
       };
       if (type === 'FETCH_REQUEST' && request) {
-        this.handleFetchRequest(requestId, request).catch(() => undefined);
+        this.handleFetchRequest(requestId, request).catch((err) => {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error('[sw-sandbox] handleFetchRequest failed:', message);
+          this.messagePort?.postMessage({
+            type: 'FETCH_RESPONSE',
+            requestId,
+            error: message,
+          });
+        });
         return;
       }
       const pending = this.pendingRequests.get(requestId);
@@ -64,6 +73,8 @@ export class SWSandbox {
     if (sw) {
       sw.postMessage({ type: 'INIT_PORT' }, [channel.port2]);
     }
+
+    await portReady;
   }
 
   onFetch(handler: FetchHandler): void {
@@ -78,10 +89,14 @@ export class SWSandbox {
     requestId: number,
     requestData: { url: string; method: string; headers: Record<string, string>; body?: string },
   ): Promise<void> {
+    const requestBody =
+      requestData.body && requestData.method !== 'GET' && requestData.method !== 'HEAD'
+        ? requestData.body
+        : undefined;
     const request = new Request(requestData.url, {
       method: requestData.method,
       headers: requestData.headers,
-      body: requestData.body ?? undefined,
+      body: requestBody,
     });
     const response = await this.handleInterceptedRequest(requestId, request);
     const body = await response.text();

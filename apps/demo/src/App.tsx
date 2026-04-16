@@ -9,7 +9,7 @@ declare global {
   interface Window {
     __browserbox: {
       install(pkgs?: string[]): Promise<ShellResult>;
-      vfs: { writeFile(path: string, content: string): Promise<void> };
+      vfs: { writeFile(path: string, content: string): Promise<void>; exists(path: string): Promise<boolean>; mkdir(path: string, options?: { recursive?: boolean }): Promise<void>; readFile(path: string): Promise<string> };
       preview: { loadUrl(url: string): void };
       boot: typeof boot;
       container?: BrowserContainer;
@@ -66,6 +66,10 @@ export default function App() {
         vfs: {
           writeFile: (path: string, content: string) =>
             container!.fs.writeFile(path, content),
+          exists: (path: string) => container!.fs.exists(path),
+          mkdir: (path: string, options?: { recursive?: boolean }) =>
+            container!.fs.mkdir(path, options),
+          readFile: (path: string) => container!.fs.readFile(path),
         },
         preview: { loadUrl: (url: string) => setPreviewUrl(url) },
         boot,

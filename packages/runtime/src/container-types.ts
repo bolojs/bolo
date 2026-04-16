@@ -45,6 +45,7 @@ export interface FileSystemAPI {
   writeFile(path: string, data: string | Uint8Array): Promise<void>;
   mkdir(path: string, options?: { recursive?: boolean }): Promise<void>;
   rm(path: string): Promise<void>;
+  exists(path: string): Promise<boolean>;
   readdir(path: string, options?: { withFileTypes?: boolean }): Promise<string[] | DirEnt[]>;
   rename(oldPath: string, newPath: string): Promise<void>;
   watch(

@@ -5,12 +5,12 @@
   "type": "module",
   "description": "E2E tests for browser-containers using Gauge + gauge-ts",
   "scripts": {
-    "test:e2e": "gauge run",
-    "test:e2e:verbose": "gauge run --verbose",
+    "test": "gauge run specs",
+    "test:verbose": "gauge run specs --verbose",
     "install:gauge": "npm install -g @getgauge/cli"
   },
   "dependencies": {
-    "agent-browser": "^0.25.4",
+    "agent-browser": "^0.25.5",
     "@getgauge/cli": "^1.6.30",
     "gauge-ts": "^0.3.6"
   },

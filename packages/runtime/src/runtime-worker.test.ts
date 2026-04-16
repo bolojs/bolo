@@ -103,13 +103,13 @@ describe('RuntimeWorker', () => {
 
     // First heartbeat check (5s) — no heartbeat received, missedHeartbeats=1
     vi.advanceTimersByTime(5000);
-    expect(mockWorker.instance.terminate).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(mockWorker.instance.terminate).not.toHaveBeenCalled());
 
     // Second check (10s) — still no heartbeat, missedHeartbeats=2, should terminate
     vi.advanceTimersByTime(5000);
-    expect(mockWorker.instance.terminate).toHaveBeenCalled();
+    await vi.waitFor(() => expect(mockWorker.instance.terminate).toHaveBeenCalled());
 
-    await runPromise;
+    await expect(runPromise).rejects.toThrow();
   });
 
   it('should reset missed heartbeats on heartbeat message', async () => {

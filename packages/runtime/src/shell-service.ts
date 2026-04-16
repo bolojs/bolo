@@ -1,6 +1,7 @@
 import type { VfsBus } from '@browser-containers/vfs-bus';
 import type { PackageManager } from '@browser-containers/npm';
 import type { SWSandbox } from '@browser-containers/sw-sandbox';
+import { BrowserViteServer } from '@browser-containers/vite-server';
 import type { RuntimeWorker } from './runtime-worker.js';
 import type { SandboxPool } from './sandbox-pool.js';
 import type { ContainerEvents } from './events.js';
@@ -124,42 +125,25 @@ export class ShellService {
       try {
         const root = this.deps.workdir ?? '/';
         const previewPrefix = '/__preview/';
+        const server = new BrowserViteServer({ vfs: this.deps.vfs, root });
+        await server.start();
         this.deps.sandbox.onFetch(async (req) => {
           const url = new URL(req.url);
           if (!url.pathname.startsWith(previewPrefix)) {
             throw new Error('not handled');
           }
-          let pathname = url.pathname.slice(previewPrefix.length) || '/';
-          if (pathname === '/') pathname = '/index.html';
-          const filePath = root + pathname;
-          try {
-            const content = await this.deps.vfs.readFile(filePath);
-            const ext = pathname.split('.').pop() ?? '';
-            const mimeTypes: Record<string, string> = {
-              html: 'text/html',
-              js: 'application/javascript',
-              mjs: 'application/javascript',
-              css: 'text/css',
-              json: 'application/json',
-              svg: 'image/svg+xml',
-              png: 'image/png',
-              jpg: 'image/jpeg',
-              jpeg: 'image/jpeg',
-            };
-            const contentType = mimeTypes[ext] ?? 'application/octet-stream';
-            const body = content instanceof Uint8Array ? (content as unknown as BodyInit) : String(content);
-            return new Response(body, {
-              status: 200,
-              headers: {
-                'Content-Type': contentType,
-                'Cross-Origin-Embedder-Policy': 'require-corp',
-                'Cross-Origin-Opener-Policy': 'same-origin',
-                'Cross-Origin-Resource-Policy': 'cross-origin',
-              },
-            });
-          } catch {
-            return new Response('Not found', { status: 404 });
-          }
+          const serverUrl = new URL(req.url);
+          serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, '') || '/';
+          const response = await server.onFetch(serverUrl.toString(), req);
+          const headers = new Headers(response.headers);
+          headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+          headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+          headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+          return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+          });
         });
         this.deps.events?.emit('port', 3000, 'open', previewPrefix);
         this.deps.events?.emit('server-ready', 3000, previewPrefix);

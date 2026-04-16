@@ -59,10 +59,13 @@ importers:
       solid-js:
         specifier: ^1.9.0
         version: 1.9.12
+      unenv:
+        specifier: ^1.10.0
+        version: 1.10.0
     devDependencies:
       portless:
         specifier: latest
-        version: 0.10.2
+        version: 0.10.3
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
@@ -221,10 +224,10 @@ importers:
       '@sebastianwessel/quickjs':
         specifier: ^2.2.0
         version: 2.3.1(tslib@2.8.1)(typescript@5.9.3)
-    devDependencies:
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
+    devDependencies:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(happy-dom@17.6.3)(lightningcss@1.32.0)(sass@1.99.0)
@@ -266,8 +269,8 @@ importers:
         specifier: ^1.6.30
         version: 1.6.30
       agent-browser:
-        specifier: ^0.25.4
-        version: 0.25.4
+        specifier: ^0.25.5
+        version: 0.25.5
       gauge-ts:
         specifier: ^0.3.6
         version: 0.3.6(@types/node@25.6.0)
@@ -1564,8 +1567,8 @@ packages:
     resolution: {integrity: sha512-+Ut8d9LLqwEvHHJl1+PIHqoyDxFgVN847JTVM3Izi3xHDWPE4UtzzXysMZQs64DMcrJfBeS/uoEP4AD3HQHnQQ==}
     engines: {node: '>=12.0'}
 
-  agent-browser@0.25.4:
-    resolution: {integrity: sha512-vl4tzDAk5+pJ2g8eMWWzZOLJ2yevJDN3YQ1gcSdN3GKPI0RwNr+T/2PxqSxsipiREu0oid2yxFJIoQ6NMrq/fQ==}
+  agent-browser@0.25.5:
+    resolution: {integrity: sha512-i7ZHsnB0nZIfZoQj9xavTJNX9nckTVVcaaiWFAaOiEQgvGytzVjftA3PIdq0WiuGba8vsxsYH2XMHxs+9bJkIw==}
     hasBin: true
 
   ansi-regex@5.0.1:
@@ -2279,8 +2282,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  portless@0.10.2:
-    resolution: {integrity: sha512-g2Rpt4x/jUtGTcgYtwGElhSvIQB+p7k3dy3slHsxymDFWTImq3iwCdBYqz4EH5gJ6+Gqvjm51urlOaX9mklzmA==}
+  portless@0.10.3:
+    resolution: {integrity: sha512-lXbVUsNiwWMKJGMi49HhTMW0lS7u0EzawonDZQ+yglSnHioiQK18Y4Fe0Ilk+TuXej71E/nTOHIFIBjUGvTm9w==}
     engines: {node: '>=20'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -3798,7 +3801,7 @@ snapshots:
 
   adm-zip@0.5.17: {}
 
-  agent-browser@0.25.4: {}
+  agent-browser@0.25.5: {}
 
   ansi-regex@5.0.1: {}
 
@@ -4632,7 +4635,7 @@ snapshots:
 
   playwright-core@1.59.1: {}
 
-  portless@0.10.2: {}
+  portless@0.10.3: {}
 
   possible-typed-array-names@1.1.0: {}
 

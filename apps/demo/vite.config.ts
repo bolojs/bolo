@@ -26,11 +26,25 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
     },
   },
+  resolve: {
+    alias: [
+      { find: 'node:events', replacement: '@browser-containers/node-web-shims/dist/events.js' },
+      { find: 'node:path', replacement: '@browser-containers/node-web-shims/dist/path.js' },
+      { find: 'node:stream', replacement: '@browser-containers/node-web-shims/dist/stream.js' },
+    ],
+  },
   build: { target: 'esnext' },
   // RuntimeWorker uses `new Worker(new URL('./worker-script.ts', import.meta.url), …)`.
   // Excluding the package from pre-bundling keeps that URL pattern intact so Vite
   // can emit the worker as a separate chunk rather than inlining it.
   optimizeDeps: {
     exclude: ['@browser-containers/runtime'],
+    esbuildOptions: {
+      alias: {
+        'node:events': '@browser-containers/node-web-shims/dist/events.js',
+        'node:path': '@browser-containers/node-web-shims/dist/path.js',
+        'node:stream': '@browser-containers/node-web-shims/dist/stream.js',
+      },
+    },
   },
 });

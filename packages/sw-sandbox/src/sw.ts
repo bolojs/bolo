@@ -94,6 +94,7 @@ export function initSW(swGlobal: SWGlobal): void {
         }
       };
       isReady = true;
+      mainPort.postMessage({ type: 'PORT_READY' });
       while (requestQueue.length > 0) {
         const fn = requestQueue.shift();
         fn?.();

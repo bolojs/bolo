@@ -1,5 +1,5 @@
 import type { VfsBus } from '@browser-containers/vfs-bus';
-import { getTypescriptSupport } from '@sebastianwessel/quickjs';
+import * as ts from 'typescript';
 
 const TRANSFORMABLE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);
 
@@ -9,11 +9,8 @@ export interface BrowserViteServerOptions {
   readonly hmrChannelName?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TranspileFn = (code: string, ...args: any[]) => string;
-
 interface TranspileResult {
-  readonly transpileFile: TranspileFn;
+  readonly transpileFile: (code: string, _compilerOptions?: unknown, fileName?: string) => string;
 }
 
 export class BrowserViteServer {
@@ -29,8 +26,20 @@ export class BrowserViteServer {
   }
 
   async start(): Promise<void> {
-    const ts = await getTypescriptSupport(true);
-    this.transpiler = ts;
+    const compilerOptions: ts.CompilerOptions = {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2023,
+      allowJs: true,
+      skipLibCheck: true,
+      esModuleInterop: true,
+      strict: false,
+      allowSyntheticDefaultImports: true,
+      jsx: ts.JsxEmit.React,
+    };
+    this.transpiler = {
+      transpileFile: (code, _compilerOptions, fileName) =>
+        ts.transpile(code, compilerOptions, fileName),
+    };
   }
 
   async stop(): Promise<void> {

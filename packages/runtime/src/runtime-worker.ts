@@ -29,6 +29,7 @@ export class RuntimeWorker {
 
   async runScript(code: string, opts: RunScriptOptions = {}): Promise<void> {
     await new Promise<void>((resolve, reject) => {
+      this.rejectRun = reject;
       this.worker = new Worker(new URL("./worker-script.js", import.meta.url), { type: "module" });
       this.worker.onerror = (e) => {
         reject(new Error(e.message));
@@ -54,11 +55,15 @@ export class RuntimeWorker {
     });
   }
 
+  private rejectRun: ((reason?: Error) => void) | null = null;
+
   private startWatchdog = (): void => {
     const check = () => {
       this.missedHeartbeats++;
       if (this.missedHeartbeats > 1) {
         this.worker?.terminate();
+        this.onExit?.(1);
+        this.rejectRun?.(new Error("Worker missed heartbeats"));
         this.dispose();
         return;
       }
@@ -71,5 +76,6 @@ export class RuntimeWorker {
     if (this.heartbeatTimer) clearTimeout(this.heartbeatTimer);
     this.worker?.terminate();
     this.worker = null;
+    this.rejectRun = null;
   };
 }

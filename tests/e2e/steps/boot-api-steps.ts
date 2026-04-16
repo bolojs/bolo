@@ -1,35 +1,23 @@
 import { Step, BeforeSpec, AfterSpec } from 'gauge-ts';
-import { execSync } from 'child_process';
-
-const ab = (cmd: string): string => {
-  try {
-    return execSync(`agent-browser ${cmd}`, { encoding: 'utf8' });
-  } catch (error) {
-    const err = error as { message?: string; stderr?: Buffer };
-    const stderr = err.stderr?.toString() || err.message || 'Unknown error';
-    throw new Error(`agent-browser command failed: ${stderr}`);
-  }
-};
+import { ab } from '../lib/ab.js';
+import { DEMO_URL } from '../lib/config.js';
+import { setupBrowser, teardownBrowser } from '../lib/setup.js';
 
 export class BootApiSteps {
-  private demoUrl = 'http://localhost:5173';
   private lastSpawnExitCode: number | null = null;
   private serverReadyPort: number | null = null;
   private exportedTree: Record<string, unknown> | null = null;
 
   @BeforeSpec()
   async setup() {
-    ab(`open ${this.demoUrl}`);
-    ab('wait --fn "window.__browserbox_ready === true"');
+    await setupBrowser();
   }
 
   @AfterSpec()
   async teardown() {
-    try {
+    await teardownBrowser(() => {
       ab('eval "window.__browserbox.container?.teardown()" --json');
-      ab('close');
-    } catch {
-    }
+    });
   }
 
   @Step('I boot a container')

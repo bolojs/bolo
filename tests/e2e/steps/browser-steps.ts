@@ -1,48 +1,21 @@
 import { Step, BeforeSpec, AfterSpec } from 'gauge-ts';
-import { execSync } from 'child_process';
-
-/**
- * Helper function to execute agent-browser CLI commands
- * @param cmd - The agent-browser command to execute
- * @returns The stdout output from the command
- */
-const ab = (cmd: string): string => {
-  try {
-    return execSync(`agent-browser ${cmd}`, { encoding: 'utf8' });
-  } catch (error) {
-    const err = error as { message?: string; stderr?: Buffer };
-    const stderr = err.stderr?.toString() || err.message || 'Unknown error';
-    throw new Error(`agent-browser command failed: ${stderr}`);
-  }
-};
+import { ab } from '../lib/ab.js';
+import { DEMO_URL } from '../lib/config.js';
+import { setupBrowser, teardownBrowser } from '../lib/setup.js';
 
 /**
  * BrowserSteps - Step definitions for browser-containers E2E tests
  * Uses agent-browser CLI to automate browser interactions
  */
 export class BrowserSteps {
-  private demoUrl = 'http://localhost:5173';
-
-  /**
-   * BeforeSpec: Open browser and wait for demo app to be ready
-   */
   @BeforeSpec()
   async setup() {
-    ab(`open ${this.demoUrl}`);
-    ab('wait --fn "window.__browserbox_ready === true"');
+    await setupBrowser();
   }
 
-  /**
-   * AfterSpec: Close browser
-   */
   @AfterSpec()
   async teardown() {
-    try {
-      ab('close');
-    } catch (error) {
-      // Browser may already be closed, ignore
-      console.log('Browser already closed');
-    }
+    await teardownBrowser();
   }
 
   /**

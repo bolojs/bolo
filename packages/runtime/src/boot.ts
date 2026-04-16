@@ -50,7 +50,8 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
 
     let sandbox: SWSandbox;
     try {
-      sandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });
+      const origin = globalThis.location?.origin ?? 'https://sandbox.local/';
+      sandbox = await SWSandbox.create({ origin, swPath: '/sw.js' });
     } catch {
       sandbox = { onFetch: () => {}, setPolicyRegistry: () => {} } as unknown as SWSandbox;
     }

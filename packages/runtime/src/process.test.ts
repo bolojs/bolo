@@ -44,7 +44,7 @@ describe('createProcess', () => {
     await vfs.writeFile('/script.js', 'console.log(1)');
     const shell = { execute: vi.fn() } as unknown as ShellService;
     const runtimeWorker = {
-      runScript: vi.fn(),
+      runScript: vi.fn().mockReturnValue(new Promise(() => {})),
       dispose: vi.fn(),
     } as unknown as RuntimeWorker;
     const proc = createProcess('runtime', ['run', '/script.js'], {}, { vfs, shell, runtimeWorker });
@@ -58,7 +58,7 @@ describe('createProcess', () => {
     })();
 
     await vi.waitFor(() => {
-      expect(runtimeWorker.runScript).toHaveBeenCalledWith('console.log(1)', { filename: '/script.js' });
+      expect(runtimeWorker.runScript).toHaveBeenCalledWith('console.log(1)', { filename: '/script.js', httpShimOptions: undefined });
     });
 
     (runtimeWorker as any).onStdout?.('out');

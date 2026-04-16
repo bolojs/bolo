@@ -24,7 +24,7 @@ export const nodeWebShims = (): Plugin => {
   return {
     name: "@browser-containers/node-web-shims",
     enforce: "pre",
-    resolveId(id) {
+    async resolveId(id, importer, options) {
       const bareName = id.startsWith("node:")
         ? id.slice("node:".length)
         : id;
@@ -32,13 +32,21 @@ export const nodeWebShims = (): Plugin => {
       if (SHIMMED_BUILTINS.has(bareName)) {
         return `${pkgRoot}/dist/${bareName}.js`;
       }
+
       if (id.startsWith("unenv/runtime/node/")) {
-        const name = id.slice("unenv/runtime/node/".length);
-        return `${pkgRoot}/node_modules/unenv/runtime/node/${name}/index.mjs`;
+        const mod = id.slice("unenv/runtime/node/".length);
+        const resolved = await this.resolve(
+          `unenv/runtime/node/${mod}/index`,
+          importer,
+          { ...options, skipSelf: true }
+        );
+        if (resolved) {
+          return resolved.id;
+        }
       }
+
       return null;
     },
   };
 };
 
-export default nodeWebShims;
