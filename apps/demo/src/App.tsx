@@ -11,6 +11,8 @@ declare global {
       install(pkgs?: string[]): Promise<ShellResult>;
       vfs: { writeFile(path: string, content: string): Promise<void>; exists(path: string): Promise<boolean>; mkdir(path: string, options?: { recursive?: boolean }): Promise<void>; readFile(path: string): Promise<string> };
       preview: { loadUrl(url: string): void };
+      shell: { exec(cmd: string): Promise<ShellResult> };
+      vite: { transform(path: string): Promise<string> };
       boot: typeof boot;
       container?: BrowserContainer;
     };
@@ -56,6 +58,13 @@ export default function App() {
         }
       });
 
+      const resolveVfsPath = (path: string) => {
+        if (path.startsWith('/')) {
+          return container!.workdir + path;
+        }
+        return path;
+      };
+
       window.__browserbox = {
         install: async (pkgs?: string[]) => {
           const { command, args } = parseCommand(`npm install ${pkgs?.join(' ') ?? ''}`);
@@ -65,13 +74,27 @@ export default function App() {
         },
         vfs: {
           writeFile: (path: string, content: string) =>
-            container!.fs.writeFile(path, content),
-          exists: (path: string) => container!.fs.exists(path),
+            container!.fs.writeFile(resolveVfsPath(path), content),
+          exists: (path: string) => container!.fs.exists(resolveVfsPath(path)),
           mkdir: (path: string, options?: { recursive?: boolean }) =>
-            container!.fs.mkdir(path, options),
-          readFile: (path: string) => container!.fs.readFile(path),
+            container!.fs.mkdir(resolveVfsPath(path), options),
+          readFile: (path: string) => container!.fs.readFile(resolveVfsPath(path)),
         },
         preview: { loadUrl: (url: string) => setPreviewUrl(url) },
+        shell: {
+          exec: async (cmd: string) => {
+            const { command, args } = parseCommand(cmd);
+            const proc = container!.spawn(command, args);
+            const exitCode = await proc.exit;
+            return { exitCode, stdout: '', stderr: '' };
+          },
+        },
+        vite: {
+          transform: async (path: string) => {
+            const res = await fetch(`/__preview${path}`);
+            return res.text();
+          },
+        },
         boot,
         container,
       };

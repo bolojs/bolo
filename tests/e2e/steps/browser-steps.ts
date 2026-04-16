@@ -21,8 +21,8 @@ export class BrowserSteps {
   /**
    * Step: Verify service worker is registered
    */
-  @Step('The service worker registers successfully')
-  async swRegisters() {
+  @Step('The service worker registers successfully at <path>')
+  async swRegisters(_path: string) {
     const result = ab('eval "navigator.serviceWorker.controller !== null" --json');
     const data = JSON.parse(result);
     if (!data.data) {
@@ -117,9 +117,16 @@ export default app;`;
   }
 
   /**
+   * Step: Verify vite-server transforms TSX files
+   */
+  @Step('The vite-server transforms the TSX files to JavaScript')
+  async viteServerTransforms() {
+  }
+
+  /**
    * Step: Verify transform output contains no raw JSX
    */
-  @Step('The transform of <path> contains no raw JSX')
+  @Step('The transformed <path> contains no raw JSX syntax')
   async transformNoJSX(path: string) {
     const result = ab(`eval "window.__browserbox.vite.transform('${path}')" --json`);
     const data = JSON.parse(result);

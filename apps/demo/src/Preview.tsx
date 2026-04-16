@@ -31,6 +31,7 @@ export default function Preview(props: Props) {
       <iframe
         ref={iframeRef}
         class="preview-frame"
+        data-preview
         sandbox="allow-scripts allow-forms"
         title="Preview"
         credentialless
