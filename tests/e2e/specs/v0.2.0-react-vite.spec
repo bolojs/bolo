@@ -2,19 +2,19 @@
 
 ## Service worker boots correctly
 
-* The service worker registers successfully at `/sw.js`
+* The service worker registers successfully at "/sw.js"
 * The demo page title is "browser-containers"
 
 ## npm install populates VFS
 
-* I run `npm install react react-dom vite`
+* I run "npm install react react-dom vite"
 * The file "/node_modules/react/index.js" exists in VFS
 * The file "/importmap.json" exists in VFS
 
 ## Vite serves static files correctly
 
 * I write file "/index.html" with content "<h1>Hello from browser-containers!</h1>"
-* I run `npm run dev` (using vite-server)
+* I run "npm run dev (using vite-server)"
 * The preview iframe shows "Hello from browser-containers!"
 
 ## HMR updates preview

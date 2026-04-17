@@ -11,7 +11,7 @@ export default function Preview(props: Props) {
   createEffect(() => {
     const channel = new BroadcastChannel('vite-hmr');
     const onMessage = () => {
-      if (iframeRef?.src) iframeRef.src = iframeRef.src;
+      if (iframeRef?.contentWindow) iframeRef.contentWindow.location.reload();
     };
     channel.addEventListener('message', onMessage);
     onCleanup(() => {

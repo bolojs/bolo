@@ -1,5 +1,5 @@
-import { ab, captureScreenshot } from './ab.js';
-import { DEMO_URL } from './config.js';
+import { ab, captureScreenshot } from './ab';
+import { DEMO_URL } from './config';
 
 export const setupBrowser = async (): Promise<void> => {
   ab(`open ${DEMO_URL}`);

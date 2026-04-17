@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
@@ -12,10 +12,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "ES2022",
-    "module": "ESNext"
+    "module": "CommonJS"
   },
   "include": [
-    "steps/**/*.ts",
+    "tests/**/*.ts",
     "lib/**/*.ts",
     "*.ts"
   ],

@@ -1,9 +1,9 @@
 import { Step, BeforeSpec, AfterSpec } from 'gauge-ts';
-import { ab } from '../lib/ab.js';
-import { DEMO_URL } from '../lib/config.js';
-import { setupBrowser, teardownBrowser } from '../lib/setup.js';
+import { ab } from '../lib/ab';
+import { DEMO_URL } from '../lib/config';
+import { setupBrowser, teardownBrowser } from '../lib/setup';
 
-export class BootApiSteps {
+export default class BootApiSteps {
   private lastSpawnExitCode: number | null = null;
   private serverReadyPort: number | null = null;
   private exportedTree: Record<string, unknown> | null = null;
@@ -43,7 +43,7 @@ export class BootApiSteps {
   async bootFileExists(path: string) {
     const result = ab(`eval "window.__browserbox.container.fs.exists('${path}')" --json`);
     const data = JSON.parse(result);
-    if (!data.data) {
+    if (!data.data.result) {
       throw new Error(`File ${path} does not exist`);
     }
   }
@@ -81,7 +81,7 @@ export class BootApiSteps {
     ab('wait --fn "window.__browserbox_server_ready_port !== null" 10000');
     const result = ab('eval "window.__browserbox_server_ready_port" --json');
     const data = JSON.parse(result);
-    this.serverReadyPort = data.data;
+    this.serverReadyPort = data.data.result;
     if (this.serverReadyPort !== parseInt(port)) {
       throw new Error(`Expected port ${port}, got ${this.serverReadyPort}`);
     }
@@ -93,7 +93,7 @@ export class BootApiSteps {
     ab('wait --fn "window.__browserbox_export_promise !== undefined" 5000');
     const treeResult = ab('eval "window.__browserbox_export_promise" --json');
     const data = JSON.parse(treeResult);
-    this.exportedTree = data.data;
+    this.exportedTree = data.data.result;
   }
 
   @Step('The exported tree contains file <path> with contents <contents>')
@@ -141,7 +141,7 @@ export class BootApiSteps {
   async newInstance() {
     const result = ab('eval "window.__browserbox.container !== undefined" --json');
     const data = JSON.parse(result);
-    if (!data.data) {
+    if (!data.data.result) {
       throw new Error('Container is not defined');
     }
   }

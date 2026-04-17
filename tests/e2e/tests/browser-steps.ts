@@ -1,13 +1,14 @@
 import { Step, BeforeSpec, AfterSpec } from 'gauge-ts';
-import { ab } from '../lib/ab.js';
-import { DEMO_URL } from '../lib/config.js';
-import { setupBrowser, teardownBrowser } from '../lib/setup.js';
+import { execSync } from 'child_process';
+import { ab } from '../lib/ab';
+import { DEMO_URL } from '../lib/config';
+import { setupBrowser, teardownBrowser } from '../lib/setup';
 
 /**
  * BrowserSteps - Step definitions for browser-containers E2E tests
  * Uses agent-browser CLI to automate browser interactions
  */
-export class BrowserSteps {
+export default class BrowserSteps {
   @BeforeSpec()
   async setup() {
     await setupBrowser();
@@ -25,7 +26,7 @@ export class BrowserSteps {
   async swRegisters(_path: string) {
     const result = ab('eval "navigator.serviceWorker.controller !== null" --json');
     const data = JSON.parse(result);
-    if (!data.data) {
+    if (!data.data.result) {
       throw new Error('Service worker not active');
     }
   }
@@ -37,8 +38,8 @@ export class BrowserSteps {
   async pageTitle(title: string) {
     const result = ab(`eval "document.title" --json`);
     const data = JSON.parse(result);
-    if (data.data !== title) {
-      throw new Error(`Expected title "${title}", got "${data.data}"`);
+    if (data.data.result !== title) {
+      throw new Error(`Expected title "${title}", got "${data.data.result}"`);
     }
   }
 
@@ -63,7 +64,10 @@ export class BrowserSteps {
    */
   @Step('I write file <path> with content <content>')
   async writeFile(path: string, content: string) {
-    ab(`eval "window.__browserbox.vfs.writeFile('${path}', \`${content}\`)" --json`);
+    ab(`eval 'window.__browserbox.vfs.writeFile("${path}", ${JSON.stringify(content)})' --json`);
+    if (path.endsWith('/index.html')) {
+      ab(`eval "new BroadcastChannel('vite-hmr').postMessage({ type: 'full-reload' })" --json`);
+    }
   }
 
   /**
@@ -78,7 +82,7 @@ const app = new Hono();
 app.${method.toLowerCase()}('${routePath}', (c) => c.text('Hello from Hono'));
 
 export default app;`;
-    ab(`eval "window.__browserbox.vfs.writeFile('${path}', \`${content}\`)" --json`);
+    ab(`eval 'window.__browserbox.vfs.writeFile("${path}", ${JSON.stringify(content)})' --json`);
   }
 
   /**
@@ -93,7 +97,7 @@ const app = express();
 app.${method.toLowerCase()}('${routePath}', (req, res) => res.send('Hello from Express'));
 
 export default app;`;
-    ab(`eval "window.__browserbox.vfs.writeFile('${path}', \`${content}\`)" --json`);
+    ab(`eval 'window.__browserbox.vfs.writeFile("${path}", ${JSON.stringify(content)})' --json`);
   }
 
   /**
@@ -111,7 +115,7 @@ export default app;`;
   async fileExists(path: string) {
     const result = ab(`eval "window.__browserbox.vfs.exists('${path}')" --json`);
     const data = JSON.parse(result);
-    if (!data.data) {
+    if (!data.data.result) {
       throw new Error(`File ${path} does not exist in VFS`);
     }
   }
@@ -130,8 +134,9 @@ export default app;`;
   async transformNoJSX(path: string) {
     const result = ab(`eval "window.__browserbox.vite.transform('${path}')" --json`);
     const data = JSON.parse(result);
-    if (data.data && (data.data.includes('<') || data.data.includes('>'))) {
-      throw new Error(`Transform output contains raw JSX: ${data.data}`);
+    const text = typeof data.data.result === 'string' ? data.data.result : JSON.stringify(data.data.result);
+    if (text.includes('<') || text.includes('>')) {
+      throw new Error(`Transform output contains raw JSX: ${text}`);
     }
   }
 
@@ -140,9 +145,22 @@ export default app;`;
    */
   @Step('The preview iframe shows <text>')
   async previewShows(text: string) {
-    ab('frame "iframe[data-preview]"');
-    ab(`wait --text "${text}" 15000`);
-    ab('frame main');
+    const expr = `(() => {
+      const iframe = document.querySelector("iframe[data-preview]");
+      if (!iframe || !iframe.contentDocument) return "";
+      return iframe.contentDocument.body.innerText;
+    })()`;
+    let attempts = 0;
+    while (attempts < 30) {
+      const result = ab(`eval '${expr}' --json`);
+      const data = JSON.parse(result);
+      if (typeof data.data.result === 'string' && data.data.result.includes(text)) {
+        return;
+      }
+      attempts++;
+      execSync('sleep 0.5');
+    }
+    throw new Error(`Preview iframe did not show "${text}" within 15s`);
   }
 
   /**
@@ -154,8 +172,8 @@ export default app;`;
     const result = ab(`eval "fetch('${url}').catch(e => e.message)" --json`);
     ab('network unroute');
     const data = JSON.parse(result);
-    if (!data.data.includes('blocked')) {
-      throw new Error(`Request to ${url} was not blocked: ${data.data}`);
+    if (!data.data.result.includes('blocked')) {
+      throw new Error(`Request to ${url} was not blocked: ${data.data.result}`);
     }
   }
 
@@ -166,8 +184,8 @@ export default app;`;
   async sandboxRequest(path: string, text: string) {
     const result = ab(`eval "fetch('https://sandbox.local${path}').then(r => r.text())" --json`);
     const data = JSON.parse(result);
-    if (!data.data || !data.data.includes(text)) {
-      throw new Error(`Expected response to contain "${text}", got: ${data.data}`);
+    if (!data.data.result || !data.data.result.includes(text)) {
+      throw new Error(`Expected response to contain "${text}", got: ${data.data.result}`);
     }
   }
 
@@ -178,8 +196,8 @@ export default app;`;
   async sandboxRequestStatus(path: string, status: number) {
     const result = ab(`eval "fetch('https://sandbox.local${path}').then(r => r.status)" --json`);
     const data = JSON.parse(result);
-    if (data.data !== status) {
-      throw new Error(`Expected status ${status}, got: ${data.data}`);
+    if (data.data.result !== status) {
+      throw new Error(`Expected status ${status}, got: ${data.data.result}`);
     }
   }
 
@@ -190,8 +208,8 @@ export default app;`;
   async runtimeTier(tier: string) {
     const result = ab(`eval "window.__browserbox.runtime.lastTier" --json`);
     const data = JSON.parse(result);
-    if (data.data !== tier) {
-      throw new Error(`Expected runtime tier "${tier}", got: ${data.data}`);
+    if (data.data.result !== tier) {
+      throw new Error(`Expected runtime tier "${tier}", got: ${data.data.result}`);
     }
   }
 
@@ -202,7 +220,7 @@ export default app;`;
   async sandboxPolicyAllows(name: string, pattern: string) {
     const result = ab(`eval "window.__browserbox.sandbox.policy('${name}').allows('${pattern}')" --json`);
     const data = JSON.parse(result);
-    if (!data.data) {
+    if (!data.data.result) {
       throw new Error(`Sandbox policy ${name} does not allow ${pattern}`);
     }
   }
@@ -248,8 +266,8 @@ export default app;`;
     }
     const [, num, unit] = sizeMatch;
     const limit = parseInt(num) * (unit.toUpperCase() === 'GB' ? 1024 * 1024 * 1024 : unit.toUpperCase() === 'MB' ? 1024 * 1024 : 1024);
-    if (data.data > limit) {
-      throw new Error(`RAM usage ${data.data} exceeds limit ${limit}`);
+    if (data.data.result > limit) {
+      throw new Error(`RAM usage ${data.data.result} exceeds limit ${limit}`);
     }
   }
 
@@ -260,8 +278,8 @@ export default app;`;
   async agentOutputContains(text: string) {
     const result = ab(`eval "window.__browserbox.runtime.lastOutput" --json`);
     const data = JSON.parse(result);
-    if (!data.data || !data.data.includes(text)) {
-      throw new Error(`Agent output does not contain "${text}": ${data.data}`);
+    if (!data.data.result || !data.data.result.includes(text)) {
+      throw new Error(`Agent output does not contain "${text}": ${data.data.result}`);
     }
   }
 
