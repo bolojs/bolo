@@ -44,7 +44,8 @@ project clears the FOSS bar and both are excluded from the comparison table abov
   C-level limits on every execution.
 - You want an **Apache 2.0 licensed** runtime with no proprietary lock-in.
 - You need the **WASM build tool registry** (esbuild, tsc, sass, swc) running entirely
-  client-side.
+  client-side, or want to run arbitrary **`wasm32-wasip1` CLI binaries** (Rust/C/Zig
+  tools compiled to WASI) via the same `registerWasmTool()` seam.
 - You are building a platform where the **V8 trusted tier** runs user tooling and the
   **QuickJS untrusted tier** runs user-submitted or AI-generated code separately.
 - You need **OPFS-backed VFS persistence** across sessions.

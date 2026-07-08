@@ -191,3 +191,5 @@ registerWasmTool('swc', async (): Promise<WasmTool> => {
 
 export { registerWasmTool, resolveWasmTool, createWasmRegistry, clearCache, getRegisteredToolNames };
 export type { WasmTool, WasmToolResult, WasmToolLoader };
+export { createWasiTool } from './wasi-executor.js';
+export type { WasiToolOptions, WasiPreopen } from './wasi-executor.js';

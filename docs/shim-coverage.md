@@ -19,3 +19,5 @@
 | `node:net` (createServer) | node-runtime-shims | Implemented | Delegates to createHttpShim |
 | `node:child_process` | node-runtime-shims | Implemented | WASM registry + ShellService fallback |
 | `fs.watch` / `chokidar` | node-runtime-shims | Implemented | VfsBus.watch() |
+| Shell commands (pipes, redirection, quoting) | runtime | Implemented | `just-bash` interpreter backed by `VfsBashFileSystem` (VfsBus) |
+| `wasm32-wasip1` CLI binaries | wasm-registry | Implemented | Generic `createWasiTool()` loader via `@bjorn3/browser_wasi_shim`, VfsBus-backed preopens — filesystem + args/env only, no sockets/threads/fork (WASIX) |
