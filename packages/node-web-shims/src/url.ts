@@ -1,7 +1,5 @@
-// @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
-import url from "unenv/runtime/node/url";
-// @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
-export * from "unenv/runtime/node/url";
+import url from "unenv/node/url";
+export * from "unenv/node/url";
 
 export const createUrlShim = (): typeof url => {
   return url;

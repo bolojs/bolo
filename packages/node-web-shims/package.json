@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "pathe": "^1.1.2",
-    "unenv": "^1.10.0"
+    "unenv": "2.0.0-rc.24"
   },
   "license": "Apache-2.0"
 }

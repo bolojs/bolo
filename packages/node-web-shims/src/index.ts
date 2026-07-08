@@ -15,3 +15,7 @@ export {
   createAsyncHooksShim,
   default as async_hooks,
 } from "./async_hooks";
+export {
+  createQuerystringShim,
+  default as querystring,
+} from "./querystring";

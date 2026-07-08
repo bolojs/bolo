@@ -1,5 +1,6 @@
 import type { Plugin } from "vite";
 
+// Builtins with a first-party wrapper in this package's `src/`.
 const SHIMMED_BUILTINS = new Set([
   "async_hooks",
   "buffer",
@@ -8,11 +9,21 @@ const SHIMMED_BUILTINS = new Set([
   "http",
   "os",
   "path",
+  "querystring",
   "stream",
   "url",
   "util",
   "worker_threads",
 ]);
+
+// Subset of SHIMMED_BUILTINS actually backed by unenv (worker_threads uses a
+// bespoke threads.js wrapper instead). unenv's own runtime modules sometimes
+// import their own deep subpaths directly (e.g. `stream.mjs` imports
+// `node:stream/promises`), expecting the consumer's bundler to alias those
+// too — so any subpath of one of these is routed to unenv's own module
+// rather than requiring a dedicated wrapper file per subpath.
+const UNENV_BACKED_BUILTINS = new Set(SHIMMED_BUILTINS);
+UNENV_BACKED_BUILTINS.delete("worker_threads");
 
 /**
  * Creates a Vite plugin that aliases node:* modules to browser-compatible shims.
@@ -35,13 +46,12 @@ export const nodeWebShims = (): Plugin => {
         return `${pkgRoot}/dist/${bareName}.js`;
       }
 
-      if (id.startsWith("unenv/runtime/node/")) {
-        const mod = id.slice("unenv/runtime/node/".length);
-        const resolved = await this.resolve(
-          `unenv/runtime/node/${mod}/index`,
-          importer,
-          { ...options, skipSelf: true }
-        );
+      const topLevel = bareName.split("/")[0];
+      if (bareName !== topLevel && UNENV_BACKED_BUILTINS.has(topLevel)) {
+        const resolved = await this.resolve(`unenv/node/${bareName}`, importer, {
+          ...options,
+          skipSelf: true,
+        });
         if (resolved) {
           return resolved.id;
         }

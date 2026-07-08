@@ -1,7 +1,5 @@
-// @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
-import util from "unenv/runtime/node/util";
-// @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
-export * from "unenv/runtime/node/util";
+import util from "unenv/node/util";
+export * from "unenv/node/util";
 
 export const createUtilShim = (): typeof util => {
   return util;

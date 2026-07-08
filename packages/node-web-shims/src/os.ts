@@ -1,7 +1,5 @@
-// @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
-import os from "unenv/runtime/node/os";
-// @ts-expect-error - unenv runtime modules lack proper TypeScript declarations
-export * from "unenv/runtime/node/os";
+import os from "unenv/node/os";
+export * from "unenv/node/os";
 
 export const createOsShim = (): typeof os => {
   return os;
