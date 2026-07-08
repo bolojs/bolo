@@ -95,7 +95,7 @@ const result = await shell.execute('runtime run /index.js', {
 **Key differences:**
 - `fs.init(fileMap)` → `vfs.restore(snapshot)` for bulk mount, or multiple `vfs.writeFile` calls
 - `shell.runCommand('node', ['file.js'])` → `shell.execute('runtime run file.js')`
-- Nodebox command runner accepts arbitrary commands; browser-containers routes only `npm`, `runtime`, and `agent`
+- `npm`, `runtime`, and `agent` are special-cased to wire into the container's package manager/runtime worker/sandbox pool; every other command line runs through a real bash interpreter ([just-bash](https://www.npmjs.com/package/just-bash)) backed by `VfsBus`, with full support for pipes, redirection, quoting, and POSIX builtins (`ls`, `cat`, `mkdir`, `rm`, `cp`, `mv`, `grep`, `sed`, etc.)
 
 ## No equivalent yet
 
@@ -104,6 +104,5 @@ These features exist in WebContainers or Nodebox but are not yet implemented:
 | Feature | Status |
 |---------|--------|
 | npm-published packages | Roadmap |
-| Shell builtins (`pwd`, `cd`, `ls`, `cat`, `echo`, `clear`, `help`) | Implemented (`shell-builtins.ts`) — pipes, redirection, quoting, and commands like `mkdir`/`rm`/`grep`/`sed` still missing |
 | Full Node.js native package support (NAPI) | Not planned (WASM/JS only) |
 | `fork()` / `cluster` | Not planned |

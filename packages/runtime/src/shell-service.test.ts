@@ -1,31 +1,34 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { VfsBus } from '@browser-containers/vfs-bus';
 import { ShellService, type ShellServiceDeps } from './shell-service.js';
 
-const createMockDeps = (): ShellServiceDeps => ({
-  vfs: {
-    readFile: vi.fn().mockResolvedValue('console.log("hello")'),
-  } as unknown as ShellServiceDeps['vfs'],
-  packageManager: {
-    install: vi.fn().mockResolvedValue(undefined),
-  } as unknown as ShellServiceDeps['packageManager'],
-  runtimeWorker: {
-    runScript: vi.fn().mockResolvedValue(undefined),
-    onStdout: null,
-    onStderr: null,
-  } as unknown as ShellServiceDeps['runtimeWorker'],
-  sandboxPool: {
-    run: vi.fn().mockResolvedValue({ result: 'ok' }),
-  } as unknown as ShellServiceDeps['sandboxPool'],
-  sandbox: {
-    onFetch: vi.fn(),
-    setPolicyRegistry: vi.fn(),
-  } as unknown as ShellServiceDeps['sandbox'],
-  events: {
-    emit: vi.fn(),
-    on: vi.fn().mockReturnValue(() => {}),
-    removeAllListeners: vi.fn(),
-  } as unknown as ShellServiceDeps['events'],
-});
+const createMockDeps = (): ShellServiceDeps => {
+  const vfs = new VfsBus();
+  vfs.readFile = vi.fn().mockResolvedValue('console.log("hello")') as typeof vfs.readFile;
+  return {
+    vfs,
+    packageManager: {
+      install: vi.fn().mockResolvedValue(undefined),
+    } as unknown as ShellServiceDeps['packageManager'],
+    runtimeWorker: {
+      runScript: vi.fn().mockResolvedValue(undefined),
+      onStdout: null,
+      onStderr: null,
+    } as unknown as ShellServiceDeps['runtimeWorker'],
+    sandboxPool: {
+      run: vi.fn().mockResolvedValue({ result: 'ok' }),
+    } as unknown as ShellServiceDeps['sandboxPool'],
+    sandbox: {
+      onFetch: vi.fn(),
+      setPolicyRegistry: vi.fn(),
+    } as unknown as ShellServiceDeps['sandbox'],
+    events: {
+      emit: vi.fn(),
+      on: vi.fn().mockReturnValue(() => {}),
+      removeAllListeners: vi.fn(),
+    } as unknown as ShellServiceDeps['events'],
+  };
+};
 
 describe('ShellService', () => {
   let deps: ShellServiceDeps;
@@ -119,7 +122,7 @@ describe('ShellService', () => {
   it('unknown command → exit code 127', async () => {
     const result = await shell.execute('foo bar');
     expect(result.exitCode).toBe(127);
-    expect(result.stderr).toContain('Unknown command: foo');
+    expect(result.stderr).toContain('foo: command not found');
   });
 
   it('npm install error → exit code 1', async () => {

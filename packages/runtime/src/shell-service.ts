@@ -2,10 +2,11 @@ import type { VfsBus } from '@browser-containers/vfs-bus';
 import type { PackageManager } from '@browser-containers/npm';
 import type { SWSandbox } from '@browser-containers/sw-sandbox';
 import { BrowserViteServer } from '@browser-containers/vite-server';
+import { Bash } from 'just-bash/browser';
 import type { RuntimeWorker } from './runtime-worker.js';
 import type { SandboxPool } from './sandbox-pool.js';
 import type { ContainerEvents } from './events.js';
-import { builtins, joinPath } from './shell-builtins.js';
+import { VfsBashFileSystem } from './vfs-bash-fs.js';
 
 export interface ShellServiceDeps {
   vfs: VfsBus;
@@ -31,10 +32,12 @@ interface OutputCallbacks {
 export class ShellService {
   private deps: ShellServiceDeps;
   private cwd: string;
+  private bash: Bash;
 
   constructor(deps: ShellServiceDeps) {
     this.deps = deps;
     this.cwd = deps.workdir ?? '/';
+    this.bash = new Bash({ fs: new VfsBashFileSystem(deps.vfs), cwd: this.cwd });
   }
 
   async execute(command: string, output?: Partial<OutputCallbacks>): Promise<ShellResult> {
@@ -70,26 +73,19 @@ export class ShellService {
   }
 
   private async route(command: string, output: OutputCallbacks): Promise<number> {
-    const tokens = command.trim().split(/\s+/);
-    const [cmd, ...rest] = tokens;
-
-    const builtin = builtins.get(cmd);
-    if (builtin) {
-      const result = builtin(rest, { cwd: this.cwd }, this.deps.vfs);
-      if (result.stdout) output.stdout(result.stdout);
-      if (result.stderr) output.stderr(result.stderr);
-      if (cmd === 'cd' && result.exitCode === 0) {
-        this.cwd = joinPath(this.cwd, rest[0] ?? '/');
-      }
-      return result.exitCode;
-    }
+    const [cmd, ...rest] = command.trim().split(/\s+/);
 
     if (cmd === 'npm') return this.routeNpm(rest, output);
     if (cmd === 'runtime') return this.routeRuntime(rest, output);
     if (cmd === 'agent') return this.routeAgent(rest, output);
 
-    output.stderr(`Unknown command: ${cmd}`);
-    return 127;
+    // just-bash restores cwd to its pre-call value after each exec(), so the
+    // shell's persistent working directory is threaded through explicitly.
+    const result = await this.bash.exec(command, { cwd: this.cwd });
+    if (result.stdout) output.stdout(result.stdout);
+    if (result.stderr) output.stderr(result.stderr);
+    this.cwd = result.env.PWD ?? this.cwd;
+    return result.exitCode;
   }
 
   private async routeNpm(args: string[], output: OutputCallbacks): Promise<number> {
