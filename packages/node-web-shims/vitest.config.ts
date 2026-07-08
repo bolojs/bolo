@@ -39,6 +39,14 @@ export default defineConfig({
         __dirname,
         "./node_modules/unenv/runtime/node/http/index.mjs",
       ),
+      "unenv/runtime/node/util": path.resolve(
+        __dirname,
+        "./node_modules/unenv/runtime/node/util/index.mjs",
+      ),
+      "unenv/runtime/node/async_hooks": path.resolve(
+        __dirname,
+        "./node_modules/unenv/runtime/node/async_hooks/index.mjs",
+      ),
     },
   },
   test: {

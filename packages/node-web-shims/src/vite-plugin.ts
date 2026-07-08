@@ -1,6 +1,7 @@
 import type { Plugin } from "vite";
 
 const SHIMMED_BUILTINS = new Set([
+  "async_hooks",
   "buffer",
   "crypto",
   "events",
@@ -9,6 +10,7 @@ const SHIMMED_BUILTINS = new Set([
   "path",
   "stream",
   "url",
+  "util",
   "worker_threads",
 ]);
 

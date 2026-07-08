@@ -10,3 +10,8 @@ export {
   createWorkerThreadsShim,
   default as worker_threads,
 } from "./worker_threads";
+export { createUtilShim, default as util } from "./util";
+export {
+  createAsyncHooksShim,
+  default as async_hooks,
+} from "./async_hooks";

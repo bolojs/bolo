@@ -11,6 +11,8 @@
 | `node:os` | node-web-shims | Implemented | Minimal stub via unenv |
 | `node:http` (client) | node-web-shims | Implemented | fetch adapter via unenv |
 | `node:worker_threads` | node-web-shims | Implemented | Minimal wrapper around threads.js |
+| `node:util` | node-web-shims | Implemented | `promisify`/`inherits`/`types`/format via unenv |
+| `node:async_hooks` | node-web-shims | Implemented | `AsyncLocalStorage`/`AsyncResource` via unenv |
 | `node:fs` | node-runtime-shims | Implemented | VfsBus — async ops, sync throws |
 | `node:fs/promises` | node-runtime-shims | Implemented | VfsBus promises namespace |
 | `node:http` (createServer) | node-runtime-shims | Implemented | VirtualServer via sw-sandbox |
