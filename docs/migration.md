@@ -4,7 +4,7 @@
 
 | Concept | WebContainers | Nodebox | browser-containers |
 |---------|--------------|---------|-------------------|
-| Boot | `WebContainer.boot()` | `new Nodebox({ iframe }); .connect()` | `new VfsBus()` + `SWSandbox.create()` + wire services |
+| Boot | `WebContainer.boot()` | `new Nodebox({ iframe }); .connect()` | `boot()` |
 | Mount files | `.mount(files)` | `fs.init(fileMap)` | `vfs.writeFile(path, content)` per file, or `vfs.restore(snapshot)` for bulk |
 | Run command | `.spawn('node', ['file.js'])` | `shell.runCommand('node', ['file.js'])` | `shell.execute('runtime run file.js')` |
 | Streaming output | `process.output.pipeTo(writable)` | shell output stream | `execute(cmd, { stdout, stderr })` callbacks |
@@ -34,34 +34,28 @@ await proc.exit;
 ### After (browser-containers)
 
 ```ts
-import { VfsBus } from '@browser-containers/vfs-bus';
-import { SWSandbox } from '@browser-containers/sw-sandbox';
-import { PackageManager } from '@browser-containers/npm';
-import { RuntimeWorker, SandboxPool, ShellService } from '@browser-containers/runtime';
+import { boot } from '@browser-containers/runtime';
 
-// Boot (manual wiring — no single boot() yet)
-const vfs = new VfsBus();
-const sandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });
-const runtimeWorker = new RuntimeWorker(vfs, sandbox);
-const sandboxPool = new SandboxPool(vfs);
-const packageManager = new PackageManager({ vfs });
-const shell = new ShellService({ vfs, packageManager, runtimeWorker, sandboxPool });
+const container = await boot();
 
-// Mount
-await vfs.writeFile('/index.js', 'console.log("hello")');
-
-// Run
-const result = await shell.execute('runtime run /index.js', {
-  stdout: (chunk) => console.log(chunk),
+await container.mount({
+  'index.js': { file: { contents: 'console.log("hello")' } },
 });
-console.log(result.exitCode); // 0
+
+const proc = container.spawn('node', ['index.js']);
+proc.output.pipeTo(new WritableStream({ write: (chunk) => console.log(chunk) }));
+await proc.exit;
 ```
 
 **Key differences:**
-- No `boot()` — wire services manually (a high-level entry point is on the roadmap)
-- No `server-ready` event — the ServiceWorker intercepts the virtual origin directly
-- `spawn()` returns a process handle with a stream; `execute()` returns a `Promise<ShellResult>`
-  with optional streaming callbacks
+- `boot()` mirrors `@webcontainer/api`'s shape directly — same `mount()`/`spawn()`/`fs`/
+  `on('server-ready')`/`teardown()` surface
+- `spawn()`'s `output` is a `ReadableStream<string>` (not bytes); `container.fs` exposes
+  `readFile`/`writeFile`/`mkdir`/`rm`/`readdir`/`rename`/`watch` (`fs.promises`-style, no
+  `stat`/`lstat`/symlinks in v1.0)
+- The lower-level primitives (`VfsBus`, `SWSandbox`, `ShellService`, `RuntimeWorker`,
+  `SandboxPool`) are still available directly for callers who want manual wiring instead
+  of `boot()`
 
 ## Coming from Nodebox
 
@@ -109,9 +103,7 @@ These features exist in WebContainers or Nodebox but are not yet implemented:
 
 | Feature | Status |
 |---------|--------|
-| `boot()` single entry point | Roadmap |
 | npm-published packages | Roadmap |
-| `spawn()` with process handle | Not planned (use execute callbacks) |
-| Arbitrary shell commands (`ls`, `cat`, etc.) | Not planned |
+| Shell builtins (`pwd`, `cd`, `ls`, `cat`, `echo`, `clear`, `help`) | Implemented (`shell-builtins.ts`) — pipes, redirection, quoting, and commands like `mkdir`/`rm`/`grep`/`sed` still missing |
 | Full Node.js native package support (NAPI) | Not planned (WASM/JS only) |
 | `fork()` / `cluster` | Not planned |
