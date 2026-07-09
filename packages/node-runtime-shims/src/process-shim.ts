@@ -1,4 +1,4 @@
-import { createEventsShim } from '@browser-containers/node-web-shims';
+import { createEventsShim } from "@browser-containers/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
 
@@ -11,7 +11,7 @@ export interface ProcessShimOptions {
 }
 
 const toText = (chunk: unknown): string =>
-  typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk as ArrayBufferView);
+  typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk as ArrayBufferView);
 
 const createStdioStream = (onWrite?: (data: string) => void) => {
   const stream = new EventEmitter() as unknown as {
@@ -21,7 +21,7 @@ const createStdioStream = (onWrite?: (data: string) => void) => {
   stream.isTTY = false;
   stream.write = (chunk: unknown, ...rest: unknown[]) => {
     onWrite?.(toText(chunk));
-    const callback = rest.find((arg) => typeof arg === 'function') as (() => void) | undefined;
+    const callback = rest.find((arg) => typeof arg === "function") as (() => void) | undefined;
     callback?.();
     return true;
   };
@@ -37,7 +37,7 @@ const createStdioStream = (onWrite?: (data: string) => void) => {
  * being silently discarded.
  */
 export const createProcessShim = (options: ProcessShimOptions = {}) => {
-  let cwd = options.cwd ?? '/';
+  let cwd = options.cwd ?? "/";
   const startedAt = performance.now();
 
   const hrtime = Object.assign(
@@ -53,17 +53,18 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
 
   const process = Object.assign(new EventEmitter(), {
     env: options.env ?? {},
-    platform: 'browser' as const,
-    argv: options.argv ?? ['node', '/entry.js'],
-    argv0: 'node',
+    platform: "browser" as const,
+    argv: options.argv ?? ["node", "/entry.js"],
+    argv0: "node",
     execArgv: [] as string[],
-    version: 'v22.0.0',
-    versions: { node: '22.0.0' },
+    version: "v22.0.0",
+    versions: { node: "22.0.0" },
     browser: true,
     pid: 1,
     ppid: 0,
-    title: 'browser-containers',
-    nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) => queueMicrotask(() => fn(...args)),
+    title: "browser-containers",
+    nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) =>
+      queueMicrotask(() => fn(...args)),
     cwd: () => cwd,
     chdir: (dir: string) => {
       cwd = dir;
@@ -75,9 +76,12 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     stdin: createStdioStream(),
     umask: () => 0,
     uptime: () => (performance.now() - startedAt) / 1000,
-    memoryUsage: Object.assign(() => ({ rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 }), {
-      rss: () => 0,
-    }),
+    memoryUsage: Object.assign(
+      () => ({ rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 }),
+      {
+        rss: () => 0,
+      },
+    ),
   });
 
   return process;
