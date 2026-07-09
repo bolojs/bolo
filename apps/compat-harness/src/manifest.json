@@ -8,6 +8,82 @@
         "test/parallel/test-path-dirname.js",
         "test/parallel/test-path-extname.js"
       ]
+    },
+    "buffer": {
+      "files": [
+        "test/parallel/test-buffer-alloc.js",
+        "test/parallel/test-buffer-concat.js",
+        "test/parallel/test-buffer-from.js"
+      ]
+    },
+    "events": {
+      "files": [
+        "test/parallel/test-events-once.js",
+        "test/parallel/test-events-listener-count-with-listener.js",
+        "test/parallel/test-events-getmaxlisteners.js"
+      ]
+    },
+    "url": {
+      "files": [
+        "test/parallel/test-url-format.js",
+        "test/parallel/test-url-relative.js",
+        "test/parallel/test-url-parse-query.js"
+      ]
+    },
+    "querystring": {
+      "files": [
+        "test/parallel/test-querystring.js",
+        "test/parallel/test-querystring-escape.js"
+      ]
+    },
+    "os": {
+      "files": [
+        "test/parallel/test-os-eol.js",
+        "test/parallel/test-os-checked-function.js",
+        "test/parallel/test-os-homedir-no-envvar.js"
+      ]
+    },
+    "util": {
+      "files": [
+        "test/parallel/test-util-format.js",
+        "test/parallel/test-util-inspect.js",
+        "test/parallel/test-util-types.js"
+      ]
+    },
+    "assert": {
+      "files": [
+        "test/parallel/test-assert.js",
+        "test/parallel/test-assert-fail.js",
+        "test/parallel/test-assert-async.js"
+      ]
+    },
+    "stream": {
+      "files": [
+        "test/parallel/test-stream-pipe-event.js",
+        "test/parallel/test-stream-readable-event.js",
+        "test/parallel/test-stream-writable-finished.js"
+      ]
+    },
+    "fs": {
+      "files": [
+        "test/parallel/test-fs-mkdir.js",
+        "test/parallel/test-fs-write-file.js",
+        "test/parallel/test-fs-readfile.js"
+      ]
+    },
+    "crypto": {
+      "files": [
+        "test/parallel/test-crypto-hash.js",
+        "test/parallel/test-crypto-hmac.js",
+        "test/parallel/test-crypto-randomuuid.js"
+      ]
+    },
+    "http": {
+      "files": [
+        "test/parallel/test-http-status-code.js",
+        "test/parallel/test-http-methods.js",
+        "test/parallel/test-http-write-head.js"
+      ]
     }
   }
 }
