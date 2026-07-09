@@ -1,5 +1,6 @@
 import { boot, type BrowserContainer } from "@browser-containers/runtime";
 import { NodeTestRunner, type ModuleManifest, type TestResult } from "./runner.js";
+import { PackageMatrixRunner, type PackageResult } from "./package-runner.js";
 
 export interface ExecResult {
   exitCode: number;
@@ -27,7 +28,9 @@ declare global {
   interface Window {
     __compatHarness: CompatHarness;
     __testResults: { module: string; results: TestResult[] }[] | null;
+    __packageResults: PackageResult[] | null;
     __runNodeTests(): Promise<{ module: string; results: TestResult[] }[]>;
+    __runPackageMatrix(): Promise<PackageResult[]>;
   }
 }
 
@@ -86,6 +89,7 @@ window.__compatHarness = {
 };
 
 window.__testResults = null;
+window.__packageResults = null;
 
 window.__runNodeTests = async () => {
   const response = await fetch("/src/manifest.json");
@@ -108,10 +112,29 @@ window.__runNodeTests = async () => {
   return results;
 };
 
+window.__runPackageMatrix = async () => {
+  const runner = new PackageMatrixRunner();
+  await runner.boot();
+  const results = await runner.runAll();
+  await runner.teardown();
+  window.__packageResults = results;
+  console.table(
+    results.map((r) => ({
+      name: r.name,
+      class: r.class,
+      status: r.status,
+      duration: r.duration ? `${r.duration.toFixed(0)}ms` : "n/a",
+    })),
+  );
+  return results;
+};
+
 const statusEl = document.getElementById("status");
 const bootBtn = document.getElementById("bootBtn") as HTMLButtonElement | null;
 const runBtn = document.getElementById("runBtn") as HTMLButtonElement | null;
+const pkgBtn = document.getElementById("pkgBtn") as HTMLButtonElement | null;
 const resultsEl = document.getElementById("results");
+const pkgResultsEl = document.getElementById("pkgResults");
 
 const renderResults = (
   results: { module: string; results: TestResult[] }[],
@@ -134,13 +157,27 @@ const renderResults = (
   container.replaceChildren(...rows);
 };
 
-if (statusEl && bootBtn && runBtn) {
+const renderPackageResults = (results: PackageResult[], container: HTMLElement | null): void => {
+  if (!container) return;
+  const rows = results.map((r) => {
+    const div = document.createElement("div");
+    div.className = r.status;
+    div.innerHTML = `<strong>${r.name}</strong> (${r.class}): ${r.status} ${
+      r.duration ? `(${r.duration.toFixed(0)}ms)` : ""
+    }`;
+    return div;
+  });
+  container.replaceChildren(...rows);
+};
+
+if (statusEl && bootBtn && runBtn && pkgBtn) {
   bootBtn.addEventListener("click", async () => {
     statusEl.textContent = "booting...";
     try {
       await window.__compatHarness.boot();
       statusEl.textContent = "ready";
       runBtn.disabled = false;
+      pkgBtn.disabled = false;
     } catch (err) {
       statusEl.textContent = `error: ${err instanceof Error ? err.message : String(err)}`;
     }
@@ -158,6 +195,21 @@ if (statusEl && bootBtn && runBtn) {
       statusEl.textContent = `error: ${err instanceof Error ? err.message : String(err)}`;
     } finally {
       runBtn.disabled = false;
+    }
+  });
+
+  pkgBtn.addEventListener("click", async () => {
+    pkgBtn.disabled = true;
+    statusEl.textContent = "probing packages...";
+    pkgResultsEl?.replaceChildren();
+    try {
+      const results = await window.__runPackageMatrix();
+      statusEl.textContent = "done";
+      renderPackageResults(results, pkgResultsEl);
+    } catch (err) {
+      statusEl.textContent = `error: ${err instanceof Error ? err.message : String(err)}`;
+    } finally {
+      pkgBtn.disabled = false;
     }
   });
 }

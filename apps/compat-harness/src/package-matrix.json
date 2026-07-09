@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "packages": [
+    { "name": "hono", "class": "T1", "probe": "new Hono().request('/')" },
+    { "name": "elysia", "class": "T1", "probe": "new Elysia().handle(new Request('/'))" },
+    { "name": "itty-router", "class": "T1", "probe": "router.handle(request)" },
+    { "name": "express", "class": "T2", "probe": "express().get('/', (req, res) => res.send('ok'))" },
+    { "name": "koa", "class": "T2", "probe": "new Koa().use(ctx => { ctx.body = 'ok' })" },
+    { "name": "zod", "class": "T2", "probe": "z.object({ name: z.string() })" },
+    { "name": "uuid", "class": "T2", "probe": "uuid.v4()" },
+    { "name": "lodash", "class": "T2", "probe": "_.chunk(['a', 'b', 'c'], 2)" },
+    { "name": "chalk", "class": "T2", "probe": "chalk.red('error')" }
+  ]
+}
