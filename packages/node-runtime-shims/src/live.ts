@@ -1,11 +1,15 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { SWSandbox } from '@browser-containers/sw-sandbox';
-import * as nodeWebShims from '@browser-containers/node-web-shims';
-import { createFsShim } from './fs-shim.js';
-import { createHttpShim } from './http-shim.js';
-import { createChildProcessShim, type WasmRegistry, type ShellService } from './child-process-shim.js';
-import { createProcessShim } from './process-shim.js';
-import { createModuleShim } from './module-shim.js';
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { SWSandbox } from "@browser-containers/sw-sandbox";
+import * as nodeWebShims from "@browser-containers/node-web-shims";
+import { createFsShim } from "./fs-shim.js";
+import { createHttpShim } from "./http-shim.js";
+import {
+  createChildProcessShim,
+  type WasmRegistry,
+  type ShellService,
+} from "./child-process-shim.js";
+import { createProcessShim } from "./process-shim.js";
+import { createModuleShim } from "./module-shim.js";
 
 export interface LiveShimRegistryOptions {
   readonly vfs: VfsBus;
@@ -25,7 +29,9 @@ export interface LiveShimRegistryOptions {
  * this map at run time via `globalThis.__browserContainers.shims` — see
  * `bundleEntry`'s node-alias plugin in `@browser-containers/wasm-registry`.
  */
-export const createLiveShimRegistry = (options: LiveShimRegistryOptions): Record<string, unknown> => {
+export const createLiveShimRegistry = (
+  options: LiveShimRegistryOptions,
+): Record<string, unknown> => {
   const registry: Record<string, unknown> = {
     path: nodeWebShims.path,
     buffer: nodeWebShims.buffer,
@@ -45,7 +51,7 @@ export const createLiveShimRegistry = (options: LiveShimRegistryOptions): Record
     constants: nodeWebShims.constants,
     perf_hooks: nodeWebShims.perf_hooks,
     timers: nodeWebShims.timers,
-    'timers/promises': nodeWebShims.timers_promises,
+    "timers/promises": nodeWebShims.timers_promises,
     punycode: nodeWebShims.punycode,
     diagnostics_channel: nodeWebShims.diagnostics_channel,
     readline: nodeWebShims.readline,
@@ -60,11 +66,9 @@ export const createLiveShimRegistry = (options: LiveShimRegistryOptions): Record
   };
   registry.module = createModuleShim({ vfs: options.vfs, getShim: (name) => registry[name] });
 
-  if (options.sandbox) {
-    const http = createHttpShim(options.sandbox, { onPortEvent: options.onPortEvent });
-    registry.http = http;
-    registry.net = http;
-  }
+  const http = createHttpShim(options.sandbox, { onPortEvent: options.onPortEvent });
+  registry.http = http;
+  registry.net = http;
 
   return registry;
 };
