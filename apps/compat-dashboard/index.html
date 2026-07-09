@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browser Containers — Node.js Compatibility</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◈</span>
+        <h1>Browser Containers</h1>
+      </div>
+      <p class="tagline">Node.js compatibility in the browser</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero" id="hero" aria-label="Compatibility tiers">
+      <article class="tier-card tier-web">
+        <span class="tier-icon" aria-hidden="true">✓</span>
+        <h2>Web-Standard</h2>
+        <p class="tier-status">Out of the box</p>
+        <p class="tier-desc">Libraries built on Web Standards run with zero Node shims.</p>
+      </article>
+      <article class="tier-card tier-node">
+        <span class="tier-icon" aria-hidden="true">%</span>
+        <h2>Node-API</h2>
+        <p class="tier-status" id="node-percentage">Loading…</p>
+        <p class="tier-desc">Node.js APIs covered via browser shims.</p>
+      </article>
+      <article class="tier-card tier-unsupported">
+        <span class="tier-icon" aria-hidden="true">⊘</span>
+        <h2>Unsupported</h2>
+        <p class="tier-status">Catalogued</p>
+        <p class="tier-desc">Catalogued with reasons.</p>
+      </article>
+    </section>
+
+    <section class="section" aria-labelledby="modules-title">
+      <div class="section-header">
+        <h2 id="modules-title">Node.js API Modules</h2>
+        <p class="section-meta" id="compat-meta">Loading compatibility data…</p>
+      </div>
+      <div class="module-grid" id="module-grid"></div>
+    </section>
+
+    <section class="section" aria-labelledby="packages-title">
+      <div class="section-header">
+        <h2 id="packages-title">Package Matrix</h2>
+      </div>
+      <div class="package-matrix" id="package-matrix"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Generated from Node.js vendored tests and package probes.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
