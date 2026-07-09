@@ -15,6 +15,21 @@ export interface PackageManagerOptions {
 
 const DEFAULT_CWD = '/home/web/app';
 
+// Packages that import `react` internally must be externalized (esm.sh `*` prefix)
+// so the browser re-resolves their `react` import through this importmap's single
+// pinned entry instead of esm.sh bundling its own copy — otherwise invalid-hook-call.
+const REACT_DEPENDENT_PACKAGES = new Set(['react-dom']);
+
+// esm.sh's `*` external prefix leaves ALL of the package's own bare imports
+// unresolved, not just `react` — react-dom's build also imports `scheduler`
+// verbatim. These peers need their own (non-externalized) importmap entry.
+const EXTERNALIZED_PEER_DEPS: Record<string, string[]> = {
+  'react-dom': ['scheduler'],
+};
+
+// Build-only tooling that must be installed but has no browser-runtime import.
+const BUILD_TOOLING_PACKAGES = new Set(['vite', 'typescript', 'esbuild']);
+
 /**
  * Browser-side package manager using npm-in-browser.
  * Install packages and generate import maps for browser execution.
@@ -47,7 +62,7 @@ export class PackageManager {
       fs: this.fs,
       cwd: this.cwd,
       stdout: this.stdout ? (chunk: string) => this.stdout!(chunk) : undefined,
-      stderr: this.stderr ? (chunk: string) => this.stdout!(chunk) : undefined,
+      stderr: this.stderr ? (chunk: string) => this.stderr!(chunk) : undefined,
     });
 
     await this.writeImportMap();
@@ -55,21 +70,33 @@ export class PackageManager {
 
   /**
    * Generate import map with esm.sh CDN fallback URLs.
+   * Emits both an exact entry and a trailing-slash prefix entry per package so
+   * subpath imports (e.g. `react-dom/client`, `react/jsx-runtime`) resolve too.
    */
   generateImportMap(packages: string[]): ImportMap {
     const imports: Record<string, string> = {};
 
     for (const pkg of packages) {
       const [name, version] = this.parsePackageSpecifier(pkg);
-      imports[name] = this.generateEsmShUrl(name, version);
+      const external = REACT_DEPENDENT_PACKAGES.has(name);
+      imports[name] = this.generateEsmShUrl(name, version, external);
+      imports[`${name}/`] = this.generateEsmShUrl(name, version, external, true);
+
+      for (const peer of EXTERNALIZED_PEER_DEPS[name] ?? []) {
+        if (imports[peer]) continue;
+        const peerVersion = this.readInstalledVersion(peer);
+        imports[peer] = this.generateEsmShUrl(peer, peerVersion);
+      }
     }
 
     return { imports };
   }
 
-  private generateEsmShUrl(name: string, version?: string): string {
+  private generateEsmShUrl(name: string, version?: string, external = false, trailingSlash = false): string {
     const versionPart = version ? `@${version}` : '';
-    return `https://esm.sh/${name}${versionPart}`;
+    const prefix = external ? '*' : '';
+    const suffix = trailingSlash ? '/' : '';
+    return `https://esm.sh/${prefix}${name}${versionPart}${suffix}`;
   }
 
   private parsePackageSpecifier(spec: string): [string, string | undefined] {
@@ -148,19 +175,43 @@ export class PackageManager {
 
   private async writeImportMap(): Promise<void> {
     const importMapPath = `${this.cwd}/importmap.json`;
-    const packages = await this.getInstalledPackages();
+    const packages = this.getImportMapPackageSpecifiers();
     const importMap = this.generateImportMap(packages);
 
     await this.vfs.writeFile(importMapPath, JSON.stringify(importMap, null, 2));
   }
 
-  private async getInstalledPackages(): Promise<string[]> {
+  /**
+   * Top-level deps declared in package.json (dependencies + devDependencies),
+   * excluding build-only tooling, resolved to their actually-installed version
+   * where available (falls back to the declared range, else unversioned).
+   */
+  private getImportMapPackageSpecifiers(): string[] {
     try {
-      const nodeModulesPath = `${this.cwd}/node_modules`;
-      const entries = await this.vfs.readdir(nodeModulesPath);
-      return typeof entries[0] === 'string' ? (entries as string[]) : (entries as { name: string }[]).map((e) => e.name);
+      const packageJsonPath = `${this.cwd}/package.json`;
+      const content = this.fs.readFileSync(packageJsonPath, 'utf8') as string;
+      const pkg = JSON.parse(content);
+      const declared: Record<string, string> = { ...pkg.dependencies, ...pkg.devDependencies };
+
+      return Object.keys(declared)
+        .filter(name => !BUILD_TOOLING_PACKAGES.has(name))
+        .map(name => {
+          const version = this.readInstalledVersion(name) ?? declared[name];
+          return version ? `${name}@${version}` : name;
+        });
     } catch (error) {
+      console.warn('Could not read package.json:', error);
       return [];
+    }
+  }
+
+  private readInstalledVersion(name: string): string | undefined {
+    try {
+      const packageJsonPath = `${this.cwd}/node_modules/${name}/package.json`;
+      const content = this.fs.readFileSync(packageJsonPath, 'utf8') as string;
+      return JSON.parse(content).version;
+    } catch (error) {
+      return undefined;
     }
   }
 }
