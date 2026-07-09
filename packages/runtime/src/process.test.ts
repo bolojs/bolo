@@ -39,52 +39,29 @@ describe('createProcess', () => {
     expect(chunks).toEqual(['hello ', 'error ']);
   });
 
-  it('should run runtime worker path for runtime run', async () => {
+  it('should route runtime run through shell service', async () => {
     const vfs = new VfsBus();
-    await vfs.writeFile('/script.js', 'console.log(1)');
-    const shell = { execute: vi.fn() } as unknown as ShellService;
-    const runtimeWorker = {
-      runScript: vi.fn().mockReturnValue(new Promise(() => {})),
-      dispose: vi.fn(),
-    } as unknown as RuntimeWorker;
+    const shell = {
+      execute: vi.fn().mockResolvedValue({ exitCode: 0 }),
+    } as unknown as ShellService;
+    const runtimeWorker = { dispose: vi.fn() } as unknown as RuntimeWorker;
     const proc = createProcess('runtime', ['run', '/script.js'], {}, { vfs, shell, runtimeWorker });
 
-    const reader = proc.output.getReader();
-    const readPromise = (async () => {
-      while (true) {
-        const { done } = await reader.read();
-        if (done) break;
-      }
-    })();
-
-    await vi.waitFor(() => {
-      expect(runtimeWorker.runScript).toHaveBeenCalledWith('console.log(1)', { filename: '/script.js', httpShimOptions: undefined });
-    });
-
-    (runtimeWorker as any).onStdout?.('out');
-    (runtimeWorker as any).onStderr?.('err');
-    (runtimeWorker as any).onExit?.(0);
-
-    await readPromise;
     const exitCode = await proc.exit;
     expect(exitCode).toBe(0);
+    expect(shell.execute).toHaveBeenCalledWith('runtime run /script.js', { stdout: expect.any(Function), stderr: expect.any(Function) });
   });
 
-  it('should return error for runtime run without file path', async () => {
+  it('should route runtime run without file path through shell service', async () => {
     const vfs = new VfsBus();
-    const shell = { execute: vi.fn() } as unknown as ShellService;
+    const shell = {
+      execute: vi.fn().mockResolvedValue({ exitCode: 1 }),
+    } as unknown as ShellService;
     const runtimeWorker = { dispose: vi.fn() } as unknown as RuntimeWorker;
     const proc = createProcess('runtime', ['run'], {}, { vfs, shell, runtimeWorker });
 
-    const reader = proc.output.getReader();
-    const chunks: string[] = [];
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-    }
-    expect(chunks[0]).toContain('Usage');
     expect(await proc.exit).toBe(1);
+    expect(shell.execute).toHaveBeenCalledWith('runtime run', { stdout: expect.any(Function), stderr: expect.any(Function) });
   });
 
   it('should kill process with exit code 1', async () => {

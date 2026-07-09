@@ -37,51 +37,25 @@ export function createProcess(
         }
       };
 
-      if (command === 'runtime' && args[0] === 'run') {
-        const filePath = args[1];
-        if (!filePath) {
-          enqueue('Usage: runtime run <script>\n');
-          resolveExit(1);
-          close();
-          return;
+      // All commands — including `runtime run` — go through the shell service,
+      // which routes node/bun/runtime entries through the VFS-backed bundler
+      // (bundleEntry) and live shim wiring in runNodeApp.
+      const fullCommand = [command, ...args].join(' ');
+      deps.shell.execute(fullCommand, {
+        stdout: enqueue,
+        stderr: enqueue,
+      }).then((result) => {
+        if (!aborted) {
+          resolveExit(result.exitCode);
         }
-
-        deps.vfs.readFile(filePath).then((code) => {
-          deps.runtimeWorker.onStdout = (data) => enqueue(data);
-          deps.runtimeWorker.onStderr = (data) => enqueue(data);
-          deps.runtimeWorker.onExit = (code) => {
-            resolveExit(code);
-            close();
-          };
-          deps.runtimeWorker.runScript(String(code), { filename: filePath, httpShimOptions: deps.httpShimOptions })
-          .catch((err) => {
-            enqueue(String(err instanceof Error ? err.message : err) + '\n');
-            resolveExit(1);
-            close();
-          });
-        }).catch((err) => {
+        close();
+      }).catch((err) => {
+        if (!aborted) {
           enqueue(String(err instanceof Error ? err.message : err) + '\n');
           resolveExit(1);
-          close();
-        });
-      } else {
-        const fullCommand = [command, ...args].join(' ');
-        deps.shell.execute(fullCommand, {
-          stdout: enqueue,
-          stderr: enqueue,
-        }).then((result) => {
-          if (!aborted) {
-            resolveExit(result.exitCode);
-          }
-          close();
-        }).catch((err) => {
-          if (!aborted) {
-            enqueue(String(err instanceof Error ? err.message : err) + '\n');
-            resolveExit(1);
-          }
-          close();
-        });
-      }
+        }
+        close();
+      });
     },
   });
 

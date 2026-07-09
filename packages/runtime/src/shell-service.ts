@@ -2,11 +2,21 @@ import type { VfsBus } from '@browser-containers/vfs-bus';
 import type { PackageManager } from '@browser-containers/npm';
 import type { SWSandbox } from '@browser-containers/sw-sandbox';
 import { BrowserViteServer } from '@browser-containers/vite-server';
+import { bundleEntry } from '@browser-containers/wasm-registry';
+import { createLiveShimRegistry } from '@browser-containers/node-runtime-shims';
 import { Bash } from 'just-bash/browser';
 import type { RuntimeWorker } from './runtime-worker.js';
 import type { SandboxPool } from './sandbox-pool.js';
 import type { ContainerEvents } from './events.js';
 import { VfsBashFileSystem } from './vfs-bash-fs.js';
+
+declare global {
+  // Populated just before executing a bundled node app so its aliased `node:*`
+  // imports (see `bundleEntry`'s node-alias plugin) can bind to this
+  // container's live `VfsBus`/`SWSandbox` instead of a fresh one per bundle.
+  // eslint-disable-next-line no-var
+  var __browserContainers: { vfs: VfsBus; sandbox?: SWSandbox; shims: Record<string, unknown> } | undefined;
+}
 
 export interface ShellServiceDeps {
   vfs: VfsBus;
@@ -33,6 +43,7 @@ export class ShellService {
   private deps: ShellServiceDeps;
   private cwd: string;
   private bash: Bash;
+  private viteWatcher?: ReturnType<VfsBus['watch']>;
 
   constructor(deps: ShellServiceDeps) {
     this.deps = deps;
@@ -72,12 +83,26 @@ export class ShellService {
     }
   }
 
+  /** Resolve a user-supplied path against the workdir. */
+  private resolvePath(p: string): string {
+    if (this.cwd === '/' || p.startsWith(this.cwd)) return p;
+    return p.startsWith('/') ? `${this.cwd}${p}` : `${this.cwd}/${p}`;
+  }
+
   private async route(command: string, output: OutputCallbacks): Promise<number> {
     const [cmd, ...rest] = command.trim().split(/\s+/);
 
     if (cmd === 'npm') return this.routeNpm(rest, output);
     if (cmd === 'runtime') return this.routeRuntime(rest, output);
     if (cmd === 'agent') return this.routeAgent(rest, output);
+    if (cmd === 'node' || cmd === 'bun') {
+      const filePath = rest[0];
+      if (!filePath) {
+        output.stderr(`Usage: ${cmd} <script>`);
+        return 1;
+      }
+      return this.runNodeApp(filePath, output);
+    }
 
     // just-bash restores cwd to its pre-call value after each exec(), so the
     // shell's persistent working directory is threaded through explicitly.
@@ -121,8 +146,13 @@ export class ShellService {
       try {
         const root = this.deps.workdir ?? '/';
         const previewPrefix = '/__preview/';
-        const server = new BrowserViteServer({ vfs: this.deps.vfs, root });
+        const server = new BrowserViteServer({ vfs: this.deps.vfs, root, base: previewPrefix });
         await server.start();
+        this.viteWatcher = this.deps.vfs.watch('**', (path) => {
+          if (!path.includes('node_modules') && !path.endsWith('importmap.json')) {
+            server.broadcastHmr({ type: 'full-reload', path });
+          }
+        });
         this.deps.sandbox.onFetch(async (req) => {
           const url = new URL(req.url);
           if (!url.pathname.startsWith(previewPrefix)) {
@@ -132,7 +162,7 @@ export class ShellService {
           serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, '') || '/';
           const response = await server.onFetch(serverUrl.toString(), req);
           const headers = new Headers(response.headers);
-          headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+          headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
           headers.set('Cross-Origin-Opener-Policy', 'same-origin');
           headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
           return new Response(response.body, {
@@ -180,11 +210,61 @@ export class ShellService {
       return 1;
     }
 
+    return this.runNodeApp(filePath, output);
+  }
+
+  /**
+   * Resolves and bundles a node entry point over the VFS (see `bundleEntry`),
+   * with `node:*` builtins aliased to this container's live shims, then
+   * executes the self-contained bundle in the main realm via a blob import.
+   * `http.createServer().listen()` inside the app fires `onPortEvent`, which
+   * is forwarded through the same `events.emit('port', …)` the dev server
+   * (`routeNpmRun`, above) uses, so a node server drives the preview iframe
+   * identically to `npm run dev`.
+   */
+  private async runNodeApp(filePath: string, output: OutputCallbacks): Promise<number> {
     try {
-      const code = String(await this.deps.vfs.readFile(filePath));
-      this.deps.runtimeWorker.onStdout = (data) => output.stdout(data);
-      this.deps.runtimeWorker.onStderr = (data) => output.stderr(data);
-      await this.deps.runtimeWorker.runScript(code, { filename: filePath });
+      const onPortEvent = (event: string, data: { port: number; url?: string }) => {
+        const url = data.url ?? '';
+        if (event === 'server-ready') this.deps.events?.emit('server-ready', data.port, url);
+        if (event === 'port-open') this.deps.events?.emit('port', data.port, 'open', url);
+        if (event === 'port-close') this.deps.events?.emit('port', data.port, 'close', url);
+      };
+
+      globalThis.__browserContainers = {
+        vfs: this.deps.vfs,
+        sandbox: this.deps.sandbox,
+        shims: createLiveShimRegistry({
+          vfs: this.deps.vfs,
+          sandbox: this.deps.sandbox,
+          onPortEvent,
+          shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(' ')) },
+        }),
+      };
+
+      // User files are written under the workdir but referenced with paths
+      // relative to it (e.g. '/server.ts' → '/home/web/server.ts').
+      const entry = this.resolvePath(filePath);
+      const { code, warnings } = await bundleEntry(entry, {
+        vfs: this.deps.vfs,
+        cwd: this.cwd,
+        getShim: (builtin) => globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
+      });
+      for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
+
+      const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
+      const mod = (await import(/* @vite-ignore */ moduleUrl)) as {
+        default?: { fetch?: (req: Request) => Promise<Response> };
+      };
+      // Hono/workers-style: if the module exports a default with a `.fetch`
+      // method, auto-register it as a fetch handler so the server starts
+      // without an explicit http.createServer().listen() call.
+      const exportedApp = mod?.default;
+      if (exportedApp && typeof exportedApp.fetch === 'function' && this.deps.sandbox) {
+        this.deps.sandbox.onFetch(exportedApp.fetch.bind(exportedApp));
+        onPortEvent('server-ready', { port: 3000, url: 'https://sandbox.local' });
+        onPortEvent('port-open', { port: 3000, url: 'https://sandbox.local' });
+      }
       return 0;
     } catch (err) {
       output.stderr(err instanceof Error ? err.message : String(err));

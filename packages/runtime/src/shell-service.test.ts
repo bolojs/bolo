@@ -70,6 +70,25 @@ describe('ShellService', () => {
     expect(result.exitCode).toBe(0);
   });
 
+  it('npm run dev → VFS writes trigger HMR, except under node_modules or importmap.json', async () => {
+    const watchSpy = vi.spyOn(deps.vfs, 'watch');
+    await shell.execute('npm run dev');
+
+    expect(watchSpy).toHaveBeenCalledWith('**', expect.any(Function));
+    const messages: unknown[] = [];
+    const channel = new BroadcastChannel('vite-hmr');
+    channel.addEventListener('message', (e) => messages.push((e as MessageEvent).data));
+
+    const handler = watchSpy.mock.calls[0][1];
+    handler('/node_modules/react/index.js', 'change');
+    handler('/importmap.json', 'change');
+    handler('/src/App.tsx', 'change');
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    channel.close();
+    expect(messages).toEqual([{ type: 'full-reload', path: '/src/App.tsx' }]);
+  });
+
   it('npm run dev → error when no sandbox configured', async () => {
     deps.sandbox = undefined;
     const result = await shell.execute('npm run dev');
@@ -90,14 +109,25 @@ describe('ShellService', () => {
     expect(result.stderr).toContain('boom');
   });
 
-  it('runtime run script.ts → RuntimeWorker.runScript()', async () => {
-    const result = await shell.execute('runtime run app.ts');
-    expect(deps.vfs.readFile).toHaveBeenCalledWith('app.ts');
-    expect(deps.runtimeWorker.runScript).toHaveBeenCalledWith(
-      'console.log("hello")',
-      { filename: 'app.ts' },
+  it('runtime run script.ts → bundles over the VFS and executes the result', async () => {
+    (deps.vfs.hot as unknown as { writeFileSync: (p: string, c: string) => void }).writeFileSync(
+      '/app.ts',
+      'globalThis.__ranBundledApp = true;',
     );
+    const result = await shell.execute('runtime run /app.ts');
+    expect(result.stderr).toBe('');
     expect(result.exitCode).toBe(0);
+    expect((globalThis as unknown as { __ranBundledApp?: boolean }).__ranBundledApp).toBe(true);
+  });
+
+  it('node <file> and bun <file> route through the same bundler path', async () => {
+    (deps.vfs.hot as unknown as { writeFileSync: (p: string, c: string) => void }).writeFileSync(
+      '/server.ts',
+      'globalThis.__ranViaNode = true;',
+    );
+    const result = await shell.execute('node /server.ts');
+    expect(result.exitCode).toBe(0);
+    expect((globalThis as unknown as { __ranViaNode?: boolean }).__ranViaNode).toBe(true);
   });
 
   it('runtime run → error when no file specified', async () => {
