@@ -1,5 +1,6 @@
 import type { VfsBus } from '@browser-containers/vfs-bus';
 import type { Plugin } from 'esbuild-wasm';
+import { buildEsmShUrl } from '@browser-containers/npm';
 import { initEsbuild } from './index.js';
 
 const RESOLVE_EXTENSIONS = ['', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json'];
@@ -127,11 +128,123 @@ const readPackageJson = (vfs: VfsBus, pkgDir: string): Record<string, unknown> =
   return JSON.parse(vfs.hot.readFileSync(pkgJsonPath, 'utf8') as string);
 };
 
-const exportTargetToPath = (target: unknown): string | undefined => {
+// Condition priority for `exports`/`imports` resolution. We're always bundling
+// ESM for a browser platform, so `browser` (bundler-specific but ubiquitous)
+// wins, then `import`/`module`, then `default` — `require`/`node` are never
+// picked since we never want the CJS or server-only branch of a dual package.
+const CONDITIONS = ['browser', 'import', 'module', 'default'];
+
+// Resolves an `exports`/`imports` target, which per spec can be a string, a
+// conditions object (checked in `CONDITIONS` order, recursing into nested
+// condition objects), or an array of alternatives tried in order until one
+// resolves — `null` anywhere in the chain means "explicitly unavailable".
+const resolveExportTarget = (target: unknown): string | undefined => {
   if (typeof target === 'string') return target;
+  if (Array.isArray(target)) {
+    for (const candidate of target) {
+      const resolved = resolveExportTarget(candidate);
+      if (resolved) return resolved;
+    }
+    return undefined;
+  }
   if (target && typeof target === 'object') {
-    const t = target as Record<string, unknown>;
-    return exportTargetToPath(t.browser ?? t.import ?? t.default ?? t.require);
+    const map = target as Record<string, unknown>;
+    for (const condition of CONDITIONS) {
+      if (condition in map) {
+        const resolved = resolveExportTarget(map[condition]);
+        if (resolved) return resolved;
+      }
+    }
+  }
+  return undefined;
+};
+
+// Matches a subpath (e.g. `lib/foo`) against an `exports`/`imports` pattern key
+// (e.g. `./lib/*` or `#internal/*.js`, prefix stripped by the caller), returning
+// the wildcard capture, or `''` for an exact non-wildcard match, else `undefined`.
+const matchSubpathPattern = (pattern: string, subpath: string): string | undefined => {
+  const starIdx = pattern.indexOf('*');
+  if (starIdx === -1) return pattern === subpath ? '' : undefined;
+  const prefix = pattern.slice(0, starIdx);
+  const suffix = pattern.slice(starIdx + 1);
+  if (subpath.length < prefix.length + suffix.length) return undefined;
+  if (!subpath.startsWith(prefix) || !subpath.endsWith(suffix)) return undefined;
+  return subpath.slice(prefix.length, subpath.length - suffix.length);
+};
+
+// Finds the best (longest-prefix) match for `subpath` among a map's `./`- or
+// `#`-prefixed keys, per the `exports`/`imports` pattern-matching algorithm.
+const findBestSubpathMatch = (
+  map: Record<string, unknown>,
+  keyPrefix: string,
+  subpath: string,
+): { target: unknown; capture: string } | undefined => {
+  const exactKey = `${keyPrefix}${subpath}`;
+  if (exactKey in map) return { target: map[exactKey], capture: '' };
+
+  let best: { key: string; capture: string } | undefined;
+  for (const key of Object.keys(map)) {
+    if (!key.startsWith(keyPrefix)) continue;
+    const capture = matchSubpathPattern(key.slice(keyPrefix.length), subpath);
+    if (capture !== undefined && (!best || key.length > best.key.length)) best = { key, capture };
+  }
+  return best ? { target: map[best.key], capture: best.capture } : undefined;
+};
+
+const resolveMapSubpath = (vfs: VfsBus, pkgDir: string, map: Record<string, unknown>, subpath: string): string | undefined => {
+  const match = findBestSubpathMatch(map, './', subpath);
+  if (!match) return undefined;
+  const targetPath = resolveExportTarget(match.target)?.replace('*', match.capture);
+  if (!targetPath) return undefined;
+  return resolveFile(vfs, joinPath(pkgDir, targetPath));
+};
+
+/**
+ * Resolves a package-internal `#subpath` import (the `imports` field) against
+ * the nearest ancestor package.json — these are always resolved relative to
+ * the *importing* file's own package, never the package being imported.
+ */
+const resolvePackageImportsSubpath = (vfs: VfsBus, importerFile: string, specifier: string): string | undefined => {
+  const owningDir = findOwningPackageDir(vfs, dirname(importerFile));
+  if (!owningDir) return undefined;
+  const pkgJson = readPackageJson(vfs, owningDir);
+  const importsMap = pkgJson.imports as unknown;
+  if (!importsMap || typeof importsMap !== 'object') return undefined;
+  const match = findBestSubpathMatch(importsMap as Record<string, unknown>, '#', specifier.slice(1));
+  if (!match) return undefined;
+  const targetPath = resolveExportTarget(match.target)?.replace('*', match.capture);
+  return targetPath ? resolveFile(vfs, joinPath(owningDir, targetPath)) : undefined;
+};
+
+const findOwningPackageDir = (vfs: VfsBus, fromDir: string): string | undefined => {
+  let dir = fromDir;
+  for (;;) {
+    if (vfs.hot.existsSync(joinPath(dir, 'package.json'))) return dir;
+    if (dir === '/') return undefined;
+    dir = dirname(dir);
+  }
+};
+
+/**
+ * Applies a package's `browser` field remap to a specifier written inside one
+ * of its own files (bare deps and relative paths alike) — the standard
+ * browserify/webpack convention most bundler-aware packages still ship for
+ * platform-specific swaps (e.g. `"./node-only.js": "./browser-only.js"` or
+ * `"fs": false` to stub a module out entirely). Returns `false` for an
+ * explicit stub, a replacement specifier, or `undefined` if unmapped.
+ */
+const applyBrowserFieldRemap = (vfs: VfsBus, importerFile: string, specifier: string): string | false | undefined => {
+  const owningDir = findOwningPackageDir(vfs, dirname(importerFile));
+  if (!owningDir) return undefined;
+  const browserField = readPackageJson(vfs, owningDir).browser;
+  if (!browserField || typeof browserField !== 'object') return undefined;
+  const map = browserField as Record<string, unknown>;
+  const candidates = specifier.startsWith('.') ? [joinPath(dirname(importerFile), specifier), specifier] : [specifier];
+  for (const candidate of candidates) {
+    if (candidate in map) {
+      const value = map[candidate];
+      return value === false ? false : typeof value === 'string' ? value : undefined;
+    }
   }
   return undefined;
 };
@@ -148,44 +261,69 @@ const resolveBarePackage = (vfs: VfsBus, fromDir: string, specifier: string): st
   const exportsMap = pkgJson.exports as unknown;
 
   if (subpath) {
-    if (exportsMap && typeof exportsMap === 'object') {
-      const map = exportsMap as Record<string, unknown>;
-      const target = map[`./${subpath}`] ?? map['./*'];
-      const targetPath = exportTargetToPath(target)?.replace('*', subpath);
-      if (targetPath) {
-        const resolved = resolveFile(vfs, joinPath(pkgDir, targetPath));
-        if (resolved) return resolved;
-      }
+    if (exportsMap && typeof exportsMap === 'object' && !Array.isArray(exportsMap)) {
+      const resolved = resolveMapSubpath(vfs, pkgDir, exportsMap as Record<string, unknown>, subpath);
+      if (resolved) return resolved;
     }
     return resolveFile(vfs, joinPath(pkgDir, subpath));
   }
 
   if (exportsMap) {
     const dotExport =
-      typeof exportsMap === 'string' ? exportsMap : (exportsMap as Record<string, unknown>)['.'] ?? exportsMap;
-    const targetPath = exportTargetToPath(dotExport);
+      typeof exportsMap === 'string' || Array.isArray(exportsMap)
+        ? exportsMap
+        : ((exportsMap as Record<string, unknown>)['.'] ?? exportsMap);
+    const targetPath = resolveExportTarget(dotExport);
     if (targetPath) {
       const resolved = resolveFile(vfs, joinPath(pkgDir, targetPath));
       if (resolved) return resolved;
     }
   }
 
-  const mainField = (pkgJson.module as string) ?? (pkgJson.main as string) ?? 'index.js';
+  const browserMain = typeof pkgJson.browser === 'string' ? pkgJson.browser : undefined;
+  const mainField = browserMain ?? (pkgJson.module as string) ?? (pkgJson.main as string) ?? 'index.js';
   return resolveFile(vfs, joinPath(pkgDir, mainField)) ?? resolveFile(vfs, joinPath(pkgDir, 'index'));
 };
+
+const EMPTY_STUB_NAMESPACE = 'browser-containers-empty-stub';
 
 const vfsPlugin = (vfs: VfsBus): Plugin => ({
   name: 'browser-containers-vfs',
   setup(build) {
     build.onResolve({ filter: /.*/ }, (args) => {
       const importerDir = args.importer ? dirname(args.importer) : args.resolveDir || '/';
-      const resolved =
-        args.path.startsWith('.') || args.path.startsWith('/')
-          ? resolveFile(vfs, args.path.startsWith('/') ? args.path : joinPath(importerDir, args.path))
-          : resolveBarePackage(vfs, importerDir, args.path);
+
+      // Package-internal `#subpath` imports (the `imports` field) always
+      // resolve against the *importing* file's own package, never a
+      // `node_modules` lookup — handle before the bare-specifier branch below.
+      if (args.path.startsWith('#') && args.importer) {
+        const resolved = resolvePackageImportsSubpath(vfs, args.importer, args.path);
+        if (resolved) return { path: resolved, namespace: 'browser-containers-vfs' };
+        return { errors: [{ text: `Cannot resolve package import "${args.path}" from "${args.importer}"` }] };
+      }
+
+      // The `browser` field remap applies to every specifier (relative or
+      // bare) written inside a package's own files, per the browserify/
+      // webpack convention — check it before normal resolution.
+      const remap = args.importer ? applyBrowserFieldRemap(vfs, args.importer, args.path) : undefined;
+      if (remap === false) return { path: args.path, namespace: EMPTY_STUB_NAMESPACE };
+      const path = typeof remap === 'string' ? remap : args.path;
+
+      const isRelative = path.startsWith('.') || path.startsWith('/');
+      const resolved = isRelative
+        ? resolveFile(vfs, path.startsWith('/') ? path : joinPath(importerDir, path))
+        : resolveBarePackage(vfs, importerDir, path);
 
       if (!resolved) {
-        return { errors: [{ text: `Cannot resolve module "${args.path}" from "${args.importer || '<entry>'}"` }] };
+        // Relative-path failures are almost always a real typo in the app's
+        // own code — fail loudly. Bare specifiers fall through to the
+        // esm.sh fallback plugin (registered after this one) instead of
+        // failing the whole bundle, since they might be an uninstalled
+        // transitive dep or an export shape this resolver doesn't cover yet.
+        if (isRelative) {
+          return { errors: [{ text: `Cannot resolve module "${args.path}" from "${args.importer || '<entry>'}"` }] };
+        }
+        return undefined;
       }
       return { path: resolved, namespace: 'browser-containers-vfs' };
     });
@@ -202,6 +340,48 @@ const vfsPlugin = (vfs: VfsBus): Plugin => ({
       if (loader === 'json') return { contents, loader, resolveDir };
       const prelude = `const __filename=${JSON.stringify(args.path)};const __dirname=${JSON.stringify(resolveDir)};\n`;
       return { contents: prelude + contents, loader, resolveDir };
+    });
+
+    build.onLoad({ filter: /.*/, namespace: EMPTY_STUB_NAMESPACE }, () => ({
+      contents: 'export default {};',
+      loader: 'js',
+    }));
+  },
+});
+
+/**
+ * Last-resort resolver: a bare specifier that isn't installed (or whose
+ * exports shape this resolver can't yet follow) is marked `external` and
+ * rewritten to an esm.sh URL instead of failing the whole bundle — the same
+ * CDN fallback `PackageManager` already uses for the install-time import map.
+ * Runs after `vfsPlugin`, whose onResolve returns `undefined` (not an error)
+ * for unresolved bare specifiers so esbuild falls through to this plugin.
+ */
+const esmShFallbackPlugin = (vfs: VfsBus): Plugin => ({
+  name: 'browser-containers-esm-sh-fallback',
+  setup(build) {
+    build.onResolve({ filter: /.*/ }, (args) => {
+      if (args.path.startsWith('.') || args.path.startsWith('/') || args.path.startsWith('#')) return undefined;
+      if (NODE_BUILTIN_NAMES.has(args.path)) return undefined;
+
+      const importerDir = args.importer ? dirname(args.importer) : args.resolveDir || '/';
+      const isScoped = args.path.startsWith('@');
+      const parts = args.path.split('/');
+      const name = isScoped ? parts.slice(0, 2).join('/') : parts[0];
+      const subpath = (isScoped ? parts.slice(2) : parts.slice(1)).join('/');
+      const pkgDir = findPackageDir(vfs, importerDir, name);
+      const version = pkgDir ? (readPackageJson(vfs, pkgDir).version as string | undefined) : undefined;
+      const url = subpath ? `${buildEsmShUrl(name, version)}/${subpath}` : buildEsmShUrl(name, version);
+
+      return {
+        path: url,
+        external: true,
+        warnings: [
+          {
+            text: `"${args.path}" could not be resolved off the installed node_modules — falling back to ${url}`,
+          },
+        ],
+      };
     });
   },
 });
@@ -281,7 +461,17 @@ export const bundleEntry = async (entry: string, options: BundleEntryOptions): P
     format: 'esm',
     platform: 'browser',
     absWorkingDir: options.cwd ?? '/',
-    plugins: [globalsPreludePlugin(), nodeAliasPlugin(options.getShim), vfsPlugin(options.vfs)],
+    // vfsPlugin runs before nodeAliasPlugin so a package's own `browser` field
+    // remap (e.g. `"fs": false`) can win over our builtin shim for that
+    // package's imports — vfsPlugin declines (returns undefined, not an
+    // error) on unresolved bare specifiers, so normal builtin names like
+    // plain `fs` still fall through to nodeAliasPlugin as before.
+    plugins: [
+      globalsPreludePlugin(),
+      vfsPlugin(options.vfs),
+      nodeAliasPlugin(options.getShim),
+      esmShFallbackPlugin(options.vfs),
+    ],
     inject: [GLOBALS_PRELUDE_PATH],
     define: {
       'process.env.NODE_ENV': JSON.stringify('development'),

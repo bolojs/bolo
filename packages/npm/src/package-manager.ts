@@ -1,6 +1,7 @@
 import type { VfsBus } from '@browser-containers/vfs-bus';
 import { createFsFromVolume } from 'memfs';
 import { runNpmCli } from 'npm-in-browser';
+import { buildEsmShUrl } from './esm-sh.js';
 
 export interface ImportMap {
   imports: Record<string, string>;
@@ -79,24 +80,17 @@ export class PackageManager {
     for (const pkg of packages) {
       const [name, version] = this.parsePackageSpecifier(pkg);
       const external = REACT_DEPENDENT_PACKAGES.has(name);
-      imports[name] = this.generateEsmShUrl(name, version, external);
-      imports[`${name}/`] = this.generateEsmShUrl(name, version, external, true);
+      imports[name] = buildEsmShUrl(name, version, external);
+      imports[`${name}/`] = buildEsmShUrl(name, version, external, true);
 
       for (const peer of EXTERNALIZED_PEER_DEPS[name] ?? []) {
         if (imports[peer]) continue;
         const peerVersion = this.readInstalledVersion(peer);
-        imports[peer] = this.generateEsmShUrl(peer, peerVersion);
+        imports[peer] = buildEsmShUrl(peer, peerVersion);
       }
     }
 
     return { imports };
-  }
-
-  private generateEsmShUrl(name: string, version?: string, external = false, trailingSlash = false): string {
-    const versionPart = version ? `@${version}` : '';
-    const prefix = external ? '*' : '';
-    const suffix = trailingSlash ? '/' : '';
-    return `https://esm.sh/${prefix}${name}${versionPart}${suffix}`;
   }
 
   private parsePackageSpecifier(spec: string): [string, string | undefined] {

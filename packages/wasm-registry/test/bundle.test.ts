@@ -57,4 +57,124 @@ describe('wasm-registry: bundleEntry', () => {
 
     expect(warnings.some((w) => w.includes('node:tls'))).toBe(true);
   });
+
+  it('resolves a package via a nested conditional `exports` map (browser > import > default) (A5)', async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      '/node_modules/pkg/package.json',
+      JSON.stringify({
+        name: 'pkg',
+        exports: {
+          '.': {
+            browser: { import: './browser.mjs', default: './browser.cjs' },
+            node: './node.cjs',
+            default: './fallback.js',
+          },
+        },
+      }),
+    );
+    seed(vfs, '/node_modules/pkg/browser.mjs', 'export const via = "browser-mjs";');
+    seed(vfs, '/node_modules/pkg/node.cjs', 'export const via = "node-cjs";');
+    seed(vfs, '/src/entry.ts', "import { via } from 'pkg'; console.log(via);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('browser-mjs');
+  });
+
+  it('resolves a wildcard `exports` subpath pattern (A5)', async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      '/node_modules/pkg/package.json',
+      JSON.stringify({ name: 'pkg', exports: { './features/*': './src/features/*.js' } }),
+    );
+    seed(vfs, '/node_modules/pkg/src/features/foo.js', 'export const foo = 1;');
+    seed(vfs, '/src/entry.ts', "import { foo } from 'pkg/features/foo'; console.log(foo);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('foo = 1');
+  });
+
+  it('honors a string `browser` field as the main-entry override (A5)', async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      '/node_modules/pkg/package.json',
+      JSON.stringify({ name: 'pkg', main: 'node.js', browser: 'browser.js' }),
+    );
+    seed(vfs, '/node_modules/pkg/node.js', 'export const via = "node";');
+    seed(vfs, '/node_modules/pkg/browser.js', 'export const via = "browser";');
+    seed(vfs, '/src/entry.ts', "import { via } from 'pkg'; console.log(via);");
+
+    const { code } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(code).toContain('"browser"');
+    expect(code).not.toContain('"node"');
+  });
+
+  it('honors an object `browser` field remap, including stubbing a module to `false` (A5)', async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      '/node_modules/pkg/package.json',
+      JSON.stringify({
+        name: 'pkg',
+        main: 'index.js',
+        browser: { './server-only.js': './client-only.js', fs: false },
+      }),
+    );
+    seed(vfs, '/node_modules/pkg/index.js', "import fs from 'fs'; import { via } from './server-only.js'; export const result = { via, hasFs: typeof fs };");
+    seed(vfs, '/node_modules/pkg/server-only.js', 'export const via = "server";');
+    seed(vfs, '/node_modules/pkg/client-only.js', 'export const via = "client";');
+    seed(vfs, '/src/entry.ts', "import { result } from 'pkg'; console.log(result);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('"client"');
+    expect(code).not.toContain('"server"');
+  });
+
+  it('resolves a package-internal `#subpath` import via the `imports` field (A5)', async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      '/node_modules/pkg/package.json',
+      JSON.stringify({ name: 'pkg', main: 'index.js', imports: { '#dep': './real-dep.js' } }),
+    );
+    seed(vfs, '/node_modules/pkg/index.js', "export { value } from '#dep';");
+    seed(vfs, '/node_modules/pkg/real-dep.js', 'export const value = "resolved-via-imports-field";');
+    seed(vfs, '/src/entry.ts', "import { value } from 'pkg'; console.log(value);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('resolved-via-imports-field');
+  });
+
+  it('falls back an unresolvable bare import to an esm.sh URL instead of failing the build (A5)', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/entry.ts', "import { z } from 'zod'; void z;");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(code).toContain('https://esm.sh/zod');
+    expect(warnings.some((w) => w.includes('esm.sh/zod'))).toBe(true);
+  });
+
+  it('falls back an uninstalled transitive dep of an installed package to esm.sh, versioned (A5)', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', version: '2.3.4', main: 'index.js' }));
+    seed(vfs, '/node_modules/pkg/index.js', "export { helper } from 'pkg/internal';");
+    seed(vfs, '/src/entry.ts', "import { helper } from 'pkg'; console.log(helper);");
+
+    const { code } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(code).toContain('https://esm.sh/pkg@2.3.4/internal');
+  });
 });

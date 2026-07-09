@@ -17,7 +17,8 @@
     "sass": "^1.80.0",
     "@swc/wasm-web": "^1.10.0",
     "@bjorn3/browser_wasi_shim": "^0.4.2",
-    "@browser-containers/vfs-bus": "workspace:*"
+    "@browser-containers/vfs-bus": "workspace:*",
+    "@browser-containers/npm": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",
