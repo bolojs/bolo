@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   unenv@2.0.0-rc.24:
-    hash: af2cfe3e0b8cb629e573c6088603b3321a96ca1d3c0e1a9e4534fb57dc068be7
+    hash: 32bbf32bd7977f9060c55a25feae797d012e9f054a0330f1d0f4f33638ea489b
     path: patches/unenv@2.0.0-rc.24.patch
 
 importers:
@@ -138,7 +138,7 @@ importers:
         version: 1.1.2
       unenv:
         specifier: 2.0.0-rc.24
-        version: 2.0.0-rc.24(patch_hash=af2cfe3e0b8cb629e573c6088603b3321a96ca1d3c0e1a9e4534fb57dc068be7)
+        version: 2.0.0-rc.24(patch_hash=32bbf32bd7977f9060c55a25feae797d012e9f054a0330f1d0f4f33638ea489b)
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
@@ -5532,7 +5532,7 @@ snapshots:
       node-fetch-native: 1.6.7
       pathe: 1.1.2
 
-  unenv@2.0.0-rc.24(patch_hash=af2cfe3e0b8cb629e573c6088603b3321a96ca1d3c0e1a9e4534fb57dc068be7):
+  unenv@2.0.0-rc.24(patch_hash=32bbf32bd7977f9060c55a25feae797d012e9f054a0330f1d0f4f33638ea489b):
     dependencies:
       pathe: 2.0.3
 

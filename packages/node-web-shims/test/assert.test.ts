@@ -28,4 +28,15 @@ describe("node-web-shims: assert", () => {
     expect(error?.expected).toBe(2);
     expect(error?.operator).toBe("strictEqual");
   });
+
+  it("names the thrown error AssertionError, not the inherited Error (unenv patch)", () => {
+    let error: InstanceType<typeof assert.AssertionError> | undefined;
+    try {
+      assert.strictEqual(1, 2);
+    } catch (e) {
+      error = e as InstanceType<typeof assert.AssertionError>;
+    }
+    expect(error?.name).toBe("AssertionError");
+    expect(error?.stack).toContain("AssertionError");
+  });
 });

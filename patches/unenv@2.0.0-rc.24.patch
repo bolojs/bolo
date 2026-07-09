@@ -1,8 +1,8 @@
 diff --git a/dist/runtime/node/assert.mjs b/dist/runtime/node/assert.mjs
-index e0c06082f280a8f32f36657678c0618691456c8c..320a49e96e73612f5a99563f629948b678ef9960 100644
+index e0c06082f280a8f32f36657678c0618691456c8c..ced6f2fc6f3cd434f70fdea339847018382a1a64 100644
 --- a/dist/runtime/node/assert.mjs
 +++ b/dist/runtime/node/assert.mjs
-@@ -12,16 +12,30 @@ export class AssertionError extends Error {
+@@ -12,16 +12,31 @@ export class AssertionError extends Error {
  	generatedMessage;
  	code = "ERR_ASSERTION";
  	constructor(options) {
@@ -12,6 +12,7 @@ index e0c06082f280a8f32f36657678c0618691456c8c..320a49e96e73612f5a99563f629948b6
 +			? `${inspect(options.actual)} ${operator} ${inspect(options.expected)}`.trim()
 +			: options.message;
 +		super(message);
++		this.name = "AssertionError";
  		this.actual = options.actual;
  		this.expected = options.expected;
 -		this.operator = options.operator || "";
