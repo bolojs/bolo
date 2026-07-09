@@ -33,17 +33,33 @@ describe('fs shim', () => {
     expect(await shim.exists('/delete-me.txt')).toBe(false);
   });
 
-  it('sync methods throw in browser runtime', () => {
+  it('sync methods are backed for real by the synchronous memfs volume (vfs.hot)', () => {
     const vfs = new VfsBus();
     const shim = createFsShim(vfs);
 
-    expect(() => shim.readFileSync('/x')).toThrow('readFileSync not supported in browser runtime');
-    expect(() => shim.writeFileSync('/x', 'y')).toThrow('writeFileSync not supported in browser runtime');
-    expect(() => shim.mkdirSync('/x')).toThrow('mkdirSync not supported in browser runtime');
-    expect(() => shim.rmSync('/x')).toThrow('rmSync not supported in browser runtime');
-    expect(() => shim.readdirSync('/x')).toThrow('readdirSync not supported in browser runtime');
-    expect(() => shim.existsSync('/x')).toThrow('existsSync not supported in browser runtime');
-    expect(() => shim.statSync('/x')).toThrow('statSync not supported in browser runtime');
+    shim.mkdirSync('/nested/dir', { recursive: true });
+    expect(shim.existsSync('/nested/dir')).toBe(true);
+    expect(shim.readdirSync('/nested')).toContain('dir');
+
+    shim.writeFileSync('/x.txt', 'sync hello');
+    expect(shim.readFileSync('/x.txt', 'utf8')).toBe('sync hello');
+
+    const s = shim.statSync('/x.txt');
+    expect(s.isFile()).toBe(true);
+    expect(s.isDirectory()).toBe(false);
+    expect(s.size).toBe('sync hello'.length);
+
+    shim.rmSync('/x.txt');
+    expect(shim.existsSync('/x.txt')).toBe(false);
+  });
+
+  it('readFileSync returns raw bytes when no encoding is given', () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    shim.writeFileSync('/bin.dat', 'abc');
+    const raw = shim.readFileSync('/bin.dat');
+    expect(raw).toBeInstanceOf(Uint8Array);
   });
 
   it('stat returns file metadata', async () => {

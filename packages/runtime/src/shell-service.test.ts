@@ -185,6 +185,30 @@ globalThis.__builtinsProbe = {
     });
   });
 
+  it('bundled apps get real fs.*Sync backed by the synchronous memfs volume (A3)', async () => {
+    (deps.vfs.hot as unknown as { writeFileSync: (p: string, c: string) => void }).writeFileSync(
+      '/fs-sync.ts',
+      `import fs from 'node:fs';
+fs.mkdirSync('/from-sync', { recursive: true });
+fs.writeFileSync('/from-sync/out.txt', 'written synchronously');
+globalThis.__fsSyncProbe = {
+  existed: fs.existsSync('/from-sync/out.txt'),
+  content: fs.readFileSync('/from-sync/out.txt', 'utf8'),
+  isFile: fs.statSync('/from-sync/out.txt').isFile(),
+  dirList: fs.readdirSync('/from-sync'),
+};`,
+    );
+    const result = await shell.execute('node /fs-sync.ts');
+    expect(result.stderr).toBe('');
+    expect(result.exitCode).toBe(0);
+    expect((globalThis as unknown as { __fsSyncProbe?: Record<string, unknown> }).__fsSyncProbe).toEqual({
+      existed: true,
+      content: 'written synchronously',
+      isFile: true,
+      dirList: ['out.txt'],
+    });
+  });
+
   it('runtime run → error when no file specified', async () => {
     const result = await shell.execute('runtime run');
     expect(result.exitCode).toBe(1);

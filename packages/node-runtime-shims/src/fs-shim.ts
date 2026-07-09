@@ -1,6 +1,19 @@
 import type { VfsBus } from '@browser-containers/vfs-bus';
 
-const SYNC_ERR = 'not supported in browser runtime';
+export interface FsStat {
+  isFile: () => boolean;
+  isDirectory: () => boolean;
+  isBlockDevice: () => boolean;
+  isCharacterDevice: () => boolean;
+  isSymbolicLink: () => boolean;
+  isFIFO: () => boolean;
+  isSocket: () => boolean;
+  size: number;
+  mtime: Date;
+  atime: Date;
+  ctime: Date;
+  birthtime: Date;
+}
 
 export const createFsShim = (vfs: VfsBus) => {
   const readFile = async (path: string, opts?: { encoding?: string } | string): Promise<string | Uint8Array> => {
@@ -31,20 +44,7 @@ export const createFsShim = (vfs: VfsBus) => {
     return await vfs.exists(path);
   };
 
-  const stat = async (path: string): Promise<{
-    isFile: () => boolean;
-    isDirectory: () => boolean;
-    isBlockDevice: () => boolean;
-    isCharacterDevice: () => boolean;
-    isSymbolicLink: () => boolean;
-    isFIFO: () => boolean;
-    isSocket: () => boolean;
-    size: number;
-    mtime: Date;
-    atime: Date;
-    ctime: Date;
-    birthtime: Date;
-  }> => {
+  const stat = async (path: string): Promise<FsStat> => {
     const content = await vfs.readFile(path).catch(() => null);
     const isFile = content !== null;
     const isDirectory = Array.isArray(await vfs.readdir(path).catch(() => null));
@@ -82,21 +82,48 @@ export const createFsShim = (vfs: VfsBus) => {
     };
   };
 
+  // `vfs.hot` is the synchronous memfs volume backing this container's VFS
+  // (the same one `bundleEntry`'s own VFS plugin reads from), so the *Sync
+  // fs methods bundled apps expect (config loaders, `require()`-adjacent
+  // code, CLIs) can be backed for real instead of throwing.
+  const readFileSync = (path: string, opts?: { encoding?: string } | string): string | Uint8Array => {
+    const encoding = typeof opts === 'string' ? opts : opts?.encoding;
+    return vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as string | Uint8Array;
+  };
+
+  const writeFileSync = (path: string, data: string | Uint8Array, opts?: { encoding?: string }): void => {
+    vfs.hot.writeFileSync(path, data, opts?.encoding ? { encoding: opts.encoding as BufferEncoding } : undefined);
+  };
+
+  const mkdirSync = (path: string, opts?: { recursive?: boolean }): void => {
+    vfs.hot.mkdirSync(path, opts);
+  };
+
+  const rmSync = (path: string, opts?: { recursive?: boolean }): void => {
+    vfs.hot.rmSync(path, opts);
+  };
+
+  const readdirSync = (path: string): string[] => vfs.hot.readdirSync(path) as string[];
+
+  const existsSync = (path: string): boolean => vfs.hot.existsSync(path);
+
+  const statSync = (path: string): FsStat => vfs.hot.statSync(path) as unknown as FsStat;
+
   return {
     readFile,
-    readFileSync: (_path?: string, _opts?: unknown) => { throw new Error(`readFileSync ${SYNC_ERR}`); },
+    readFileSync,
     writeFile,
-    writeFileSync: (_path?: string, _data?: unknown, _opts?: unknown) => { throw new Error(`writeFileSync ${SYNC_ERR}`); },
+    writeFileSync,
     mkdir,
-    mkdirSync: (_path?: string, _opts?: unknown) => { throw new Error(`mkdirSync ${SYNC_ERR}`); },
+    mkdirSync,
     rm,
-    rmSync: (_path?: string, _opts?: unknown) => { throw new Error(`rmSync ${SYNC_ERR}`); },
+    rmSync,
     readdir,
-    readdirSync: (_path?: string) => { throw new Error(`readdirSync ${SYNC_ERR}`); },
+    readdirSync,
     exists,
-    existsSync: (_path?: string) => { throw new Error(`existsSync ${SYNC_ERR}`); },
+    existsSync,
     stat,
-    statSync: (_path?: string) => { throw new Error(`statSync ${SYNC_ERR}`); },
+    statSync,
     watch,
     promises: { readFile, writeFile, mkdir, rm, readdir, exists, stat },
   };

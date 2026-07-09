@@ -1,5 +1,5 @@
 export { createFsShim } from './fs-shim.js';
-export type { FsShim } from './fs-shim.js';
+export type { FsShim, FsStat } from './fs-shim.js';
 export { createHttpShim, createNetShim } from './http-shim.js';
 export type { IncomingMessage, ServerResponse, Server } from './http-shim.js';
 export { createChildProcessShim } from './child-process-shim.js';
