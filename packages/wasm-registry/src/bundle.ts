@@ -487,3 +487,26 @@ export const bundleEntry = async (entry: string, options: BundleEntryOptions): P
 
   return { code: outputFile.text, warnings: result.warnings.map((w) => w.text) };
 };
+
+export interface TransformScriptOptions {
+  /** Defaults to `'ts'` — accepts plain JS too, since that's a subset. */
+  readonly loader?: 'ts' | 'tsx' | 'js' | 'jsx';
+}
+
+export interface TransformScriptResult {
+  readonly code: string;
+  readonly warnings: string[];
+}
+
+/**
+ * Single-file TypeScript-to-JS transform (no bundling, no module resolution)
+ * via esbuild's real parser — used by the QuickJS agent sandbox in place of
+ * its previous hand-rolled regex type-stripper, which used non-greedy
+ * `[\s\S]*?\}` matches that broke on nested object types/interfaces and
+ * couldn't handle decorators or multi-line generic constraints correctly.
+ */
+export const transformScript = async (code: string, options?: TransformScriptOptions): Promise<TransformScriptResult> => {
+  const esbuild = await initEsbuild();
+  const result = await esbuild.transform(code, { loader: options?.loader ?? 'ts' });
+  return { code: result.code, warnings: result.warnings.map((w) => w.text) };
+};

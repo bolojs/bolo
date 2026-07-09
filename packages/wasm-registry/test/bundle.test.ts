@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { VfsBus } from '@browser-containers/vfs-bus';
-import { bundleEntry } from '../src/bundle';
+import { bundleEntry, transformScript } from '../src/bundle';
 
 const seed = (vfs: VfsBus, path: string, contents: string) => {
   const dir = path.slice(0, path.lastIndexOf('/'));
@@ -176,5 +176,30 @@ describe('wasm-registry: bundleEntry', () => {
     const { code } = await bundleEntry('/src/entry.ts', { vfs });
 
     expect(code).toContain('https://esm.sh/pkg@2.3.4/internal');
+  });
+});
+
+describe('wasm-registry: transformScript', () => {
+  it('strips TypeScript syntax from a single file with no bundling (A7)', async () => {
+    const { code, warnings } = await transformScript('const x: number = 42;\nconst arr: string[] = [];\nx');
+
+    expect(warnings).toEqual([]);
+    expect(code).not.toContain(': number');
+    expect(code).not.toContain(': string[]');
+    expect(code).toContain('const x = 42');
+  });
+
+  it('correctly erases a nested object type/interface (A7)', async () => {
+    const { code } = await transformScript(
+      'interface Config { a: { b: string; c: number }; d: string[] }\nconst cfg: Config = { a: { b: "x", c: 1 }, d: [] };',
+    );
+
+    expect(code).not.toMatch(/interface|:\s*Config/);
+    expect(code).toContain('b: "x"');
+    expect(code).toContain('c: 1');
+  });
+
+  it('surfaces a syntax error instead of silently producing broken JS (A7)', async () => {
+    await expect(transformScript('const x = ;')).rejects.toThrow();
   });
 });

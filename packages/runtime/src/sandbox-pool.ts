@@ -1,5 +1,6 @@
 import { getQuickJS, type QuickJSContext, type QuickJSHandle } from 'quickjs-emscripten';
 import type { VfsBus } from '@browser-containers/vfs-bus';
+import { transformScript } from '@browser-containers/wasm-registry';
 
 export interface SandboxRunResult {
   result?: string;
@@ -34,9 +35,13 @@ export class SandboxPool {
 
     try {
       this.injectFsShim(context);
-      const stripped = this.stripTypes(code);
-      const wrapped = this.wrapInIife(stripped);
-      const evalResult = context.evalCode(wrapped);
+      const stripped = await this.stripTypes(code);
+      // No manual "wrap in IIFE + return the last expression" step needed:
+      // QuickJS implements spec completion-value semantics natively, so
+      // `evalCode` already yields the value of the last executed statement
+      // (threaded correctly through blocks/if/loops, per ECMA-262 anonymous
+      // completion propagation), exactly like a real `eval()`.
+      const evalResult = context.evalCode(stripped);
 
       if (evalResult.error) {
         let errMsg: string;
@@ -108,27 +113,15 @@ export class SandboxPool {
     fsHandle.dispose();
   }
 
-  private stripTypes(code: string): string {
-    return code
-      .replace(/\bexport\s+(type|interface)\s+[\s\S]*?(\{|=)[\s\S]*?\}/g, '')
-      .replace(/\b(type|interface)\s+\w+(\s*<[^>]*>)?\s*(\{|=)[\s\S]*?\}/g, '')
-      .replace(/\bimport\s+type\s+[\s\S]*?from\s+['"][^'"]+['"];?/g, '')
-      .replace(/:\s*(?:'[^']*'|"[^"]*"|\w+(?:<[^>]*>)?(?:\[\])?(?:\s*\|\s*(?:'[^']*'|"[^"]*"|\w+(?:<[^>]*>)?(?:\[\])?))*)/g, '')
-      .replace(/\bas\s+\w+/g, '')
-      .replace(/<(?=[^=])(?:[^>]*>)/g, '');
-  }
-
-  private wrapInIife(code: string): string {
-    const stmtKeywords = /^(const|let|var|function|class|if|for|while|do|switch|try|throw|return|import|export|;|\s*$)/;
-    const lines = code.trim().split('\n');
-    const lastLine = lines[lines.length - 1].trim();
-    const segments = lastLine.split(';');
-    const lastSeg = (segments[segments.length - 1] ?? '').trim();
-    if (lastSeg && !stmtKeywords.test(lastSeg)) {
-      segments[segments.length - 1] = `return ${segments[segments.length - 1]}`;
-      lines[lines.length - 1] = segments.join(';');
-    }
-    return `(function() { ${lines.join('\n')} })()`;
+  /**
+   * Erases TypeScript syntax via the shared esbuild WASM instance (routed
+   * through `@browser-containers/wasm-registry`'s real TS parser) instead of
+   * the previous hand-rolled regex stripper, which used non-greedy
+   * `[\s\S]*?\}` matches that broke on nested object types/interfaces.
+   */
+  private async stripTypes(code: string): Promise<string> {
+    const { code: stripped } = await transformScript(code, { loader: 'ts' });
+    return stripped;
   }
 
 }

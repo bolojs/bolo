@@ -40,4 +40,16 @@ describe('SandboxPool', () => {
     const out = await pool.run('const x = ;');
     expect(out.error).toBeTruthy();
   });
+
+  it('strips nested object types that broke the old regex stripper (A7)', async () => {
+    const pool = new SandboxPool(new VfsBus());
+    const out = await pool.run('interface Config { a: { b: string; c: number }; d: string[] }\nconst cfg: Config = { a: { b: "x", c: 1 }, d: [] };\ncfg.a.c');
+    expect(out.result).toBe('1');
+  });
+
+  it('does not treat a loop body statement as the script result (A7)', async () => {
+    const pool = new SandboxPool(new VfsBus());
+    const out = await pool.run('const a = []; while (a.length < 3) a.push(0); a.length');
+    expect(out.result).toBe('3');
+  });
 });
