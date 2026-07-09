@@ -28,6 +28,28 @@ const createStdioStream = (onWrite?: (data: string) => void) => {
   return stream;
 };
 
+type MemUsage = {
+  rss: number;
+  heapTotal: number;
+  heapUsed: number;
+  external: number;
+  arrayBuffers: number;
+};
+
+const memoryUsage = (): MemUsage => {
+  const chromeMem = (performance as any).memory;
+  if (chromeMem) {
+    return {
+      heapTotal: chromeMem.totalHeapSize,
+      heapUsed: chromeMem.usedHeapSize,
+      external: chromeMem.expectedLatencyBytes ?? 0,
+      arrayBuffers: chromeMem.priorityJSHeapSize ?? 0,
+      rss: chromeMem.totalHeapSize,
+    };
+  }
+  return { rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 };
+};
+
 /**
  * A "real-ish" `process` shared by every bundled node app in this container.
  * Unlike a static polyfill, `stdout`/`stderr` writes are wired to the
@@ -76,12 +98,9 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     stdin: createStdioStream(),
     umask: () => 0,
     uptime: () => (performance.now() - startedAt) / 1000,
-    memoryUsage: Object.assign(
-      () => ({ rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 }),
-      {
-        rss: () => 0,
-      },
-    ),
+    memoryUsage: Object.assign(memoryUsage, {
+      rss: () => (performance as any).memory?.totalHeapSize ?? 0,
+    }),
   });
 
   return process;

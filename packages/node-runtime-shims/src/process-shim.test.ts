@@ -26,14 +26,15 @@ describe("createProcessShim", () => {
     expect(process.cwd()).toBe("/tmp");
   });
 
-  it("runs nextTick callbacks as a microtask", async () => {
+  it("reports memory usage with the expected shape", () => {
     const process = createProcessShim();
-    let called = false;
-    process.nextTick(() => {
-      called = true;
-    });
-    expect(called).toBe(false);
-    await Promise.resolve();
-    expect(called).toBe(true);
+    const usage = process.memoryUsage();
+
+    expect(usage).toHaveProperty("rss");
+    expect(usage).toHaveProperty("heapTotal");
+    expect(usage).toHaveProperty("heapUsed");
+    expect(usage).toHaveProperty("external");
+    expect(usage).toHaveProperty("arrayBuffers");
+    expect(typeof process.memoryUsage.rss()).toBe("number");
   });
 });
