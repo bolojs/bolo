@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { nodeWebShims } from '@browser-containers/node-web-shims/vite-plugin';
@@ -18,9 +18,26 @@ const requireFromNodeWebShims = createRequire(
 );
 const streamPromisesShim = requireFromNodeWebShims.resolve('unenv/node/stream/promises');
 
+const requireFromApp = createRequire(import.meta.url);
+// vite-plugin-node-polyfills@0.28.0 injects internal imports
+// (`vite-plugin-node-polyfills/shims/buffer` etc.) that Rollup's commonjs
+// plugin under Vite 6 can't resolve (tries to open the path as a literal file).
+// Pre-resolve them via a plugin hook that runs before commonjs.
+const resolvePolyfillsShim = (): Plugin => ({
+  name: 'resolve-polyfills-shims',
+  enforce: 'pre',
+  resolveId(source: string) {
+    if (source.startsWith('vite-plugin-node-polyfills/shims/')) {
+      return requireFromApp.resolve(source);
+    }
+    return null;
+  },
+});
+
 export default defineConfig({
   plugins: [
     solidPlugin(),
+    resolvePolyfillsShim(),
     nodeWebShims(),
     // Polyfill `buffer`, `process`, and `global` so third-party deps (memfs,
     // npm-in-browser) that import bare Node built-ins work in the browser bundle.
@@ -59,6 +76,7 @@ export default defineConfig({
       // more specific entry ahead of it.
       { find: 'node:stream/promises', replacement: streamPromisesShim },
       { find: /^node:events$/, replacement: `${shimsDir}events.js` },
+      { find: /^node:net$/, replacement: requireFromNodeWebShims.resolve('unenv/node/net') },
       { find: /^node:path$/, replacement: `${shimsDir}path.js` },
       { find: /^node:stream$/, replacement: `${shimsDir}stream.js` },
       { find: /^node:async_hooks$/, replacement: `${shimsDir}async_hooks.js` },
