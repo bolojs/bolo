@@ -1,4 +1,4 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
+import type { VfsBus } from "@browser-containers/vfs-bus";
 
 export interface FsStat {
   isFile: () => boolean;
@@ -16,14 +16,21 @@ export interface FsStat {
 }
 
 export const createFsShim = (vfs: VfsBus) => {
-  const readFile = async (path: string, opts?: { encoding?: string } | string): Promise<string | Uint8Array> => {
-    const encoding = typeof opts === 'string' ? opts : opts?.encoding;
+  const readFile = async (
+    path: string,
+    opts?: { encoding?: string } | string,
+  ): Promise<string | Uint8Array> => {
+    const encoding = typeof opts === "string" ? opts : opts?.encoding;
     const result = await vfs.readFile(path);
-    if (encoding === 'utf8' || encoding === 'utf-8') return String(result);
+    if (encoding === "utf8" || encoding === "utf-8") return String(result);
     return result;
   };
 
-  const writeFile = async (path: string, data: string | Uint8Array, _opts?: { encoding?: string }): Promise<void> => {
+  const writeFile = async (
+    path: string,
+    data: string | Uint8Array,
+    _opts?: { encoding?: string },
+  ): Promise<void> => {
     await vfs.writeFile(path, data);
   };
 
@@ -37,7 +44,9 @@ export const createFsShim = (vfs: VfsBus) => {
 
   const readdir = async (path: string): Promise<string[]> => {
     const entries = await vfs.readdir(path);
-    return typeof entries[0] === 'string' ? (entries as string[]) : (entries as { name: string }[]).map((e) => e.name);
+    return typeof entries[0] === "string"
+      ? (entries as string[])
+      : (entries as { name: string }[]).map((e) => e.name);
   };
 
   const exists = async (path: string): Promise<boolean> => {
@@ -68,8 +77,21 @@ export const createFsShim = (vfs: VfsBus) => {
     };
   };
 
-  const watch = (path: string, optsOrHandler?: { persistent?: boolean } | ((...args: any[]) => void), handler?: (...args: any[]) => void) => {
-    const h = typeof optsOrHandler === 'function' ? optsOrHandler : handler;
+  const symlink = async (target: string, path: string, _type?: string): Promise<void> => {
+    vfs.hot.symlinkSync(target, path);
+  };
+
+  const readlink = async (path: string): Promise<string> => vfs.hot.readlinkSync(path) as string;
+
+  const lstat = async (path: string): Promise<FsStat> =>
+    vfs.hot.lstatSync(path) as unknown as FsStat;
+
+  const watch = (
+    path: string,
+    optsOrHandler?: { persistent?: boolean } | ((...args: any[]) => void),
+    handler?: (...args: any[]) => void,
+  ) => {
+    const h = typeof optsOrHandler === "function" ? optsOrHandler : handler;
     const w = vfs.watch(path, (filePath, event) => {
       if (h) h(event, filePath);
     });
@@ -86,13 +108,26 @@ export const createFsShim = (vfs: VfsBus) => {
   // (the same one `bundleEntry`'s own VFS plugin reads from), so the *Sync
   // fs methods bundled apps expect (config loaders, `require()`-adjacent
   // code, CLIs) can be backed for real instead of throwing.
-  const readFileSync = (path: string, opts?: { encoding?: string } | string): string | Uint8Array => {
-    const encoding = typeof opts === 'string' ? opts : opts?.encoding;
-    return vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as string | Uint8Array;
+  const readFileSync = (
+    path: string,
+    opts?: { encoding?: string } | string,
+  ): string | Uint8Array => {
+    const encoding = typeof opts === "string" ? opts : opts?.encoding;
+    return vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as
+      | string
+      | Uint8Array;
   };
 
-  const writeFileSync = (path: string, data: string | Uint8Array, opts?: { encoding?: string }): void => {
-    vfs.hot.writeFileSync(path, data, opts?.encoding ? { encoding: opts.encoding as BufferEncoding } : undefined);
+  const writeFileSync = (
+    path: string,
+    data: string | Uint8Array,
+    opts?: { encoding?: string },
+  ): void => {
+    vfs.hot.writeFileSync(
+      path,
+      data,
+      opts?.encoding ? { encoding: opts.encoding as BufferEncoding } : undefined,
+    );
   };
 
   const mkdirSync = (path: string, opts?: { recursive?: boolean }): void => {
@@ -109,6 +144,14 @@ export const createFsShim = (vfs: VfsBus) => {
 
   const statSync = (path: string): FsStat => vfs.hot.statSync(path) as unknown as FsStat;
 
+  const symlinkSync = (target: string, path: string, _type?: string): void => {
+    vfs.hot.symlinkSync(target, path);
+  };
+
+  const readlinkSync = (path: string): string => vfs.hot.readlinkSync(path) as string;
+
+  const lstatSync = (path: string): FsStat => vfs.hot.lstatSync(path) as unknown as FsStat;
+
   return {
     readFile,
     readFileSync,
@@ -124,8 +167,14 @@ export const createFsShim = (vfs: VfsBus) => {
     existsSync,
     stat,
     statSync,
+    symlink,
+    symlinkSync,
+    readlink,
+    readlinkSync,
+    lstat,
+    lstatSync,
     watch,
-    promises: { readFile, writeFile, mkdir, rm, readdir, exists, stat },
+    promises: { readFile, writeFile, mkdir, rm, readdir, exists, stat, symlink, readlink, lstat },
   };
 };
 
