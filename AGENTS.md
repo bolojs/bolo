@@ -4,6 +4,10 @@
 
 Browser-based Node.js runtime monorepo. Open-source, fully client-side. Run Node.js applications, AI agent code, and build tools entirely in the browser with zero server dependency.
 
+## PROJECT MANAGEMENT
+
+GitHub Project: https://github.com/orgs/browser-containers/projects/1 — all work must link to a refined task here (see global backlog policy).
+
 ## STRUCTURE
 
 ```

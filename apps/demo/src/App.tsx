@@ -2,6 +2,8 @@ import { createSignal, onMount, onCleanup } from 'solid-js';
 import { boot, type BrowserContainer, type ShellResult } from '@browser-containers/runtime';
 import Terminal from './Terminal';
 import Preview from './Preview';
+import starterMainJsx from './starter/src/main.jsx?raw';
+import starterAppJsx from './starter/src/App.jsx?raw';
 
 type BootState = 'booting' | 'ready' | 'error';
 
@@ -100,7 +102,7 @@ export default function App() {
       };
       window.__browserbox_ready = true;
 
-      // Mount starter app (plain HTML to avoid COEP cross-origin module issues in alpha)
+      // Mount the real React starter (apps/demo/src/starter) as the workdir tree.
       await container.mount({
         'package.json': {
           file: {
@@ -109,7 +111,7 @@ export default function App() {
                 name: 'starter-app',
                 type: 'module',
                 scripts: {
-                  dev: 'echo "dev server ready"',
+                  dev: 'vite',
                 },
                 dependencies: {
                   react: '^18.2.0',
@@ -131,21 +133,19 @@ export default function App() {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Starter App</title>
-    <style>
-      body { font-family: system-ui, sans-serif; padding: 2rem; background: #0d1117; color: #e6edf3; }
-      h1 { color: #58a6ff; }
-    </style>
+    <title>Starter React App</title>
   </head>
   <body>
-    <h1>Hello from browser-containers!</h1>
-    <p>This app is running entirely inside your browser.</p>
-    <p id="time"></p>
-    <script>
-      document.getElementById('time').textContent = 'Loaded at ' + new Date().toLocaleTimeString();
-    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>`,
+          },
+        },
+        src: {
+          directory: {
+            'main.jsx': { file: { contents: starterMainJsx } },
+            'App.jsx': { file: { contents: starterAppJsx } },
           },
         },
       });
