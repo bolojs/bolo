@@ -9,7 +9,9 @@ export const nodeRuntimeShims = (_options: { vfs: unknown; sandbox: unknown }): 
         id === "node:fs/promises" ||
         id === "node:http" ||
         id === "node:net" ||
-        id === "node:child_process"
+        id === "node:child_process" ||
+        id === "node:dns" ||
+        id === "node:vm"
       ) {
         return id;
       }
@@ -17,16 +19,31 @@ export const nodeRuntimeShims = (_options: { vfs: unknown; sandbox: unknown }): 
     },
     load(id: string): string | null {
       if (id === "node:fs") {
-        return `import { createFsShim } from '@browser-containers/node-runtime-shims/dist/fs-shim.js';\nexport default createFsShim(globalThis.__vfsBus);`;
+        return `import { createFsShim } from '@browser-containers/node-runtime-shims/dist/fs-shim.js';
+export default createFsShim(globalThis.__vfsBus);`;
       }
       if (id === "node:fs/promises") {
-        return `import { createFsShim } from '@browser-containers/node-runtime-shims/dist/fs-shim.js';\nconst fs = createFsShim(globalThis.__vfsBus);\nexport const { readFile, writeFile, mkdir, rm, readdir, exists, stat } = fs.promises;`;
+        return `import { createFsShim } from '@browser-containers/node-runtime-shims/dist/fs-shim.js';
+const fs = createFsShim(globalThis.__vfsBus);
+export const { readFile, writeFile, mkdir, rm, readdir, exists, stat } = fs.promises;`;
       }
       if (id === "node:http" || id === "node:net") {
-        return `import { createHttpShim } from '@browser-containers/node-runtime-shims/dist/http-shim.js';\nexport const { createServer } = createHttpShim(globalThis.__sandbox, globalThis.__httpShimOptions);`;
+        return `import { createHttpShim } from '@browser-containers/node-runtime-shims/dist/http-shim.js';
+export const { createServer } = createHttpShim(globalThis.__sandbox, globalThis.__httpShimOptions);`;
       }
       if (id === "node:child_process") {
-        return `import { createChildProcessShim } from '@browser-containers/node-runtime-shims/dist/child-process-shim.js';\nexport const { spawn, exec } = createChildProcessShim(globalThis.__wasmRegistry, globalThis.__shellService);`;
+        return `import { createChildProcessShim } from '@browser-containers/node-runtime-shims/dist/child-process-shim.js';
+export const { spawn, exec } = createChildProcessShim(globalThis.__wasmRegistry, globalThis.__shellService);`;
+      }
+      if (id === "node:dns") {
+        return `import { createDnsShim } from '@browser-containers/node-runtime-shims/dist/dns-shim.js';
+const dns = createDnsShim();
+export const { lookup, resolve4, resolve6, reverse } = dns;`;
+      }
+      if (id === "node:vm") {
+        return `import { createVmShim } from '@browser-containers/node-runtime-shims/dist/vm-shim.js';
+const { runInNewContext, runInThisContext, compileFunction } = createVmShim();
+export { runInNewContext, runInThisContext, compileFunction };`;
       }
       return null;
     },

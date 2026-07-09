@@ -1,6 +1,6 @@
 export { createFsShim } from "./fs-shim.js";
 export type { FsShim, FsStat } from "./fs-shim.js";
-export { createHttpShim, createNetShim } from "./http-shim.js";
+export { createHttpShim, createNetShim, createAgent } from "./http-shim.js";
 export type {
   IncomingMessage,
   ServerResponse,
@@ -17,3 +17,7 @@ export type { ModuleShim, ModuleShimOptions } from "./module-shim.js";
 export { nodeRuntimeShims } from "./vite-plugin.js";
 export { createLiveShimRegistry } from "./live.js";
 export type { LiveShimRegistryOptions } from "./live.js";
+export { createDnsShim } from "./dns-shim.js";
+export type { DnsShimOptions } from "./dns-shim.js";
+export { createVmShim } from "./vm-shim.js";
+export type { VmShimOptions, RunInContextOptions } from "./vm-shim.js";

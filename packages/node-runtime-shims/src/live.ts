@@ -10,6 +10,8 @@ import {
 } from "./child-process-shim.js";
 import { createProcessShim } from "./process-shim.js";
 import { createModuleShim } from "./module-shim.js";
+import { createDnsShim } from "./dns-shim.js";
+import { createVmShim } from "./vm-shim.js";
 
 export interface LiveShimRegistryOptions {
   readonly vfs: VfsBus;
@@ -55,6 +57,8 @@ export const createLiveShimRegistry = (
     punycode: nodeWebShims.punycode,
     diagnostics_channel: nodeWebShims.diagnostics_channel,
     readline: nodeWebShims.readline,
+    vm: createVmShim(),
+    dns: createDnsShim(),
     fs: createFsShim(options.vfs),
     child_process: createChildProcessShim(options.wasmRegistry, options.shellService),
     process: createProcessShim({

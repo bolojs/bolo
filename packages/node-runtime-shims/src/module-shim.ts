@@ -11,6 +11,7 @@ const BUILTIN_MODULE_NAMES = [
   "child_process",
   "constants",
   "diagnostics_channel",
+  "dns",
   "events",
   "fs",
   "fs/promises",
@@ -33,6 +34,7 @@ const BUILTIN_MODULE_NAMES = [
   "tty",
   "url",
   "util",
+  "vm",
   "worker_threads",
   "zlib",
 ];
@@ -43,7 +45,7 @@ const BUILTIN_MODULE_NAMES = [
 // but `require`/the bundler's node-alias plugin reject them with a message
 // that names the actual constraint instead of the generic "unknown npm
 // package" fallback.
-const UNSUPPORTED_BUILTIN_NAMES = ["vm", "dgram", "tls", "cluster"];
+const UNSUPPORTED_BUILTIN_NAMES = ["dgram", "tls", "cluster"];
 
 const dirname = (path: string): string => {
   const idx = path.lastIndexOf("/");

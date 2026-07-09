@@ -31,8 +31,8 @@ describe("createModuleShim", () => {
     const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
     const require = moduleShim.createRequire("/entry.ts");
 
-    expect(() => require("node:vm")).toThrow(/no browser-compatible implementation/);
-    expect(moduleShim.isBuiltin("vm")).toBe(true);
+    expect(() => require("node:dgram")).toThrow(/no browser-compatible implementation/);
+    expect(moduleShim.isBuiltin("dgram")).toBe(true);
   });
 
   it("reads JSON files synchronously off the vfs, resolved relative to the requiring file", () => {
