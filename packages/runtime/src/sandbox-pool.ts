@@ -1,25 +1,47 @@
 import { getQuickJS, type QuickJSContext, type QuickJSHandle } from 'quickjs-emscripten';
 import type { VfsBus } from '@browser-containers/vfs-bus';
 import { transformScript } from '@browser-containers/wasm-registry';
+import { SandboxPresets, createVfsAcl, type SandboxPolicy } from '@browser-containers/sandbox-policy';
 
 export interface SandboxRunResult {
   result?: string;
   error?: string;
 }
 
+// The QuickJS sandbox always runs untrusted agent code, so — unlike
+// `createSwGate`/`createVfsAcl`'s own `null` = "unrestricted" convention,
+// meant for trusted paths — a policy is always in effect here; `null` isn't
+// an accepted value. Callers that want looser limits pass `SandboxPresets.strict`
+// or a merged policy (see `mergePolicy`/`KnownAgentPolicies`) explicitly.
+const DEFAULT_POLICY: SandboxPolicy = SandboxPresets.moderate!;
+
 export class SandboxPool {
-  constructor(private vfs: VfsBus) {}
+  constructor(
+    private vfs: VfsBus,
+    private policy: SandboxPolicy = DEFAULT_POLICY,
+  ) {}
 
   async run(code: string): Promise<SandboxRunResult> {
     const QuickJS = await getQuickJS();
     const runtime = QuickJS.newRuntime();
-    runtime.setMemoryLimit(16 * 1024 * 1024);
+    runtime.setMemoryLimit(this.policy.memory.limitMb * 1024 * 1024);
     runtime.setMaxStackSize(1024 * 1024);
 
+    // Rate-limits ops per rolling `intervalMs` window (reset on the first
+    // interrupt check past the deadline) rather than a flat lifetime cap, so
+    // a script within the policy's sustained-throughput budget isn't killed
+    // just for running longer than one interval.
+    const { maxOpsPerInterval, intervalMs } = this.policy.cpu;
     let ops = 0;
+    let windowStart = Date.now();
     runtime.setInterruptHandler(() => {
+      const now = Date.now();
+      if (now - windowStart >= intervalMs) {
+        windowStart = now;
+        ops = 0;
+      }
       ops++;
-      return ops > 1_000_000;
+      return ops > maxOpsPerInterval;
     });
 
     const context = runtime.newContext();
@@ -80,34 +102,50 @@ export class SandboxPool {
     }
   }
 
+  /**
+   * Gates every fs op through `createVfsAcl(this.policy)`: under `readOnly`
+   * (the default), writes always throw same as before; under `allowPaths`,
+   * ops outside the allow-list throw and ops inside it now genuinely reach
+   * the VFS — the old shim always hard-blocked every write regardless of
+   * policy, so `allowPaths` was previously unreachable dead configuration.
+   */
   private injectFsShim(context: QuickJSContext): void {
     const fsHandle = context.newObject();
+    const acl = createVfsAcl(this.policy);
+    const guard = (operation: string, path: string): void => acl({ path, operation }, () => {});
 
     const readFileSync = context.newFunction('readFileSync', (pathHandle: QuickJSHandle) => {
       const path = context.getString(pathHandle);
-      const content = this.vfs.vol.readFileSync(path, 'utf8');
+      guard('readFile', path);
+      const content = this.vfs.hot.readFileSync(path, 'utf8');
       return context.newString(content as string);
     });
     context.setProp(fsHandle, 'readFileSync', readFileSync);
     readFileSync.dispose();
 
-    const writeBlocker = context.newFunction('writeFileSync', () => {
-      throw new Error('Read-only VFS: write access is blocked');
+    const writeFileSync = context.newFunction('writeFileSync', (pathHandle: QuickJSHandle, dataHandle: QuickJSHandle) => {
+      const path = context.getString(pathHandle);
+      guard('writeFile', path);
+      this.vfs.hot.writeFileSync(path, context.getString(dataHandle));
     });
-    context.setProp(fsHandle, 'writeFileSync', writeBlocker);
-    writeBlocker.dispose();
+    context.setProp(fsHandle, 'writeFileSync', writeFileSync);
+    writeFileSync.dispose();
 
-    const mkdirBlocker = context.newFunction('mkdirSync', () => {
-      throw new Error('Read-only VFS: write access is blocked');
+    const mkdirSync = context.newFunction('mkdirSync', (pathHandle: QuickJSHandle) => {
+      const path = context.getString(pathHandle);
+      guard('mkdir', path);
+      this.vfs.hot.mkdirSync(path, { recursive: true });
     });
-    context.setProp(fsHandle, 'mkdirSync', mkdirBlocker);
-    mkdirBlocker.dispose();
+    context.setProp(fsHandle, 'mkdirSync', mkdirSync);
+    mkdirSync.dispose();
 
-    const rmBlocker = context.newFunction('rmSync', () => {
-      throw new Error('Read-only VFS: write access is blocked');
+    const rmSync = context.newFunction('rmSync', (pathHandle: QuickJSHandle) => {
+      const path = context.getString(pathHandle);
+      guard('rm', path);
+      this.vfs.hot.rmSync(path, { recursive: true, force: true });
     });
-    context.setProp(fsHandle, 'rmSync', rmBlocker);
-    rmBlocker.dispose();
+    context.setProp(fsHandle, 'rmSync', rmSync);
+    rmSync.dispose();
 
     context.setProp(context.global, 'fs', fsHandle);
     fsHandle.dispose();

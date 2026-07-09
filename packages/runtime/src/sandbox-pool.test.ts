@@ -26,7 +26,7 @@ describe('SandboxPool', () => {
   it('blocks fs writes', async () => {
     const pool = new SandboxPool(new VfsBus());
     const out = await pool.run("fs.writeFileSync('/x.txt', 'bad')");
-    expect(out.error).toContain('Read-only');
+    expect(out.error).toContain('readOnly');
   });
 
   it('enforces memory limit', async () => {

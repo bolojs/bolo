@@ -20,6 +20,7 @@
     "@browser-containers/node-web-shims": "workspace:*",
     "@browser-containers/node-runtime-shims": "workspace:*",
     "@browser-containers/wasm-registry": "workspace:*",
+    "@browser-containers/sandbox-policy": "workspace:*",
     "just-bash": "^3.1.0"
   },
   "devDependencies": {
