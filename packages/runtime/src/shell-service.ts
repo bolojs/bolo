@@ -1,21 +1,23 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { PackageManager } from '@browser-containers/npm';
-import type { SWSandbox } from '@browser-containers/sw-sandbox';
-import { BrowserViteServer } from '@browser-containers/vite-server';
-import { bundleEntry } from '@browser-containers/wasm-registry';
-import { createLiveShimRegistry } from '@browser-containers/node-runtime-shims';
-import { Bash } from 'just-bash/browser';
-import type { RuntimeWorker } from './runtime-worker.js';
-import type { SandboxPool } from './sandbox-pool.js';
-import type { ContainerEvents } from './events.js';
-import { VfsBashFileSystem } from './vfs-bash-fs.js';
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { PackageManager } from "@browser-containers/npm";
+import type { SWSandbox } from "@browser-containers/sw-sandbox";
+import { BrowserViteServer } from "@browser-containers/vite-server";
+import { bundleEntry } from "@browser-containers/wasm-registry";
+import { createLiveShimRegistry } from "@browser-containers/node-runtime-shims";
+import { Bash } from "just-bash/browser";
+import type { RuntimeWorker } from "./runtime-worker.js";
+import type { SandboxPool } from "./sandbox-pool.js";
+import type { ContainerEvents } from "./events.js";
+import { VfsBashFileSystem } from "./vfs-bash-fs.js";
 
 declare global {
   // Populated just before executing a bundled node app so its aliased `node:*`
   // imports (see `bundleEntry`'s node-alias plugin) can bind to this
   // container's live `VfsBus`/`SWSandbox` instead of a fresh one per bundle.
   // eslint-disable-next-line no-var
-  var __browserContainers: { vfs: VfsBus; sandbox?: SWSandbox; shims: Record<string, unknown> } | undefined;
+  var __browserContainers:
+    | { vfs: VfsBus; sandbox?: SWSandbox; shims: Record<string, unknown> }
+    | undefined;
 }
 
 export interface ShellServiceDeps {
@@ -43,11 +45,11 @@ export class ShellService {
   private deps: ShellServiceDeps;
   private cwd: string;
   private bash: Bash;
-  private viteWatcher?: ReturnType<VfsBus['watch']>;
+  private viteWatcher?: ReturnType<VfsBus["watch"]>;
 
   constructor(deps: ShellServiceDeps) {
     this.deps = deps;
-    this.cwd = deps.workdir ?? '/';
+    this.cwd = deps.workdir ?? "/";
     this.bash = new Bash({ fs: new VfsBashFileSystem(deps.vfs), cwd: this.cwd });
   }
 
@@ -68,16 +70,16 @@ export class ShellService {
     try {
       const exitCode = await this.route(command, callbacks);
       return {
-        stdout: stdoutChunks.join(''),
-        stderr: stderrChunks.join(''),
+        stdout: stdoutChunks.join(""),
+        stderr: stderrChunks.join(""),
         exitCode,
       };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       callbacks.stderr(message);
       return {
-        stdout: stdoutChunks.join(''),
-        stderr: stderrChunks.join(''),
+        stdout: stdoutChunks.join(""),
+        stderr: stderrChunks.join(""),
         exitCode: 1,
       };
     }
@@ -85,17 +87,17 @@ export class ShellService {
 
   /** Resolve a user-supplied path against the workdir. */
   private resolvePath(p: string): string {
-    if (this.cwd === '/' || p.startsWith(this.cwd)) return p;
-    return p.startsWith('/') ? `${this.cwd}${p}` : `${this.cwd}/${p}`;
+    if (this.cwd === "/" || p.startsWith(this.cwd)) return p;
+    return p.startsWith("/") ? `${this.cwd}${p}` : `${this.cwd}/${p}`;
   }
 
   private async route(command: string, output: OutputCallbacks): Promise<number> {
     const [cmd, ...rest] = command.trim().split(/\s+/);
 
-    if (cmd === 'npm') return this.routeNpm(rest, output);
-    if (cmd === 'runtime') return this.routeRuntime(rest, output);
-    if (cmd === 'agent') return this.routeAgent(rest, output);
-    if (cmd === 'node' || cmd === 'bun') {
+    if (cmd === "npm") return this.routeNpm(rest, output);
+    if (cmd === "runtime") return this.routeRuntime(rest, output);
+    if (cmd === "agent") return this.routeAgent(rest, output);
+    if (cmd === "node" || cmd === "bun") {
       const filePath = rest[0];
       if (!filePath) {
         output.stderr(`Usage: ${cmd} <script>`);
@@ -116,8 +118,8 @@ export class ShellService {
   private async routeNpm(args: string[], output: OutputCallbacks): Promise<number> {
     const [subcmd, ...rest] = args;
 
-    if (subcmd !== 'install' && subcmd !== 'i') {
-      if (subcmd === 'run') return this.routeNpmRun(rest, output);
+    if (subcmd !== "install" && subcmd !== "i") {
+      if (subcmd === "run") return this.routeNpmRun(rest, output);
       output.stderr(`Unsupported npm subcommand: ${subcmd}`);
       return 1;
     }
@@ -138,41 +140,41 @@ export class ShellService {
   private async routeNpmRun(args: string[], output: OutputCallbacks): Promise<number> {
     const scriptName = args[0];
 
-    if (scriptName === 'dev') {
+    if (scriptName === "dev") {
       if (!this.deps.sandbox) {
-        output.stderr('No sandbox configured for dev server');
+        output.stderr("No sandbox configured for dev server");
         return 1;
       }
       try {
-        const root = this.deps.workdir ?? '/';
-        const previewPrefix = '/__preview/';
+        const root = this.deps.workdir ?? "/";
+        const previewPrefix = "/__preview/";
         const server = new BrowserViteServer({ vfs: this.deps.vfs, root, base: previewPrefix });
         await server.start();
-        this.viteWatcher = this.deps.vfs.watch('**', (path) => {
-          if (!path.includes('node_modules') && !path.endsWith('importmap.json')) {
-            server.broadcastHmr({ type: 'full-reload', path });
+        this.viteWatcher = this.deps.vfs.watch("**", (path) => {
+          if (!path.includes("node_modules") && !path.endsWith("importmap.json")) {
+            server.broadcastHmr({ type: "full-reload", path });
           }
         });
         this.deps.sandbox.onFetch(async (req) => {
           const url = new URL(req.url);
           if (!url.pathname.startsWith(previewPrefix)) {
-            throw new Error('not handled');
+            throw new Error("not handled");
           }
           const serverUrl = new URL(req.url);
-          serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, '') || '/';
+          serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, "") || "/";
           const response = await server.onFetch(serverUrl.toString(), req);
           const headers = new Headers(response.headers);
-          headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
-          headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-          headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+          headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+          headers.set("Cross-Origin-Opener-Policy", "same-origin");
+          headers.set("Cross-Origin-Resource-Policy", "cross-origin");
           return new Response(response.body, {
             status: response.status,
             statusText: response.statusText,
             headers,
           });
         });
-        this.deps.events?.emit('port', 3000, 'open', previewPrefix);
-        this.deps.events?.emit('server-ready', 3000, previewPrefix);
+        this.deps.events?.emit("port", 3000, "open", previewPrefix);
+        this.deps.events?.emit("server-ready", 3000, previewPrefix);
         return 0;
       } catch (err) {
         output.stderr(err instanceof Error ? err.message : String(err));
@@ -199,14 +201,14 @@ export class ShellService {
   private async routeRuntime(args: string[], output: OutputCallbacks): Promise<number> {
     const [subcmd, ...rest] = args;
 
-    if (subcmd !== 'run') {
+    if (subcmd !== "run") {
       output.stderr(`Unsupported runtime subcommand: ${subcmd}`);
       return 1;
     }
 
     const filePath = rest[0];
     if (!filePath) {
-      output.stderr('Usage: runtime run <script>');
+      output.stderr("Usage: runtime run <script>");
       return 1;
     }
 
@@ -225,10 +227,10 @@ export class ShellService {
   private async runNodeApp(filePath: string, output: OutputCallbacks): Promise<number> {
     try {
       const onPortEvent = (event: string, data: { port: number; url?: string }) => {
-        const url = data.url ?? '';
-        if (event === 'server-ready') this.deps.events?.emit('server-ready', data.port, url);
-        if (event === 'port-open') this.deps.events?.emit('port', data.port, 'open', url);
-        if (event === 'port-close') this.deps.events?.emit('port', data.port, 'close', url);
+        const url = data.url ?? "";
+        if (event === "server-ready") this.deps.events?.emit("server-ready", data.port, url);
+        if (event === "port-open") this.deps.events?.emit("port", data.port, "open", url);
+        if (event === "port-close") this.deps.events?.emit("port", data.port, "close", url);
       };
 
       // User files are written under the workdir but referenced with paths
@@ -242,9 +244,9 @@ export class ShellService {
           vfs: this.deps.vfs,
           sandbox: this.deps.sandbox,
           onPortEvent,
-          shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(' ')) },
+          shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
           cwd: this.cwd,
-          argv: ['node', entry],
+          argv: ["node", entry],
           onStdout: output.stdout,
           onStderr: output.stderr,
         }),
@@ -253,7 +255,8 @@ export class ShellService {
       const { code, warnings } = await bundleEntry(entry, {
         vfs: this.deps.vfs,
         cwd: this.cwd,
-        getShim: (builtin) => globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
+        getShim: (builtin) =>
+          globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
       });
       for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
 
@@ -265,10 +268,10 @@ export class ShellService {
       // method, auto-register it as a fetch handler so the server starts
       // without an explicit http.createServer().listen() call.
       const exportedApp = mod?.default;
-      if (exportedApp && typeof exportedApp.fetch === 'function' && this.deps.sandbox) {
+      if (exportedApp && typeof exportedApp.fetch === "function" && this.deps.sandbox) {
         this.deps.sandbox.onFetch(exportedApp.fetch.bind(exportedApp));
-        onPortEvent('server-ready', { port: 3000, url: 'https://sandbox.local' });
-        onPortEvent('port-open', { port: 3000, url: 'https://sandbox.local' });
+        onPortEvent("server-ready", { port: 3000, url: "https://sandbox.local" });
+        onPortEvent("port-open", { port: 3000, url: "https://sandbox.local" });
       }
       return 0;
     } catch (err) {
@@ -280,14 +283,14 @@ export class ShellService {
   private async routeAgent(args: string[], output: OutputCallbacks): Promise<number> {
     const [subcmd, ...rest] = args;
 
-    if (subcmd !== 'run') {
+    if (subcmd !== "run") {
       output.stderr(`Unsupported agent subcommand: ${subcmd}`);
       return 1;
     }
 
     const filePath = rest[0];
     if (!filePath) {
-      output.stderr('Usage: agent run <script>');
+      output.stderr("Usage: agent run <script>");
       return 1;
     }
 

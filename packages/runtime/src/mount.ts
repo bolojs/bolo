@@ -1,15 +1,15 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { FileSystemTree } from './container-types.js';
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { FileSystemTree } from "./container-types.js";
 
 export interface MountAPI {
   mountTree(tree: FileSystemTree, basePath?: string): Promise<void>;
 }
 
 export function createMount(vfs: VfsBus): MountAPI {
-  async function mountTree(tree: FileSystemTree, basePath = ''): Promise<void> {
+  async function mountTree(tree: FileSystemTree, basePath = ""): Promise<void> {
     for (const [name, node] of Object.entries(tree)) {
       const path = basePath ? `${basePath}/${name}` : `/${name}`;
-      if ('file' in node) {
+      if ("file" in node) {
         const { contents } = node.file;
         if (contents instanceof ReadableStream) {
           const reader = contents.getReader();
@@ -30,7 +30,7 @@ export function createMount(vfs: VfsBus): MountAPI {
         } else {
           await vfs.writeFile(path, contents);
         }
-      } else if ('directory' in node) {
+      } else if ("directory" in node) {
         await vfs.mkdir(path, { recursive: true });
         await mountTree(node.directory, path);
       }

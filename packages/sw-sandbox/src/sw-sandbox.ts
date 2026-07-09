@@ -6,7 +6,10 @@ export class SWSandbox {
   private fetchHandlers: FetchHandler[] = [];
   private policyRegistry?: Map<string, unknown>;
   private messagePort?: MessagePort;
-  private pendingRequests = new Map<number, { resolve: (r: Response) => void; reject: (e: Error) => void }>();
+  private pendingRequests = new Map<
+    number,
+    { resolve: (r: Response) => void; reject: (e: Error) => void }
+  >();
 
   static async create(opts: { origin: string; swPath: string }): Promise<SWSandbox> {
     const instance = new SWSandbox(opts.origin, opts.swPath);
@@ -20,8 +23,8 @@ export class SWSandbox {
   }
 
   private async init(): Promise<void> {
-    if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
-      throw new Error('ServiceWorker not supported');
+    if (typeof navigator === "undefined" || !navigator.serviceWorker) {
+      throw new Error("ServiceWorker not supported");
     }
     await navigator.serviceWorker.register(this.swPath);
     const registration = await navigator.serviceWorker.ready;
@@ -31,12 +34,12 @@ export class SWSandbox {
 
     const portReady = new Promise<void>((resolve) => {
       const onPortMessage = (event: MessageEvent) => {
-        if (event.data?.type === 'PORT_READY') {
-          this.messagePort!.removeEventListener('message', onPortMessage);
+        if (event.data?.type === "PORT_READY") {
+          this.messagePort!.removeEventListener("message", onPortMessage);
           resolve();
         }
       };
-      this.messagePort!.addEventListener('message', onPortMessage);
+      this.messagePort!.addEventListener("message", onPortMessage);
     });
 
     this.messagePort.onmessage = (event: MessageEvent) => {
@@ -45,14 +48,19 @@ export class SWSandbox {
         requestId: number;
         response?: { status: number; body: ArrayBuffer; headers: Record<string, string> };
         error?: string;
-        request?: { url: string; method: string; headers: Record<string, string>; body?: ArrayBuffer };
+        request?: {
+          url: string;
+          method: string;
+          headers: Record<string, string>;
+          body?: ArrayBuffer;
+        };
       };
-      if (type === 'FETCH_REQUEST' && request) {
+      if (type === "FETCH_REQUEST" && request) {
         this.handleFetchRequest(requestId, request).catch((err) => {
           const message = err instanceof Error ? err.message : String(err);
-          console.error('[sw-sandbox] handleFetchRequest failed:', message);
+          console.error("[sw-sandbox] handleFetchRequest failed:", message);
           this.messagePort?.postMessage({
-            type: 'FETCH_RESPONSE',
+            type: "FETCH_RESPONSE",
             requestId,
             error: message,
           });
@@ -65,14 +73,15 @@ export class SWSandbox {
       if (error) {
         pending.reject(new Error(error));
       } else if (response) {
-        pending.resolve(new Response(response.body, { status: response.status, headers: response.headers }));
+        pending.resolve(
+          new Response(response.body, { status: response.status, headers: response.headers }),
+        );
       }
     };
 
-
     const sw = registration.active || registration.installing || registration.waiting;
     if (sw) {
-      sw.postMessage({ type: 'INIT_PORT' }, [channel.port2]);
+      sw.postMessage({ type: "INIT_PORT" }, [channel.port2]);
     }
 
     await portReady;
@@ -88,10 +97,15 @@ export class SWSandbox {
 
   private async handleFetchRequest(
     requestId: number,
-    requestData: { url: string; method: string; headers: Record<string, string>; body?: ArrayBuffer },
+    requestData: {
+      url: string;
+      method: string;
+      headers: Record<string, string>;
+      body?: ArrayBuffer;
+    },
   ): Promise<void> {
     const requestBody =
-      requestData.body && requestData.method !== 'GET' && requestData.method !== 'HEAD'
+      requestData.body && requestData.method !== "GET" && requestData.method !== "HEAD"
         ? requestData.body
         : undefined;
     const request = new Request(requestData.url, {
@@ -107,7 +121,7 @@ export class SWSandbox {
     });
     this.messagePort?.postMessage(
       {
-        type: 'FETCH_RESPONSE',
+        type: "FETCH_RESPONSE",
         requestId,
         response: { status: response.status, body, headers },
       },
@@ -118,13 +132,17 @@ export class SWSandbox {
   async handleInterceptedRequest(requestId: number, req: Request): Promise<Response> {
     for (const handler of this.fetchHandlers) {
       const url = new URL(req.url);
-      if (url.origin === this.origin || url.hostname === 'localhost' || url.hostname === 'sandbox.local') {
+      if (
+        url.origin === this.origin ||
+        url.hostname === "localhost" ||
+        url.hostname === "sandbox.local"
+      ) {
         try {
           const response = await handler(req);
           // sandbox.local is cross-origin from the demo page — needs CORS to be readable.
-          if (url.hostname === 'sandbox.local') {
+          if (url.hostname === "sandbox.local") {
             const headers = new Headers(response.headers);
-            headers.set('Access-Control-Allow-Origin', '*');
+            headers.set("Access-Control-Allow-Origin", "*");
             return new Response(response.body, {
               status: response.status,
               statusText: response.statusText,
@@ -137,6 +155,6 @@ export class SWSandbox {
         }
       }
     }
-    return new Response('Not found', { status: 404 });
+    return new Response("Not found", { status: 404 });
   }
 }

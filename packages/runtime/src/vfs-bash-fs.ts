@@ -1,4 +1,4 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
+import type { VfsBus } from "@browser-containers/vfs-bus";
 import type {
   BufferEncoding,
   CpOptions,
@@ -7,7 +7,7 @@ import type {
   IFileSystem,
   MkdirOptions,
   RmOptions,
-} from 'just-bash';
+} from "just-bash";
 
 // just-bash's public entry points (`.` / `./browser`) don't re-export these
 // three fs/interface.ts types, so they're mirrored locally to match its shape.
@@ -24,8 +24,8 @@ interface DirentEntry {
   isSymbolicLink: boolean;
 }
 
-const decodeContent = (raw: Uint8Array, encoding: BufferEncoding = 'utf8'): string => {
-  if (encoding === 'utf8' || encoding === 'utf-8') return new TextDecoder().decode(raw);
+const decodeContent = (raw: Uint8Array, encoding: BufferEncoding = "utf8"): string => {
+  if (encoding === "utf8" || encoding === "utf-8") return new TextDecoder().decode(raw);
   return Buffer.from(raw).toString(encoding);
 };
 
@@ -34,7 +34,8 @@ const toBytes = (content: FileContent): Uint8Array =>
 
 const resolveOptions = (
   options?: ReadFileOptions | WriteFileOptions | BufferEncoding | null,
-): BufferEncoding | undefined => (typeof options === 'string' ? options : options?.encoding ?? undefined);
+): BufferEncoding | undefined =>
+  typeof options === "string" ? options : (options?.encoding ?? undefined);
 
 /**
  * Adapts VfsBus (memfs `hot` tier + OPFS `cold` tier) to just-bash's IFileSystem,
@@ -45,13 +46,13 @@ export class VfsBashFileSystem implements IFileSystem {
   constructor(private vfs: VfsBus) {}
 
   resolvePath(base: string, path: string): string {
-    if (path.startsWith('/')) return path;
-    const parts = base.split('/').filter(Boolean);
-    for (const seg of path.split('/')) {
-      if (seg === '..') parts.pop();
-      else if (seg !== '.' && seg !== '') parts.push(seg);
+    if (path.startsWith("/")) return path;
+    const parts = base.split("/").filter(Boolean);
+    for (const seg of path.split("/")) {
+      if (seg === "..") parts.pop();
+      else if (seg !== "." && seg !== "") parts.push(seg);
     }
-    return '/' + parts.join('/');
+    return "/" + parts.join("/");
   }
 
   private async ensureHydrated(path: string): Promise<void> {
@@ -71,7 +72,7 @@ export class VfsBashFileSystem implements IFileSystem {
 
   async readFile(path: string, options?: ReadFileOptions | BufferEncoding): Promise<string> {
     const raw = await this.readFileBuffer(path);
-    return decodeContent(raw, resolveOptions(options) ?? 'utf8');
+    return decodeContent(raw, resolveOptions(options) ?? "utf8");
   }
 
   async readFileBuffer(path: string): Promise<Uint8Array> {
@@ -86,7 +87,7 @@ export class VfsBashFileSystem implements IFileSystem {
   ): Promise<void> {
     const encoding = resolveOptions(options);
     const bytes =
-      typeof content === 'string' && encoding && encoding !== 'utf8' && encoding !== 'utf-8'
+      typeof content === "string" && encoding && encoding !== "utf8" && encoding !== "utf-8"
         ? Buffer.from(content, encoding)
         : toBytes(content);
     await this.vfs.writeFile(path, bytes);
@@ -105,7 +106,7 @@ export class VfsBashFileSystem implements IFileSystem {
     }
     const encoding = resolveOptions(options);
     const appended =
-      typeof content === 'string' && encoding && encoding !== 'utf8' && encoding !== 'utf-8'
+      typeof content === "string" && encoding && encoding !== "utf8" && encoding !== "utf-8"
         ? Buffer.from(content, encoding)
         : toBytes(content);
     const merged = new Uint8Array(existing.length + appended.length);
@@ -175,7 +176,7 @@ export class VfsBashFileSystem implements IFileSystem {
     try {
       await this.vfs.rename(src, dest);
     } catch (err) {
-      if (err instanceof Error && 'code' in err && (err as { code: string }).code === 'EEXIST') {
+      if (err instanceof Error && "code" in err && (err as { code: string }).code === "EEXIST") {
         await this.vfs.rm(dest, { recursive: true });
         await this.vfs.rename(src, dest);
         return;

@@ -36,22 +36,22 @@ export class RuntimeWorker {
         this.dispose();
       };
       this.worker.onmessage = ({ data }: MessageEvent<RuntimeMessage>) => {
-      switch (data.type) {
-        case "STDOUT":
-          return this.onStdout?.(data.data);
-        case "STDERR":
-          return this.onStderr?.(data.data);
-        case "EXIT":
-          this.onExit?.(data.code);
-          this.dispose();
-          return resolve();
-        case "HEARTBEAT":
-          this.missedHeartbeats = 0;
-          return;
-      }
-    };
-    this.worker.postMessage({ type: "RUN_SCRIPT", code, opts } satisfies RuntimeMessage);
-    this.startWatchdog();
+        switch (data.type) {
+          case "STDOUT":
+            return this.onStdout?.(data.data);
+          case "STDERR":
+            return this.onStderr?.(data.data);
+          case "EXIT":
+            this.onExit?.(data.code);
+            this.dispose();
+            return resolve();
+          case "HEARTBEAT":
+            this.missedHeartbeats = 0;
+            return;
+        }
+      };
+      this.worker.postMessage({ type: "RUN_SCRIPT", code, opts } satisfies RuntimeMessage);
+      this.startWatchdog();
     });
   }
 

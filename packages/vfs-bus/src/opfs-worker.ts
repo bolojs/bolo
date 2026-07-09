@@ -1,8 +1,8 @@
-import { opfsWorkerScript } from './opfs-worker-script.js';
+import { opfsWorkerScript } from "./opfs-worker-script.js";
 
 interface OpfsRequest {
   id: number;
-  method: 'readFile' | 'writeFile' | 'mkdir' | 'readdir' | 'rm' | 'exists';
+  method: "readFile" | "writeFile" | "mkdir" | "readdir" | "rm" | "exists";
   path: string;
   content?: Uint8Array;
 }
@@ -22,14 +22,14 @@ interface OpfsErr {
 type OpfsResponse = OpfsOk | OpfsErr;
 
 function createWorkerBlob(): Worker {
-  const blob = new Blob([opfsWorkerScript], { type: 'application/javascript' });
+  const blob = new Blob([opfsWorkerScript], { type: "application/javascript" });
   const url = URL.createObjectURL(blob);
   const worker = new Worker(url);
   URL.revokeObjectURL(url);
   return worker;
 }
 
-export const OPFS_UNAVAILABLE = Symbol('OPFS_UNAVAILABLE');
+export const OPFS_UNAVAILABLE = Symbol("OPFS_UNAVAILABLE");
 
 export class OpfsWorker {
   private worker: Worker | null = null;
@@ -60,9 +60,13 @@ export class OpfsWorker {
     };
   }
 
-  private async send<T>(method: OpfsRequest['method'], path: string, content?: Uint8Array): Promise<T> {
+  private async send<T>(
+    method: OpfsRequest["method"],
+    path: string,
+    content?: Uint8Array,
+  ): Promise<T> {
     await this.init();
-    if (!this.worker) throw new Error('OPFS Worker unavailable');
+    if (!this.worker) throw new Error("OPFS Worker unavailable");
 
     const id = this.nextId++;
     const msg: OpfsRequest = { id, method, path, content };
@@ -86,34 +90,34 @@ export class OpfsWorker {
   }
 
   async readFile(path: string): Promise<Uint8Array> {
-    return this.send<Uint8Array>('readFile', path);
+    return this.send<Uint8Array>("readFile", path);
   }
 
   async writeFile(path: string, content: Uint8Array): Promise<void> {
-    return this.send<void>('writeFile', path, content);
+    return this.send<void>("writeFile", path, content);
   }
 
   async mkdir(path: string): Promise<void> {
-    return this.send<void>('mkdir', path);
+    return this.send<void>("mkdir", path);
   }
 
   async readdir(path: string): Promise<string[]> {
-    return this.send<string[]>('readdir', path);
+    return this.send<string[]>("readdir", path);
   }
 
   async rm(path: string): Promise<void> {
-    return this.send<void>('rm', path);
+    return this.send<void>("rm", path);
   }
 
   async exists(path: string): Promise<boolean> {
-    return this.send<boolean>('exists', path);
+    return this.send<boolean>("exists", path);
   }
 
   terminate(): void {
     this.worker?.terminate();
     this.worker = null;
     for (const p of this.pending.values()) {
-      p.resolve({ id: -1, ok: false, error: 'Worker terminated' });
+      p.resolve({ id: -1, ok: false, error: "Worker terminated" });
     }
     this.pending.clear();
   }

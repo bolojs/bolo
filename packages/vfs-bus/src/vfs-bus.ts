@@ -1,8 +1,8 @@
-import { createFsFromVolume, Volume } from 'memfs';
-import { OpfsWorker } from './opfs-worker.js';
+import { createFsFromVolume, Volume } from "memfs";
+import { OpfsWorker } from "./opfs-worker.js";
 
-export type VfsBusHandler = (event: { type: 'write' | 'delete' | 'rename'; path: string }) => void;
-export type WatchHandler = (path: string, event: 'add' | 'change' | 'unlink') => void;
+export type VfsBusHandler = (event: { type: "write" | "delete" | "rename"; path: string }) => void;
+export type WatchHandler = (path: string, event: "add" | "change" | "unlink") => void;
 
 export interface VfsBusMiddleware {
   (ctx: { path: string; operation: string }, next: () => void): void;
@@ -26,7 +26,9 @@ export class VfsBus {
   private accessTimes = new Map<string, number>();
   private evictionTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  use(mw: VfsBusMiddleware) { this.middlewares.push(mw); }
+  use(mw: VfsBusMiddleware) {
+    this.middlewares.push(mw);
+  }
 
   private runMiddleware(path: string, operation: string, action: () => void) {
     let idx = 0;
@@ -56,7 +58,11 @@ export class VfsBus {
     this.evictionTimers.delete(path);
     this.accessTimes.delete(path);
     if (this.hot.existsSync(path)) {
-      try { this.hot.unlinkSync(path); } catch { /* may be dir */ }
+      try {
+        this.hot.unlinkSync(path);
+      } catch {
+        /* may be dir */
+      }
     }
   }
 
@@ -65,33 +71,35 @@ export class VfsBus {
   }
 
   async writeFile(path: string, content: string | Uint8Array) {
-    const dir = path.substring(0, path.lastIndexOf('/'));
+    const dir = path.substring(0, path.lastIndexOf("/"));
     if (dir && !this.hot.existsSync(dir)) {
       this.hot.mkdirSync(dir, { recursive: true });
     }
-    this.runMiddleware(path, 'writeFile', () => {
+    this.runMiddleware(path, "writeFile", () => {
       this.hot.writeFileSync(path, content);
     });
     this.touchAccessTime(path);
 
     try {
       await this.cold.writeFile(path, this.toUint8Array(content));
-    } catch { /* cold layer may be unavailable in test envs */ }
+    } catch {
+      /* cold layer may be unavailable in test envs */
+    }
 
-    this.emit('write', path);
-    this.notifyWatchers(path, 'add');
+    this.emit("write", path);
+    this.notifyWatchers(path, "add");
   }
 
   async readFile(path: string): Promise<string | Uint8Array> {
     this.touchAccessTime(path);
 
     if (this.hot.existsSync(path)) {
-      return this.hot.readFileSync(path, 'utf8') as string;
+      return this.hot.readFileSync(path, "utf8") as string;
     }
 
     try {
       const data = await this.cold.readFile(path);
-      const dir = path.substring(0, path.lastIndexOf('/'));
+      const dir = path.substring(0, path.lastIndexOf("/"));
       if (dir && !this.hot.existsSync(dir)) {
         this.hot.mkdirSync(dir, { recursive: true });
       }
@@ -104,20 +112,22 @@ export class VfsBus {
   }
 
   async mkdir(path: string, opts?: { recursive?: boolean }) {
-    this.runMiddleware(path, 'mkdir', () => {
+    this.runMiddleware(path, "mkdir", () => {
       this.hot.mkdirSync(path, { recursive: opts?.recursive ?? false });
     });
     this.touchAccessTime(path);
 
     try {
       await this.cold.mkdir(path);
-    } catch { /* noop: cold layer optional */ }
+    } catch {
+      /* noop: cold layer optional */
+    }
 
-    this.emit('write', path);
+    this.emit("write", path);
   }
 
   async rm(path: string, opts?: { recursive?: boolean }) {
-    this.runMiddleware(path, 'rm', () => {
+    this.runMiddleware(path, "rm", () => {
       this.hot.rmSync(path, { recursive: opts?.recursive ?? false });
     });
     this.accessTimes.delete(path);
@@ -129,10 +139,12 @@ export class VfsBus {
 
     try {
       await this.cold.rm(path);
-    } catch { /* noop: cold layer optional */ }
+    } catch {
+      /* noop: cold layer optional */
+    }
 
-    this.emit('delete', path);
-    this.notifyWatchers(path, 'unlink');
+    this.emit("delete", path);
+    this.notifyWatchers(path, "unlink");
   }
 
   async exists(path: string): Promise<boolean> {
@@ -153,7 +165,7 @@ export class VfsBus {
     if (this.hot.existsSync(path)) {
       if (options?.withFileTypes) {
         const entries = this.hot.readdirSync(path, { withFileTypes: true }) as any[];
-        return entries.map(e => ({
+        return entries.map((e) => ({
           name: e.name,
           isFile: () => e.isFile(),
           isDirectory: () => e.isDirectory(),
@@ -165,7 +177,7 @@ export class VfsBus {
     try {
       const entries = await this.cold.readdir(path);
       for (const entry of entries) {
-        const fullPath = path === '/' ? `/${entry}` : `${path}/${entry}`;
+        const fullPath = path === "/" ? `/${entry}` : `${path}/${entry}`;
         try {
           const data = await this.cold.readFile(fullPath);
           this.hot.writeFileSync(fullPath, data);
@@ -178,7 +190,7 @@ export class VfsBus {
 
       if (options?.withFileTypes) {
         const hotEntries = this.hot.readdirSync(path, { withFileTypes: true }) as any[];
-        return hotEntries.map(e => ({
+        return hotEntries.map((e) => ({
           name: e.name,
           isFile: () => e.isFile(),
           isDirectory: () => e.isDirectory(),
@@ -193,49 +205,55 @@ export class VfsBus {
 
   async rename(oldPath: string, newPath: string): Promise<void> {
     if (!this.hot.existsSync(oldPath)) {
-      throw Object.assign(new Error(`ENOENT: ${oldPath}`), { code: 'ENOENT' });
+      throw Object.assign(new Error(`ENOENT: ${oldPath}`), { code: "ENOENT" });
     }
 
     if (this.hot.existsSync(newPath)) {
-      throw Object.assign(new Error(`EEXIST: ${newPath}`), { code: 'EEXIST' });
+      throw Object.assign(new Error(`EEXIST: ${newPath}`), { code: "EEXIST" });
     }
 
-    this.runMiddleware(oldPath, 'rename', () => {
+    this.runMiddleware(oldPath, "rename", () => {
       this.hot.renameSync(oldPath, newPath);
     });
 
-    this.emit('rename', oldPath);
-    this.notifyWatchers(oldPath, 'unlink');
-    this.notifyWatchers(newPath, 'add');
+    this.emit("rename", oldPath);
+    this.notifyWatchers(oldPath, "unlink");
+    this.notifyWatchers(newPath, "add");
   }
 
-  on(event: 'write' | 'delete' | 'rename', handler: VfsBusHandler) {
-    const wrapped: VfsBusHandler = (e) => { if (e.type === event) handler(e); };
+  on(event: "write" | "delete" | "rename", handler: VfsBusHandler) {
+    const wrapped: VfsBusHandler = (e) => {
+      if (e.type === event) handler(e);
+    };
     this.handlers.push(wrapped);
   }
 
-  private emit(type: 'write' | 'delete' | 'rename', path: string) {
+  private emit(type: "write" | "delete" | "rename", path: string) {
     for (const h of this.handlers) h({ type, path });
   }
 
   watch(glob: string, handler: WatchHandler) {
     this.watchers.push({ glob, handler });
-    return { close: () => {
-      this.watchers = this.watchers.filter(w => w !== this.watchers.find(w2 => w2.glob === glob && w2.handler === handler));
-    }};
+    return {
+      close: () => {
+        this.watchers = this.watchers.filter(
+          (w) => w !== this.watchers.find((w2) => w2.glob === glob && w2.handler === handler),
+        );
+      },
+    };
   }
 
-  private notifyWatchers(path: string, event: 'add' | 'change' | 'unlink') {
+  private notifyWatchers(path: string, event: "add" | "change" | "unlink") {
     for (const w of this.watchers) {
       if (this.matchGlob(path, w.glob)) w.handler(path, event);
     }
   }
 
   private matchGlob(path: string, glob: string): boolean {
-    if (glob === '**') return true;
-    if (glob.startsWith('*') && glob.endsWith('*')) return path.includes(glob.slice(1, -1));
-    if (glob.startsWith('*')) return path.endsWith(glob.slice(1));
-    if (glob.endsWith('*')) return path.startsWith(glob.slice(0, -1));
+    if (glob === "**") return true;
+    if (glob.startsWith("*") && glob.endsWith("*")) return path.includes(glob.slice(1, -1));
+    if (glob.startsWith("*")) return path.endsWith(glob.slice(1));
+    if (glob.endsWith("*")) return path.startsWith(glob.slice(0, -1));
     return path === glob;
   }
 
@@ -245,7 +263,7 @@ export class VfsBus {
 
   restore(snap: Record<string, any>) {
     this.vol.reset();
-    this.vol.fromJSON(snap, '/');
+    this.vol.fromJSON(snap, "/");
   }
 
   destroy() {

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { initSW } from './sw.js';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { initSW } from "./sw.js";
 
 const mockClients = {
   claim: vi.fn().mockResolvedValue(undefined),
@@ -12,12 +12,12 @@ beforeEach(() => {
   mockClients.matchAll.mockResolvedValue([]);
 });
 
-describe('SW script behavior', () => {
-  it('calls skipWaiting on install', () => {
+describe("SW script behavior", () => {
+  it("calls skipWaiting on install", () => {
     const skipWaitingSpy = vi.fn();
     const swGlobal = {
       addEventListener: vi.fn((type: string, handler: (...args: unknown[]) => void) => {
-        if (type === 'install') handler();
+        if (type === "install") handler();
       }),
       skipWaiting: skipWaitingSpy,
       clients: mockClients,
@@ -27,10 +27,10 @@ describe('SW script behavior', () => {
     expect(skipWaitingSpy).toHaveBeenCalled();
   });
 
-  it('calls clients.claim and matchAll on activate', () => {
+  it("calls clients.claim and matchAll on activate", () => {
     const swGlobal = {
       addEventListener: vi.fn((type: string, handler: (event: ExtendableEvent) => void) => {
-        if (type === 'activate') {
+        if (type === "activate") {
           handler({ waitUntil: vi.fn() } as unknown as ExtendableEvent);
         }
       }),
@@ -40,15 +40,17 @@ describe('SW script behavior', () => {
 
     initSW(swGlobal);
     expect(mockClients.claim).toHaveBeenCalled();
-    expect(mockClients.matchAll).toHaveBeenCalledWith({ type: 'window' });
+    expect(mockClients.matchAll).toHaveBeenCalledWith({ type: "window" });
   });
 
-  it('queues fetch requests before INIT_PORT and processes after', async () => {
+  it("queues fetch requests before INIT_PORT and processes after", async () => {
     const respondWith = vi.fn();
-    let fetchHandler: ((event: { request: Request; respondWith: typeof respondWith }) => void) | undefined;
+    let fetchHandler:
+      | ((event: { request: Request; respondWith: typeof respondWith }) => void)
+      | undefined;
     const swGlobal = {
       addEventListener: vi.fn((type: string, handler: (...args: unknown[]) => void) => {
-        if (type === 'fetch') fetchHandler = handler as typeof fetchHandler;
+        if (type === "fetch") fetchHandler = handler as typeof fetchHandler;
       }),
       skipWaiting: vi.fn(),
       clients: mockClients,
@@ -57,7 +59,7 @@ describe('SW script behavior', () => {
     initSW(swGlobal);
 
     fetchHandler?.({
-      request: new Request('http://localhost:4173/__preview/3000/queued'),
+      request: new Request("http://localhost:4173/__preview/3000/queued"),
       respondWith,
     });
     expect(respondWith).toHaveBeenCalledTimes(1);
@@ -68,9 +70,9 @@ describe('SW script behavior', () => {
       onmessage: null as ((e: MessageEvent) => void) | null,
     };
     const messageHandler = (swGlobal.addEventListener as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call) => call[0] === 'message',
+      (call) => call[0] === "message",
     )?.[1];
-    messageHandler?.({ data: { type: 'INIT_PORT' }, ports: [mockPort] });
+    messageHandler?.({ data: { type: "INIT_PORT" }, ports: [mockPort] });
 
     await new Promise((r) => setTimeout(r, 0));
 
@@ -78,19 +80,24 @@ describe('SW script behavior', () => {
     expect(mockPort.postMessage).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        type: 'FETCH_REQUEST',
-        request: expect.objectContaining({ url: 'http://localhost:4173/__preview/3000/queued', method: 'GET' }),
+        type: "FETCH_REQUEST",
+        request: expect.objectContaining({
+          url: "http://localhost:4173/__preview/3000/queued",
+          method: "GET",
+        }),
       }),
       expect.any(Array),
     );
   });
 
-  it('intercepts localhost fetch after INIT_PORT', async () => {
+  it("intercepts localhost fetch after INIT_PORT", async () => {
     const respondWith = vi.fn();
-    let fetchHandler: ((event: { request: Request; respondWith: typeof respondWith }) => void) | undefined;
+    let fetchHandler:
+      | ((event: { request: Request; respondWith: typeof respondWith }) => void)
+      | undefined;
     const swGlobal = {
       addEventListener: vi.fn((type: string, handler: (...args: unknown[]) => void) => {
-        if (type === 'fetch') fetchHandler = handler as typeof fetchHandler;
+        if (type === "fetch") fetchHandler = handler as typeof fetchHandler;
       }),
       skipWaiting: vi.fn(),
       clients: mockClients,
@@ -104,12 +111,12 @@ describe('SW script behavior', () => {
     };
 
     const messageHandler = (swGlobal.addEventListener as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call) => call[0] === 'message',
+      (call) => call[0] === "message",
     )?.[1];
-    messageHandler?.({ data: { type: 'INIT_PORT' }, ports: [mockPort] });
+    messageHandler?.({ data: { type: "INIT_PORT" }, ports: [mockPort] });
 
     fetchHandler?.({
-      request: new Request('http://localhost:4173/__preview/3000/'),
+      request: new Request("http://localhost:4173/__preview/3000/"),
       respondWith,
     });
 
@@ -119,20 +126,25 @@ describe('SW script behavior', () => {
     expect(mockPort.postMessage).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        type: 'FETCH_REQUEST',
-        request: expect.objectContaining({ url: 'http://localhost:4173/__preview/3000/', method: 'GET' }),
+        type: "FETCH_REQUEST",
+        request: expect.objectContaining({
+          url: "http://localhost:4173/__preview/3000/",
+          method: "GET",
+        }),
       }),
       expect.any(Array),
     );
     expect(respondWith).toHaveBeenCalled();
   });
 
-  it('does not intercept non-localhost fetch', () => {
+  it("does not intercept non-localhost fetch", () => {
     const respondWith = vi.fn();
-    let fetchHandler: ((event: { request: Request; respondWith: typeof respondWith }) => void) | undefined;
+    let fetchHandler:
+      | ((event: { request: Request; respondWith: typeof respondWith }) => void)
+      | undefined;
     const swGlobal = {
       addEventListener: vi.fn((type: string, handler: (...args: unknown[]) => void) => {
-        if (type === 'fetch') fetchHandler = handler as typeof fetchHandler;
+        if (type === "fetch") fetchHandler = handler as typeof fetchHandler;
       }),
       skipWaiting: vi.fn(),
       clients: mockClients,
@@ -146,12 +158,12 @@ describe('SW script behavior', () => {
     };
 
     const messageHandler = (swGlobal.addEventListener as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call) => call[0] === 'message',
+      (call) => call[0] === "message",
     )?.[1];
-    messageHandler?.({ data: { type: 'INIT_PORT' }, ports: [mockPort] });
+    messageHandler?.({ data: { type: "INIT_PORT" }, ports: [mockPort] });
 
     fetchHandler?.({
-      request: new Request('https://example.com/'),
+      request: new Request("https://example.com/"),
       respondWith,
     });
 

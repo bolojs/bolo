@@ -1,5 +1,5 @@
-import type { VfsBus, DirEnt as VfsDirEnt } from '@browser-containers/vfs-bus';
-import type { FileSystemAPI, DirEnt } from './container-types.js';
+import type { VfsBus, DirEnt as VfsDirEnt } from "@browser-containers/vfs-bus";
+import type { FileSystemAPI, DirEnt } from "./container-types.js";
 
 export function createFileSystem(vfs: VfsBus): FileSystemAPI {
   async function readFile(path: string): Promise<string> {
@@ -26,7 +26,10 @@ export function createFileSystem(vfs: VfsBus): FileSystemAPI {
     return vfs.exists(path);
   }
 
-  async function readdir(path: string, options?: { withFileTypes?: boolean }): Promise<string[] | DirEnt[]> {
+  async function readdir(
+    path: string,
+    options?: { withFileTypes?: boolean },
+  ): Promise<string[] | DirEnt[]> {
     const entries = await vfs.readdir(path, options);
     if (options?.withFileTypes) {
       return (entries as VfsDirEnt[]).map((e) => ({
@@ -45,17 +48,17 @@ export function createFileSystem(vfs: VfsBus): FileSystemAPI {
   function watch(
     path: string,
     options?: { recursive?: boolean },
-    listener?: (event: 'rename' | 'change', filename: string) => void
+    listener?: (event: "rename" | "change", filename: string) => void,
   ) {
-    const glob = path.includes('.') ? path : `${path}/*`;
+    const glob = path.includes(".") ? path : `${path}/*`;
 
-    const handler = (filePath: string, event: 'add' | 'change' | 'unlink') => {
+    const handler = (filePath: string, event: "add" | "change" | "unlink") => {
       if (!listener) return;
-      const filename = filePath.substring(filePath.lastIndexOf('/') + 1);
-      if (event === 'add' || event === 'unlink') {
-        listener('rename', filename);
-      } else if (event === 'change') {
-        listener('change', filename);
+      const filename = filePath.substring(filePath.lastIndexOf("/") + 1);
+      if (event === "add" || event === "unlink") {
+        listener("rename", filename);
+      } else if (event === "change") {
+        listener("change", filename);
       }
     };
 

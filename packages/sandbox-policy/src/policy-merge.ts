@@ -1,4 +1,4 @@
-import type { SandboxPolicy } from './types.js';
+import type { SandboxPolicy } from "./types.js";
 
 export const mergePolicy = (
   preset: SandboxPolicy | null,

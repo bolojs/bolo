@@ -1,7 +1,7 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import * as ts from 'typescript';
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import * as ts from "typescript";
 
-const TRANSFORMABLE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);
+const TRANSFORMABLE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 
 export interface BrowserViteServerOptions {
   readonly vfs: VfsBus;
@@ -26,9 +26,9 @@ export class BrowserViteServer {
 
   constructor(options: BrowserViteServerOptions) {
     this.vfs = options.vfs;
-    this.root = options.root ?? '/project';
-    this.base = options.base?.replace(/\/$/, '') ?? '';
-    this.channel = new BroadcastChannel(options.hmrChannelName ?? 'vite-hmr');
+    this.root = options.root ?? "/project";
+    this.base = options.base?.replace(/\/$/, "") ?? "";
+    this.channel = new BroadcastChannel(options.hmrChannelName ?? "vite-hmr");
   }
 
   async start(): Promise<void> {
@@ -54,7 +54,7 @@ export class BrowserViteServer {
 
   async _transformModule(filePath: string, code: string): Promise<string> {
     if (!this.transpiler) {
-      throw new Error('BrowserViteServer not started. Call start() first.');
+      throw new Error("BrowserViteServer not started. Call start() first.");
     }
     return this.transpiler.transpileFile(code, undefined, filePath);
   }
@@ -72,13 +72,13 @@ export class BrowserViteServer {
       const code = raw as string;
       const ext = this.getExtension(filePath);
 
-      if (TRANSFORMABLE_EXTENSIONS.has(ext) && ext !== '.js') {
+      if (TRANSFORMABLE_EXTENSIONS.has(ext) && ext !== ".js") {
         const transformed = await this._transformModule(filePath, code);
         return new Response(transformed, {
           status: 200,
           headers: {
-            'Content-Type': 'application/javascript',
-            'Cache-Control': 'no-cache',
+            "Content-Type": "application/javascript",
+            "Cache-Control": "no-cache",
           },
         });
       }
@@ -87,8 +87,8 @@ export class BrowserViteServer {
       return new Response(code, {
         status: 200,
         headers: {
-          'Content-Type': contentType,
-          'Cache-Control': 'no-cache',
+          "Content-Type": contentType,
+          "Cache-Control": "no-cache",
         },
       });
     } catch (err) {
@@ -113,8 +113,8 @@ export class BrowserViteServer {
         JSON.parse(importMapJson);
 
         const scriptTag = `<script type="importmap">${importMapJson}</script>`;
-        if (html.includes('</head>')) {
-          return html.replace('</head>', `${scriptTag}\n</head>`);
+        if (html.includes("</head>")) {
+          return html.replace("</head>", `${scriptTag}\n</head>`);
         }
         return `${scriptTag}\n${html}`;
       }
@@ -128,7 +128,7 @@ export class BrowserViteServer {
   async onFetch(url: string, _request: Request): Promise<Response> {
     const parsed = new URL(url);
 
-    if (parsed.pathname === '/' || parsed.pathname === '/index.html') {
+    if (parsed.pathname === "/" || parsed.pathname === "/index.html") {
       const indexPath = `${this.root}/index.html`;
       const exists = await this.vfs.exists(indexPath);
 
@@ -138,7 +138,7 @@ export class BrowserViteServer {
         const injected = await this.transformIndexHtml(html);
         return new Response(injected, {
           status: 200,
-          headers: { 'Content-Type': 'text/html' },
+          headers: { "Content-Type": "text/html" },
         });
       }
     }
@@ -154,7 +154,7 @@ export class BrowserViteServer {
     const parsed = new URL(url);
     let pathname = parsed.pathname;
 
-    if (pathname.startsWith('/')) {
+    if (pathname.startsWith("/")) {
       pathname = pathname.slice(1);
     }
 
@@ -166,29 +166,29 @@ export class BrowserViteServer {
   }
 
   private getExtension(filePath: string): string {
-    const dotIdx = filePath.lastIndexOf('.');
-    if (dotIdx === -1) return '';
-    const slashIdx = filePath.lastIndexOf('/');
-    if (dotIdx < slashIdx) return '';
+    const dotIdx = filePath.lastIndexOf(".");
+    if (dotIdx === -1) return "";
+    const slashIdx = filePath.lastIndexOf("/");
+    if (dotIdx < slashIdx) return "";
     return filePath.slice(dotIdx);
   }
 
   private getContentType(filePath: string): string {
     const ext = this.getExtension(filePath);
     const map: Record<string, string> = {
-      '.html': 'text/html',
-      '.css': 'text/css',
-      '.js': 'application/javascript',
-      '.json': 'application/json',
-      '.svg': 'image/svg+xml',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.gif': 'image/gif',
-      '.ico': 'image/x-icon',
-      '.woff': 'font/woff',
-      '.woff2': 'font/woff2',
-      '.txt': 'text/plain',
+      ".html": "text/html",
+      ".css": "text/css",
+      ".js": "application/javascript",
+      ".json": "application/json",
+      ".svg": "image/svg+xml",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".gif": "image/gif",
+      ".ico": "image/x-icon",
+      ".woff": "font/woff",
+      ".woff2": "font/woff2",
+      ".txt": "text/plain",
     };
-    return map[ext] ?? 'application/octet-stream';
+    return map[ext] ?? "application/octet-stream";
   }
 }

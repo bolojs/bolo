@@ -1,4 +1,4 @@
-import { createEffect, onCleanup } from 'solid-js';
+import { createEffect, onCleanup } from "solid-js";
 
 interface Props {
   url: string;
@@ -9,13 +9,13 @@ export default function Preview(props: Props) {
 
   // Listen for HMR reload signals broadcast by BrowserViteServer.
   createEffect(() => {
-    const channel = new BroadcastChannel('vite-hmr');
+    const channel = new BroadcastChannel("vite-hmr");
     const onMessage = () => {
       if (iframeRef?.contentWindow) iframeRef.contentWindow.location.reload();
     };
-    channel.addEventListener('message', onMessage);
+    channel.addEventListener("message", onMessage);
     onCleanup(() => {
-      channel.removeEventListener('message', onMessage);
+      channel.removeEventListener("message", onMessage);
       channel.close();
     });
   });

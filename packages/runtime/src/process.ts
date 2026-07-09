@@ -1,7 +1,7 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { Process, SpawnOptions } from './container-types.js';
-import type { ShellService } from './shell-service.js';
-import type { RuntimeWorker } from './runtime-worker.js';
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { Process, SpawnOptions } from "./container-types.js";
+import type { ShellService } from "./shell-service.js";
+import type { RuntimeWorker } from "./runtime-worker.js";
 
 export interface ProcessDeps {
   vfs: VfsBus;
@@ -14,7 +14,7 @@ export function createProcess(
   command: string,
   args: string[] = [],
   options: SpawnOptions = {},
-  deps: ProcessDeps
+  deps: ProcessDeps,
 ): Process {
   let closed = false;
   let aborted = false;
@@ -40,22 +40,25 @@ export function createProcess(
       // All commands — including `runtime run` — go through the shell service,
       // which routes node/bun/runtime entries through the VFS-backed bundler
       // (bundleEntry) and live shim wiring in runNodeApp.
-      const fullCommand = [command, ...args].join(' ');
-      deps.shell.execute(fullCommand, {
-        stdout: enqueue,
-        stderr: enqueue,
-      }).then((result) => {
-        if (!aborted) {
-          resolveExit(result.exitCode);
-        }
-        close();
-      }).catch((err) => {
-        if (!aborted) {
-          enqueue(String(err instanceof Error ? err.message : err) + '\n');
-          resolveExit(1);
-        }
-        close();
-      });
+      const fullCommand = [command, ...args].join(" ");
+      deps.shell
+        .execute(fullCommand, {
+          stdout: enqueue,
+          stderr: enqueue,
+        })
+        .then((result) => {
+          if (!aborted) {
+            resolveExit(result.exitCode);
+          }
+          close();
+        })
+        .catch((err) => {
+          if (!aborted) {
+            enqueue(String(err instanceof Error ? err.message : err) + "\n");
+            resolveExit(1);
+          }
+          close();
+        });
     },
   });
 

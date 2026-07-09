@@ -1,4 +1,4 @@
-import { boot, type BrowserContainer } from '@browser-containers/runtime';
+import { boot, type BrowserContainer } from "@browser-containers/runtime";
 
 export interface CompatRunResult {
   exitCode: number;
@@ -30,7 +30,7 @@ let container: BrowserContainer | undefined;
 
 async function readAll(stream: ReadableStream<string>): Promise<string> {
   const reader = stream.getReader();
-  let output = '';
+  let output = "";
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -39,24 +39,24 @@ async function readAll(stream: ReadableStream<string>): Promise<string> {
   return output;
 }
 
-const normalize = (path: string): string => (path.startsWith('/') ? path : `/${path}`);
+const normalize = (path: string): string => (path.startsWith("/") ? path : `/${path}`);
 
 window.__compatHarness = {
   ready: false,
 
   async boot() {
-    container = await boot({ workdirName: '/home/harness' });
+    container = await boot({ workdirName: "/home/harness" });
     window.__compatHarness.ready = true;
   },
 
   async run(path, source) {
-    if (!container) throw new Error('CompatHarness: boot() must resolve before run()');
+    if (!container) throw new Error("CompatHarness: boot() must resolve before run()");
     const rel = normalize(path);
-    const dir = rel.slice(0, rel.lastIndexOf('/'));
+    const dir = rel.slice(0, rel.lastIndexOf("/"));
     if (dir) await container.fs.mkdir(container.workdir + dir, { recursive: true });
     await container.fs.writeFile(container.workdir + rel, source);
 
-    const proc = container.spawn('node', [rel]);
+    const proc = container.spawn("node", [rel]);
     const [output, exitCode] = await Promise.all([readAll(proc.output), proc.exit]);
     return { exitCode, output };
   },

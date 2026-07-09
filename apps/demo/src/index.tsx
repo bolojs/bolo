@@ -1,8 +1,8 @@
-import { render } from 'solid-js/web';
-import App from './App';
-import './style.css';
+import { render } from "solid-js/web";
+import App from "./App";
+import "./style.css";
 
-if (typeof globalThis.process !== 'undefined') {
+if (typeof globalThis.process !== "undefined") {
   const proc = globalThis.process as any;
   if (!proc.stdin) {
     proc.stdin = {
@@ -34,4 +34,4 @@ if (typeof globalThis.process !== 'undefined') {
   }
 }
 
-render(() => <App />, document.getElementById('root')!);
+render(() => <App />, document.getElementById("root")!);

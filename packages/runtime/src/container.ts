@@ -4,13 +4,13 @@ import type {
   Process,
   SpawnOptions,
   Unsubscribe,
-} from './container-types.js';
-import type { ContainerEvents } from './events.js';
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { MountAPI } from './mount.js';
-import type { ExportAPI } from './export.js';
-import type { ProcessDeps } from './process.js';
-import { createProcess } from './process.js';
+} from "./container-types.js";
+import type { ContainerEvents } from "./events.js";
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { MountAPI } from "./mount.js";
+import type { ExportAPI } from "./export.js";
+import type { ProcessDeps } from "./process.js";
+import { createProcess } from "./process.js";
 
 export interface BrowserContainerDeps {
   vfs: VfsBus;
@@ -36,27 +36,35 @@ export class BrowserContainer {
 
   spawn(command: string, args?: string[], options?: SpawnOptions): Process {
     if (this.tornDown) {
-      throw new Error('Container has been torn down');
+      throw new Error("Container has been torn down");
     }
     return createProcess(command, args ?? [], options ?? {}, this.deps.processDeps);
   }
 
   async mount(tree: FileSystemTree): Promise<void> {
     if (this.tornDown) {
-      throw new Error('Container has been torn down');
+      throw new Error("Container has been torn down");
     }
     await this.deps.mountApi.mountTree(tree, this.workdir);
   }
 
-  on(event: 'port', listener: (port: number, type: 'open' | 'close', url: string) => void): Unsubscribe;
-  on(event: 'server-ready', listener: (port: number, url: string) => void): Unsubscribe;
-  on(event: 'port' | 'server-ready', listener: (...args: any[]) => void): Unsubscribe {
-    return (this.deps.events.on as (event: 'port' | 'server-ready', listener: (...args: any[]) => void) => Unsubscribe)(event, listener);
+  on(
+    event: "port",
+    listener: (port: number, type: "open" | "close", url: string) => void,
+  ): Unsubscribe;
+  on(event: "server-ready", listener: (port: number, url: string) => void): Unsubscribe;
+  on(event: "port" | "server-ready", listener: (...args: any[]) => void): Unsubscribe {
+    return (
+      this.deps.events.on as (
+        event: "port" | "server-ready",
+        listener: (...args: any[]) => void,
+      ) => Unsubscribe
+    )(event, listener);
   }
 
   async export(): Promise<FileSystemTree> {
     if (this.tornDown) {
-      throw new Error('Container has been torn down');
+      throw new Error("Container has been torn down");
     }
     return this.deps.exportApi.exportTree(this.workdir);
   }

@@ -1,4 +1,4 @@
-import type { RuntimeMessage, RunScriptOptions } from './runtime-worker.js';
+import type { RuntimeMessage, RunScriptOptions } from "./runtime-worker.js";
 
 declare global {
   var __httpShimOptions: unknown | undefined;
@@ -23,20 +23,20 @@ const runUserCode = (code: string, opts: RunScriptOptions) => {
   try {
     // eslint-disable-next-line no-eval
     (0, eval)(wrapped);
-    post({ type: 'EXIT', code: 0 });
+    post({ type: "EXIT", code: 0 });
   } catch (err) {
-    post({ type: 'STDERR', data: String(err) });
-    post({ type: 'EXIT', code: 1 });
+    post({ type: "STDERR", data: String(err) });
+    post({ type: "EXIT", code: 1 });
   }
 };
 
 setInterval(() => {
-  post({ type: 'HEARTBEAT' });
+  post({ type: "HEARTBEAT" });
 }, 5000);
 
 self.onmessage = (ev: MessageEvent<RuntimeMessage>) => {
   const msg = ev.data;
-  if (msg.type === 'RUN_SCRIPT') {
+  if (msg.type === "RUN_SCRIPT") {
     runUserCode(msg.code, msg.opts);
   }
 };

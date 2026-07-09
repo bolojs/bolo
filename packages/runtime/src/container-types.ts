@@ -8,9 +8,9 @@
 // ── Boot options ──────────────────────────────────────────────────────
 
 export interface BootOptions {
-  coep?: 'require-corp' | 'credentialless' | 'none';
+  coep?: "require-corp" | "credentialless" | "none";
   workdirName?: string;
-  forwardPreviewErrors?: boolean | 'exceptions-only';
+  forwardPreviewErrors?: boolean | "exceptions-only";
 }
 
 // ── Virtual filesystem tree ───────────────────────────────────────────
@@ -32,8 +32,8 @@ export interface BrowserContainer {
   readonly workdir: string;
   spawn(command: string, args?: string[], options?: SpawnOptions): Process;
   mount(tree: FileSystemTree): Promise<void>;
-  on(event: 'port', listener: PortListener): Unsubscribe;
-  on(event: 'server-ready', listener: ServerReadyListener): Unsubscribe;
+  on(event: "port", listener: PortListener): Unsubscribe;
+  on(event: "server-ready", listener: ServerReadyListener): Unsubscribe;
   export(): Promise<FileSystemTree>;
   teardown(): Promise<void>;
 }
@@ -51,7 +51,7 @@ export interface FileSystemAPI {
   watch(
     path: string,
     options?: { recursive?: boolean },
-    listener?: (event: 'rename' | 'change', filename: string) => void
+    listener?: (event: "rename" | "change", filename: string) => void,
   ): Watcher;
 }
 
@@ -84,6 +84,6 @@ export interface Watcher {
 
 // ── Event listeners ───────────────────────────────────────────────────
 
-export type PortListener = (port: number, type: 'open' | 'close', url: string) => void;
+export type PortListener = (port: number, type: "open" | "close", url: string) => void;
 export type ServerReadyListener = (port: number, url: string) => void;
 export type Unsubscribe = () => void;

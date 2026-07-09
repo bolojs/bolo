@@ -1,14 +1,18 @@
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { FileSystemTree } from './container-types.js';
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { FileSystemTree } from "./container-types.js";
 
 export interface ExportAPI {
   exportTree(basePath?: string): Promise<FileSystemTree>;
 }
 
 export function createExport(vfs: VfsBus): ExportAPI {
-  async function exportTree(path = ''): Promise<FileSystemTree> {
+  async function exportTree(path = ""): Promise<FileSystemTree> {
     const tree: FileSystemTree = {};
-    const entries = await vfs.readdir(path || '/', { withFileTypes: true }) as Array<{ name: string; isFile(): boolean; isDirectory(): boolean }>;
+    const entries = (await vfs.readdir(path || "/", { withFileTypes: true })) as Array<{
+      name: string;
+      isFile(): boolean;
+      isDirectory(): boolean;
+    }>;
     for (const entry of entries) {
       const entryPath = path ? `${path}/${entry.name}` : `/${entry.name}`;
       if (entry.isDirectory()) {

@@ -1,2 +1,2 @@
-export { SWSandbox } from './sw-sandbox.js';
-export { initSW } from './sw.js';
+export { SWSandbox } from "./sw-sandbox.js";
+export { initSW } from "./sw.js";

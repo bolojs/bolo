@@ -1,17 +1,22 @@
-import { createSignal, onMount, onCleanup } from 'solid-js';
-import { boot, type BrowserContainer, type ShellResult } from '@browser-containers/runtime';
-import Terminal from './Terminal';
-import Preview from './Preview';
-import starterMainJsx from './starter/src/main.jsx?raw';
-import starterAppJsx from './starter/src/App.jsx?raw';
+import { createSignal, onMount, onCleanup } from "solid-js";
+import { boot, type BrowserContainer, type ShellResult } from "@browser-containers/runtime";
+import Terminal from "./Terminal";
+import Preview from "./Preview";
+import starterMainJsx from "./starter/src/main.jsx?raw";
+import starterAppJsx from "./starter/src/App.jsx?raw";
 
-type BootState = 'booting' | 'ready' | 'error';
+type BootState = "booting" | "ready" | "error";
 
 declare global {
   interface Window {
     __browserbox: {
       install(pkgs?: string[]): Promise<ShellResult>;
-      vfs: { writeFile(path: string, content: string): Promise<void>; exists(path: string): Promise<boolean>; mkdir(path: string, options?: { recursive?: boolean }): Promise<void>; readFile(path: string): Promise<string> };
+      vfs: {
+        writeFile(path: string, content: string): Promise<void>;
+        exists(path: string): Promise<boolean>;
+        mkdir(path: string, options?: { recursive?: boolean }): Promise<void>;
+        readFile(path: string): Promise<string>;
+      };
       preview: { loadUrl(url: string): void };
       shell: { exec(cmd: string): Promise<ShellResult> };
       vite: { transform(path: string): Promise<string> };
@@ -24,7 +29,7 @@ declare global {
 
 function parseCommand(cmd: string): { command: string; args: string[] } {
   const tokens = cmd.trim().split(/\s+/);
-  return { command: tokens[0] ?? '', args: tokens.slice(1) };
+  return { command: tokens[0] ?? "", args: tokens.slice(1) };
 }
 
 async function readStream(
@@ -46,22 +51,22 @@ async function readStream(
 }
 
 export default function App() {
-  const [bootState, setBootState] = createSignal<BootState>('booting');
-  const [previewUrl, setPreviewUrl] = createSignal('');
+  const [bootState, setBootState] = createSignal<BootState>("booting");
+  const [previewUrl, setPreviewUrl] = createSignal("");
   let container: BrowserContainer | undefined;
 
   onMount(async () => {
     try {
-      container = await boot({ workdirName: '/home/web' });
+      container = await boot({ workdirName: "/home/web" });
 
-      const unsubPort = container.on('port', (_port, type, url) => {
-        if (type === 'open') {
+      const unsubPort = container.on("port", (_port, type, url) => {
+        if (type === "open") {
           setPreviewUrl(url);
         }
       });
 
       const resolveVfsPath = (path: string) => {
-        if (path.startsWith('/')) {
+        if (path.startsWith("/")) {
           return container!.workdir + path;
         }
         return path;
@@ -69,10 +74,10 @@ export default function App() {
 
       window.__browserbox = {
         install: async (pkgs?: string[]) => {
-          const { command, args } = parseCommand(`npm install ${pkgs?.join(' ') ?? ''}`);
+          const { command, args } = parseCommand(`npm install ${pkgs?.join(" ") ?? ""}`);
           const proc = container!.spawn(command, args);
           const exitCode = await proc.exit;
-          return { exitCode, stdout: '', stderr: '' };
+          return { exitCode, stdout: "", stderr: "" };
         },
         vfs: {
           writeFile: (path: string, content: string) =>
@@ -88,7 +93,7 @@ export default function App() {
             const { command, args } = parseCommand(cmd);
             const proc = container!.spawn(command, args);
             const exitCode = await proc.exit;
-            return { exitCode, stdout: '', stderr: '' };
+            return { exitCode, stdout: "", stderr: "" };
           },
         },
         vite: {
@@ -104,21 +109,21 @@ export default function App() {
 
       // Mount the real React starter (apps/demo/src/starter) as the workdir tree.
       await container.mount({
-        'package.json': {
+        "package.json": {
           file: {
             contents: JSON.stringify(
               {
-                name: 'starter-app',
-                type: 'module',
+                name: "starter-app",
+                type: "module",
                 scripts: {
-                  dev: 'vite',
+                  dev: "vite",
                 },
                 dependencies: {
-                  react: '^18.2.0',
-                  'react-dom': '^18.2.0',
+                  react: "^18.2.0",
+                  "react-dom": "^18.2.0",
                 },
                 devDependencies: {
-                  vite: '^5.0.0',
+                  vite: "^5.0.0",
                 },
               },
               null,
@@ -126,7 +131,7 @@ export default function App() {
             ),
           },
         },
-        'index.html': {
+        "index.html": {
           file: {
             contents: `<!DOCTYPE html>
 <html lang="en">
@@ -144,28 +149,28 @@ export default function App() {
         },
         src: {
           directory: {
-            'main.jsx': { file: { contents: starterMainJsx } },
-            'App.jsx': { file: { contents: starterAppJsx } },
+            "main.jsx": { file: { contents: starterMainJsx } },
+            "App.jsx": { file: { contents: starterAppJsx } },
           },
         },
       });
 
       // Auto-install and auto-start dev server
-      const installProc = container.spawn('npm', ['install', '--ignore-scripts']);
+      const installProc = container.spawn("npm", ["install", "--ignore-scripts"]);
       await installProc.exit;
 
-      const devProc = container.spawn('npm', ['run', 'dev']);
+      const devProc = container.spawn("npm", ["run", "dev"]);
       // Fire-and-forget; output stream is consumed by the runtime
       void devProc.exit;
 
-      setBootState('ready');
+      setBootState("ready");
 
       onCleanup(() => {
         unsubPort();
       });
     } catch (e) {
-      console.error('[demo] Boot failed:', e);
-      setBootState('error');
+      console.error("[demo] Boot failed:", e);
+      setBootState("error");
     }
   });
 
@@ -174,11 +179,11 @@ export default function App() {
     stdout: (s: string) => void,
     stderr: (s: string) => void,
   ): Promise<ShellResult> => {
-    if (!container) return Promise.reject(new Error('Not ready'));
+    if (!container) return Promise.reject(new Error("Not ready"));
     const { command, args } = parseCommand(cmd);
     const proc = container.spawn(command, args);
     const exitCode = await readStream(proc.output, stdout, stderr);
-    return { exitCode, stdout: '', stderr: '' };
+    return { exitCode, stdout: "", stderr: "" };
   };
 
   return (
@@ -188,7 +193,7 @@ export default function App() {
         <span class={`app-status app-status--${bootState()}`}>{bootState()}</span>
       </header>
       <main class="app-panels">
-        <Terminal onCommand={execute} disabled={bootState() !== 'ready'} />
+        <Terminal onCommand={execute} disabled={bootState() !== "ready"} />
         <Preview url={previewUrl()} />
       </main>
     </div>

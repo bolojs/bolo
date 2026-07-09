@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { WorkerWatchdog } from './watchdog.js';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { WorkerWatchdog } from "./watchdog.js";
 
-describe('WorkerWatchdog', () => {
+describe("WorkerWatchdog", () => {
   let worker: Worker;
   let terminateSpy: ReturnType<typeof vi.fn>;
 
@@ -15,7 +15,7 @@ describe('WorkerWatchdog', () => {
     vi.useRealTimers();
   });
 
-  it('does not terminate worker before 2 missed checks', () => {
+  it("does not terminate worker before 2 missed checks", () => {
     const wd = new WorkerWatchdog(worker, 5000);
     wd.start();
 
@@ -26,7 +26,7 @@ describe('WorkerWatchdog', () => {
     expect(terminateSpy).toHaveBeenCalled();
   });
 
-  it('reset clears missed count preventing termination', () => {
+  it("reset clears missed count preventing termination", () => {
     const wd = new WorkerWatchdog(worker, 5000);
     wd.start();
 
@@ -37,7 +37,7 @@ describe('WorkerWatchdog', () => {
     expect(terminateSpy).not.toHaveBeenCalled();
   });
 
-  it('stop clears the timer and prevents termination', () => {
+  it("stop clears the timer and prevents termination", () => {
     const wd = new WorkerWatchdog(worker, 5000);
     wd.start();
     wd.stop();
@@ -46,7 +46,7 @@ describe('WorkerWatchdog', () => {
     expect(terminateSpy).not.toHaveBeenCalled();
   });
 
-  it('uses default interval of 5000ms', () => {
+  it("uses default interval of 5000ms", () => {
     const wd = new WorkerWatchdog(worker);
     wd.start();
 

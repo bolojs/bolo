@@ -1,15 +1,15 @@
-import type { BootOptions } from './container-types.js';
-import { BrowserContainer, type BrowserContainerDeps } from './container.js';
-import { VfsBus } from '@browser-containers/vfs-bus';
-import { SWSandbox } from '@browser-containers/sw-sandbox';
-import { PackageManager } from '@browser-containers/npm';
-import { RuntimeWorker } from './runtime-worker.js';
-import { SandboxPool } from './sandbox-pool.js';
-import { ShellService } from './shell-service.js';
-import { createFileSystem } from './fs-adapter.js';
-import { createEventEmitter } from './events.js';
-import { createMount } from './mount.js';
-import { createExport } from './export.js';
+import type { BootOptions } from "./container-types.js";
+import { BrowserContainer, type BrowserContainerDeps } from "./container.js";
+import { VfsBus } from "@browser-containers/vfs-bus";
+import { SWSandbox } from "@browser-containers/sw-sandbox";
+import { PackageManager } from "@browser-containers/npm";
+import { RuntimeWorker } from "./runtime-worker.js";
+import { SandboxPool } from "./sandbox-pool.js";
+import { ShellService } from "./shell-service.js";
+import { createFileSystem } from "./fs-adapter.js";
+import { createEventEmitter } from "./events.js";
+import { createMount } from "./mount.js";
+import { createExport } from "./export.js";
 
 declare global {
   var __vfsBus: VfsBus | undefined;
@@ -25,7 +25,7 @@ export async function boot(options?: BootOptions): Promise<BrowserContainer> {
   }
 
   if (activeInstance) {
-    throw new Error('A browser container is already running');
+    throw new Error("A browser container is already running");
   }
 
   bootPromise = doBoot(options);
@@ -42,7 +42,7 @@ export async function boot(options?: BootOptions): Promise<BrowserContainer> {
 }
 
 async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
-  const workdir = options?.workdirName ?? '/home/web';
+  const workdir = options?.workdirName ?? "/home/web";
   let vfs: VfsBus | null = null;
 
   try {
@@ -50,8 +50,8 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
 
     let sandbox: SWSandbox;
     try {
-      const origin = globalThis.location?.origin ?? 'https://sandbox.local/';
-      sandbox = await SWSandbox.create({ origin, swPath: '/sw.js' });
+      const origin = globalThis.location?.origin ?? "https://sandbox.local/";
+      sandbox = await SWSandbox.create({ origin, swPath: "/sw.js" });
     } catch {
       sandbox = { onFetch: () => {}, setPolicyRegistry: () => {} } as unknown as SWSandbox;
     }
@@ -80,11 +80,11 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
     const httpShimOptions = {
       onPortEvent: (event: string, data: { port: number; url?: string }) => {
         if (data.url) {
-          if (event === 'server-ready') {
-            events.emit('server-ready', data.port, data.url);
+          if (event === "server-ready") {
+            events.emit("server-ready", data.port, data.url);
           }
-          const type = event === 'port-close' ? 'close' : 'open';
-          events.emit('port', data.port, type, data.url);
+          const type = event === "port-close" ? "close" : "open";
+          events.emit("port", data.port, type, data.url);
         }
       },
     };

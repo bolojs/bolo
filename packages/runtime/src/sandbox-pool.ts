@@ -1,7 +1,11 @@
-import { getQuickJS, type QuickJSContext, type QuickJSHandle } from 'quickjs-emscripten';
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import { transformScript } from '@browser-containers/wasm-registry';
-import { SandboxPresets, createVfsAcl, type SandboxPolicy } from '@browser-containers/sandbox-policy';
+import { getQuickJS, type QuickJSContext, type QuickJSHandle } from "quickjs-emscripten";
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import { transformScript } from "@browser-containers/wasm-registry";
+import {
+  SandboxPresets,
+  createVfsAcl,
+  type SandboxPolicy,
+} from "@browser-containers/sandbox-policy";
 
 export interface SandboxRunResult {
   result?: string;
@@ -50,8 +54,16 @@ export class SandboxPool {
     const cleanup = () => {
       if (!disposed) {
         disposed = true;
-        try { context.dispose(); } catch { /* noop: lifetime may already be freed by QuickJS on error */ }
-        try { runtime.dispose(); } catch { /* noop: lifetime may already be freed by QuickJS on error */ }
+        try {
+          context.dispose();
+        } catch {
+          /* noop: lifetime may already be freed by QuickJS on error */
+        }
+        try {
+          runtime.dispose();
+        } catch {
+          /* noop: lifetime may already be freed by QuickJS on error */
+        }
       }
     };
 
@@ -69,10 +81,10 @@ export class SandboxPool {
         let errMsg: string;
         try {
           const errHandle = evalResult.error;
-          errMsg = context.getString(context.getProp(errHandle, 'message'));
+          errMsg = context.getString(context.getProp(errHandle, "message"));
           errHandle.dispose();
         } catch {
-          errMsg = 'Unknown error';
+          errMsg = "Unknown error";
         }
         cleanup();
         return { error: errMsg };
@@ -82,14 +94,14 @@ export class SandboxPool {
       if (evalResult.value) {
         const valHandle = evalResult.value;
         const typeTag = context.typeof(valHandle);
-        if (typeTag === 'string') {
+        if (typeTag === "string") {
           result = context.getString(valHandle);
-        } else if (typeTag === 'number') {
+        } else if (typeTag === "number") {
           result = String(context.getNumber(valHandle));
-        } else if (typeTag === 'boolean') {
+        } else if (typeTag === "boolean") {
           result = String(context.dump(valHandle));
-        } else if (typeTag === 'undefined') {
-          result = 'undefined';
+        } else if (typeTag === "undefined") {
+          result = "undefined";
         }
         valHandle.dispose();
       }
@@ -114,40 +126,43 @@ export class SandboxPool {
     const acl = createVfsAcl(this.policy);
     const guard = (operation: string, path: string): void => acl({ path, operation }, () => {});
 
-    const readFileSync = context.newFunction('readFileSync', (pathHandle: QuickJSHandle) => {
+    const readFileSync = context.newFunction("readFileSync", (pathHandle: QuickJSHandle) => {
       const path = context.getString(pathHandle);
-      guard('readFile', path);
-      const content = this.vfs.hot.readFileSync(path, 'utf8');
+      guard("readFile", path);
+      const content = this.vfs.hot.readFileSync(path, "utf8");
       return context.newString(content as string);
     });
-    context.setProp(fsHandle, 'readFileSync', readFileSync);
+    context.setProp(fsHandle, "readFileSync", readFileSync);
     readFileSync.dispose();
 
-    const writeFileSync = context.newFunction('writeFileSync', (pathHandle: QuickJSHandle, dataHandle: QuickJSHandle) => {
-      const path = context.getString(pathHandle);
-      guard('writeFile', path);
-      this.vfs.hot.writeFileSync(path, context.getString(dataHandle));
-    });
-    context.setProp(fsHandle, 'writeFileSync', writeFileSync);
+    const writeFileSync = context.newFunction(
+      "writeFileSync",
+      (pathHandle: QuickJSHandle, dataHandle: QuickJSHandle) => {
+        const path = context.getString(pathHandle);
+        guard("writeFile", path);
+        this.vfs.hot.writeFileSync(path, context.getString(dataHandle));
+      },
+    );
+    context.setProp(fsHandle, "writeFileSync", writeFileSync);
     writeFileSync.dispose();
 
-    const mkdirSync = context.newFunction('mkdirSync', (pathHandle: QuickJSHandle) => {
+    const mkdirSync = context.newFunction("mkdirSync", (pathHandle: QuickJSHandle) => {
       const path = context.getString(pathHandle);
-      guard('mkdir', path);
+      guard("mkdir", path);
       this.vfs.hot.mkdirSync(path, { recursive: true });
     });
-    context.setProp(fsHandle, 'mkdirSync', mkdirSync);
+    context.setProp(fsHandle, "mkdirSync", mkdirSync);
     mkdirSync.dispose();
 
-    const rmSync = context.newFunction('rmSync', (pathHandle: QuickJSHandle) => {
+    const rmSync = context.newFunction("rmSync", (pathHandle: QuickJSHandle) => {
       const path = context.getString(pathHandle);
-      guard('rm', path);
+      guard("rm", path);
       this.vfs.hot.rmSync(path, { recursive: true, force: true });
     });
-    context.setProp(fsHandle, 'rmSync', rmSync);
+    context.setProp(fsHandle, "rmSync", rmSync);
     rmSync.dispose();
 
-    context.setProp(context.global, 'fs', fsHandle);
+    context.setProp(context.global, "fs", fsHandle);
     fsHandle.dispose();
   }
 
@@ -158,8 +173,7 @@ export class SandboxPool {
    * `[\s\S]*?\}` matches that broke on nested object types/interfaces.
    */
   private async stripTypes(code: string): Promise<string> {
-    const { code: stripped } = await transformScript(code, { loader: 'ts' });
+    const { code: stripped } = await transformScript(code, { loader: "ts" });
     return stripped;
   }
-
 }
