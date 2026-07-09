@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: Build, typecheck, lint, test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.26.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # apps/demo's production `vite build` has a pre-existing, unrelated
+      # break (vite-plugin-node-polyfills can't resolve a shim import from
+      # packages/runtime/dist) — tracked separately. Scope this gate to the
+      # packages/* library builds so it isn't undermined by that app-level bug;
+      # demo is still typechecked and linted below.
+      - name: Build packages
+        run: pnpm turbo run build --filter='!@browser-containers/demo'
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
