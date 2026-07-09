@@ -209,6 +209,34 @@ globalThis.__fsSyncProbe = {
     });
   });
 
+  it('bundled http servers get real streaming req/res (A4)', async () => {
+    (deps.vfs.hot as unknown as { writeFileSync: (p: string, c: string) => void }).writeFileSync(
+      '/http-stream.ts',
+      `import http from 'node:http';
+const server = http.createServer((req, res) => {
+  let body = '';
+  req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+  req.on('end', () => {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.write('{"echo":');
+    res.write(JSON.stringify(body));
+    res.end('}');
+  });
+});
+server.listen(3000);`,
+    );
+    const result = await shell.execute('node /http-stream.ts');
+    expect(result.stderr).toBe('');
+    expect(result.exitCode).toBe(0);
+
+    const fetchHandler = (deps.sandbox!.onFetch as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const req = new Request('http://localhost:3000/', { method: 'POST', body: 'hello' });
+    const resp: Response = await fetchHandler(req);
+    expect(resp.status).toBe(200);
+    expect(resp.headers.get('Content-Type')).toBe('application/json');
+    expect(await resp.text()).toBe('{"echo":"hello"}');
+  });
+
   it('runtime run → error when no file specified', async () => {
     const result = await shell.execute('runtime run');
     expect(result.exitCode).toBe(1);
