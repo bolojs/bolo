@@ -401,6 +401,33 @@ export const Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
 export const global = globalThis;
 export const setImmediate = (fn, ...args) => { queueMicrotask(() => fn(...args)); return 0; };
 export const clearImmediate = () => {};
+
+// esbuild's \`inject\` rewrites every bare, unshadowed reference to these export
+// names within the bundle scope — including \`console\`, even though it also
+// resolves to a real browser global. Left unhandled, bundled \`console.log\`
+// calls silently reach devtools instead of this container's captured
+// stdout/stderr (the terminal UI and any harness reading process output would
+// see nothing), unlike real Node where the global Console is constructed from
+// \`process.stdout\`/\`process.stderr\` in the first place.
+const __bcFormat = (args) => args.map((a) => {
+  if (typeof a === 'string') return a;
+  if (a instanceof Error) return a.stack || String(a);
+  if (typeof a === 'object' && a !== null) { try { return JSON.stringify(a); } catch { return String(a); } }
+  return String(a);
+}).join(' ');
+const __bcWrite = (stream, args) => __bcGlobals()?.shims?.process?.[stream]?.write(__bcFormat(args) + '\\n');
+export const console = {
+  log: (...args) => __bcWrite('stdout', args),
+  info: (...args) => __bcWrite('stdout', args),
+  debug: (...args) => __bcWrite('stdout', args),
+  table: (...args) => __bcWrite('stdout', args),
+  warn: (...args) => __bcWrite('stderr', args),
+  error: (...args) => __bcWrite('stderr', args),
+  trace: (...args) => __bcWrite('stderr', ['Trace:', ...args]),
+  assert: (cond, ...args) => { if (!cond) __bcWrite('stderr', ['Assertion failed' + (args.length ? ':' : ''), ...args]); },
+  group: () => {},
+  groupEnd: () => {},
+};
 `;
 
 const globalsPreludePlugin = (): Plugin => ({

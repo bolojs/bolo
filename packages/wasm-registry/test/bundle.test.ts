@@ -177,6 +177,32 @@ describe('wasm-registry: bundleEntry', () => {
 
     expect(code).toContain('https://esm.sh/pkg@2.3.4/internal');
   });
+
+  it('routes bundled console.log/error through the injected process shim, not the native console (B4)', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/entry.ts', 'console.log("out", 1); console.error("err");');
+
+    const { code } = await bundleEntry('/src/entry.ts', { vfs });
+
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+    (globalThis as unknown as { __browserContainers: unknown }).__browserContainers = {
+      shims: {
+        process: {
+          stdout: { write: (s: string) => stdout.push(s) },
+          stderr: { write: (s: string) => stderr.push(s) },
+        },
+      },
+    };
+    try {
+      await import(/* @vite-ignore */ `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`);
+    } finally {
+      delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
+    }
+
+    expect(stdout.join('')).toBe('out 1\n');
+    expect(stderr.join('')).toBe('err\n');
+  });
 });
 
 describe('wasm-registry: transformScript', () => {
