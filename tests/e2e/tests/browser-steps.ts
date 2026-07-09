@@ -96,7 +96,7 @@ const app = express();
 
 app.${method.toLowerCase()}('${routePath}', (req, res) => res.send('Hello from Express'));
 
-export default app;`;
+app.listen(3000);`;
     ab(`eval 'window.__browserbox.vfs.writeFile("${path}", ${JSON.stringify(content)})' --json`);
   }
 
@@ -175,6 +175,29 @@ export default app;`;
     if (!data.data.result.includes('blocked')) {
       throw new Error(`Request to ${url} was not blocked: ${data.data.result}`);
     }
+  }
+
+  /**
+   * Step: Wait for the server to be ready by polling the sandbox origin until it responds.
+   *        runtime run / node / bun are fire-and-forget; this bridges the race against server startup.
+   */
+  @Step('I wait for the server to be ready')
+  async waitForServerReady() {
+    const maxAttempts = 20;
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+      try {
+        // ponytail: any HTTP response (even 404) means the SW is proxying and the server is up.
+        const result = ab(`eval "fetch('https://sandbox.local/__preview/').then(r => r.status)" --json`);
+        const data = JSON.parse(result);
+        if (data.data && typeof data.data.result === 'number') {
+          return; // server is up
+        }
+      } catch {}
+      execSync('sleep 0.5');
+      attempts++;
+    }
+    throw new Error('Server did not start within 10 seconds');
   }
 
   /**
