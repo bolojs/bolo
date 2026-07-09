@@ -145,6 +145,9 @@ importers:
       '@browser-containers/vfs-bus':
         specifier: workspace:*
         version: link:../vfs-bus
+      quickjs-emscripten:
+        specifier: ^0.32.0
+        version: 0.32.0
     devDependencies:
       typescript:
         specifier: ^5.8.0
