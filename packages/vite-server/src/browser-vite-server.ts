@@ -7,6 +7,10 @@ export interface BrowserViteServerOptions {
   readonly vfs: VfsBus;
   readonly root?: string;
   readonly hmrChannelName?: string;
+  /** URL prefix this server is mounted at (e.g. `/__preview`), used to rewrite
+   * root-relative `src`/`href` attributes in served HTML so they stay under
+   * the prefix a proxy (service worker) is matching on. Empty by default. */
+  readonly base?: string;
 }
 
 interface TranspileResult {
@@ -16,12 +20,14 @@ interface TranspileResult {
 export class BrowserViteServer {
   private readonly vfs: VfsBus;
   private readonly root: string;
+  private readonly base: string;
   private readonly channel: BroadcastChannel;
   private transpiler?: TranspileResult;
 
   constructor(options: BrowserViteServerOptions) {
     this.vfs = options.vfs;
     this.root = options.root ?? '/project';
+    this.base = options.base?.replace(/\/$/, '') ?? '';
     this.channel = new BroadcastChannel(options.hmrChannelName ?? 'vite-hmr');
   }
 
@@ -34,7 +40,7 @@ export class BrowserViteServer {
       esModuleInterop: true,
       strict: false,
       allowSyntheticDefaultImports: true,
-      jsx: ts.JsxEmit.React,
+      jsx: ts.JsxEmit.ReactJSX,
     };
     this.transpiler = {
       transpileFile: (code, _compilerOptions, fileName) =>
@@ -92,6 +98,10 @@ export class BrowserViteServer {
   }
 
   async transformIndexHtml(html: string): Promise<string> {
+    if (this.base) {
+      html = html.replace(/(\s(?:src|href)=")\/(?!\/)/g, `$1${this.base}/`);
+    }
+
     try {
       const importMapPath = `${this.root}/importmap.json`;
       const exists = await this.vfs.exists(importMapPath);

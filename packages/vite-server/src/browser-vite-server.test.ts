@@ -230,4 +230,16 @@ describe('BrowserViteServer', () => {
     const bcInstance = bc.Channel.mock.results[0].value;
     expect(bcInstance.close).toHaveBeenCalled();
   });
+
+  it('transpiles JSX using the automatic runtime, with no raw JSX left', async () => {
+    await vfs.writeFile('/project/App.tsx', 'export default function App() { return <h1>Hi</h1>; }');
+    const server = await createServer();
+    const res = await server.transformRequest('http://localhost/App.tsx');
+
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain('react/jsx-runtime');
+    expect(body).not.toMatch(/<h1>/);
+    expect(body).not.toContain('React.createElement');
+  });
 });
