@@ -33,9 +33,11 @@ tests/
 
 - **This file** — project overview and conventions
 - **PRD** — [`docs/prd.md`](docs/prd.md)
-- **Architecture decisions** — [`docs/adr/0001-two-tier-runtime.md`](docs/adr/0001-two-tier-runtime.md) · [`docs/adr/0002-vfs-bus-single-owner.md`](docs/adr/0002-vfs-bus-single-owner.md) · [`docs/adr/0003-no-webpack-nextjs.md`](docs/adr/0003-no-webpack-nextjs.md)
+- **Architecture decisions** — [`docs/adr/0001-two-tier-runtime.md`](docs/adr/0001-two-tier-runtime.md) · [`docs/adr/0002-vfs-bus-single-owner.md`](docs/adr/0002-vfs-bus-single-owner.md) · [`docs/adr/0003-no-webpack-nextjs.md`](docs/adr/0003-no-webpack-nextjs.md) · [`docs/adr/0004-package-manager-strategy.md`](docs/adr/0004-package-manager-strategy.md)
 - **Implementation plan** — `tmp/plan.md` (ephemeral)
 - **Shim coverage** — [`docs/shim-coverage.md`](docs/shim-coverage.md)
+- **Node.js compat assessment** — [`docs/compat.md`](docs/compat.md)
+- **Package manager support** — [`docs/package-managers.md`](docs/package-managers.md)
 - **WASM registry** — [`docs/wasm-registry.md`](docs/wasm-registry.md)
 
 ## WHERE TO LOOK
