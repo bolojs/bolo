@@ -34,6 +34,19 @@ const NODE_BUILTIN_NAMES = new Set([
   'async_hooks',
   'querystring',
   'worker_threads',
+  'string_decoder',
+  'tty',
+  'assert',
+  'zlib',
+  'constants',
+  'perf_hooks',
+  'timers',
+  'timers/promises',
+  'punycode',
+  'process',
+  'module',
+  'diagnostics_channel',
+  'readline',
 ]);
 
 const VALID_JS_IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;

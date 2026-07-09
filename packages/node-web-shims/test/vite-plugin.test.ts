@@ -46,4 +46,24 @@ describe("node-web-shims: vite-plugin", () => {
     expect(result).toBeDefined();
     expect(result).toMatch(/\/dist\/path\.js$/);
   });
+
+  it("should resolve the A2 builtins added to SHIMMED_BUILTINS", async () => {
+    const plugin = nodeWebShims();
+    const resolveId = getResolveId(plugin);
+    for (const name of [
+      "string_decoder",
+      "tty",
+      "assert",
+      "zlib",
+      "constants",
+      "perf_hooks",
+      "timers",
+      "punycode",
+      "diagnostics_channel",
+      "readline",
+    ]) {
+      const result = await resolveId?.(`node:${name}`);
+      expect(result, name).toMatch(new RegExp(`/dist/${name}\\.js$`));
+    }
+  });
 });

@@ -5,6 +5,7 @@ import { createFsShim } from './fs-shim.js';
 import { createHttpShim } from './http-shim.js';
 import { createChildProcessShim, type WasmRegistry, type ShellService } from './child-process-shim.js';
 import { createProcessShim } from './process-shim.js';
+import { createModuleShim } from './module-shim.js';
 
 export interface LiveShimRegistryOptions {
   readonly vfs: VfsBus;
@@ -37,6 +38,17 @@ export const createLiveShimRegistry = (options: LiveShimRegistryOptions): Record
     async_hooks: nodeWebShims.async_hooks,
     querystring: nodeWebShims.querystring,
     worker_threads: nodeWebShims.worker_threads,
+    string_decoder: nodeWebShims.string_decoder,
+    tty: nodeWebShims.tty,
+    assert: nodeWebShims.assert,
+    zlib: nodeWebShims.zlib,
+    constants: nodeWebShims.constants,
+    perf_hooks: nodeWebShims.perf_hooks,
+    timers: nodeWebShims.timers,
+    'timers/promises': nodeWebShims.timers_promises,
+    punycode: nodeWebShims.punycode,
+    diagnostics_channel: nodeWebShims.diagnostics_channel,
+    readline: nodeWebShims.readline,
     fs: createFsShim(options.vfs),
     child_process: createChildProcessShim(options.wasmRegistry, options.shellService),
     process: createProcessShim({
@@ -46,6 +58,7 @@ export const createLiveShimRegistry = (options: LiveShimRegistryOptions): Record
       onStderr: options.onStderr,
     }),
   };
+  registry.module = createModuleShim({ vfs: options.vfs, getShim: (name) => registry[name] });
 
   if (options.sandbox) {
     const http = createHttpShim(options.sandbox, { onPortEvent: options.onPortEvent });

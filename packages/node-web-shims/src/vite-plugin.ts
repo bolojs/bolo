@@ -14,6 +14,16 @@ const SHIMMED_BUILTINS = new Set([
   "url",
   "util",
   "worker_threads",
+  "string_decoder",
+  "tty",
+  "assert",
+  "zlib",
+  "constants",
+  "perf_hooks",
+  "timers",
+  "punycode",
+  "diagnostics_channel",
+  "readline",
 ]);
 
 // Subset of SHIMMED_BUILTINS actually backed by unenv (worker_threads uses a

@@ -157,6 +157,34 @@ describe('ShellService', () => {
     });
   });
 
+  it('bundled apps can import expanded node:* builtins (string_decoder, tty, assert, zlib, module, ...)', async () => {
+    (deps.vfs.hot as unknown as { writeFileSync: (p: string, c: string) => void }).writeFileSync(
+      '/builtins.ts',
+      `import * as stringDecoder from 'node:string_decoder';
+import assert from 'node:assert';
+import zlib from 'node:zlib';
+import { createRequire } from 'node:module';
+import tty from 'node:tty';
+assert.ok(true);
+const require = createRequire('/builtins.ts');
+globalThis.__builtinsProbe = {
+  hasStringDecoderExport: typeof stringDecoder.StringDecoder,
+  hasGzipStream: typeof zlib.createGzip,
+  isTty: tty.isatty(0),
+  requireFsWorks: typeof require('node:fs').readFile,
+};`,
+    );
+    const result = await shell.execute('node /builtins.ts');
+    expect(result.stderr).toBe('');
+    expect(result.exitCode).toBe(0);
+    expect((globalThis as unknown as { __builtinsProbe?: Record<string, unknown> }).__builtinsProbe).toEqual({
+      hasStringDecoderExport: 'function',
+      hasGzipStream: 'function',
+      isTty: false,
+      requireFsWorks: 'function',
+    });
+  });
+
   it('runtime run → error when no file specified', async () => {
     const result = await shell.execute('runtime run');
     expect(result.exitCode).toBe(1);
