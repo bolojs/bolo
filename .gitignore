@@ -16,3 +16,4 @@ tmp/
 *.log
 .gauge/
 tests/e2e/screenshots/
+tests/e2e/reports/

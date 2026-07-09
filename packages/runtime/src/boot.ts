@@ -10,6 +10,7 @@ import { createFileSystem } from "./fs-adapter.js";
 import { createEventEmitter } from "./events.js";
 import { createMount } from "./mount.js";
 import { createExport } from "./export.js";
+import { installNavigatorUserAgent } from "@browser-containers/node-web-shims";
 
 declare global {
   var __vfsBus: VfsBus | undefined;
@@ -107,6 +108,8 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
     };
 
     const container = new BrowserContainer(deps);
+
+    installNavigatorUserAgent();
 
     const originalTeardown = container.teardown.bind(container);
     container.teardown = async () => {

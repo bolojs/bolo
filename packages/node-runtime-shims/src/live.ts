@@ -1,6 +1,7 @@
 import type { VfsBus } from "@browser-containers/vfs-bus";
 import type { SWSandbox } from "@browser-containers/sw-sandbox";
 import * as nodeWebShims from "@browser-containers/node-web-shims";
+import { installUnhandledRejectionHandler } from "@browser-containers/node-web-shims";
 import { createFsShim } from "./fs-shim.js";
 import { createHttpShim } from "./http-shim.js";
 import {
@@ -8,7 +9,7 @@ import {
   type WasmRegistry,
   type ShellService,
 } from "./child-process-shim.js";
-import { createProcessShim } from "./process-shim.js";
+import { createProcessShim, type ProcessShim } from "./process-shim.js";
 import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
 import { createVmShim } from "./vm-shim.js";
@@ -61,13 +62,23 @@ export const createLiveShimRegistry = (
     dns: createDnsShim(),
     fs: createFsShim(options.vfs),
     child_process: createChildProcessShim(options.wasmRegistry, options.shellService),
-    process: createProcessShim({
-      cwd: options.cwd,
-      argv: options.argv,
-      onStdout: options.onStdout,
-      onStderr: options.onStderr,
-    }),
   };
+
+  const processShim = createProcessShim({
+    cwd: options.cwd,
+    argv: options.argv,
+    onStdout: options.onStdout,
+    onStderr: options.onStderr,
+  }) as ProcessShim;
+
+  registry.process = processShim;
+  installUnhandledRejectionHandler(
+    ((reason: unknown, promise: unknown) => processShim.emit("unhandledRejection", reason, promise)) as (
+      reason: unknown,
+      promise: unknown,
+    ) => void,
+  );
+
   registry.module = createModuleShim({ vfs: options.vfs, getShim: (name) => registry[name] });
 
   const http = createHttpShim(options.sandbox, { onPortEvent: options.onPortEvent });
