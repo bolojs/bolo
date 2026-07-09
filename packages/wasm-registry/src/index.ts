@@ -9,22 +9,36 @@ import {
   type WasmToolLoader,
 } from './registry';
 
-registerWasmTool('esbuild', async (): Promise<WasmTool> => {
-  const esbuild = await import('esbuild-wasm');
-  try {
-    const { createRequire } = await import('node:module');
-    const { resolve } = await import('node:path');
-    const require = createRequire(import.meta.url);
-    const wasmURL = resolve(require.resolve('esbuild-wasm/package.json'), '../esbuild.wasm');
-    await esbuild.initialize({ wasmURL });
-  } catch (err: unknown) {
-    const isNodeEnv = err instanceof Error && err.message.includes('only works in the browser');
-    if (!isNodeEnv) {
-      await esbuild.initialize({
-        wasmURL: new URL('esbuild-wasm/esbuild.wasm', import.meta.url).href,
-      });
-    }
+// esbuild-wasm allows exactly one `initialize()` per realm — shared so both
+// the `esbuild` tool below and the VFS-backed bundler can lazily init once.
+let esbuildInitPromise: Promise<typeof import('esbuild-wasm')> | undefined;
+
+export const initEsbuild = async (): Promise<typeof import('esbuild-wasm')> => {
+  if (!esbuildInitPromise) {
+    esbuildInitPromise = (async () => {
+      const esbuild = await import('esbuild-wasm');
+      try {
+        const { createRequire } = await import('node:module');
+        const { resolve } = await import('node:path');
+        const require = createRequire(import.meta.url);
+        const wasmURL = resolve(require.resolve('esbuild-wasm/package.json'), '../esbuild.wasm');
+        await esbuild.initialize({ wasmURL });
+      } catch (err: unknown) {
+        const isNodeEnv = err instanceof Error && err.message.includes('only works in the browser');
+        if (!isNodeEnv) {
+          await esbuild.initialize({
+            wasmURL: new URL('esbuild-wasm/esbuild.wasm', import.meta.url).href,
+          });
+        }
+      }
+      return esbuild;
+    })();
   }
+  return esbuildInitPromise;
+};
+
+registerWasmTool('esbuild', async (): Promise<WasmTool> => {
+  const esbuild = await initEsbuild();
   return {
     async run(args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }> {
       try {
@@ -193,3 +207,5 @@ export { registerWasmTool, resolveWasmTool, createWasmRegistry, clearCache, getR
 export type { WasmTool, WasmToolResult, WasmToolLoader };
 export { createWasiTool } from './wasi-executor.js';
 export type { WasiToolOptions, WasiPreopen } from './wasi-executor.js';
+export { bundleEntry } from './bundle.js';
+export type { BundleEntryOptions, BundleEntryResult } from './bundle.js';
