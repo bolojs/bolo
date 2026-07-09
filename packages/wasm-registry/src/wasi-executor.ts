@@ -6,9 +6,9 @@ import {
   PreopenDirectory,
   ConsoleStdout,
   type Inode,
-} from '@bjorn3/browser_wasi_shim';
-import type { VfsBus } from '@browser-containers/vfs-bus';
-import type { WasmTool, WasmToolResult } from './registry.js';
+} from "@bjorn3/browser_wasi_shim";
+import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { WasmTool, WasmToolResult } from "./registry.js";
 
 export interface WasiPreopen {
   /** Path as seen inside the WASI guest, e.g. "/" or "/work". */
@@ -26,7 +26,7 @@ export interface WasiToolOptions {
   programName?: string;
 }
 
-const DEFAULT_PREOPENS: WasiPreopen[] = [{ guestPath: '/' }];
+const DEFAULT_PREOPENS: WasiPreopen[] = [{ guestPath: "/" }];
 
 /**
  * wasm32-wasip1 syscalls are synchronous (no Asyncify), so each preopen is
@@ -44,7 +44,7 @@ const buildTree = (vfs: VfsBus, hostRoot: string): Map<string, Inode> => {
   }
 
   for (const name of entries) {
-    const childPath = hostRoot === '/' ? `/${name}` : `${hostRoot}/${name}`;
+    const childPath = hostRoot === "/" ? `/${name}` : `${hostRoot}/${name}`;
     const stat = vfs.hot.statSync(childPath);
     if (stat.isDirectory()) {
       tree.set(name, new Directory(buildTree(vfs, childPath)));
@@ -61,7 +61,7 @@ const flushTree = (vfs: VfsBus, hostRoot: string, tree: Map<string, Inode>): voi
     vfs.hot.mkdirSync(hostRoot, { recursive: true });
   }
   for (const [name, inode] of tree) {
-    const childPath = hostRoot === '/' ? `/${name}` : `${hostRoot}/${name}`;
+    const childPath = hostRoot === "/" ? `/${name}` : `${hostRoot}/${name}`;
     if (inode instanceof Directory) {
       if (!vfs.hot.existsSync(childPath)) vfs.hot.mkdirSync(childPath, { recursive: true });
       flushTree(vfs, childPath, inode.contents);
@@ -90,7 +90,7 @@ const concatChunks = (chunks: Uint8Array[]): string => {
 export const createWasiTool = (
   loadModule: () => Promise<BufferSource | WebAssembly.Module>,
   options: WasiToolOptions,
-  toolName = 'wasi-tool',
+  toolName = "wasi-tool",
 ): WasmTool => {
   return {
     async run(args: string[], stdin?: string): Promise<WasmToolResult> {
@@ -101,7 +101,7 @@ export const createWasiTool = (
       const stderrChunks: Uint8Array[] = [];
 
       const fds = [
-        new OpenFile(new File(new TextEncoder().encode(stdin ?? ''))),
+        new OpenFile(new File(new TextEncoder().encode(stdin ?? ""))),
         new ConsoleStdout((buf) => stdoutChunks.push(buf)),
         new ConsoleStdout((buf) => stderrChunks.push(buf)),
         ...preopens.map((p, i) => new PreopenDirectory(p.guestPath, trees[i])),
@@ -113,11 +113,14 @@ export const createWasiTool = (
       let exitCode: number;
       try {
         const source = await loadModule();
-        const module = source instanceof WebAssembly.Module ? source : await WebAssembly.compile(source);
+        const module =
+          source instanceof WebAssembly.Module ? source : await WebAssembly.compile(source);
         const instance = await WebAssembly.instantiate(module, {
           wasi_snapshot_preview1: wasi.wasiImport,
         });
-        exitCode = wasi.start(instance as unknown as { exports: { memory: WebAssembly.Memory; _start: () => unknown } });
+        exitCode = wasi.start(
+          instance as unknown as { exports: { memory: WebAssembly.Memory; _start: () => unknown } },
+        );
       } catch (err) {
         return {
           stdout: concatChunks(stdoutChunks),

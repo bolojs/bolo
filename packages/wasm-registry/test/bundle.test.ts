@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { VfsBus } from '@browser-containers/vfs-bus';
-import { bundleEntry, transformScript } from '../src/bundle';
+import { bundleEntry, mapJsrSpecifier, transformScript } from '../src/bundle';
 
 const seed = (vfs: VfsBus, path: string, contents: string) => {
   const dir = path.slice(0, path.lastIndexOf('/'));
@@ -202,6 +202,52 @@ describe('wasm-registry: bundleEntry', () => {
 
     expect(stdout.join('')).toBe('out 1\n');
     expect(stderr.join('')).toBe('err\n');
+  });
+
+  it('rewrites a jsr: scoped specifier to the installed @jsr mirror package', async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      '/node_modules/@jsr/scope__name/package.json',
+      JSON.stringify({ name: '@jsr/scope__name', main: 'index.js' }),
+    );
+    seed(vfs, '/node_modules/@jsr/scope__name/index.js', 'export const jsrValue = "from-jsr";');
+    seed(vfs, '/src/entry.ts', "import { jsrValue } from 'jsr:@scope/name'; console.log(jsrValue);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('from-jsr');
+    expect(code).not.toMatch(/from\s+["']jsr:/);
+  });
+
+  it('rewrites a jsr: unscoped specifier to the installed @jsr mirror package', async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      '/node_modules/@jsr/plain/package.json',
+      JSON.stringify({ name: '@jsr/plain', main: 'index.js' }),
+    );
+    seed(vfs, '/node_modules/@jsr/plain/index.js', 'export const plain = 42;');
+    seed(vfs, '/src/entry.ts', "import { plain } from 'jsr:plain'; console.log(plain);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('42');
+    expect(code).not.toMatch(/from\s+["']jsr:/);
+  });
+});
+
+describe('wasm-registry: mapJsrSpecifier', () => {
+  it('maps scoped and unscoped jsr specifiers to the npm-compatibility mirror', () => {
+    expect(mapJsrSpecifier('jsr:@scope/name')).toBe('@jsr/scope__name');
+    expect(mapJsrSpecifier('jsr:name')).toBe('@jsr/name');
+  });
+
+  it('preserves subpaths on the mirror package', () => {
+    expect(mapJsrSpecifier('jsr:@scope/name/sub')).toBe('@jsr/scope__name/sub');
+    expect(mapJsrSpecifier('jsr:name/sub')).toBe('@jsr/name/sub');
   });
 });
 

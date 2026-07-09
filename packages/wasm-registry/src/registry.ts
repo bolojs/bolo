@@ -43,7 +43,7 @@ export const createWasmRegistry = (): {
       const tool = await resolveWasmTool(cmd);
       if (!tool) {
         return {
-          stdout: '',
+          stdout: "",
           stderr: `WASM tool not found: ${cmd}`,
           exitCode: 1,
         };
