@@ -1,0 +1,38 @@
+diff --git a/dist/runtime/node/assert.mjs b/dist/runtime/node/assert.mjs
+index e0c06082f280a8f32f36657678c0618691456c8c..320a49e96e73612f5a99563f629948b678ef9960 100644
+--- a/dist/runtime/node/assert.mjs
++++ b/dist/runtime/node/assert.mjs
+@@ -12,16 +12,30 @@ export class AssertionError extends Error {
+ 	generatedMessage;
+ 	code = "ERR_ASSERTION";
+ 	constructor(options) {
+-		super();
++		const operator = options.operator || "";
++		const message = options.message === undefined
++			? `${inspect(options.actual)} ${operator} ${inspect(options.expected)}`.trim()
++			: options.message;
++		super(message);
+ 		this.actual = options.actual;
+ 		this.expected = options.expected;
+-		this.operator = options.operator || "";
++		this.operator = operator;
+ 		this.generatedMessage = options.message === undefined;
+ 		const stackStartFn = options.stackStartFn || fail;
+ 		Error.captureStackTrace?.(this, stackStartFn);
+ 	}
+ }
+-const inspect = (val, opts) => val;
++const inspect = (val) => {
++	if (typeof val === "string") return `'${val}'`;
++	if (val instanceof Error) return val.stack || val.message;
++	if (typeof val === "function") return val.name ? `[Function: ${val.name}]` : "[Function (anonymous)]";
++	try {
++		const json = JSON.stringify(val);
++		return json === undefined ? String(val) : json;
++	} catch {
++		return String(val);
++	}
++};
+ const isEqual = (a, b) => a === b || JSON.stringify(a) === JSON.stringify(b);
+ const isDeepEqual = isEqual;
+ const isDeepStrictEqual = isEqual;

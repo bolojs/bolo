@@ -6,3 +6,6 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+
+patchedDependencies:
+  unenv@2.0.0-rc.24: patches/unenv@2.0.0-rc.24.patch

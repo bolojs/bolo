@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  unenv@2.0.0-rc.24:
+    hash: af2cfe3e0b8cb629e573c6088603b3321a96ca1d3c0e1a9e4534fb57dc068be7
+    path: patches/unenv@2.0.0-rc.24.patch
+
 importers:
 
   .:
@@ -133,7 +138,7 @@ importers:
         version: 1.1.2
       unenv:
         specifier: 2.0.0-rc.24
-        version: 2.0.0-rc.24
+        version: 2.0.0-rc.24(patch_hash=af2cfe3e0b8cb629e573c6088603b3321a96ca1d3c0e1a9e4534fb57dc068be7)
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
@@ -5527,7 +5532,7 @@ snapshots:
       node-fetch-native: 1.6.7
       pathe: 1.1.2
 
-  unenv@2.0.0-rc.24:
+  unenv@2.0.0-rc.24(patch_hash=af2cfe3e0b8cb629e573c6088603b3321a96ca1d3c0e1a9e4534fb57dc068be7):
     dependencies:
       pathe: 2.0.3
 
