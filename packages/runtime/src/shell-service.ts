@@ -231,6 +231,10 @@ export class ShellService {
         if (event === 'port-close') this.deps.events?.emit('port', data.port, 'close', url);
       };
 
+      // User files are written under the workdir but referenced with paths
+      // relative to it (e.g. '/server.ts' → '/home/web/server.ts').
+      const entry = this.resolvePath(filePath);
+
       globalThis.__browserContainers = {
         vfs: this.deps.vfs,
         sandbox: this.deps.sandbox,
@@ -239,12 +243,13 @@ export class ShellService {
           sandbox: this.deps.sandbox,
           onPortEvent,
           shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(' ')) },
+          cwd: this.cwd,
+          argv: ['node', entry],
+          onStdout: output.stdout,
+          onStderr: output.stderr,
         }),
       };
 
-      // User files are written under the workdir but referenced with paths
-      // relative to it (e.g. '/server.ts' → '/home/web/server.ts').
-      const entry = this.resolvePath(filePath);
       const { code, warnings } = await bundleEntry(entry, {
         vfs: this.deps.vfs,
         cwd: this.cwd,

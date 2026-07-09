@@ -4,6 +4,7 @@ import * as nodeWebShims from '@browser-containers/node-web-shims';
 import { createFsShim } from './fs-shim.js';
 import { createHttpShim } from './http-shim.js';
 import { createChildProcessShim, type WasmRegistry, type ShellService } from './child-process-shim.js';
+import { createProcessShim } from './process-shim.js';
 
 export interface LiveShimRegistryOptions {
   readonly vfs: VfsBus;
@@ -11,6 +12,10 @@ export interface LiveShimRegistryOptions {
   readonly onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
   readonly wasmRegistry?: WasmRegistry;
   readonly shellService?: ShellService;
+  readonly cwd?: string;
+  readonly argv?: string[];
+  readonly onStdout?: (data: string) => void;
+  readonly onStderr?: (data: string) => void;
 }
 
 /**
@@ -34,6 +39,12 @@ export const createLiveShimRegistry = (options: LiveShimRegistryOptions): Record
     worker_threads: nodeWebShims.worker_threads,
     fs: createFsShim(options.vfs),
     child_process: createChildProcessShim(options.wasmRegistry, options.shellService),
+    process: createProcessShim({
+      cwd: options.cwd,
+      argv: options.argv,
+      onStdout: options.onStdout,
+      onStderr: options.onStderr,
+    }),
   };
 
   if (options.sandbox) {

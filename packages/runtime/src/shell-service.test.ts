@@ -130,6 +130,33 @@ describe('ShellService', () => {
     expect((globalThis as unknown as { __ranViaNode?: boolean }).__ranViaNode).toBe(true);
   });
 
+  it('bundled apps get ambient process/Buffer/__dirname/__filename with no explicit import', async () => {
+    (deps.vfs.hot as unknown as { writeFileSync: (p: string, c: string) => void }).writeFileSync(
+      '/app.ts',
+      `globalThis.__globalsProbe = {
+        platform: process.platform,
+        stdoutWorks: typeof process.stdout.write,
+        bufferRoundTrip: Buffer.from('hi').toString(),
+        dirname: __dirname,
+        filename: __filename,
+        nodeEnv: process.env.NODE_ENV,
+        hasSetImmediate: typeof setImmediate,
+      };`,
+    );
+    const result = await shell.execute('node /app.ts');
+    expect(result.stderr).toBe('');
+    expect(result.exitCode).toBe(0);
+    expect((globalThis as unknown as { __globalsProbe?: Record<string, unknown> }).__globalsProbe).toEqual({
+      platform: 'browser',
+      stdoutWorks: 'function',
+      bufferRoundTrip: 'hi',
+      dirname: '/',
+      filename: '/app.ts',
+      nodeEnv: 'development',
+      hasSetImmediate: 'function',
+    });
+  });
+
   it('runtime run → error when no file specified', async () => {
     const result = await shell.execute('runtime run');
     expect(result.exitCode).toBe(1);

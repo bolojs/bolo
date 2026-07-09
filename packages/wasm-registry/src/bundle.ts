@@ -179,8 +179,48 @@ const vfsPlugin = (vfs: VfsBus): Plugin => ({
 
     build.onLoad({ filter: /.*/, namespace: 'browser-containers-vfs' }, (args) => {
       const contents = vfs.hot.readFileSync(args.path, 'utf8') as string;
-      return { contents, loader: LOADER_BY_EXT[extname(args.path)] ?? 'js', resolveDir: dirname(args.path) };
+      const loader = LOADER_BY_EXT[extname(args.path)] ?? 'js';
+      const resolveDir = dirname(args.path);
+      // CJS-style implicit globals — esbuild only auto-defines these for
+      // `format: 'cjs'` output; our bundle is ESM, so each module gets its
+      // own `__dirname`/`__filename` consts prepended (harmless before
+      // `import`/`export` declarations, which are hoisted regardless of
+      // source position).
+      if (loader === 'json') return { contents, loader, resolveDir };
+      const prelude = `const __filename=${JSON.stringify(args.path)};const __dirname=${JSON.stringify(resolveDir)};\n`;
+      return { contents: prelude + contents, loader, resolveDir };
     });
+  },
+});
+
+// Injected into every module via esbuild's `inject` so bare references to
+// `process`/`Buffer`/`global`/`setImmediate` (never explicitly imported —
+// the overwhelming majority of CJS/npm code assumes they're ambient) resolve
+// without every package needing an explicit `require('node:process')`.
+// Reads `globalThis.__browserContainers` at module-eval time, which
+// `ShellService.runNodeApp` populates just before importing the bundle.
+const GLOBALS_PRELUDE_PATH = 'browser-containers-globals-prelude';
+const GLOBALS_PRELUDE_NAMESPACE = 'browser-containers-globals-prelude';
+const GLOBALS_PRELUDE_SOURCE = `
+const __bcGlobals = () => globalThis.__browserContainers;
+export const process = __bcGlobals()?.shims?.process;
+export const Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
+export const global = globalThis;
+export const setImmediate = (fn, ...args) => { queueMicrotask(() => fn(...args)); return 0; };
+export const clearImmediate = () => {};
+`;
+
+const globalsPreludePlugin = (): Plugin => ({
+  name: 'browser-containers-globals-prelude',
+  setup(build) {
+    build.onResolve({ filter: new RegExp(`^${GLOBALS_PRELUDE_PATH}$`) }, (args) => ({
+      path: args.path,
+      namespace: GLOBALS_PRELUDE_NAMESPACE,
+    }));
+    build.onLoad({ filter: /.*/, namespace: GLOBALS_PRELUDE_NAMESPACE }, () => ({
+      contents: GLOBALS_PRELUDE_SOURCE,
+      loader: 'js',
+    }));
   },
 });
 
@@ -228,7 +268,12 @@ export const bundleEntry = async (entry: string, options: BundleEntryOptions): P
     format: 'esm',
     platform: 'browser',
     absWorkingDir: options.cwd ?? '/',
-    plugins: [nodeAliasPlugin(options.getShim), vfsPlugin(options.vfs)],
+    plugins: [globalsPreludePlugin(), nodeAliasPlugin(options.getShim), vfsPlugin(options.vfs)],
+    inject: [GLOBALS_PRELUDE_PATH],
+    define: {
+      'process.env.NODE_ENV': JSON.stringify('development'),
+      'process.browser': 'true',
+    },
     logLevel: 'silent',
   });
 
