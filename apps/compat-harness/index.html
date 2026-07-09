@@ -3,9 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>browser-containers compat harness</title>
+  <style>
+    body { font-family: monospace; margin: 2rem; }
+    button { padding: 0.5rem 1rem; margin: 1rem 0; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 1rem; overflow: auto; max-height: 400px; }
+    .pass { color: green; } .fail { color: red; } .skip { color: orange; }
+  </style>
 </head>
 <body>
-  <p>compat harness — drives via <code>window.__compatHarness</code>, no UI.</p>
+  <h1>Node.js Compat Harness</h1>
+  <p>Harness: <code id="status">not booted</code></p>
+  <button id="bootBtn">Boot Container</button>
+  <button id="runBtn" disabled>Run Node Tests</button>
+  <div id="results"></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

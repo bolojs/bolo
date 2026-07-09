@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "nodeVersion": "22.0.0",
+  "modules": {
+    "path": {
+      "files": [
+        "test/parallel/test-path-basename.js",
+        "test/parallel/test-path-dirname.js",
+        "test/parallel/test-path-extname.js"
+      ]
+    }
+  }
+}
