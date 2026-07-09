@@ -72,12 +72,11 @@ export const createLiveShimRegistry = (
   }) as ProcessShim;
 
   registry.process = processShim;
-  installUnhandledRejectionHandler(
-    ((reason: unknown, promise: unknown) => processShim.emit("unhandledRejection", reason, promise)) as (
-      reason: unknown,
-      promise: unknown,
-    ) => void,
-  );
+  installUnhandledRejectionHandler(((reason: unknown, promise: unknown) =>
+    processShim.emit("unhandledRejection", reason, promise)) as (
+    reason: unknown,
+    promise: unknown,
+  ) => void);
 
   registry.module = createModuleShim({ vfs: options.vfs, getShim: (name) => registry[name] });
 

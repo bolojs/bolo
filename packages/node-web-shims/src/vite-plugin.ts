@@ -48,9 +48,7 @@ export const nodeWebShims = (): Plugin => {
     name: "@browser-containers/node-web-shims",
     enforce: "pre",
     async resolveId(id, importer, options) {
-      const bareName = id.startsWith("node:")
-        ? id.slice("node:".length)
-        : id;
+      const bareName = id.startsWith("node:") ? id.slice("node:".length) : id;
 
       if (SHIMMED_BUILTINS.has(bareName)) {
         return `${pkgRoot}/dist/${bareName}.js`;
@@ -71,4 +69,3 @@ export const nodeWebShims = (): Plugin => {
     },
   };
 };
-
