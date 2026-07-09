@@ -46,11 +46,20 @@ export const createHttpShim = (sandbox: SWSandbox, options?: HttpShimOptions) =>
             status = s;
             if (h) Object.assign(headers, h);
           },
+          setHeader: (key: string, value: string) => {
+            headers[key.toLowerCase()] = String(value);
+          },
+          getHeader: (key: string) => headers[key.toLowerCase()],
+          removeHeader: (key: string) => {
+            delete headers[key.toLowerCase()];
+          },
+          headersSent: false,
           write: (chunk: Uint8Array | string) => {
             chunks.push(typeof chunk === 'string' ? new TextEncoder().encode(chunk) : chunk);
           },
           end: (chunk?: Uint8Array | string) => {
             if (chunk) chunks.push(typeof chunk === 'string' ? new TextEncoder().encode(chunk) : chunk);
+            response.headersSent = true;
           },
         };
 
@@ -95,6 +104,10 @@ export interface IncomingMessage {
 
 export interface ServerResponse {
   writeHead(status: number, headers?: Record<string, string>): void;
+  setHeader(key: string, value: string): void;
+  getHeader(key: string): string | undefined;
+  removeHeader(key: string): void;
+  headersSent: boolean;
   write(chunk: Uint8Array | string): void;
   end(chunk?: Uint8Array | string): void;
 }
