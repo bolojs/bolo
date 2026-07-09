@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@browser-containers/vfs-bus": "workspace:*",
-    "memfs": "^4.7.0",
+    "memfs": "~4.56.11",
     "typescript": "^5.8.0",
     "vitest": "^2.1.8"
   },
