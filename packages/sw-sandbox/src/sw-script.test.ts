@@ -74,11 +74,14 @@ describe('SW script behavior', () => {
 
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(mockPort.postMessage).toHaveBeenCalledWith(
+    // ponytail: SW now sends PORT_READY (call 1) then FETCH_REQUEST (call 2) with a transfer list.
+    expect(mockPort.postMessage).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({
         type: 'FETCH_REQUEST',
         request: expect.objectContaining({ url: 'http://localhost:4173/__preview/3000/queued', method: 'GET' }),
       }),
+      expect.any(Array),
     );
   });
 
@@ -112,11 +115,14 @@ describe('SW script behavior', () => {
 
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(mockPort.postMessage).toHaveBeenCalledWith(
+    // ponytail: SW now sends PORT_READY (call 1) then FETCH_REQUEST (call 2) with a transfer list.
+    expect(mockPort.postMessage).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({
         type: 'FETCH_REQUEST',
         request: expect.objectContaining({ url: 'http://localhost:4173/__preview/3000/', method: 'GET' }),
       }),
+      expect.any(Array),
     );
     expect(respondWith).toHaveBeenCalled();
   });

@@ -50,7 +50,9 @@ export function initSW(swGlobal: SWGlobal): void {
 
   swGlobal.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
-    if (!url.pathname.startsWith('/__preview/')) {
+    // Intercept the vite preview prefix (same origin) AND the virtual sandbox
+    // hostname (cross-origin user servers like Hono/Express).
+    if (!url.pathname.startsWith('/__preview/') && url.hostname !== 'sandbox.local') {
       return;
     }
     if (!isReady || !mainPort) {
@@ -77,7 +79,7 @@ export function initSW(swGlobal: SWGlobal): void {
         const { type, requestId, response, error } = e.data as {
           type?: string;
           requestId: number;
-          response?: { status: number; body: string; headers: Record<string, string> };
+          response?: { status: number; body: ArrayBuffer; headers: Record<string, string> };
           error?: string;
         };
         if (type === 'FETCH_RESPONSE') {
@@ -112,13 +114,16 @@ async function handleFetchEvent(req: Request): Promise<Response> {
   req.headers.forEach((value, key) => {
     headers[key] = value;
   });
-  const body = await req.text().catch(() => undefined);
+  const body = await req.arrayBuffer().catch(() => undefined);
   return new Promise((resolve, reject) => {
     pendingRequests.set(requestId, { resolve, reject });
-    mainPort!.postMessage({
-      type: 'FETCH_REQUEST',
-      requestId,
-      request: { url: req.url, method: req.method, headers, body },
-    });
+    mainPort!.postMessage(
+      {
+        type: 'FETCH_REQUEST',
+        requestId,
+        request: { url: req.url, method: req.method, headers, body },
+      },
+      body ? [body] : [],
+    );
   });
 }

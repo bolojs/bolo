@@ -150,19 +150,63 @@ describe('SWSandbox', () => {
     (sandbox as unknown as { messagePort: { postMessage: typeof postMessageSpy } }).messagePort.postMessage =
       postMessageSpy;
 
-    await (sandbox as unknown as { handleFetchRequest: (id: number, req: { url: string; method: string; headers: Record<string, string>; body?: string }) => Promise<void> }).handleFetchRequest(
-      42,
-      { url: 'http://localhost:3000/api/test', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"key":"value"}' },
-    );
+    const requestBody = new TextEncoder().encode('{"key":"value"}').buffer;
+    await (
+      sandbox as unknown as {
+        handleFetchRequest: (
+          id: number,
+          req: { url: string; method: string; headers: Record<string, string>; body?: ArrayBuffer },
+        ) => Promise<void>;
+      }
+    ).handleFetchRequest(42, {
+      url: 'http://localhost:3000/api/test',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: requestBody,
+    });
 
     expect(handler).toHaveBeenCalled();
-    expect(postMessageSpy).toHaveBeenCalledWith(
+    expect(postMessageSpy).toHaveBeenCalledTimes(1);
+    const [message, transfer] = postMessageSpy.mock.calls[0];
+    expect(message).toEqual(
       expect.objectContaining({
         type: 'FETCH_RESPONSE',
         requestId: 42,
-        response: expect.objectContaining({ status: 200, body: 'hello from handler' }),
       }),
     );
+    expect(message.response.status).toBe(200);
+    expect(new TextDecoder().decode(message.response.body)).toBe('hello from handler');
+    expect(transfer).toEqual([message.response.body]);
+  });
+
+  it('round-trips a binary body byte-for-byte through handleFetchRequest', async () => {
+    const createPromise = SWSandbox.create({ origin: 'http://localhost:3000', swPath: '/sw.js' });
+    portReadyTrigger = simulatePortReady;
+    const sandbox = await createPromise;
+
+    const bytes = new Uint8Array([0, 1, 2, 253, 254, 255, 0, 128]);
+    sandbox.onFetch(async (req) => new Response(await req.arrayBuffer(), { status: 200 }));
+
+    const postMessageSpy = vi.fn();
+    (sandbox as unknown as { messagePort: { postMessage: typeof postMessageSpy } }).messagePort.postMessage =
+      postMessageSpy;
+
+    await (
+      sandbox as unknown as {
+        handleFetchRequest: (
+          id: number,
+          req: { url: string; method: string; headers: Record<string, string>; body?: ArrayBuffer },
+        ) => Promise<void>;
+      }
+    ).handleFetchRequest(7, {
+      url: 'http://localhost:3000/api/binary',
+      method: 'POST',
+      headers: {},
+      body: bytes.buffer,
+    });
+
+    const [message] = postMessageSpy.mock.calls[0];
+    expect(new Uint8Array(message.response.body)).toEqual(bytes);
   });
 
   it('handleFetchRequest returns 404 when no handler matches', async () => {
@@ -179,12 +223,14 @@ describe('SWSandbox', () => {
       { url: 'http://localhost:3000/api/missing', method: 'GET', headers: {} },
     );
 
-    expect(postMessageSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'FETCH_RESPONSE',
-        requestId: 99,
-        response: expect.objectContaining({ status: 404, body: 'Not found' }),
-      }),
+    // ponytail: response body is now an ArrayBuffer + transfer list, mirror the binary round-trip test.
+    expect(postMessageSpy).toHaveBeenCalledTimes(1);
+    const [message, transfer] = postMessageSpy.mock.calls[0];
+    expect(message).toEqual(
+      expect.objectContaining({ type: 'FETCH_RESPONSE', requestId: 99 }),
     );
+    expect(message.response.status).toBe(404);
+    expect(new TextDecoder().decode(message.response.body)).toBe('Not found');
+    expect(transfer).toEqual([message.response.body]);
   });
 });

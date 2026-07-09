@@ -43,9 +43,9 @@ export class SWSandbox {
       const { type, requestId, response, error, request } = event.data as {
         type?: string;
         requestId: number;
-        response?: { status: number; body: string; headers: Record<string, string> };
+        response?: { status: number; body: ArrayBuffer; headers: Record<string, string> };
         error?: string;
-        request?: { url: string; method: string; headers: Record<string, string>; body?: string };
+        request?: { url: string; method: string; headers: Record<string, string>; body?: ArrayBuffer };
       };
       if (type === 'FETCH_REQUEST' && request) {
         this.handleFetchRequest(requestId, request).catch((err) => {
@@ -69,6 +69,7 @@ export class SWSandbox {
       }
     };
 
+
     const sw = registration.active || registration.installing || registration.waiting;
     if (sw) {
       sw.postMessage({ type: 'INIT_PORT' }, [channel.port2]);
@@ -87,7 +88,7 @@ export class SWSandbox {
 
   private async handleFetchRequest(
     requestId: number,
-    requestData: { url: string; method: string; headers: Record<string, string>; body?: string },
+    requestData: { url: string; method: string; headers: Record<string, string>; body?: ArrayBuffer },
   ): Promise<void> {
     const requestBody =
       requestData.body && requestData.method !== 'GET' && requestData.method !== 'HEAD'
@@ -99,24 +100,38 @@ export class SWSandbox {
       body: requestBody,
     });
     const response = await this.handleInterceptedRequest(requestId, request);
-    const body = await response.text();
+    const body = await response.arrayBuffer();
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => {
       headers[key] = value;
     });
-    this.messagePort?.postMessage({
-      type: 'FETCH_RESPONSE',
-      requestId,
-      response: { status: response.status, body, headers },
-    });
+    this.messagePort?.postMessage(
+      {
+        type: 'FETCH_RESPONSE',
+        requestId,
+        response: { status: response.status, body, headers },
+      },
+      [body],
+    );
   }
 
   async handleInterceptedRequest(requestId: number, req: Request): Promise<Response> {
     for (const handler of this.fetchHandlers) {
       const url = new URL(req.url);
-      if (url.origin === this.origin || url.hostname === 'localhost') {
+      if (url.origin === this.origin || url.hostname === 'localhost' || url.hostname === 'sandbox.local') {
         try {
-          return await handler(req);
+          const response = await handler(req);
+          // sandbox.local is cross-origin from the demo page — needs CORS to be readable.
+          if (url.hostname === 'sandbox.local') {
+            const headers = new Headers(response.headers);
+            headers.set('Access-Control-Allow-Origin', '*');
+            return new Response(response.body, {
+              status: response.status,
+              statusText: response.statusText,
+              headers,
+            });
+          }
+          return response;
         } catch {
           continue;
         }
