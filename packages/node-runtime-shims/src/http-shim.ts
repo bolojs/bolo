@@ -205,7 +205,9 @@ class ClientRequestImpl extends EventEmitter {
   readonly method: string;
   private readonly headers: Record<string, string>;
   private readonly chunks: Uint8Array[] = [];
-  private readonly abortController = new AbortController();
+  private readonly abortController: AbortController;
+  private readonly detachAgent?: () => void;
+  private detached = false;
   private response: IncomingMessageImpl | null = null;
   private finished = false;
   private aborted = false;
@@ -228,6 +230,19 @@ class ClientRequestImpl extends EventEmitter {
     this.url = url;
     this.method = method;
     this.headers = headers;
+    const opts =
+      typeof urlOrOpts === "string" || urlOrOpts instanceof URL
+        ? (options as RequestOptions | undefined)
+        : (urlOrOpts as RequestOptions);
+    const agent = opts?.agent;
+    if (agent === false || agent === null || agent === undefined) {
+      this.abortController = new AbortController();
+    } else {
+      const origin = `${this.url.protocol}//${this.url.host}`;
+      const connection = (agent as Agent).get(origin);
+      this.abortController = connection.controller;
+      this.detachAgent = connection.detach;
+    }
     if (callback) this.on("response", callback);
     if (timeout) this.setTimeout(timeout);
   }
@@ -256,6 +271,12 @@ class ClientRequestImpl extends EventEmitter {
     if (callback) this.once("finish", callback);
     this._send();
     return this;
+  }
+
+  private detach(): void {
+    if (this.detached) return;
+    this.detached = true;
+    this.detachAgent?.();
   }
 
   private async _send(): Promise<void> {
@@ -298,6 +319,8 @@ class ClientRequestImpl extends EventEmitter {
     } catch (err) {
       if (this.timeoutId) clearTimeout(this.timeoutId);
       if (!this.aborted) this.emit("error", err);
+    } finally {
+      this.detach();
     }
   }
 
@@ -326,12 +349,14 @@ class ClientRequestImpl extends EventEmitter {
   abort(): void {
     this.aborted = true;
     this.abortController.abort();
+    this.detach();
     this.emit("abort");
   }
 
   destroy(error?: Error): void {
     this.aborted = true;
     this.abortController.abort();
+    this.detach();
     if (this.timeoutId) clearTimeout(this.timeoutId);
     if (error) this.emit("error", error);
     this.emit("close");
@@ -342,6 +367,7 @@ class Agent {
   maxSockets: number;
   maxFreeSockets: number;
   keepAlive: boolean;
+  private connections = new Map<string, { controller: AbortController; count: number }>();
 
   constructor(options?: { maxSockets?: number; maxFreeSockets?: number; keepAlive?: boolean }) {
     this.maxSockets = options?.maxSockets ?? Infinity;
@@ -349,12 +375,37 @@ class Agent {
     this.keepAlive = options?.keepAlive ?? false;
   }
 
+  get(origin: string): { controller: AbortController; detach: () => void } {
+    const existing = this.connections.get(origin);
+    if (existing && existing.count < (this.maxSockets === Infinity ? 6 : this.maxSockets)) {
+      existing.count++;
+      return { controller: existing.controller, detach: () => existing.count-- };
+    }
+    const controller = new AbortController();
+    this.connections.set(origin, { controller, count: 1 });
+    return {
+      controller,
+      detach: () => {
+        const c = this.connections.get(origin);
+        if (c) {
+          c.count--;
+          if (c.count <= 0) this.connections.delete(origin);
+        }
+      },
+    };
+  }
+
   destroy(): void {
-    // ponytail: connection pooling is deferred; no-op for now
+    for (const { controller } of this.connections.values()) {
+      controller.abort();
+    }
+    this.connections.clear();
   }
 }
 
 const globalAgent = new Agent();
+
+export const createAgent = (options?: ConstructorParameters<typeof Agent>[0]) => new Agent(options);
 
 const request = (
   urlOrOpts: string | URL | RequestOptions,
@@ -474,6 +525,7 @@ export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) =
     ServerResponse: ServerResponseImpl,
     Agent,
     globalAgent,
+    createAgent,
   };
 };
 
