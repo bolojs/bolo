@@ -1,4 +1,8 @@
-import { createEventsShim, createStreamShim, createBufferShim } from '@browser-containers/node-web-shims';
+import {
+  createEventsShim,
+  createStreamShim,
+  createBufferShim,
+} from "@browser-containers/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
 const { Readable, Writable } = createStreamShim();
@@ -8,12 +12,37 @@ const { Readable, Writable } = createStreamShim();
 const { Buffer } = createBufferShim() as unknown as { Buffer: typeof globalThis.Buffer };
 
 export interface WasmRegistry {
-  dispatch(cmd: string, args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }>;
+  dispatch(
+    cmd: string,
+    args: string[],
+  ): Promise<{ stdout: string; stderr: string; exitCode: number }>;
 }
 
 export interface ShellService {
   exec(cmd: string, args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }>;
 }
+
+export interface WorkerLike {
+  postMessage(message: unknown): void;
+  terminate(): void;
+  onmessage: ((event: MessageEvent) => void) | null;
+  onerror: ((event: ErrorEvent) => void) | null;
+}
+
+export interface WorkerOptions {
+  createWorker?: (
+    scriptPath: string,
+    args: string[],
+    env?: Record<string, string>,
+    cwd?: string,
+  ) => WorkerLike | undefined;
+}
+
+const bufferFrom = (value: unknown): Buffer => {
+  if (value instanceof Uint8Array) return Buffer.from(value);
+  if (typeof value === "string") return Buffer.from(value);
+  return Buffer.from(String(value));
+};
 
 const dispatchCommand = async (
   command: string,
@@ -23,13 +52,13 @@ const dispatchCommand = async (
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> => {
   if (registry) {
     const result = await registry.dispatch(command, args);
-    if (result.exitCode !== 0 && result.stderr.includes('WASM tool not found') && shell) {
+    if (result.exitCode !== 0 && result.stderr.includes("WASM tool not found") && shell) {
       return shell.exec(command, args);
     }
     return result;
   }
   if (shell) return shell.exec(command, args);
-  return { stdout: '', stderr: 'No registry or shell available', exitCode: 1 };
+  return { stdout: "", stderr: "No registry or shell available", exitCode: 1 };
 };
 
 /**
@@ -42,8 +71,17 @@ const dispatchCommand = async (
  */
 class StdioReadable extends Readable {
   emitOutput(text: string): void {
-    if (text.length > 0) this.emit('data', Buffer.from(text));
-    this.emit('end');
+    this.pushChunk(text);
+    this.emit("end");
+  }
+
+  pushChunk(chunk: string | Uint8Array): void {
+    if (typeof chunk === "string" && chunk.length === 0) return;
+    this.emit("data", typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+
+  end(): void {
+    this.emit("end");
   }
 
   override read(): unknown {
@@ -57,18 +95,42 @@ class StdioReadable extends Readable {
  * being a valid `Writable`) but discarded.
  */
 class StdinWritable extends Writable {
-  override _write(_chunk: unknown, _encoding: string, callback?: (error?: Error | null) => void): void {
+  override _write(
+    _chunk: unknown,
+    _encoding: string,
+    callback?: (error?: Error | null) => void,
+  ): void {
+    callback?.();
+  }
+}
+
+class WorkerStdinWritable extends Writable {
+  constructor(private readonly worker: WorkerLike) {
+    super();
+  }
+
+  override _write(
+    chunk: unknown,
+    _encoding: string,
+    callback?: (error?: Error | null) => void,
+  ): void {
+    this.worker.postMessage({ type: "stdin", data: chunk });
     callback?.();
   }
 }
 
 class ChildProcessImpl extends EventEmitter implements ChildProcess {
-  readonly stdin: StdinWritable = new StdinWritable();
+  readonly stdin: InstanceType<typeof Writable>;
   readonly stdout: StdioReadable = new StdioReadable();
   readonly stderr: StdioReadable = new StdioReadable();
-  readonly pid = undefined;
+  readonly pid: number | undefined = undefined;
   exitCode: number | null = null;
   killed = false;
+
+  constructor(stdin?: InstanceType<typeof Writable>) {
+    super();
+    this.stdin = stdin ?? new StdinWritable();
+  }
 
   kill(): boolean {
     this.killed = true;
@@ -76,7 +138,74 @@ class ChildProcessImpl extends EventEmitter implements ChildProcess {
   }
 }
 
-const runChild = (command: string, args: string[], registry?: WasmRegistry, shell?: ShellService): ChildProcessImpl => {
+class WorkerChildProcessImpl extends ChildProcessImpl {
+  readonly pid = Math.floor(Math.random() * 32768);
+  private readonly worker: WorkerLike;
+
+  constructor(worker: WorkerLike) {
+    super(new WorkerStdinWritable(worker));
+    this.worker = worker;
+    worker.onmessage = (event) => this.handleMessage(event.data);
+    worker.onerror = (event) => {
+      this.emit(
+        "error",
+        event.error instanceof Error
+          ? event.error
+          : new Error(String(event.error ?? "Worker error")),
+      );
+      this.cleanup();
+    };
+  }
+
+  private handleMessage(data: unknown): void {
+    if (!data || typeof data !== "object") return;
+    const message = data as Record<string, unknown>;
+
+    if (message.stream === "stdout") {
+      this.stdout.pushChunk(bufferFrom(message.data));
+    } else if (message.stream === "stderr") {
+      this.stderr.pushChunk(bufferFrom(message.data));
+    } else if (message.type === "exit") {
+      const code = typeof message.code === "number" ? message.code : 0;
+      this.exitCode = code;
+      this.stdout.end();
+      this.stderr.end();
+      this.emit("exit", code, null);
+      this.emit("close", code, null);
+      this.cleanup();
+    } else if (message.type === "message") {
+      this.emit("message", message.data);
+    }
+  }
+
+  private cleanup(): void {
+    this.worker.onmessage = null;
+    this.worker.onerror = null;
+  }
+
+  send(message: unknown): boolean {
+    this.worker.postMessage({ type: "message", data: message });
+    return true;
+  }
+
+  override kill(signal?: string | number): boolean {
+    this.killed = true;
+    this.worker.terminate();
+    this.stdout.end();
+    this.stderr.end();
+    this.emit("exit", null, signal ?? "SIGTERM");
+    this.emit("close", null, signal ?? "SIGTERM");
+    this.cleanup();
+    return true;
+  }
+}
+
+const runChild = (
+  command: string,
+  args: string[],
+  registry?: WasmRegistry,
+  shell?: ShellService,
+): ChildProcessImpl => {
   const child = new ChildProcessImpl();
 
   (async () => {
@@ -84,43 +213,95 @@ const runChild = (command: string, args: string[], registry?: WasmRegistry, shel
     try {
       result = await dispatchCommand(command, args, registry, shell);
     } catch (error) {
-      child.emit('error', error instanceof Error ? error : new Error(String(error)));
+      child.emit("error", error instanceof Error ? error : new Error(String(error)));
       return;
     }
 
     child.stdout.emitOutput(result.stdout);
     child.stderr.emitOutput(result.stderr);
     child.exitCode = result.exitCode;
-    child.emit('exit', result.exitCode, null);
-    child.emit('close', result.exitCode, null);
+    child.emit("exit", result.exitCode, null);
+    child.emit("close", result.exitCode, null);
   })();
 
   return child;
 };
 
 const SYNC_NOT_SUPPORTED =
-  'Synchronous child_process calls are not supported: command dispatch in this environment is always ' +
-  'asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a ' +
-  'Promise. Use the async spawn()/exec() APIs instead.';
+  "Synchronous child_process calls are not supported: command dispatch in this environment is always " +
+  "asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a " +
+  "Promise. Use the async spawn()/exec() APIs instead.";
 
-export const createChildProcessShim = (registry?: WasmRegistry, shell?: ShellService) => {
-  const spawn = (command: string, args?: string[], _options?: Record<string, unknown>): ChildProcess =>
-    runChild(command, args ?? [], registry, shell);
+const FORK_NOT_SUPPORTED =
+  "child_process.fork is not available without a Worker factory: a true V8 fork is impossible in a browser. " +
+  "Pass a createWorker factory to createChildProcessShim for a Worker-based substitute.";
+
+const isNodeCommand = (command: string): boolean =>
+  command === "node" || command.endsWith("/node") || command.endsWith("\\node");
+
+export const createChildProcessShim = (
+  registry?: WasmRegistry,
+  shell?: ShellService,
+  workerOptions?: WorkerOptions,
+) => {
+  const createWorker = workerOptions?.createWorker;
+
+  const trySpawnWorker = (
+    command: string,
+    args: string[],
+    options?: Record<string, unknown>,
+  ): WorkerChildProcessImpl | undefined => {
+    if (!createWorker) return undefined;
+    if (!isNodeCommand(command) || args.length === 0) return undefined;
+    const scriptPath = args[0];
+    const workerArgs = args.slice(1);
+    const worker = createWorker(scriptPath, workerArgs, envFrom(options), cwdFrom(options));
+    if (!worker) return undefined;
+    return new WorkerChildProcessImpl(worker);
+  };
+
+  const spawn = (
+    command: string,
+    args?: string[],
+    options?: Record<string, unknown>,
+  ): ChildProcess => {
+    const argv = args ?? [];
+    const workerChild = trySpawnWorker(command, argv, options);
+    if (workerChild) return workerChild;
+    return runChild(command, argv, registry, shell);
+  };
+
+  const fork = (
+    modulePath: string,
+    args?: string[] | Record<string, unknown>,
+    options?: Record<string, unknown>,
+  ): ChildProcess => {
+    if (!createWorker) throw new Error(FORK_NOT_SUPPORTED);
+    const argv = Array.isArray(args) ? args : [];
+    const forkOptions = args && !Array.isArray(args) ? args : options;
+    const worker = createWorker(modulePath, argv, envFrom(forkOptions), cwdFrom(forkOptions));
+    if (!worker) throw new Error(`createWorker returned no worker for ${modulePath}`);
+    return new WorkerChildProcessImpl(worker);
+  };
 
   const exec = (command: string, options?: any, callback?: any) => {
-    const cb = typeof options === 'function' ? options : callback;
-    const parts = command.split(' ');
-    const child = runChild(parts[0], parts.slice(1), registry, shell);
+    const cb = typeof options === "function" ? options : callback;
+    const parts = command.split(" ");
+    const child = spawn(parts[0], parts.slice(1));
 
     if (cb) {
-      let stdout = '';
-      let stderr = '';
-      child.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString(); });
-      child.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString(); });
-      child.on('close', (code: number) => {
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (chunk: Buffer) => {
+        stdout += chunk.toString();
+      });
+      child.stderr.on("data", (chunk: Buffer) => {
+        stderr += chunk.toString();
+      });
+      child.on("close", (code: number) => {
         cb(code === 0 ? null : new Error(`Command failed: ${command}\n${stderr}`), stdout, stderr);
       });
-      child.on('error', (error: Error) => cb(error, '', ''));
+      child.on("error", (error: Error) => cb(error, "", ""));
     }
 
     return child;
@@ -134,7 +315,22 @@ export const createChildProcessShim = (registry?: WasmRegistry, shell?: ShellSer
     throw new Error(SYNC_NOT_SUPPORTED);
   };
 
-  return { spawn, exec, execSync, spawnSync };
+  return { spawn, exec, fork, execSync, spawnSync };
+};
+
+const envFrom = (options?: Record<string, unknown>): Record<string, string> | undefined => {
+  if (!options || typeof options !== "object") return undefined;
+  const env = options.env;
+  if (!env || typeof env !== "object") return undefined;
+  return Object.fromEntries(
+    Object.entries(env).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+  );
+};
+
+const cwdFrom = (options?: Record<string, unknown>): string | undefined => {
+  if (!options || typeof options !== "object") return undefined;
+  const cwd = options.cwd;
+  return typeof cwd === "string" ? cwd : undefined;
 };
 
 export interface ChildProcess {
@@ -145,6 +341,7 @@ export interface ChildProcess {
   exitCode: number | null;
   killed: boolean;
   kill(signal?: string | number): boolean;
+  send?(message: unknown): boolean;
   on(event: string, handler: (...args: any[]) => void): this;
   emit(event: string, ...args: any[]): boolean;
 }
