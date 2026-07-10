@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
@@ -28,7 +29,11 @@ const resolvePolyfillsShim = (): Plugin => ({
   enforce: 'pre',
   resolveId(source: string) {
     if (source.startsWith('vite-plugin-node-polyfills/shims/')) {
-      return requireFromApp.resolve(source);
+      const resolved = requireFromApp.resolve(source);
+      // Prefer ESM (.js) over CJS (.cjs) — Vite 6's CJS interop misses
+      // `exports.default` in these shims due to their __esModule marker.
+      const esm = resolved.replace(/\.cjs$/, '.js');
+      return existsSync(esm) ? esm : resolved;
     }
     return null;
   },
@@ -80,6 +85,17 @@ export default defineConfig({
       { find: /^node:path$/, replacement: `${shimsDir}path.js` },
       { find: /^node:stream$/, replacement: `${shimsDir}stream.js` },
       { find: /^node:async_hooks$/, replacement: `${shimsDir}async_hooks.js` },
+      // Pre-bundled CJS deps (e.g. @yarnpkg/lockfile) require bare builtins
+      // without the node: prefix. Vite's dep optimizer (esbuild) only consults
+      // resolve.alias, not plugin resolveId hooks, so alias bare names too.
+      { find: /^crypto$/, replacement: `${shimsDir}crypto.js` },
+      { find: /^events$/, replacement: `${shimsDir}events.js` },
+      { find: /^path$/, replacement: `${shimsDir}path.js` },
+      { find: /^stream$/, replacement: `${shimsDir}stream.js` },
+      { find: /^util$/, replacement: `${shimsDir}util.js` },
+      { find: /^assert$/, replacement: `${shimsDir}assert.js` },
+      { find: /^os$/, replacement: `${shimsDir}os.js` },
+      { find: /^tty$/, replacement: `${shimsDir}tty.js` },
     ],
   },
   // RuntimeWorker uses `new Worker(new URL('./worker-script.ts', import.meta.url), …)`.
@@ -87,5 +103,20 @@ export default defineConfig({
   // can emit the worker as a separate chunk rather than inlining it.
   optimizeDeps: {
     exclude: ['@browser-containers/runtime'],
+    esbuildOptions: {
+      plugins: [
+        {
+          name: 'resolve-bare-builtins',
+          setup(build) {
+            const bare = ['crypto', 'events', 'path', 'stream', 'util', 'assert', 'os', 'tty'];
+            for (const name of bare) {
+              build.onResolve({ filter: new RegExp(`^${name}$`) }, () => ({
+                path: `${shimsDir}${name}.js`,
+              }));
+            }
+          },
+        },
+      ],
+    },
   },
 });
