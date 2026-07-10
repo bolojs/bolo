@@ -15,7 +15,8 @@
     "@browser-containers/vfs-bus": "workspace:*",
     "@browser-containers/sw-sandbox": "workspace:*",
     "@browser-containers/node-web-shims": "workspace:*",
-    "quickjs-emscripten": "^0.32.0"
+    "quickjs-emscripten-core": "^0.32.0",
+    "@jitl/quickjs-wasmfile-release-sync": "^0.32.0"
   },
   "devDependencies": {
     "typescript": "^5.8.0",

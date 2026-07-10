@@ -1,4 +1,9 @@
-import { getQuickJS, type QuickJSContext, type QuickJSHandle } from "quickjs-emscripten";
+import {
+  newQuickJSWASMModuleFromVariant,
+  type QuickJSContext,
+  type QuickJSHandle,
+} from "quickjs-emscripten-core";
+import releaseSyncVariant from "@jitl/quickjs-wasmfile-release-sync";
 import type { VfsBus } from "@browser-containers/vfs-bus";
 import { transformScript } from "@browser-containers/wasm-registry";
 import {
@@ -26,7 +31,7 @@ export class SandboxPool {
   ) {}
 
   async run(code: string): Promise<SandboxRunResult> {
-    const QuickJS = await getQuickJS();
+    const QuickJS = await newQuickJSWASMModuleFromVariant(releaseSyncVariant);
     const runtime = QuickJS.newRuntime();
     runtime.setMemoryLimit(this.policy.memory.limitMb * 1024 * 1024);
     runtime.setMaxStackSize(1024 * 1024);

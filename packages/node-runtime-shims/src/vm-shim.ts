@@ -1,7 +1,12 @@
-import { getQuickJS, type QuickJSContext, type QuickJSHandle } from "quickjs-emscripten";
+import {
+  newQuickJSWASMModuleFromVariant,
+  type QuickJSContext,
+  type QuickJSHandle,
+} from "quickjs-emscripten-core";
+import releaseSyncVariant from "@jitl/quickjs-wasmfile-release-sync";
 
 export interface VmShimOptions {
-  // no deps needed — QuickJS is accessed directly via getQuickJS()
+  // no deps needed — QuickJS is accessed directly via newQuickJSWASMModuleFromVariant()
 }
 
 export interface RunInContextOptions {
@@ -63,7 +68,7 @@ export const createVmShim = (_options?: VmShimOptions) => {
     _options?: RunInContextOptions,
   ): Promise<unknown> => {
     // ponytail: no pooling — fresh runtime+context per call (matches sandbox-pool pattern)
-    const QuickJS = await getQuickJS();
+    const QuickJS = await newQuickJSWASMModuleFromVariant(releaseSyncVariant);
     const runtime = QuickJS.newRuntime();
     const ctx = runtime.newContext();
 
