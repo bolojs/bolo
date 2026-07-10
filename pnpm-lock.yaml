@@ -217,6 +217,40 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@25.6.0)(happy-dom@17.6.3)(lightningcss@1.32.0)(sass@1.99.0)
 
+  packages/quickjs-sandbox:
+    dependencies:
+      '@browser-containers/sandbox-policy':
+        specifier: workspace:*
+        version: link:../sandbox-policy
+      '@browser-containers/vfs-bus':
+        specifier: workspace:*
+        version: link:../vfs-bus
+      '@browser-containers/wasm-registry':
+        specifier: workspace:*
+        version: link:../wasm-registry
+      '@jitl/quickjs-wasmfile-release-sync':
+        specifier: ^0.32.0
+        version: 0.32.0
+      quickjs-emscripten-core:
+        specifier: ^0.32.0
+        version: 0.32.0
+    devDependencies:
+      '@browser-containers/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.17
+      happy-dom:
+        specifier: ^17.0.0
+        version: 17.6.3
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@22.19.17)(happy-dom@17.6.3)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0)
+
   packages/runtime:
     dependencies:
       '@browser-containers/node-runtime-shims':
