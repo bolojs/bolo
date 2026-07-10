@@ -1,3 +1,5 @@
+import type { SandboxBackend } from "./sandbox-backend.js";
+
 /**
  * Public API types for the browser-containers `boot()` API.
  *
@@ -11,6 +13,10 @@ export interface BootOptions {
   coep?: "require-corp" | "credentialless" | "none";
   workdirName?: string;
   forwardPreviewErrors?: boolean | "exceptions-only";
+  /** Custom sandbox backend (e.g. QuickJSSandbox for resource caps). Default: IframeSandbox. */
+  sandbox?: SandboxBackend;
+  /** Skip sandboxing entirely. Only for trusted code. */
+  dangerouslyAllowSameOrigin?: boolean;
 }
 
 // ── Virtual filesystem tree ───────────────────────────────────────────

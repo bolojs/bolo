@@ -19,7 +19,7 @@ describe("boot()", () => {
   });
 
   it("returns a BrowserContainer instance", async () => {
-    container = await boot();
+    container = await boot({ dangerouslyAllowSameOrigin: true });
     expect(container).toBeInstanceOf(BrowserContainer);
     expect(container.fs).toBeDefined();
     expect(container.workdir).toBe("/home/web");
@@ -27,27 +27,27 @@ describe("boot()", () => {
   });
 
   it("sets workdir from options", async () => {
-    container = await boot({ workdirName: "/home/project" });
+    container = await boot({ workdirName: "/home/project", dangerouslyAllowSameOrigin: true });
     expect(container.workdir).toBe("/home/project");
     await container.teardown();
   });
 
   it("rejects second boot() while active", async () => {
-    container = await boot();
-    await expect(boot()).rejects.toThrow("already running");
+    container = await boot({ dangerouslyAllowSameOrigin: true });
+    await expect(boot({ dangerouslyAllowSameOrigin: true })).rejects.toThrow("already running");
     await container.teardown();
   });
 
   it("allows re-boot after teardown", async () => {
-    const c1 = await boot();
+    const c1 = await boot({ dangerouslyAllowSameOrigin: true });
     await c1.teardown();
-    const c2 = await boot();
+    const c2 = await boot({ dangerouslyAllowSameOrigin: true });
     expect(c2).toBeInstanceOf(BrowserContainer);
     await c2.teardown();
   });
 
   it("mount and export round-trip", async () => {
-    container = await boot();
+    container = await boot({ dangerouslyAllowSameOrigin: true });
     const tree = {
       "index.js": { file: { contents: "console.log(1)" } },
       src: { directory: { "app.js": { file: { contents: "export const app = 1" } } } },

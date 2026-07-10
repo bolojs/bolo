@@ -1,6 +1,6 @@
 # browser-containers
 
-Run Node.js, Bun, and Deno apps entirely in the browser with zero server dependency. Fully open source (Apache 2.0). Includes a real security sandbox for AI agents (QuickJS + VFS ACLs + CPU/memory caps) so AI coding tools can safely execute untrusted code without escape risk.
+Run Node.js, Bun, and Deno apps entirely in the browser with zero server dependency. Fully open source (Apache 2.0). Browser-native iframe isolation keeps AI agent code in a cross-origin sandbox by default, with an optional QuickJS backend for users who need memory caps and filesystem ACLs.
 
 > **Try it now:** [Live demo](https://browser-containers-demo.pages.dev)
 >
@@ -17,13 +17,14 @@ pnpm --filter @browser-containers/demo dev
 
 ## Why this exists
 
-WebContainers is proprietary. almostnode and Nodepod are open but have no AI agent sandbox. browser-containers is the first fully client-side Node runtime where AI agents run in real isolation: QuickJS executes untrusted code behind VFS access control lists, memory limits, and CPU operation rate limits.
+WebContainers is proprietary and requires a server. almostnode and Nodepod are open but lack multi-runtime support. browser-containers is the first fully client-side, zero-server Node runtime with OPFS persistence, multi-runtime support (Node + Bun + Deno), and browser-native iframe isolation for AI agent code.
 
 **Compare:**
 | | browser-containers | almostnode | WebContainers | Nodepod |
 |---|---:|---:|---:|---:|
 | License | Apache 2.0 | MIT | Proprietary | MIT+Commons |
-| AI sandbox | **QuickJS + ACL** | iframe (no ACL) | None | None |
+| Sandbox | **iframe (opaque origin)** | iframe (opaque origin) | None | None |
+| Hardened sandbox (opt-in) | **QuickJS (community pkg)** | No | No | No |
 | TCP/IP | None (HTTP only) | None | Full | Full |
 | Linux kernel | None | None | Full (WASM) | None |
 | Persistence | OPFS + memfs | memfs only | OPFS | OPFS snapshots |
@@ -35,7 +36,7 @@ WebContainers is proprietary. almostnode and Nodepod are open but have no AI age
 
 | Use case | Status |
 |----------|--------|
-| AI agent sandbox (QuickJS + VFS ACL + CPU/memory limits) | Works |
+| AI agent sandbox (cross-origin iframe, opaque origin) | Works |
 | Hono / Elysia / itty-router (`.fetch` export) | Works |
 | Vite dev server (`/__preview/` prefix) | Works |
 | Vercel AI SDK | Works (https shim) |
@@ -86,9 +87,9 @@ const registry = createLiveShimRegistry({
 | [`sw-sandbox`](packages/sw-sandbox) | ServiceWorker-based network proxy for virtual localhost |
 | [`node-web-shims`](packages/node-web-shims) | `node:*` to Web API bridges |
 | [`node-runtime-shims`](packages/node-runtime-shims) | `node:*` to VfsBus/sw-sandbox bridges |
-| [`sandbox-policy`](packages/sandbox-policy) | Opt-in AI agent sandboxing |
+| [`sandbox-policy`](packages/sandbox-policy) | Opt-in sandbox policy types (QuickJS backend) |
 | [`wasm-registry`](packages/wasm-registry) | Native binary to WASM dispatcher (esbuild, tsc, sass, swc) |
-| [`runtime`](packages/runtime) | Core container API (V8 + QuickJS tiers) |
+| [`runtime`](packages/runtime) | Core container API (V8 + iframe sandbox) |
 | [`npm`](packages/npm) | Package installation in the browser |
 | [`vite-server`](packages/vite-server) | Vite dev server on main thread |
 
@@ -101,6 +102,7 @@ const registry = createLiveShimRegistry({
 - [ADR-0001](docs/adr/0001-two-tier-runtime.md) - two-tier runtime architecture
 - [ADR-0002](docs/adr/0002-vfs-bus-single-owner.md) - single-owner VFS design
 - [ADR-0003](docs/adr/0003-no-webpack-nextjs.md) - no Webpack/Next.js support
+- [ADR-0006](docs/adr/0006-sandbox-pivot-iframe.md) - sandbox pivot to browser-native iframe isolation
 - [Shim coverage](docs/shim-coverage.md)
 - [WASM registry](docs/wasm-registry.md)
 

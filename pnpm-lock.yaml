@@ -228,9 +228,6 @@ importers:
       '@browser-containers/npm':
         specifier: workspace:*
         version: link:../npm
-      '@browser-containers/sandbox-policy':
-        specifier: workspace:*
-        version: link:../sandbox-policy
       '@browser-containers/sw-sandbox':
         specifier: workspace:*
         version: link:../sw-sandbox
@@ -243,16 +240,13 @@ importers:
       '@browser-containers/wasm-registry':
         specifier: workspace:*
         version: link:../wasm-registry
-      '@jitl/quickjs-wasmfile-release-sync':
-        specifier: ^0.32.0
-        version: 0.32.0
       just-bash:
         specifier: ^3.1.0
         version: 3.1.0
-      quickjs-emscripten-core:
-        specifier: ^0.32.0
-        version: 0.32.0
     devDependencies:
+      '@browser-containers/sandbox-policy':
+        specifier: workspace:*
+        version: link:../sandbox-policy
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17

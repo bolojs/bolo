@@ -12,7 +12,7 @@ const createDeps = (vfs: VfsBus): ShellServiceDeps => ({
     onStdout: null,
     onStderr: null,
   } as unknown as ShellServiceDeps["runtimeWorker"],
-  sandboxPool: { run: vi.fn() } as unknown as ShellServiceDeps["sandboxPool"],
+  sandbox: { run: vi.fn() } as unknown as ShellServiceDeps["sandbox"],
 });
 
 describe("ShellService + just-bash integration", () => {

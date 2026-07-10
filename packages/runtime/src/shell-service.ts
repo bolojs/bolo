@@ -6,7 +6,7 @@ import { bundleEntry } from "@browser-containers/wasm-registry";
 import { createLiveShimRegistry } from "@browser-containers/node-runtime-shims";
 import { Bash } from "just-bash/browser";
 import type { RuntimeWorker } from "./runtime-worker.js";
-import type { SandboxPool } from "./sandbox-pool.js";
+import type { SandboxBackend } from "./sandbox-backend.js";
 import type { ContainerEvents } from "./events.js";
 import { VfsBashFileSystem } from "./vfs-bash-fs.js";
 
@@ -22,11 +22,11 @@ declare global {
 
 export interface ShellServiceDeps {
   vfs: VfsBus;
-  sandbox?: SWSandbox;
+  swSandbox?: SWSandbox;
   events?: ContainerEvents;
   packageManager: PackageManager;
   runtimeWorker: RuntimeWorker;
-  sandboxPool: SandboxPool;
+  sandbox?: SandboxBackend;
   workdir?: string;
 }
 
@@ -141,7 +141,7 @@ export class ShellService {
     const scriptName = args[0];
 
     if (scriptName === "dev") {
-      if (!this.deps.sandbox) {
+      if (!this.deps.swSandbox) {
         output.stderr("No sandbox configured for dev server");
         return 1;
       }
@@ -155,7 +155,7 @@ export class ShellService {
             server.broadcastHmr({ type: "full-reload", path });
           }
         });
-        this.deps.sandbox.onFetch(async (req) => {
+        this.deps.swSandbox.onFetch(async (req) => {
           const url = new URL(req.url);
           if (!url.pathname.startsWith(previewPrefix)) {
             throw new Error("not handled");
@@ -189,7 +189,9 @@ export class ShellService {
       const scriptCmd = pkg.scripts?.[scriptName];
       if (!scriptCmd) {
         output.stderr(`Missing script: "${scriptName}"\n`);
-        output.stderr(`Available scripts: ${Object.keys(pkg.scripts ?? {}).join(", ") || "(none)"}\n`);
+        output.stderr(
+          `Available scripts: ${Object.keys(pkg.scripts ?? {}).join(", ") || "(none)"}\n`,
+        );
         return 1;
       }
       return this.route(scriptCmd, output);
@@ -240,10 +242,10 @@ export class ShellService {
 
       globalThis.__browserContainers = {
         vfs: this.deps.vfs,
-        sandbox: this.deps.sandbox,
+        sandbox: this.deps.swSandbox,
         shims: createLiveShimRegistry({
           vfs: this.deps.vfs,
-          sandbox: this.deps.sandbox,
+          sandbox: this.deps.swSandbox,
           onPortEvent,
           shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
           cwd: this.cwd,
@@ -269,8 +271,8 @@ export class ShellService {
       // method, auto-register it as a fetch handler so the server starts
       // without an explicit http.createServer().listen() call.
       const exportedApp = mod?.default;
-      if (exportedApp && typeof exportedApp.fetch === "function" && this.deps.sandbox) {
-        this.deps.sandbox.onFetch(exportedApp.fetch.bind(exportedApp));
+      if (exportedApp && typeof exportedApp.fetch === "function" && this.deps.swSandbox) {
+        this.deps.swSandbox.onFetch(exportedApp.fetch.bind(exportedApp));
         onPortEvent("server-ready", { port: 3000, url: "https://sandbox.local" });
         onPortEvent("port-open", { port: 3000, url: "https://sandbox.local" });
       }
@@ -296,8 +298,12 @@ export class ShellService {
     }
 
     try {
+      if (!this.deps.sandbox) {
+        output.stderr("No sandbox configured for agent code");
+        return 1;
+      }
       const code = String(await this.deps.vfs.readFile(filePath));
-      const result = await this.deps.sandboxPool.run(code);
+      const result = await this.deps.sandbox.run(code);
       if (result.error) {
         output.stderr(result.error);
         return 1;

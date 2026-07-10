@@ -4,7 +4,8 @@ import { VfsBus } from "@browser-containers/vfs-bus";
 import { SWSandbox } from "@browser-containers/sw-sandbox";
 import { PackageManager } from "@browser-containers/npm";
 import { RuntimeWorker } from "./runtime-worker.js";
-import { SandboxPool } from "./sandbox-pool.js";
+import { IframeSandbox } from "./iframe-sandbox.js";
+import type { SandboxBackend } from "./sandbox-backend.js";
 import { ShellService } from "./shell-service.js";
 import { createFileSystem } from "./fs-adapter.js";
 import { createEventEmitter } from "./events.js";
@@ -65,20 +66,30 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
       sandbox = { onFetch: () => {}, setPolicyRegistry: () => {} } as unknown as SWSandbox;
     }
 
+    let agentSandbox: SandboxBackend | null;
+    if (options?.sandbox) {
+      agentSandbox = options.sandbox;
+    } else if (options?.dangerouslyAllowSameOrigin) {
+      agentSandbox = null;
+    } else {
+      const iframeSandbox = new IframeSandbox(vfs, workdir);
+      await iframeSandbox.init();
+      agentSandbox = iframeSandbox;
+    }
+
     globalThis.__vfsBus = vfs;
     globalThis.__sandbox = sandbox;
 
     const runtimeWorker = new RuntimeWorker(vfs, sandbox);
-    const sandboxPool = new SandboxPool(vfs);
     const packageManager = new PackageManager({ vfs, cwd: workdir });
     const events = createEventEmitter();
     const shellService = new ShellService({
       vfs,
-      sandbox,
+      swSandbox: sandbox,
       events,
       packageManager,
       runtimeWorker,
-      sandboxPool,
+      sandbox: agentSandbox ?? undefined,
       workdir,
     });
 
@@ -122,6 +133,7 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
     const originalTeardown = container.teardown.bind(container);
     container.teardown = async () => {
       await originalTeardown();
+      agentSandbox?.dispose();
       activeInstance = null;
       bootPromise = null;
     };

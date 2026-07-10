@@ -1,5 +1,4 @@
 export { RuntimeWorker, type RuntimeMessage, type RunScriptOptions } from "./runtime-worker.js";
-export { SandboxPool, type SandboxRunResult } from "./sandbox-pool.js";
 export { ShellService, type ShellServiceDeps, type ShellResult } from "./shell-service.js";
 export {
   type BootOptions,
@@ -22,3 +21,5 @@ export { createEventEmitter, type ContainerEvents } from "./events.js";
 export { createProcess, type ProcessDeps } from "./process.js";
 export { BrowserContainer, type BrowserContainerDeps } from "./container.js";
 export { boot } from "./boot.js";
+export { type SandboxBackend, type SandboxRunResult } from "./sandbox-backend.js";
+export { IframeSandbox } from "./iframe-sandbox.js";

@@ -16,15 +16,13 @@
     "@browser-containers/sw-sandbox": "workspace:*",
     "@browser-containers/npm": "workspace:*",
     "@browser-containers/vite-server": "workspace:*",
-    "quickjs-emscripten-core": "^0.32.0",
-    "@jitl/quickjs-wasmfile-release-sync": "^0.32.0",
     "@browser-containers/node-web-shims": "workspace:*",
     "@browser-containers/node-runtime-shims": "workspace:*",
     "@browser-containers/wasm-registry": "workspace:*",
-    "@browser-containers/sandbox-policy": "workspace:*",
     "just-bash": "^3.1.0"
   },
   "devDependencies": {
+    "@browser-containers/sandbox-policy": "workspace:*",
     "@types/node": "^22.0.0",
     "happy-dom": "^17.0.0",
     "typescript": "^5.8.0",

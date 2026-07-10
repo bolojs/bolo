@@ -15,13 +15,13 @@ const createMockDeps = (): ShellServiceDeps => {
       onStdout: null,
       onStderr: null,
     } as unknown as ShellServiceDeps["runtimeWorker"],
-    sandboxPool: {
-      run: vi.fn().mockResolvedValue({ result: "ok" }),
-    } as unknown as ShellServiceDeps["sandboxPool"],
     sandbox: {
+      run: vi.fn().mockResolvedValue({ result: "ok" }),
+    } as unknown as ShellServiceDeps["sandbox"],
+    swSandbox: {
       onFetch: vi.fn(),
       setPolicyRegistry: vi.fn(),
-    } as unknown as ShellServiceDeps["sandbox"],
+    } as unknown as ShellServiceDeps["swSandbox"],
     events: {
       emit: vi.fn(),
       on: vi.fn().mockReturnValue(() => {}),
@@ -58,13 +58,13 @@ describe("ShellService", () => {
   });
 
   it("npm run dev → starts BrowserViteServer and wires sandbox.onFetch", async () => {
-    deps.sandbox = {
+    deps.swSandbox = {
       onFetch: vi.fn(),
       setPolicyRegistry: vi.fn(),
-    } as unknown as ShellServiceDeps["sandbox"];
+    } as unknown as ShellServiceDeps["swSandbox"];
 
     const result = await shell.execute("npm run dev");
-    expect(deps.sandbox?.onFetch).toHaveBeenCalledOnce();
+    expect(deps.swSandbox?.onFetch).toHaveBeenCalledOnce();
     expect(deps.events?.emit).toHaveBeenCalledWith("port", 3000, "open", "/__preview/");
     expect(deps.events?.emit).toHaveBeenCalledWith("server-ready", 3000, "/__preview/");
     expect(result.exitCode).toBe(0);
@@ -90,7 +90,7 @@ describe("ShellService", () => {
   });
 
   it("npm run dev → error when no sandbox configured", async () => {
-    deps.sandbox = undefined;
+    deps.swSandbox = undefined;
     const result = await shell.execute("npm run dev");
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("No sandbox configured");
@@ -241,7 +241,7 @@ server.listen(3000);`,
     expect(result.stderr).toBe("");
     expect(result.exitCode).toBe(0);
 
-    const fetchHandler = (deps.sandbox!.onFetch as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const fetchHandler = (deps.swSandbox!.onFetch as ReturnType<typeof vi.fn>).mock.calls[0][0];
     const req = new Request("http://localhost:3000/", { method: "POST", body: "hello" });
     const resp: Response = await fetchHandler(req);
     expect(resp.status).toBe(200);
@@ -255,10 +255,10 @@ server.listen(3000);`,
     expect(result.stderr).toContain("Usage");
   });
 
-  it("agent run agent.ts → SandboxPool.run()", async () => {
+  it("agent run agent.ts → Sandbox.run()", async () => {
     const result = await shell.execute("agent run bot.ts");
     expect(deps.vfs.readFile).toHaveBeenCalledWith("bot.ts");
-    expect(deps.sandboxPool.run).toHaveBeenCalledWith('console.log("hello")');
+    expect(deps.sandbox!.run).toHaveBeenCalledWith('console.log("hello")');
     expect(result.exitCode).toBe(0);
   });
 
