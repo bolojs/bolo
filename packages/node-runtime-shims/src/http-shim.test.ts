@@ -40,7 +40,7 @@ describe("http-shim - Port Discovery Events", () => {
       expect(onPortEvent).toHaveBeenCalledTimes(2);
       expect(onPortEvent).toHaveBeenCalledWith("server-ready", {
         port: 3000,
-        url: "http://localhost:3000",
+        url: "/__virtual__/3000",
       });
     });
 
@@ -54,7 +54,7 @@ describe("http-shim - Port Discovery Events", () => {
 
       expect(onPortEvent).toHaveBeenCalledWith("port-open", {
         port: 3000,
-        url: "http://localhost:3000",
+        url: "/__virtual__/3000",
       });
     });
 
@@ -68,7 +68,7 @@ describe("http-shim - Port Discovery Events", () => {
 
       expect(onPortEvent).toHaveBeenCalledWith("server-ready", {
         port: 3000,
-        url: "http://localhost:3000",
+        url: "/__virtual__/3000",
       });
     });
 

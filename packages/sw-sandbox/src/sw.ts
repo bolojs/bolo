@@ -54,7 +54,11 @@ export function initSW(swGlobal: SWGlobal): void {
     const url = new URL(event.request.url);
     // Intercept the vite preview prefix (same origin) AND the virtual sandbox
     // hostname (cross-origin user servers like Hono/Express).
-    if (!url.pathname.startsWith("/__preview/") && url.hostname !== "sandbox.local") {
+    if (
+      !url.pathname.startsWith("/__preview/") &&
+      !url.pathname.startsWith("/__virtual__/") &&
+      url.hostname !== "sandbox.local"
+    ) {
       return;
     }
     if (!isReady || !mainPort) {

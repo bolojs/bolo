@@ -459,7 +459,7 @@ export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) =
 
     server.listen = (port?: number, host?: string, callback?: () => void) => {
       const actualPort = port ?? 3000;
-      const url = `http://localhost:${actualPort}`;
+      const url = `/__virtual__/${actualPort}`;
 
       listening = true;
       serverPort = actualPort;
@@ -473,9 +473,14 @@ export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) =
         }
 
         const reqUrl = new URL(req.url);
+        let pathname = reqUrl.pathname;
+        const virtualMatch = pathname.match(/^\/__virtual__\/\d+(\/.*)?$/);
+        if (virtualMatch) {
+          pathname = virtualMatch[1] || "/";
+        }
         const body = req.body ? new Uint8Array(await req.arrayBuffer()) : new Uint8Array(0);
         const request = new IncomingMessageImpl({
-          url: reqUrl.pathname + reqUrl.search,
+          url: pathname + reqUrl.search,
           method: req.method,
           headers: lowerCaseHeaders(Object.fromEntries(req.headers.entries())),
           body,
