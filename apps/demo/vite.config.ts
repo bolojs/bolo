@@ -63,7 +63,30 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'credentialless',
     },
   },
-  build: { target: 'esnext' },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      // External: these modules are loaded at runtime from CDN (esm.sh/jsdelivr).
+      // Using external (not @vite-ignore) ensures Rollup NEVER bundles them.
+      // @vite-ignore only suppresses warnings — it does NOT prevent bundling.
+      external: [
+        'typescript',     // wasm-registry tsc tool + vite-server
+        'oxc-transform',  // wasm-registry oxc-transform tool + vite-server
+        '@rolldown/browser', // wasm-registry rolldown/browser bundler
+        'sass',           // wasm-registry sass tool
+        '@swc/wasm-web',  // wasm-registry swc tool (WASM binary loaded via CDN)
+      ],
+      output: {
+        // Function form — only splits modules that actually appear in the bundle,
+        // avoiding "Could not resolve entry module" for transitive deps.
+        manualChunks(id) {
+          if (id.includes('quickjs-emscripten') || id.includes('@jitl/')) return 'quickjs';
+          if (id.includes('memfs')) return 'memfs';
+          if (id.includes('@browser-containers/npm') || id.includes('@unjs/lockfile')) return 'npm';
+        },
+      },
+    },
+  },
   // Vite's dep-pre-bundle step resolves imports through `resolve.alias`
   // (its own resolver plugin), not through `optimizeDeps.esbuildOptions.alias`
   // (a raw esbuild build option esbuild only consults when no plugin claims

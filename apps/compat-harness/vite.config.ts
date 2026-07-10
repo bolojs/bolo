@@ -40,7 +40,18 @@ export default defineConfig({
       globals: { Buffer: true, global: true, process: true },
     }),
   ],
-  build: { target: 'esnext' },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      external: [
+        'typescript',     // wasm-registry tsc tool + vite-server
+        'oxc-transform',  // wasm-registry oxc-transform tool + vite-server
+        '@rolldown/browser', // wasm-registry rolldown/browser bundler
+        'sass',           // wasm-registry sass tool
+        '@swc/wasm-web',  // wasm-registry swc tool (WASM binary loaded via CDN)
+      ],
+    },
+  },
   resolve: {
     alias: [
       { find: 'node:stream/promises', replacement: streamPromisesShim },
