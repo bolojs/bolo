@@ -1,5 +1,5 @@
 import type { VfsBus } from "@browser-containers/vfs-bus";
-import * as ts from "typescript";
+import { transformScript } from "@browser-containers/wasm-registry";
 
 const TRANSFORMABLE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 
@@ -14,7 +14,7 @@ export interface BrowserViteServerOptions {
 }
 
 interface TranspileResult {
-  readonly transpileFile: (code: string, _compilerOptions?: unknown, fileName?: string) => string;
+  readonly transpileFile: (code: string, _compilerOptions?: unknown, fileName?: string) => Promise<string>;
 }
 
 export class BrowserViteServer {
@@ -32,19 +32,14 @@ export class BrowserViteServer {
   }
 
   async start(): Promise<void> {
-    const compilerOptions: ts.CompilerOptions = {
-      module: ts.ModuleKind.ESNext,
-      target: ts.ScriptTarget.ES2023,
-      allowJs: true,
-      skipLibCheck: true,
-      esModuleInterop: true,
-      strict: false,
-      allowSyntheticDefaultImports: true,
-      jsx: ts.JsxEmit.ReactJSX,
-    };
     this.transpiler = {
-      transpileFile: (code, _compilerOptions, fileName) =>
-        ts.transpile(code, compilerOptions, fileName),
+      transpileFile: async (code, _compilerOptions, fileName) => {
+        const ext = fileName?.endsWith(".tsx") ? "tsx" as const
+          : fileName?.endsWith(".jsx") ? "jsx" as const
+          : "ts" as const;
+        const { code: transformed } = await transformScript(code, { loader: ext });
+        return transformed;
+      },
     };
   }
 
