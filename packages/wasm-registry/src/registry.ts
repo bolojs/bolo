@@ -11,18 +11,17 @@ export interface WasmTool {
 export type WasmToolLoader = () => Promise<WasmTool>;
 
 type ToolRegistry = Record<string, WasmToolLoader>;
-type ToolCache = Record<string, WasmTool>;
 
 const registry: ToolRegistry = {};
-const cache: ToolCache = {};
+const promiseCache: Record<string, Promise<WasmTool | undefined>> = {};
 
 export const registerWasmTool = (name: string, loader: WasmToolLoader): void => {
   registry[name] = loader;
 };
 
 export const resolveWasmTool = async (name: string): Promise<WasmTool | undefined> => {
-  if (cache[name]) {
-    return cache[name];
+  if (name in promiseCache) {
+    return promiseCache[name];
   }
 
   const loader = registry[name];
@@ -30,9 +29,8 @@ export const resolveWasmTool = async (name: string): Promise<WasmTool | undefine
     return undefined;
   }
 
-  const tool = await loader();
-  cache[name] = tool;
-  return tool;
+  promiseCache[name] = loader();
+  return promiseCache[name];
 };
 
 export const createWasmRegistry = (): {
@@ -54,8 +52,8 @@ export const createWasmRegistry = (): {
 };
 
 export const clearCache = (): void => {
-  Object.keys(cache).forEach((key) => {
-    delete cache[key];
+  Object.keys(promiseCache).forEach((key) => {
+    delete promiseCache[key];
   });
 };
 

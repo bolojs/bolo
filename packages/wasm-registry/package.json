@@ -12,13 +12,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "esbuild-wasm": "^0.20.2",
-    "typescript": "^5.8.0",
-    "sass": "^1.80.0",
-    "@swc/wasm-web": "^1.10.0",
     "@bjorn3/browser_wasi_shim": "^0.4.2",
+    "@browser-containers/npm": "workspace:*",
     "@browser-containers/vfs-bus": "workspace:*",
-    "@browser-containers/npm": "workspace:*"
+    "@rolldown/browser": "^1.1.5",
+    "oxc-transform": "^0.139.0"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",

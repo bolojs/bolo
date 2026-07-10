@@ -1,19 +1,32 @@
 import type { VfsBus } from "@browser-containers/vfs-bus";
-import type { Plugin } from "esbuild-wasm";
+import type { Plugin } from "@rolldown/browser";
 import { buildEsmShUrl } from "@browser-containers/npm";
-import { initEsbuild } from "./index.js";
+
+// rolldown/browser: lazy CDN load with Node.js fallback
+let _rolldown: Promise<typeof import("@rolldown/browser")> | undefined;
+const getRolldown = () => {
+  if (!_rolldown) {
+    _rolldown = globalThis.process?.versions?.node
+      ? import("@rolldown/browser")
+      : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
+        import(/* @vite-ignore */ "https://esm.sh/@rolldown/browser@latest");
+  }
+  return _rolldown;
+};
+
+// oxc-transform: lazy CDN load with Node.js fallback
+let _oxc: Promise<typeof import("oxc-transform")> | undefined;
+const getOxc = () => {
+  if (!_oxc) {
+    _oxc = globalThis.process?.versions?.node
+      ? import("oxc-transform")
+      : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
+        import(/* @vite-ignore */ "https://esm.sh/oxc-transform@latest");
+  }
+  return _oxc;
+};
 
 const RESOLVE_EXTENSIONS = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"];
-
-const LOADER_BY_EXT: Record<string, "ts" | "tsx" | "js" | "jsx" | "json"> = {
-  ".ts": "ts",
-  ".tsx": "tsx",
-  ".js": "js",
-  ".jsx": "jsx",
-  ".mjs": "js",
-  ".cjs": "js",
-  ".json": "json",
-};
 
 // Builtins with a browser shim available somewhere in the host realm (either
 // stateless, from `node-web-shims`, or host-bound, from `node-runtime-shims`).
@@ -330,153 +343,22 @@ const resolveBarePackage = (
   );
 };
 
-const EMPTY_STUB_NAMESPACE = "browser-containers-empty-stub";
+const GLOBALS_BANNER = `
+var __bcGlobals = () => globalThis.__browserContainers;
+var process = __bcGlobals()?.shims?.process;
+var Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
+var global = globalThis;
+var setImmediate = (fn, ...args) => { queueMicrotask(() => fn(...args)); return 0; };
+var clearImmediate = () => {};
 
-const vfsPlugin = (vfs: VfsBus): Plugin => ({
-  name: "browser-containers-vfs",
-  setup(build) {
-    build.onResolve({ filter: /.*/ }, (args) => {
-      const importerDir = args.importer ? dirname(args.importer) : args.resolveDir || "/";
-
-      // Package-internal `#subpath` imports (the `imports` field) always
-      // resolve against the *importing* file's own package, never a
-      // `node_modules` lookup — handle before the bare-specifier branch below.
-      if (args.path.startsWith("#") && args.importer) {
-        const resolved = resolvePackageImportsSubpath(vfs, args.importer, args.path);
-        if (resolved) return { path: resolved, namespace: "browser-containers-vfs" };
-        return {
-          errors: [
-            { text: `Cannot resolve package import "${args.path}" from "${args.importer}"` },
-          ],
-        };
-      }
-
-      // The `browser` field remap applies to every specifier (relative or
-      // bare) written inside a package's own files, per the browserify/
-      // webpack convention — check it before normal resolution.
-      const remap = args.importer
-        ? applyBrowserFieldRemap(vfs, args.importer, args.path)
-        : undefined;
-      if (remap === false) return { path: args.path, namespace: EMPTY_STUB_NAMESPACE };
-      const path = typeof remap === "string" ? remap : args.path;
-
-      const isRelative = path.startsWith(".") || path.startsWith("/");
-      const resolved = isRelative
-        ? resolveFile(vfs, path.startsWith("/") ? path : joinPath(importerDir, path))
-        : resolveBarePackage(vfs, importerDir, path);
-
-      if (!resolved) {
-        // Relative-path failures are almost always a real typo in the app's
-        // own code — fail loudly. Bare specifiers fall through to the
-        // esm.sh fallback plugin (registered after this one) instead of
-        // failing the whole bundle, since they might be an uninstalled
-        // transitive dep or an export shape this resolver doesn't cover yet.
-        if (isRelative) {
-          return {
-            errors: [
-              { text: `Cannot resolve module "${args.path}" from "${args.importer || "<entry>"}"` },
-            ],
-          };
-        }
-        return undefined;
-      }
-      return { path: resolved, namespace: "browser-containers-vfs" };
-    });
-
-    build.onLoad({ filter: /.*/, namespace: "browser-containers-vfs" }, (args) => {
-      const contents = vfs.hot.readFileSync(args.path, "utf8") as string;
-      const loader = LOADER_BY_EXT[extname(args.path)] ?? "js";
-      const resolveDir = dirname(args.path);
-      // CJS-style implicit globals — esbuild only auto-defines these for
-      // `format: 'cjs'` output; our bundle is ESM, so each module gets its
-      // own `__dirname`/`__filename` consts prepended (harmless before
-      // `import`/`export` declarations, which are hoisted regardless of
-      // source position).
-      if (loader === "json") return { contents, loader, resolveDir };
-      const prelude = `const __filename=${JSON.stringify(args.path)};const __dirname=${JSON.stringify(resolveDir)};\n`;
-      return { contents: prelude + contents, loader, resolveDir };
-    });
-
-    build.onLoad({ filter: /.*/, namespace: EMPTY_STUB_NAMESPACE }, () => ({
-      contents: "export default {};",
-      loader: "js",
-    }));
-  },
-});
-
-/**
- * Last-resort resolver: a bare specifier that isn't installed (or whose
- * exports shape this resolver can't yet follow) is marked `external` and
- * rewritten to an esm.sh URL instead of failing the whole bundle — the same
- * CDN fallback `PackageManager` already uses for the install-time import map.
- * Runs after `vfsPlugin`, whose onResolve returns `undefined` (not an error)
- * for unresolved bare specifiers so esbuild falls through to this plugin.
- */
-const esmShFallbackPlugin = (vfs: VfsBus): Plugin => ({
-  name: "browser-containers-esm-sh-fallback",
-  setup(build) {
-    build.onResolve({ filter: /.*/ }, (args) => {
-      if (args.path.startsWith(".") || args.path.startsWith("/") || args.path.startsWith("#"))
-        return undefined;
-      if (NODE_BUILTIN_NAMES.has(args.path)) return undefined;
-
-      const importerDir = args.importer ? dirname(args.importer) : args.resolveDir || "/";
-      const isScoped = args.path.startsWith("@");
-      const parts = args.path.split("/");
-      const name = isScoped ? parts.slice(0, 2).join("/") : parts[0];
-      const subpath = (isScoped ? parts.slice(2) : parts.slice(1)).join("/");
-      const pkgDir = findPackageDir(vfs, importerDir, name);
-      const version = pkgDir
-        ? (readPackageJson(vfs, pkgDir).version as string | undefined)
-        : undefined;
-      const url = subpath
-        ? `${buildEsmShUrl(name, version)}/${subpath}`
-        : buildEsmShUrl(name, version);
-
-      return {
-        path: url,
-        external: true,
-        warnings: [
-          {
-            text: `"${args.path}" could not be resolved off the installed node_modules — falling back to ${url}`,
-          },
-        ],
-      };
-    });
-  },
-});
-
-// Injected into every module via esbuild's `inject` so bare references to
-// `process`/`Buffer`/`global`/`setImmediate` (never explicitly imported —
-// the overwhelming majority of CJS/npm code assumes they're ambient) resolve
-// without every package needing an explicit `require('node:process')`.
-// Reads `globalThis.__browserContainers` at module-eval time, which
-// `ShellService.runNodeApp` populates just before importing the bundle.
-const GLOBALS_PRELUDE_PATH = "browser-containers-globals-prelude";
-const GLOBALS_PRELUDE_NAMESPACE = "browser-containers-globals-prelude";
-const GLOBALS_PRELUDE_SOURCE = `
-const __bcGlobals = () => globalThis.__browserContainers;
-export const process = __bcGlobals()?.shims?.process;
-export const Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
-export const global = globalThis;
-export const setImmediate = (fn, ...args) => { queueMicrotask(() => fn(...args)); return 0; };
-export const clearImmediate = () => {};
-
-// esbuild's \`inject\` rewrites every bare, unshadowed reference to these export
-// names within the bundle scope — including \`console\`, even though it also
-// resolves to a real browser global. Left unhandled, bundled \`console.log\`
-// calls silently reach devtools instead of this container's captured
-// stdout/stderr (the terminal UI and any harness reading process output would
-// see nothing), unlike real Node where the global Console is constructed from
-// \`process.stdout\`/\`process.stderr\` in the first place.
-const __bcFormat = (args) => args.map((a) => {
+var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;
   if (a instanceof Error) return a.stack || String(a);
   if (typeof a === 'object' && a !== null) { try { return JSON.stringify(a); } catch { return String(a); } }
   return String(a);
 }).join(' ');
-const __bcWrite = (stream, args) => __bcGlobals()?.shims?.process?.[stream]?.write(__bcFormat(args) + '\\n');
-export const console = {
+var __bcWrite = (stream, args) => __bcGlobals()?.shims?.process?.[stream]?.write(__bcFormat(args) + '\\n');
+var console = {
   log: (...args) => __bcWrite('stdout', args),
   info: (...args) => __bcWrite('stdout', args),
   debug: (...args) => __bcWrite('stdout', args),
@@ -488,71 +370,129 @@ export const console = {
   group: () => {},
   groupEnd: () => {},
 };
-`;
+`.trim();
 
-const globalsPreludePlugin = (): Plugin => ({
-  name: "browser-containers-globals-prelude",
-  setup(build) {
-    build.onResolve({ filter: new RegExp(`^${GLOBALS_PRELUDE_PATH}$`) }, (args) => ({
-      path: args.path,
-      namespace: GLOBALS_PRELUDE_NAMESPACE,
-    }));
-    build.onLoad({ filter: /.*/, namespace: GLOBALS_PRELUDE_NAMESPACE }, () => ({
-      contents: GLOBALS_PRELUDE_SOURCE,
-      loader: "js",
-    }));
+const vfsPlugin = (vfs: VfsBus): Plugin => ({
+  name: "browser-containers-vfs",
+  async resolveId(id, importer) {
+    const importerDir = importer ? dirname(importer) : "/";
+
+    if (id.startsWith("#") && importer) {
+      const resolved = resolvePackageImportsSubpath(vfs, importer, id);
+      if (resolved) return resolved;
+    }
+
+    const remap = importer ? applyBrowserFieldRemap(vfs, importer, id) : undefined;
+    if (remap === false) return `browser-containers-empty-stub:${id}`;
+    const path = typeof remap === "string" ? remap : id;
+
+    const isRelative = path.startsWith(".") || path.startsWith("/");
+    const resolved = isRelative
+      ? resolveFile(vfs, path.startsWith("/") ? path : joinPath(importerDir, path))
+      : resolveBarePackage(vfs, importerDir, path);
+
+    if (!resolved && isRelative) {
+      throw new Error(`Cannot resolve module "${id}" from "${importer || "<entry>"}"`);
+    }
+    return resolved ?? null;
+  },
+  async load(id) {
+    if (id.startsWith("browser-containers-empty-stub:")) {
+      return { code: "export default {};", map: null };
+    }
+    // Only handle VFS paths; let other plugins (e.g. node-shim) handle their own virtual schemes.
+    if (!id.startsWith("/")) return null;
+    const ext = extname(id);
+    const contents = vfs.hot.readFileSync(id, "utf8") as string;
+    const resolveDir = dirname(id);
+    if (ext === ".json") {
+      return { code: `export default ${contents};`, map: null, moduleSideEffects: "no-treeshake" };
+    }
+    // Prepend __dirname/__filename for CJS-style implicit globals
+    const prelude = `const __filename=${JSON.stringify(id)};const __dirname=${JSON.stringify(resolveDir)};\n`;
+    return { code: prelude + contents, map: null, moduleSideEffects: "no-treeshake" };
+  },
+});
+
+/**
+ * Last-resort resolver: a bare specifier that isn't installed (or whose
+ * exports shape this resolver can't yet follow) is marked `external` and
+ * rewritten to an esm.sh URL instead of failing the whole bundle — the same
+ * CDN fallback `PackageManager` already uses for the install-time import map.
+ * Runs after `vfsPlugin`, whose resolveId returns `null` for unresolved bare
+ * specifiers so rolldown falls through to this plugin.
+ */
+const esmShFallbackPlugin = (vfs: VfsBus, warnings: string[]): Plugin => ({
+  name: "browser-containers-esm-sh-fallback",
+  async resolveId(id, importer) {
+    if (id.startsWith(".") || id.startsWith("/") || id.startsWith("#")) return null;
+    if (NODE_BUILTIN_NAMES.has(id)) return null;
+
+    const importerDir = importer ? dirname(importer) : "/";
+    const isScoped = id.startsWith("@");
+    const parts = id.split("/");
+    const name = isScoped ? parts.slice(0, 2).join("/") : parts[0];
+    const subpath = (isScoped ? parts.slice(2) : parts.slice(1)).join("/");
+    const pkgDir = findPackageDir(vfs, importerDir, name);
+    const version = pkgDir
+      ? (readPackageJson(vfs, pkgDir).version as string | undefined)
+      : undefined;
+    const url = subpath
+      ? `${buildEsmShUrl(name, version)}/${subpath}`
+      : buildEsmShUrl(name, version);
+
+    warnings.push(
+      `"${id}" could not be resolved off the installed node_modules — falling back to ${url}`,
+    );
+
+    return { id: url, external: true };
   },
 });
 
 const nodeAliasPlugin = (
   getShim?: (builtin: string) => Record<string, unknown> | undefined,
+  warnings?: string[],
 ): Plugin => ({
   name: "browser-containers-node-alias",
-  setup(build) {
-    build.onResolve({ filter: /^node:/ }, (args) => ({
-      path: args.path.slice("node:".length),
-      namespace: "browser-containers-node-shim",
-    }));
+  async resolveId(id) {
+    const builtin = id.startsWith("node:") ? id.slice(5) : id;
+    if (!NODE_BUILTIN_NAMES.has(builtin)) return null;
 
-    build.onResolve({ filter: /.*/ }, (args) => {
-      if (!NODE_BUILTIN_NAMES.has(args.path)) return undefined;
-      return { path: args.path, namespace: "browser-containers-node-shim" };
-    });
-
-    build.onLoad({ filter: /.*/, namespace: "browser-containers-node-shim" }, (args) => {
-      const shim = getShim?.(args.path);
-      if (!shim) {
-        return {
-          contents: `throw new Error(${JSON.stringify(
-            `Unsupported node builtin "node:${args.path}" — no browser shim is registered for it.`,
-          )});`,
-          loader: "js",
-          warnings: [{ text: `no browser shim registered for node builtin "node:${args.path}"` }],
-        };
-      }
-      const keys = Object.keys(shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
-      const contents = [
-        `const __shim = globalThis.__browserContainers.shims[${JSON.stringify(args.path)}];`,
-        "export default __shim;",
-        ...keys.map((k) => `export const ${k} = __shim[${JSON.stringify(k)}];`),
-      ].join("\n");
-      return { contents, loader: "js" };
-    });
+    const shim = getShim?.(builtin);
+    if (!shim) {
+      warnings?.push(`no browser shim registered for node builtin "node:${builtin}"`);
+      return { id, external: true };
+    }
+    return `browser-containers-node-shim:${builtin}`;
+  },
+  async load(id) {
+    if (!id.startsWith("browser-containers-node-shim:")) return null;
+    const builtin = id.slice("browser-containers-node-shim:".length);
+    const shim = getShim?.(builtin);
+    if (!shim) {
+      // Unsupported builtins are left external in resolveId; this branch is defensive.
+      return {
+        code: `throw new Error("Unsupported node builtin \\"node:${builtin}\\" — no browser shim is registered for it.");`,
+        map: null,
+      };
+    }
+    const keys = Object.keys(shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
+    const contents = [
+      `const __shim = globalThis.__browserContainers.shims[${JSON.stringify(builtin)}];`,
+      "export default __shim;",
+      ...keys.map((k) => `export const ${k} = __shim[${JSON.stringify(k)}];`),
+    ].join("\n");
+    return { code: contents, map: null };
   },
 });
 
 const jsrAliasPlugin = (): Plugin => ({
   name: "browser-containers-jsr-alias",
-  setup(build) {
-    build.onResolve({ filter: /^jsr:/ }, async (args) => {
-      const mapped = mapJsrSpecifier(args.path);
-      return await build.resolve(mapped, {
-        importer: args.importer,
-        namespace: args.namespace,
-        resolveDir: args.resolveDir,
-        kind: args.kind,
-      });
-    });
+  async resolveId(id, importer) {
+    if (!id.startsWith("jsr:")) return null;
+    const mapped = mapJsrSpecifier(id);
+    // Delegate to rolldown's own resolver
+    return this.resolve(mapped, importer, { skipSelf: true });
   },
 });
 
@@ -560,42 +500,41 @@ export const bundleEntry = async (
   entry: string,
   options: BundleEntryOptions,
 ): Promise<BundleEntryResult> => {
-  const esbuild = await initEsbuild();
-  const result = await esbuild.build({
-    entryPoints: [entry],
-    bundle: true,
-    write: false,
-    format: "esm",
-    platform: "browser",
-    absWorkingDir: options.cwd ?? "/",
-    // jsrAliasPlugin runs first so `jsr:` specifiers are rewritten to the
-    // npm-compatibility mirror name before vfsPlugin looks them up in
-    // node_modules. vfsPlugin runs before nodeAliasPlugin so a package's own
-    // `browser` field remap (e.g. `"fs": false`) can win over our builtin
-    // shim for that package's imports — vfsPlugin declines (returns undefined,
-    // not an error) on unresolved bare specifiers, so normal builtin names like
-    // plain `fs` still fall through to nodeAliasPlugin as before.
+  const rolldownMod = await getRolldown();
+  const rolldown = rolldownMod.rolldown;
+
+  const warnings: string[] = [];
+
+  const bundle = await rolldown({
+    input: entry,
+    cwd: options.cwd ?? "/",
+    treeshake: false,
     plugins: [
-      globalsPreludePlugin(),
       jsrAliasPlugin(),
       vfsPlugin(options.vfs),
-      nodeAliasPlugin(options.getShim),
-      esmShFallbackPlugin(options.vfs),
+      nodeAliasPlugin(options.getShim, warnings),
+      esmShFallbackPlugin(options.vfs, warnings),
     ],
-    inject: [GLOBALS_PRELUDE_PATH],
-    define: {
-      "process.env.NODE_ENV": JSON.stringify("development"),
-      "process.browser": "true",
+    transform: {
+      define: {
+        "process.env.NODE_ENV": JSON.stringify("development"),
+        "process.browser": "true",
+      },
     },
-    logLevel: "silent",
+    onLog(level, log, _logger) {
+      if (level === "warn") warnings.push(String(log));
+    },
   });
 
-  const outputFile = result.outputFiles?.[0];
-  if (!outputFile) {
-    throw new Error(`esbuild produced no output for entry "${entry}"`);
-  }
+  const result = await bundle.generate({
+    format: "es",
+    banner: GLOBALS_BANNER,
+  });
 
-  return { code: outputFile.text, warnings: result.warnings.map((w) => w.text) };
+  const chunk = result.output.find((o) => o.type === "chunk");
+  if (!chunk) throw new Error(`rolldown produced no output for entry "${entry}"`);
+
+  return { code: chunk.code, warnings };
 };
 
 export interface TransformScriptOptions {
@@ -610,7 +549,7 @@ export interface TransformScriptResult {
 
 /**
  * Single-file TypeScript-to-JS transform (no bundling, no module resolution)
- * via esbuild's real parser — used by the QuickJS agent sandbox in place of
+ * via oxc-transform — used by the QuickJS agent sandbox in place of
  * its previous hand-rolled regex type-stripper, which used non-greedy
  * `[\s\S]*?\}` matches that broke on nested object types/interfaces and
  * couldn't handle decorators or multi-line generic constraints correctly.
@@ -619,7 +558,14 @@ export const transformScript = async (
   code: string,
   options?: TransformScriptOptions,
 ): Promise<TransformScriptResult> => {
-  const esbuild = await initEsbuild();
-  const result = await esbuild.transform(code, { loader: options?.loader ?? "ts" });
-  return { code: result.code, warnings: result.warnings.map((w) => w.text) };
+  const oxc = await getOxc();
+  const lang = options?.loader ?? "ts";
+  const result = await oxc.transform(`input.${lang}`, code, { sourceType: "module" });
+  if (result.errors?.length) {
+    throw new Error(result.errors.map((e: any) => e.message).join("\n"));
+  }
+  return {
+    code: result.code,
+    warnings: result.errors?.map((e: any) => e.message) ?? [],
+  };
 };

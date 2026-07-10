@@ -97,7 +97,9 @@ describe('wasm-registry: bundleEntry', () => {
     const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
 
     expect(warnings).toEqual([]);
-    expect(code).toContain('foo = 1');
+    // rolldown inlines the exported constant across modules, so the declaration is folded away.
+    expect(code).toContain('log(1)');
+    expect(code).not.toMatch(/from\s+["']pkg\/features\/foo["']/);
   });
 
   it('honors a string `browser` field as the main-entry override (A5)', async () => {
