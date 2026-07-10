@@ -183,15 +183,16 @@ export class ShellService {
     }
 
     try {
-      const result = await this.deps.sandboxPool.run(scriptName);
-      if (result.error) {
-        output.stderr(result.error);
+      const pkgPath = this.resolvePath("package.json");
+      const pkgContent = await this.deps.vfs.readFile(pkgPath);
+      const pkg = JSON.parse(String(pkgContent)) as { scripts?: Record<string, string> };
+      const scriptCmd = pkg.scripts?.[scriptName];
+      if (!scriptCmd) {
+        output.stderr(`Missing script: "${scriptName}"\n`);
+        output.stderr(`Available scripts: ${Object.keys(pkg.scripts ?? {}).join(", ") || "(none)"}\n`);
         return 1;
       }
-      if (result.result) {
-        output.stdout(result.result);
-      }
-      return 0;
+      return this.route(scriptCmd, output);
     } catch (err) {
       output.stderr(err instanceof Error ? err.message : String(err));
       return 1;

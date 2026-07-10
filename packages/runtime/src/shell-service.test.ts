@@ -96,17 +96,23 @@ describe("ShellService", () => {
     expect(result.stderr).toContain("No sandbox configured");
   });
 
-  it("npm run <other> → SandboxPool.run()", async () => {
+  it("npm run <other> → reads package.json and routes the script command", async () => {
+    vi.mocked(deps.vfs.readFile).mockResolvedValue(
+      JSON.stringify({ scripts: { build: "npm install lodash" } }),
+    );
     const result = await shell.execute("npm run build");
-    expect(deps.sandboxPool.run).toHaveBeenCalledWith("build");
+    expect(deps.vfs.readFile).toHaveBeenCalledWith("package.json");
+    expect(deps.packageManager.install).toHaveBeenCalledWith(["lodash"]);
     expect(result.exitCode).toBe(0);
   });
 
-  it("npm run <other> → handles SandboxPool error", async () => {
-    vi.mocked(deps.sandboxPool.run).mockResolvedValue({ error: "boom" });
+  it("npm run <other> → error when script is missing", async () => {
+    vi.mocked(deps.vfs.readFile).mockResolvedValue(
+      JSON.stringify({ scripts: { test: "npm install foo" } }),
+    );
     const result = await shell.execute("npm run build");
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain("boom");
+    expect(result.stderr).toContain('Missing script: "build"');
   });
 
   it("runtime run script.ts → bundles over the VFS and executes the result", async () => {
