@@ -16,6 +16,7 @@ const BUILTIN_MODULE_NAMES = [
   "fs",
   "fs/promises",
   "http",
+  "https",
   "net",
   "os",
   "path",
@@ -39,13 +40,11 @@ const BUILTIN_MODULE_NAMES = [
   "zlib",
 ];
 
-// Real node builtins with no feasible browser implementation (raw TCP/UDP
-// sockets, a VM sandbox, native clustering). `isBuiltin` still recognizes
-// them — a real node app importing them is a legitimate builtin reference —
-// but `require`/the bundler's node-alias plugin reject them with a message
-// that names the actual constraint instead of the generic "unknown npm
-// package" fallback.
-const UNSUPPORTED_BUILTIN_NAMES = ["dgram", "tls", "cluster"];
+// Node builtins with no default browser shim, exposed as pluggable extension
+// points. `isBuiltin` still recognizes them, and `require` routes them through
+// `getShim` first; if no backend is registered, the error message points to
+// `createLiveShimRegistry`.
+const PLUGGABLE_BUILTIN_NAMES = ["dgram", "tls", "cluster"];
 
 const dirname = (path: string): string => {
   const idx = path.lastIndexOf("/");
@@ -69,6 +68,7 @@ export interface ModuleShimOptions {
   readonly vfs: VfsBus;
   /** Resolves a node builtin name (no `node:` prefix) to its live shim, if any. */
   readonly getShim: (builtin: string) => unknown;
+  readonly nativeAddonLoader?: (modulePath: string, vfs: VfsBus) => unknown;
 }
 
 /**
@@ -81,23 +81,39 @@ export interface ModuleShimOptions {
  * rather than a silent 404, per this codebase's compat-reporting contract.
  */
 export const createModuleShim = (options: ModuleShimOptions) => {
-  const { vfs, getShim } = options;
+  const { vfs, getShim, nativeAddonLoader } = options;
 
   const createRequire = (filename: string) => {
     const require = (specifier: string): unknown => {
       const bare = stripNodePrefix(specifier);
-      if (UNSUPPORTED_BUILTIN_NAMES.includes(bare)) {
-        throw new Error(
-          `require("${specifier}") is a node builtin with no browser-compatible implementation ` +
-            `("${bare}" needs a capability the browser sandbox cannot provide) and will never be supported here.`,
-        );
-      }
-      if (BUILTIN_MODULE_NAMES.includes(bare)) {
+
+      if (BUILTIN_MODULE_NAMES.includes(bare) || PLUGGABLE_BUILTIN_NAMES.includes(bare)) {
         const shim = getShim(bare);
         if (shim) return shim;
+
+        if (PLUGGABLE_BUILTIN_NAMES.includes(bare)) {
+          throw new Error(
+            `require("${specifier}") has no browser implementation built in. ` +
+              `Register a custom backend: createLiveShimRegistry({ ${bare}Backend: yourImpl })`,
+          );
+        }
         throw new Error(
           `require("${specifier}") has no browser shim registered for node builtin "${bare}".`,
         );
+      }
+
+      // Native addon (.node)
+      if (specifier.endsWith(".node") && (specifier.startsWith(".") || specifier.startsWith("/"))) {
+        if (!nativeAddonLoader) {
+          throw new Error(
+            `require("${specifier}") is a native addon. Pass nativeAddonLoader to ` +
+              `createLiveShimRegistry to handle .node imports.`,
+          );
+        }
+        const resolved = specifier.startsWith("/")
+          ? specifier
+          : joinPath(dirname(filename), specifier);
+        return nativeAddonLoader(resolved, vfs);
       }
 
       if (specifier.endsWith(".json") && (specifier.startsWith(".") || specifier.startsWith("/"))) {
@@ -142,7 +158,7 @@ export const createModuleShim = (options: ModuleShimOptions) => {
     isBuiltin: (id: string): boolean =>
       id.startsWith("node:") ||
       BUILTIN_MODULE_NAMES.includes(id) ||
-      UNSUPPORTED_BUILTIN_NAMES.includes(id),
+      PLUGGABLE_BUILTIN_NAMES.includes(id),
   };
 };
 

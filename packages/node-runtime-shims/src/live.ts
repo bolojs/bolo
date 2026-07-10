@@ -14,6 +14,22 @@ import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
 import { createVmShim } from "./vm-shim.js";
 
+export interface BackendDeps {
+  readonly vfs: VfsBus;
+  readonly sandbox?: SWSandbox;
+}
+
+export type NetBackend = (deps: BackendDeps) => unknown;
+export type DgramBackend = (deps: BackendDeps) => {
+  createSocket(
+    type: "udp4" | "udp6",
+    callback?: (msg: Uint8Array, rinfo: { address: string; port: number }) => void,
+  ): unknown;
+};
+export type TlsBackend = (deps: BackendDeps) => unknown;
+export type WorkerThreadsBackend = (deps: BackendDeps) => unknown;
+export type NativeAddonLoader = (modulePath: string, vfs: VfsBus) => unknown;
+
 export interface LiveShimRegistryOptions {
   readonly vfs: VfsBus;
   readonly sandbox?: SWSandbox;
@@ -24,6 +40,12 @@ export interface LiveShimRegistryOptions {
   readonly argv?: string[];
   readonly onStdout?: (data: string) => void;
   readonly onStderr?: (data: string) => void;
+  // Extension points
+  readonly netBackend?: NetBackend;
+  readonly dgramBackend?: DgramBackend;
+  readonly tlsBackend?: TlsBackend;
+  readonly workerThreadsBackend?: WorkerThreadsBackend;
+  readonly nativeAddonLoader?: NativeAddonLoader;
 }
 
 /**
@@ -78,11 +100,31 @@ export const createLiveShimRegistry = (
     promise: unknown,
   ) => void);
 
-  registry.module = createModuleShim({ vfs: options.vfs, getShim: (name) => registry[name] });
+  if (options.dgramBackend) {
+    registry.dgram = options.dgramBackend({ vfs: options.vfs, sandbox: options.sandbox });
+  }
+  if (options.tlsBackend) {
+    registry.tls = options.tlsBackend({ vfs: options.vfs, sandbox: options.sandbox });
+  }
+  if (options.workerThreadsBackend) {
+    registry.worker_threads = options.workerThreadsBackend({
+      vfs: options.vfs,
+      sandbox: options.sandbox,
+    });
+  }
 
   const http = createHttpShim(options.sandbox, { onPortEvent: options.onPortEvent });
   registry.http = http;
-  registry.net = http;
+  registry.https = http; // https delegates to http in browser context
+  registry.net = options.netBackend
+    ? options.netBackend({ vfs: options.vfs, sandbox: options.sandbox })
+    : http;
+
+  registry.module = createModuleShim({
+    vfs: options.vfs,
+    getShim: (name) => registry[name],
+    nativeAddonLoader: options.nativeAddonLoader,
+  });
 
   return registry;
 };

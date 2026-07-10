@@ -86,16 +86,17 @@ Known gaps within T3 (rarely block mainstream packages):
 | `async_hooks`, `diagnostics_channel`, `tty` | Stub | No-op implementations |
 | Everything else in the 28 | Real | See [shim-coverage.md](shim-coverage.md) |
 
-### T4: Unsupported (intentional)
+### T4: Pluggable / unsupported (intentional)
 
 Builtins that require capabilities a browser cannot provide safely or at all.
-Catalogued in `UNSUPPORTED_BUILTIN_NAMES` (`packages/node-runtime-shims/src/module-shim.ts:46`):
+Catalogued in `PLUGGABLE_BUILTIN_NAMES` (`packages/node-runtime-shims/src/module-shim.ts:49`):
 
-- `cluster`, `dgram`, `tls`, `vm`: raw sockets, VM instantiation, clustering.
-- `dns`, `http2`, `https`, `inspector`, `v8`, `wasi`, `test`, `repl`,
-  `trace_events`, `domain`: not yet provided, most out of scope for a browser
-  runtime.
-- Native addons (NAPI): only pure-JS and WASM packages work.
+- `cluster`, `dgram`, `tls`: raw sockets, TLS, clustering. `dgram` and `tls` can be
+  back-ended via `createLiveShimRegistry`; `cluster` has no browser mapping.
+- `dns`, `http2`, `inspector`, `v8`, `wasi`, `test`, `repl`, `trace_events`,
+  `domain`: not yet provided, most out of scope for a browser runtime.
+- `https`: aliases the `http` shim in the browser context.
+- Native addons (NAPI) are pluggable via `nativeAddonLoader`; otherwise they throw.
 
 ## Bottom line
 

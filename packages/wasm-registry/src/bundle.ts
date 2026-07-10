@@ -22,6 +22,7 @@ const LOADER_BY_EXT: Record<string, "ts" | "tsx" | "js" | "jsx" | "json"> = {
 const NODE_BUILTIN_NAMES = new Set([
   "fs",
   "http",
+  "https",
   "net",
   "child_process",
   "path",

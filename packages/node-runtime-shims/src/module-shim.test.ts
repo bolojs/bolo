@@ -26,13 +26,46 @@ describe("createModuleShim", () => {
     );
   });
 
-  it("throws a clear, catalogued error for a builtin with no feasible browser implementation", () => {
+  it("throws a clear extension-point message for an unregistered pluggable builtin", () => {
     const vfs = new VfsBus();
     const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
     const require = moduleShim.createRequire("/entry.ts");
 
-    expect(() => require("node:dgram")).toThrow(/no browser-compatible implementation/);
+    expect(() => require("node:dgram")).toThrow(/Register a custom backend/);
     expect(moduleShim.isBuiltin("dgram")).toBe(true);
+  });
+
+  it("routes a pluggable builtin through getShim when one is registered", () => {
+    const vfs = new VfsBus();
+    const dgramShim = { createSocket: () => {} };
+    const moduleShim = createModuleShim({
+      vfs,
+      getShim: (name) => (name === "dgram" ? dgramShim : undefined),
+    });
+    const require = moduleShim.createRequire("/entry.ts");
+
+    expect(require("node:dgram")).toBe(dgramShim);
+  });
+
+  it("loads .node files via nativeAddonLoader when provided", () => {
+    const vfs = new VfsBus();
+    const addon = { native: true };
+    const moduleShim = createModuleShim({
+      vfs,
+      getShim: () => undefined,
+      nativeAddonLoader: (path) => ({ path, addon }),
+    });
+    const require = moduleShim.createRequire("/entry.ts");
+
+    expect(require("./native.node")).toEqual({ path: "/native.node", addon });
+  });
+
+  it("throws when a .node import has no nativeAddonLoader", () => {
+    const vfs = new VfsBus();
+    const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
+    const require = moduleShim.createRequire("/entry.ts");
+
+    expect(() => require("./native.node")).toThrow(/Pass nativeAddonLoader/);
   });
 
   it("reads JSON files synchronously off the vfs, resolved relative to the requiring file", () => {

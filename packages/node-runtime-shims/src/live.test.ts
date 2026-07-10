@@ -61,4 +61,25 @@ describe("createLiveShimRegistry", () => {
     expect(registry.http).toBeDefined();
     expect(registry.http).toBe(registry.net);
   });
+
+  it("aliases https to http and supports pluggable net/dgram/tls/worker_threads backends", () => {
+    const vfs = new VfsBus();
+    const netShim = { tcp: vfs };
+    const dgramShim = { createSocket: () => {} };
+    const tlsShim = { connect: () => {} };
+    const workerThreadsShim = { Worker: class {} };
+    const registry = createLiveShimRegistry({
+      vfs,
+      netBackend: () => netShim,
+      dgramBackend: () => dgramShim,
+      tlsBackend: () => tlsShim,
+      workerThreadsBackend: () => workerThreadsShim,
+    });
+
+    expect(registry.https).toBe(registry.http);
+    expect(registry.net).toEqual(netShim);
+    expect(registry.dgram).toBe(dgramShim);
+    expect(registry.tls).toBe(tlsShim);
+    expect(registry.worker_threads).toBe(workerThreadsShim);
+  });
 });
