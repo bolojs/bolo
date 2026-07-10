@@ -43,6 +43,14 @@ export async function boot(options?: BootOptions): Promise<BrowserContainer> {
 }
 
 async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
+  // Request persistent storage to prevent browser eviction of OPFS cache
+  // ponytail: not guaranteed in iframes/incognito — best effort
+  if (typeof navigator !== "undefined" && navigator.storage?.persist) {
+    navigator.storage.persist().catch(() => {
+      // Best effort — failure means cache may be evicted under storage pressure
+    });
+  }
+
   const workdir = options?.workdirName ?? "/home/web";
   let vfs: VfsBus | null = null;
 
