@@ -1,16 +1,19 @@
 import type { VfsBus } from "@browser-containers/vfs-bus";
 import { createFsFromVolume } from "memfs";
-import { runNpmCli } from "npm-in-browser";
 import { parse, resolve } from "@unjs/lockfile";
 import type { InstallablePackage, LockfileGraph } from "@unjs/lockfile";
-import { inflate } from "pako";
 import { buildEsmShUrl } from "./esm-sh.js";
+import { walkDependencies } from "./graph-walker.js";
+import { serializeNpmLockfile } from "./lockfile-writer.js";
+import type { NpmPackument, ResolveCache } from "./registry-resolver.js";
 
 export interface ImportMap {
   imports: Record<string, string>;
 }
 
-export type InstallStrategy = "npm-in-browser" | "lockfile-only";
+export type InstallStrategyFn = (ctx: InstallContext) => Promise<void>;
+
+export type InstallStrategy = "lockfile-only" | "browser-native" | InstallStrategyFn;
 
 export interface InstallContext {
   lockfileGraph: LockfileGraph;
@@ -29,6 +32,10 @@ export interface PackageManagerOptions {
 }
 
 const DEFAULT_CWD = "/home/web/app";
+
+// ponytail: 7-day TTL is generous; packuments rarely change and the registry
+// is the source of truth for dist-tags. Reduce if stale-version bugs appear.
+const PACKUMENT_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 
 // Packages that import `react` internally must be externalized (esm.sh `*` prefix)
 // so the browser re-resolves their `react` import through this importmap's single
@@ -55,9 +62,12 @@ const LOCKFILE_CANDIDATES = [
 
 /**
  * Browser-side package manager. Supports two install strategies:
- * - `npm-in-browser`: runs the real npm CLI against the VFS (default).
+ * - `browser-native` (default): resolves from the npm registry, walks the
+ *   dependency graph, fetches tarballs, and extracts them into `node_modules/`.
+ *   Uses a lockfile if present for deterministic installs.
  * - `lockfile-only`: parses a lockfile with `@unjs/lockfile`, fetches tarballs
- *   via `fetch`, and extracts them into `node_modules/` using `pako`.
+ *   via `fetch`, and extracts them into `node_modules/`.
+ * A custom function can also be provided as the strategy.
  */
 export class PackageManager {
   private vfs: VfsBus;
@@ -73,19 +83,23 @@ export class PackageManager {
     this.stdout = options.stdout;
     this.stderr = options.stderr;
     this.fs = createFsFromVolume(this.vfs["vol"]) as ReturnType<typeof createFsFromVolume>;
-    this.installStrategy = options.installStrategy ?? "npm-in-browser";
+    this.installStrategy = options.installStrategy ?? "browser-native";
   }
 
   /**
-   * Install packages. If no packages are specified, the npm-in-browser path
-   * reads from package.json; the lockfile-only path reads from the detected
-   * lockfile in the VFS.
+   * Install packages. If no packages are specified, reads from package.json.
+   * The `browser-native` strategy uses a lockfile if present, otherwise
+   * resolves from the registry.
    */
   async install(packages?: string[]): Promise<void> {
-    if (this.installStrategy === "lockfile-only") {
+    const strategy = this.installStrategy;
+
+    if (typeof strategy === "function") {
+      await strategy(this.buildInstallContext());
+    } else if (strategy === "lockfile-only") {
       await this.installLockfileOnly();
     } else {
-      await this.installNpmCli(packages);
+      await this.installBrowserNative(packages);
     }
 
     await this.writeImportMap();
@@ -115,29 +129,11 @@ export class PackageManager {
     return { imports };
   }
 
-  private async installNpmCli(packages?: string[]): Promise<void> {
-    const args = this.buildInstallArgs(packages);
-
-    await this.vfs
-      .writeFile(
-        `${this.cwd}/.npmrc`,
-        "audit=false\nfund=false\n@jsr:registry=https://npm.jsr.io\n",
-      )
-      .catch(() => {});
-
-    await runNpmCli(args, {
-      fs: this.fs,
-      cwd: this.cwd,
-      stdout: this.stdout ? (chunk: string) => this.stdout!(chunk) : undefined,
-      stderr: this.stderr ? (chunk: string) => this.stderr!(chunk) : undefined,
-    });
-  }
-
   private async installLockfileOnly(): Promise<void> {
     const lockfile = this.detectLockfile();
     if (!lockfile) {
-      this.warn("No lockfile found; falling back to npm-in-browser");
-      await this.installNpmCli();
+      this.warn("No lockfile found; falling back to browser-native");
+      await this.installBrowserNative();
       return;
     }
 
@@ -150,10 +146,128 @@ export class PackageManager {
       }
     } catch (error) {
       this.warn(
-        `lockfile-only install failed: ${error instanceof Error ? error.message : String(error)}; falling back to npm-in-browser`,
+        `lockfile-only install failed: ${error instanceof Error ? error.message : String(error)}; falling back to browser-native`,
       );
-      await this.installNpmCli();
+      await this.installBrowserNative();
     }
+  }
+
+  /**
+   * Browser-native install: use lockfile if present (deterministic), otherwise
+   * resolve from the npm registry. Always writes a package-lock.json after
+   * install so subsequent installs are deterministic.
+   */
+  private async installBrowserNative(packages?: string[]): Promise<void> {
+    const lockfile = this.detectLockfile();
+    let installables: InstallablePackage[];
+
+    if (lockfile) {
+      try {
+        const graph = parse(lockfile.content);
+        installables = resolve(graph, this.cwd);
+      } catch (error) {
+        this.warn(
+          `Lockfile parse failed: ${error instanceof Error ? error.message : String(error)}; resolving from registry`,
+        );
+        installables = await this.resolveFromRegistry(packages);
+      }
+    } else {
+      installables = await this.resolveFromRegistry(packages);
+    }
+
+    for (const pkg of installables) {
+      await this.fetchAndExtract(pkg);
+    }
+
+    const pkgJson = this.readPackageJson();
+    const rootDeps =
+      packages && packages.length > 0
+        ? this.specifiersToDeps(packages)
+        : { ...pkgJson?.dependencies, ...pkgJson?.devDependencies };
+    const lockfileContent = serializeNpmLockfile(
+      installables,
+      rootDeps,
+      pkgJson?.name,
+      pkgJson?.version,
+    );
+    await this.vfs.writeFile(`${this.cwd}/package-lock.json`, lockfileContent);
+  }
+
+  private async resolveFromRegistry(packages?: string[]): Promise<InstallablePackage[]> {
+    const pkgJson = this.readPackageJson();
+    const rootDeps =
+      packages && packages.length > 0
+        ? this.specifiersToDeps(packages)
+        : { ...pkgJson?.dependencies, ...pkgJson?.devDependencies };
+
+    const cache: ResolveCache = {
+      get: async (name) => {
+        const cachePath = `${this.cwd}/.npm-cache/${name}.json`;
+        try {
+          const content = this.fs.readFileSync(cachePath, "utf8") as string;
+          const cached = JSON.parse(content);
+          if (Date.now() - cached.timestamp < PACKUMENT_CACHE_TTL) {
+            return cached.packument as NpmPackument;
+          }
+        } catch {
+          // cache miss
+        }
+        return null;
+      },
+      set: async (name, packument) => {
+        const cachePath = `${this.cwd}/.npm-cache/${name}.json`;
+        const dir = cachePath.substring(0, cachePath.lastIndexOf("/"));
+        if (!this.vfs.hot.existsSync(dir)) {
+          this.vfs.hot.mkdirSync(dir, { recursive: true });
+        }
+        this.fs.writeFileSync(cachePath, JSON.stringify({ timestamp: Date.now(), packument }));
+      },
+    };
+
+    return walkDependencies(rootDeps, fetch, (msg) => this.warn(msg), cache);
+  }
+
+  private readPackageJson(): {
+    name: string;
+    version: string;
+    dependencies: Record<string, string>;
+    devDependencies: Record<string, string>;
+  } | null {
+    try {
+      const content = this.fs.readFileSync(`${this.cwd}/package.json`, "utf8") as string;
+      const pkg = JSON.parse(content);
+      return {
+        name: pkg.name ?? "app",
+        version: pkg.version ?? "1.0.0",
+        dependencies: pkg.dependencies ?? {},
+        devDependencies: pkg.devDependencies ?? {},
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private specifiersToDeps(specifiers: string[]): Record<string, string> {
+    const deps: Record<string, string> = {};
+    for (const spec of specifiers) {
+      const [name, version] = this.parsePackageSpecifier(spec);
+      deps[name] = version ?? "*";
+    }
+    return deps;
+  }
+
+  private buildInstallContext(): InstallContext {
+    const lockfile = this.detectLockfile();
+    const lockfileGraph: LockfileGraph = lockfile
+      ? parse(lockfile.content)
+      : { packages: new Map(), catalogs: {}, importers: [], meta: { format: "npm", version: "3" } };
+    return {
+      lockfileGraph,
+      vfs: this.vfs,
+      cwd: this.cwd,
+      stdout: this.stdout ?? (() => {}),
+      stderr: this.stderr ?? (() => {}),
+    };
   }
 
   private detectLockfile(): { content: string | Uint8Array; filename: string } | null {
@@ -176,13 +290,20 @@ export class PackageManager {
     }
     const buffer = new Uint8Array(await res.arrayBuffer());
 
+    if (pkg.integrity) {
+      const valid = await verifyIntegrity(buffer, pkg.integrity);
+      if (!valid) {
+        throw new Error(`Integrity check failed for ${pkg.name}@${pkg.version}`);
+      }
+    }
+
     const targetDir = `${this.cwd}/node_modules/${pkg.name}`;
     if (this.vfs.hot.existsSync(targetDir)) {
       this.vfs.hot.rmSync(targetDir, { recursive: true });
     }
     this.vfs.hot.mkdirSync(targetDir, { recursive: true });
 
-    const decompressed = inflate(buffer, { windowBits: 15 + 32 });
+    const decompressed = await decompressGzip(buffer);
     extractTarball(decompressed, targetDir, this.vfs);
   }
 
@@ -222,48 +343,6 @@ export class PackageManager {
     const name = parts[0];
     const version = parts.slice(1).join("@");
     return [name, version];
-  }
-
-  private buildInstallArgs(packages?: string[]): string[] {
-    if (packages && packages.length > 0) {
-      return ["install", "--no-audit", ...packages];
-    }
-
-    const deps = this.getDependenciesFromPackageJson();
-    return ["install", "--no-audit", ...deps];
-  }
-
-  private getDependenciesFromPackageJson(): string[] {
-    try {
-      const packageJsonPath = `${this.cwd}/package.json`;
-      const content = this.fs.readFileSync(packageJsonPath, "utf8") as string;
-      const pkg = JSON.parse(content);
-
-      const deps: string[] = [];
-
-      if (pkg.dependencies) {
-        deps.push(
-          ...Object.keys(pkg.dependencies).map((name) => {
-            const version = pkg.dependencies[name];
-            return version ? `${name}@${version}` : name;
-          }),
-        );
-      }
-
-      if (pkg.devDependencies) {
-        deps.push(
-          ...Object.keys(pkg.devDependencies).map((name) => {
-            const version = pkg.devDependencies[name];
-            return version ? `${name}@${version}` : name;
-          }),
-        );
-      }
-
-      return deps;
-    } catch (error) {
-      console.warn("Could not read package.json:", error);
-      return [];
-    }
   }
 
   private async writeImportMap(): Promise<void> {
@@ -316,6 +395,62 @@ const decodeTarField = (header: Uint8Array, start: number, length: number): stri
     .decode(header.slice(start, start + length))
     .split(String.fromCharCode(0))[0]
     .trim();
+
+/**
+ * Decompress gzip data using the native `DecompressionStream` Web API.
+ * Replaces the `pako` dependency — one fewer thing to bundle.
+ */
+const decompressGzip = async (compressed: Uint8Array): Promise<Uint8Array> => {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(compressed);
+      controller.close();
+    },
+  });
+  const decompressed = stream.pipeThrough(new DecompressionStream("gzip"));
+  const reader = decompressed.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    totalLength += value.length;
+  }
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+};
+
+const INTEGRITY_ALGOS: Record<string, string> = {
+  sha512: "SHA-512",
+  sha256: "SHA-256",
+  sha1: "SHA-1",
+};
+
+/**
+ * Verify tarball integrity against an npm-style `sha512-<base64>` string.
+ * Uses the native `crypto.subtle` Web API.
+ */
+const verifyIntegrity = async (buffer: Uint8Array, integrity: string): Promise<boolean> => {
+  const dashIdx = integrity.indexOf("-");
+  if (dashIdx < 0) return false;
+  const algo = integrity.slice(0, dashIdx);
+  const expected = integrity.slice(dashIdx + 1);
+  const subtleAlgo = INTEGRITY_ALGOS[algo];
+  if (!subtleAlgo) return false;
+  // ponytail: buffer is always ArrayBuffer-backed (from fetch.arrayBuffer),
+  // but TS's Uint8Array<ArrayBufferLike> type widens to include SharedArrayBuffer.
+  const hashBuffer = await crypto.subtle.digest(subtleAlgo, buffer as unknown as ArrayBuffer);
+  const bytes = new Uint8Array(hashBuffer);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary) === expected;
+};
 
 /**
  * Minimal USTAR tar extractor. npm tarballs contain a leading `package/`

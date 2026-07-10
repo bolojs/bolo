@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted — supersedes the package manager section of [ADR-0004](0004-package-manager-strategy.md).
+Implemented — supersedes the package manager section of [ADR-0004](0004-package-manager-strategy.md). The `browser-native` install strategy is now the default and the only strategy. The `npm-in-browser` dependency has been fully removed. Tarball decompression uses the native `DecompressionStream` Web API (replacing `pako`). Integrity is verified via `crypto.subtle`. Packument responses are cached in the VFS (7-day TTL) to avoid repeated registry round-trips.
 
 ## Context
 

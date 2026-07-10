@@ -44,8 +44,8 @@ export default defineConfig({
     solidPlugin(),
     resolvePolyfillsShim(),
     nodeWebShims(),
-    // Polyfill `buffer`, `process`, and `global` so third-party deps (memfs,
-    // npm-in-browser) that import bare Node built-ins work in the browser bundle.
+    // Polyfill `buffer`, `process`, and `global` so third-party deps (memfs)
+    // that import bare Node built-ins work in the browser bundle.
     nodePolyfills({
       include: ['buffer'],
       globals: { Buffer: true, global: true, process: true },

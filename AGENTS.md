@@ -19,7 +19,7 @@ packages/
   sandbox-policy/    Opt-in AI agent sandboxing (network, memory, CPU, filesystem caps)
   wasm-registry/     Native binary → WASM dispatcher (esbuild, tsc, sass, swc)
   runtime/           Core container API — RuntimeWorker (V8) + SandboxPool (QuickJS)
-  npm/               Package installation via npm-in-browser + esm.sh CDN fallback
+  npm/               Browser-native package installer (registry resolve + tarball extract)
   vite-server/       BrowserViteServer — Vite dev server on main thread
 apps/
   demo/              IDE-like demo app
@@ -51,7 +51,7 @@ tests/
 | Sandbox policy | `packages/sandbox-policy` | Opt-in, zero overhead when unused |
 | WASM tools | `packages/wasm-registry` | Lazy-loaded native binary → WASM dispatcher |
 | Container API | `packages/runtime` | RuntimeWorker (V8) + SandboxPool (QuickJS) |
-| Package install | `packages/npm` | npm-in-browser + esm.sh fallback |
+| Package install | `packages/npm` | Browser-native installer + esm.sh fallback |
 | Vite dev server | `packages/vite-server` | Main thread, HMR via BroadcastChannel |
 | Demo app | `apps/demo` | IDE-like UI wiring all packages together |
 

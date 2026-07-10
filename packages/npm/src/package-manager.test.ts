@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { VfsBus } from "@browser-containers/vfs-bus";
-import { deflate } from "pako";
 import { PackageManager } from "./package-manager.js";
 
 describe("PackageManager", () => {
@@ -108,7 +107,33 @@ const textEncoder = new TextEncoder();
 
 const pad = (s: string, length: number): string => s.padEnd(length, "\0");
 
-const createTarball = (entries: { name: string; content: string }[]): Uint8Array => {
+const compressGzip = async (data: Uint8Array): Promise<Uint8Array> => {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(data);
+      controller.close();
+    },
+  });
+  const compressed = stream.pipeThrough(new CompressionStream("gzip"));
+  const reader = compressed.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    totalLength += value.length;
+  }
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+};
+
+const createTarball = async (entries: { name: string; content: string }[]): Promise<Uint8Array> => {
   const chunks: Uint8Array[] = [];
   for (const entry of entries) {
     const contentBytes = textEncoder.encode(entry.content);
@@ -133,7 +158,7 @@ const createTarball = (entries: { name: string; content: string }[]): Uint8Array
     tar.set(c, offset);
     offset += c.length;
   }
-  return deflate(tar);
+  return compressGzip(tar);
 };
 
 describe("lockfile-only install", () => {
@@ -159,13 +184,12 @@ describe("lockfile-only install", () => {
           "node_modules/tiny": {
             version: "1.0.0",
             resolved: "https://registry.npmjs.org/tiny/-/tiny-1.0.0.tgz",
-            integrity: "sha512-xxx",
           },
         },
       }),
     );
 
-    const tarball = createTarball([
+    const tarball = await createTarball([
       {
         name: "package/package.json",
         content: JSON.stringify({ name: "tiny", version: "1.0.0", main: "index.js" }),
@@ -191,6 +215,79 @@ describe("lockfile-only install", () => {
       const installedPkg = (await vfs.readFile("/node_modules/tiny/package.json")) as string;
       expect(JSON.parse(installedPkg).version).toBe("1.0.0");
       expect(vfs.hot.existsSync("/node_modules/tiny/index.js")).toBe(true);
+
+      const importMap = JSON.parse((await vfs.readFile("/importmap.json")) as string);
+      expect(importMap.imports["tiny"]).toBe("https://esm.sh/tiny@1.0.0");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+describe("browser-native install", () => {
+  it("resolves from registry, fetches tarballs, writes lockfile + import map", async () => {
+    const vfs = new VfsBus();
+    const pm = new PackageManager({ vfs, cwd: "/" });
+
+    await vfs.writeFile(
+      "/package.json",
+      JSON.stringify({
+        name: "app",
+        version: "1.0.0",
+        dependencies: { tiny: "^1.0.0" },
+      }),
+    );
+
+    const packument = {
+      name: "tiny",
+      "dist-tags": { latest: "1.0.0" },
+      versions: {
+        "1.0.0": {
+          version: "1.0.0",
+          dist: { tarball: "https://registry.npmjs.org/tiny/-/tiny-1.0.0.tgz" },
+        },
+      },
+    };
+
+    const tarball = await createTarball([
+      {
+        name: "package/package.json",
+        content: JSON.stringify({ name: "tiny", version: "1.0.0", main: "index.js" }),
+      },
+      { name: "package/index.js", content: "module.exports = 42;" },
+    ]);
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL | Request) => {
+      const str = String(url);
+      if (str === "https://registry.npmjs.org/tiny") {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => packument,
+        } as Response;
+      }
+      if (str.includes("tiny-1.0.0.tgz")) {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => tarball.slice().buffer,
+        } as Response;
+      }
+      return { ok: false, status: 404 } as Response;
+    }) as typeof fetch;
+
+    try {
+      await pm.install();
+
+      const installedPkg = (await vfs.readFile("/node_modules/tiny/package.json")) as string;
+      expect(JSON.parse(installedPkg).version).toBe("1.0.0");
+      expect(vfs.hot.existsSync("/node_modules/tiny/index.js")).toBe(true);
+
+      const lockContent = (await vfs.readFile("/package-lock.json")) as string;
+      const lock = JSON.parse(lockContent);
+      expect(lock.lockfileVersion).toBe(3);
+      expect(lock.packages["node_modules/tiny"].version).toBe("1.0.0");
 
       const importMap = JSON.parse((await vfs.readFile("/importmap.json")) as string);
       expect(importMap.imports["tiny"]).toBe("https://esm.sh/tiny@1.0.0");
