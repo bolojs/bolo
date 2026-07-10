@@ -14,7 +14,11 @@ export interface BrowserViteServerOptions {
 }
 
 interface TranspileResult {
-  readonly transpileFile: (code: string, _compilerOptions?: unknown, fileName?: string) => Promise<string>;
+  readonly transpileFile: (
+    code: string,
+    _compilerOptions?: unknown,
+    fileName?: string,
+  ) => Promise<string>;
 }
 
 export class BrowserViteServer {
@@ -34,9 +38,11 @@ export class BrowserViteServer {
   async start(): Promise<void> {
     this.transpiler = {
       transpileFile: async (code, _compilerOptions, fileName) => {
-        const ext = fileName?.endsWith(".tsx") ? "tsx" as const
-          : fileName?.endsWith(".jsx") ? "jsx" as const
-          : "ts" as const;
+        const ext = fileName?.endsWith(".tsx")
+          ? ("tsx" as const)
+          : fileName?.endsWith(".jsx")
+            ? ("jsx" as const)
+            : ("ts" as const);
         const { code: transformed } = await transformScript(code, { loader: ext });
         return transformed;
       },
