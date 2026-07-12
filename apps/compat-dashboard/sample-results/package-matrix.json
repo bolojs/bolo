@@ -1,9 +1,0 @@
-{
-  "packages": [
-    { "name": "hono", "class": "T1", "status": "pass" },
-    { "name": "elysia", "class": "T1", "status": "pass" },
-    { "name": "express", "class": "T2", "status": "fail", "error": "http.Server not supported" },
-    { "name": "zod", "class": "T2", "status": "pass" },
-    { "name": "uuid", "class": "T2", "status": "pass" }
-  ]
-}
