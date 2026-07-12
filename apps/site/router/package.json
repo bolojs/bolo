@@ -1,0 +1,18 @@
+{
+  "name": "@browser-containers/site-router",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "typecheck": "tsc --noEmit",
+    "test:topology": "node scripts/test-topology.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260708.1",
+    "typescript": "^5.8.0",
+    "wrangler": "^4.0.0"
+  }
+}

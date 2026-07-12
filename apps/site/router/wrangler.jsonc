@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "browser-containers",
+  "compatibility_date": "2026-07-01",
+  "pages_build_output_dir": "./public",
+  "services": [
+    { "binding": "SITE", "service": "browser-containers-site" },
+    { "binding": "COMPAT", "service": "browser-containers-compat" },
+    { "binding": "DEMO", "service": "browser-containers-demo" }
+  ]
+}
