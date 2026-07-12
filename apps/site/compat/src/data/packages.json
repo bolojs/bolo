@@ -1,0 +1,1780 @@
+{
+  "meta": {
+    "generatedAt": "2026-07-12T00:04:02.817Z",
+    "source": "apps/site/landing/public/results"
+  },
+  "columns": [
+    {
+      "key": "node24",
+      "label": "Node 24 Krypton",
+      "measured": false
+    },
+    {
+      "key": "node22",
+      "label": "Node 22 Jod",
+      "measured": false
+    },
+    {
+      "key": "deno",
+      "label": "Deno 2",
+      "measured": false
+    },
+    {
+      "key": "bun",
+      "label": "Bun 1.x",
+      "measured": false
+    },
+    {
+      "key": "browser",
+      "label": "Browser (latest)",
+      "measured": true
+    },
+    {
+      "key": "safari",
+      "label": "Safari (latest)",
+      "measured": false
+    }
+  ],
+  "categories": [
+    {
+      "key": "http-clients",
+      "label": "HTTP clients"
+    },
+    {
+      "key": "file-system",
+      "label": "File system"
+    },
+    {
+      "key": "build-tools",
+      "label": "Build tools"
+    },
+    {
+      "key": "bundlers",
+      "label": "Bundlers"
+    },
+    {
+      "key": "testing",
+      "label": "Testing"
+    },
+    {
+      "key": "http-servers",
+      "label": "HTTP servers"
+    },
+    {
+      "key": "crypto",
+      "label": "Crypto"
+    },
+    {
+      "key": "templates",
+      "label": "Templates"
+    },
+    {
+      "key": "node-core",
+      "label": "Node core APIs"
+    }
+  ],
+  "rows": [
+    {
+      "id": "fetch",
+      "name": "fetch",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "axios",
+      "name": "axios",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "node-fetch",
+      "name": "node-fetch",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "undici",
+      "name": "undici",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "fs-extra",
+      "name": "fs-extra",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "globby",
+      "name": "globby",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "chokidar",
+      "name": "chokidar",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "esbuild",
+      "name": "esbuild",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": true,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Browser ready"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "WASM package: esbuild-wasm",
+          "WASM target: wasm32-unknown-unknown",
+          "Browser ready: true"
+        ],
+        "knownIssues": [
+          "Native bindings in Node.js; WASM build for browser."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/esbuild"
+        ],
+        "raw": "{\n  \"name\": \"esbuild\",\n  \"npm\": \"esbuild\",\n  \"wasmPackage\": \"esbuild-wasm\",\n  \"browserReady\": true,\n  \"wasmTarget\": \"wasm32-unknown-unknown\",\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"stable\",\n  \"category\": \"bundler\",\n  \"notes\": \"Native bindings in Node.js; WASM build for browser.\"\n}"
+      }
+    },
+    {
+      "id": "swc",
+      "name": "swc",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": true,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Browser ready"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "WASM package: @swc/wasm",
+          "WASM target: wasm32-unknown-unknown",
+          "Browser ready: true"
+        ],
+        "knownIssues": [
+          "WASM build available for browsers."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/@swc/core"
+        ],
+        "raw": "{\n  \"name\": \"swc\",\n  \"npm\": \"@swc/core\",\n  \"wasmPackage\": \"@swc/wasm\",\n  \"browserReady\": true,\n  \"wasmTarget\": \"wasm32-unknown-unknown\",\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"stable\",\n  \"category\": \"compiler\",\n  \"notes\": \"WASM build available for browsers.\"\n}"
+      }
+    },
+    {
+      "id": "tsc",
+      "name": "tsc",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Browser ready"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Browser ready: true"
+        ],
+        "knownIssues": [
+          "Pure JS compiler — runs natively in browser via tsc.js."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/typescript"
+        ],
+        "raw": "{\n  \"name\": \"tsc\",\n  \"npm\": \"typescript\",\n  \"wasmPackage\": null,\n  \"browserReady\": true,\n  \"wasmTarget\": null,\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"stable\",\n  \"category\": \"compiler\",\n  \"notes\": \"Pure JS compiler — runs natively in browser via tsc.js.\"\n}"
+      }
+    },
+    {
+      "id": "sass",
+      "name": "sass",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not browser ready"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Browser ready: false"
+        ],
+        "knownIssues": [
+          "Pure JS/embedded native bindings; no official WASM build."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/sass"
+        ],
+        "raw": "{\n  \"name\": \"sass\",\n  \"npm\": \"sass\",\n  \"wasmPackage\": null,\n  \"browserReady\": false,\n  \"wasmTarget\": null,\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"none\",\n  \"category\": \"css\",\n  \"notes\": \"Pure JS/embedded native bindings; no official WASM build.\"\n}"
+      }
+    },
+    {
+      "id": "rollup",
+      "name": "rollup",
+      "category": "bundlers",
+      "categoryLabel": "Bundlers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "webpack",
+      "name": "webpack",
+      "category": "bundlers",
+      "categoryLabel": "Bundlers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not browser ready"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Browser ready: false"
+        ],
+        "knownIssues": [
+          "Designed for Node.js; no browser/WASM target."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/webpack"
+        ],
+        "raw": "{\n  \"name\": \"webpack\",\n  \"npm\": \"webpack\",\n  \"wasmPackage\": null,\n  \"browserReady\": false,\n  \"wasmTarget\": null,\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"none\",\n  \"category\": \"bundler\",\n  \"notes\": \"Designed for Node.js; no browser/WASM target.\"\n}"
+      }
+    },
+    {
+      "id": "vite",
+      "name": "vite",
+      "category": "bundlers",
+      "categoryLabel": "Bundlers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "parcel",
+      "name": "parcel",
+      "category": "bundlers",
+      "categoryLabel": "Bundlers",
+      "description": "",
+      "wasmOnly": true,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not browser ready"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "WASM package: @parcel/watcher-wasm",
+          "Browser ready: false"
+        ],
+        "knownIssues": [
+          "File watcher has WASM bindings, but core bundler is Node-only."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/parcel"
+        ],
+        "raw": "{\n  \"name\": \"parcel\",\n  \"npm\": \"parcel\",\n  \"wasmPackage\": \"@parcel/watcher-wasm\",\n  \"browserReady\": false,\n  \"wasmTarget\": null,\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"none\",\n  \"category\": \"bundler\",\n  \"notes\": \"File watcher has WASM bindings, but core bundler is Node-only.\"\n}"
+      }
+    },
+    {
+      "id": "vitest",
+      "name": "vitest",
+      "category": "testing",
+      "categoryLabel": "Testing",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "jest",
+      "name": "jest",
+      "category": "testing",
+      "categoryLabel": "Testing",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "express",
+      "name": "express",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: T2"
+        ],
+        "knownIssues": [
+          "http.Server not supported"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/express"
+        ],
+        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"T2\",\n  \"status\": \"fail\",\n  \"error\": \"http.Server not supported\"\n}"
+      }
+    },
+    {
+      "id": "fastify",
+      "name": "fastify",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "h3",
+      "name": "h3",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "polka",
+      "name": "polka",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "crypto-js",
+      "name": "crypto-js",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "bcrypt",
+      "name": "bcrypt",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "argon2",
+      "name": "argon2",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "handlebars",
+      "name": "handlebars",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "ejs",
+      "name": "ejs",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "pug",
+      "name": "pug",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "events",
+      "name": "events",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "3/3 tests passed"
+        ],
+        "knownIssues": [
+          "No known issues"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-events-once.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-events-listener-count.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-events-getmaxlisteners.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "stream",
+      "name": "stream",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "1/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-stream-writable.js: Writable backpressure not implemented",
+          "test-stream-pipeline.js: stream.pipeline() not supported"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-stream-readable.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-stream-writable.js\",\n    \"status\": \"fail\",\n    \"error\": \"Writable backpressure not implemented\"\n  },\n  {\n    \"file\": \"test-stream-pipeline.js\",\n    \"status\": \"fail\",\n    \"error\": \"stream.pipeline() not supported\"\n  }\n]"
+      }
+    },
+    {
+      "id": "buffer",
+      "name": "buffer",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "2/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-buffer-from.js: Buffer.from(arrayBuffer) not supported"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-buffer-alloc.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-buffer-concat.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-buffer-from.js\",\n    \"status\": \"fail\",\n    \"error\": \"Buffer.from(arrayBuffer) not supported\"\n  }\n]"
+      }
+    },
+    {
+      "id": "crypto",
+      "name": "crypto",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "1/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-crypto-createhash.js: createHash not implemented, use Web Crypto",
+          "test-crypto-hash-update.js: createHash not implemented, use Web Crypto"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-crypto-randombytes.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-crypto-createhash.js\",\n    \"status\": \"fail\",\n    \"error\": \"createHash not implemented, use Web Crypto\"\n  },\n  {\n    \"file\": \"test-crypto-hash-update.js\",\n    \"status\": \"fail\",\n    \"error\": \"createHash not implemented, use Web Crypto\"\n  }\n]"
+      }
+    },
+    {
+      "id": "path",
+      "name": "path",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "3/3 tests passed"
+        ],
+        "knownIssues": [
+          "No known issues"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-path-basename.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-path-dirname.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-path-extname.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "url",
+      "name": "url",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "3/3 tests passed"
+        ],
+        "knownIssues": [
+          "No known issues"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-url-parse.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-url-format.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-url-resolve.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "querystring",
+      "name": "querystring",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "3/3 tests passed"
+        ],
+        "knownIssues": [
+          "No known issues"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-querystring-parse.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-querystring-stringify.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-querystring-escape.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "zlib",
+      "name": "zlib",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [],
+        "knownIssues": [],
+        "links": [],
+        "raw": ""
+      }
+    },
+    {
+      "id": "os",
+      "name": "os",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "1/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-os-cpus.js: os.cpus() is not supported in browser",
+          "test-os-freemem.js: os.freemem() is not supported in browser"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-os-arch.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-os-cpus.js\",\n    \"status\": \"fail\",\n    \"error\": \"os.cpus() is not supported in browser\"\n  },\n  {\n    \"file\": \"test-os-freemem.js\",\n    \"status\": \"fail\",\n    \"error\": \"os.freemem() is not supported in browser\"\n  }\n]"
+      }
+    },
+    {
+      "id": "util",
+      "name": "util",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "2/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-util-promisify.js: util.promisify requires custom Symbol"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-util-promisify.js\",\n    \"status\": \"fail\",\n    \"error\": \"util.promisify requires custom Symbol\"\n  }\n]"
+      }
+    },
+    {
+      "id": "assert",
+      "name": "assert",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "3/3 tests passed"
+        ],
+        "knownIssues": [
+          "No known issues"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-assert-ok.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-equal.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-throws.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "fs",
+      "name": "fs",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "0/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-fs-readfile.js: fs.readFile not yet backed by OPFS",
+          "test-fs-writefile.js: fs.writeFile not yet backed by OPFS",
+          "test-fs-readdir.js: fs.readdir not yet backed by OPFS"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"fail\",\n    \"error\": \"fs.readFile not yet backed by OPFS\"\n  },\n  {\n    \"file\": \"test-fs-writefile.js\",\n    \"status\": \"fail\",\n    \"error\": \"fs.writeFile not yet backed by OPFS\"\n  },\n  {\n    \"file\": \"test-fs-readdir.js\",\n    \"status\": \"fail\",\n    \"error\": \"fs.readdir not yet backed by OPFS\"\n  }\n]"
+      }
+    },
+    {
+      "id": "http",
+      "name": "http",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "0/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-http-server.js: http.Server not supported in browser",
+          "test-http-request.js: http.ClientRequest not supported",
+          "test-http-agent.js: http.Agent not supported"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-http-server.js\",\n    \"status\": \"fail\",\n    \"error\": \"http.Server not supported in browser\"\n  },\n  {\n    \"file\": \"test-http-request.js\",\n    \"status\": \"fail\",\n    \"error\": \"http.ClientRequest not supported\"\n  },\n  {\n    \"file\": \"test-http-agent.js\",\n    \"status\": \"fail\",\n    \"error\": \"http.Agent not supported\"\n  }\n]"
+      }
+    }
+  ]
+}

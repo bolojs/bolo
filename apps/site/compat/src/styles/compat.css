@@ -1,0 +1,384 @@
+:root {
+  --pass: #22c55e;
+  --pass-bg: #dcfce7;
+  --partial: #eab308;
+  --partial-bg: #fef9c3;
+  --fail: #ef4444;
+  --fail-bg: #fee2e2;
+  --unknown: #a3a3a3;
+  --unknown-bg: #f5f5f5;
+}
+
+[data-theme="dark"] {
+  --pass: #4ade80;
+  --pass-bg: #14532d;
+  --partial: #facc15;
+  --partial-bg: #713f12;
+  --fail: #f87171;
+  --fail-bg: #7f1d1d;
+  --unknown: #737373;
+  --unknown-bg: #262626;
+}
+
+.compat-page {
+  padding-block: 2rem;
+}
+
+.compat-header {
+  margin-bottom: 2rem;
+}
+
+.compat-header h1 {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 1.125rem;
+  max-width: 40ch;
+}
+
+.section-heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.compat-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .compat-main {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
+/* Terminal search bar */
+.search-bar {
+  margin-bottom: 1.5rem;
+}
+
+.terminal-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.5rem 0.75rem;
+  background: #0f0f0f;
+  border: 1px solid #333;
+  border-radius: 0.375rem;
+  font-family: var(--font-mono);
+  color: var(--fg);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+
+.terminal-prompt {
+  color: var(--pass);
+  font-weight: 600;
+  user-select: none;
+}
+
+.terminal-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.875rem;
+  outline: none;
+  min-width: 0;
+}
+
+.terminal-input input::placeholder {
+  color: var(--muted);
+}
+
+.terminal-cursor {
+  width: 0.55rem;
+  height: 1.1rem;
+  background: var(--pass);
+  animation: blink 1s step-end infinite;
+  flex-shrink: 0;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Legend */
+.compat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 0.125rem;
+}
+
+/* Grid */
+.grid-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.heat-grid {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+}
+
+.heat-grid th,
+.heat-grid td {
+  border: 1px solid var(--border);
+  padding: 0;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.heat-grid thead th {
+  padding: 0.75rem;
+  background: var(--bg);
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.category-header th {
+  background: var(--border);
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--fg);
+}
+
+.row-name {
+  padding: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  position: sticky;
+  left: 0;
+  background: var(--bg);
+  z-index: 2;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 2.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: transparent;
+  position: relative;
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.cell:hover {
+  filter: brightness(1.15);
+  transform: scale(1.02);
+  z-index: 1;
+}
+
+.cell--pass:hover {
+  background: var(--pass);
+}
+
+.cell--partial:hover {
+  background: var(--partial);
+}
+
+.cell--fail:hover {
+  background: var(--fail);
+}
+
+.cell--unknown:hover {
+  background: var(--unknown);
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.cell-status {
+  display: none;
+}
+
+.cell--pass {
+  background: var(--pass);
+}
+
+.cell--partial {
+  background: var(--partial);
+}
+
+.cell--fail {
+  background: var(--fail);
+}
+
+.cell--unknown {
+  background: var(--unknown);
+}
+
+.cell--wasm::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-left: 0.5rem solid transparent;
+  border-top: 0.5rem solid var(--fg);
+  opacity: 0.85;
+}
+
+.detail-panel {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--bg);
+  position: sticky;
+  top: 1rem;
+  font-family: var(--font-mono);
+}
+
+.detail-panel h3 {
+  font-size: 0.875rem;
+  margin: 1rem 0 0.5rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-panel ul {
+  margin: 0 0 0.75rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+.detail-panel a {
+  color: var(--pass);
+  text-decoration: underline;
+}
+
+.detail-panel a:hover {
+  color: var(--fg);
+}
+
+.detail-empty {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.detail-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+  color: var(--fg);
+}
+
+.detail-meta {
+  color: var(--muted);
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+  text-transform: capitalize;
+}
+
+.detail-description {
+  color: var(--muted);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.detail-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge--pass {
+  background: var(--pass-bg);
+  color: var(--pass);
+}
+
+.badge--partial {
+  background: var(--partial-bg);
+  color: var(--partial);
+}
+
+.badge--fail {
+  background: var(--fail-bg);
+  color: var(--fail);
+}
+
+.badge--unknown {
+  background: var(--unknown-bg);
+  color: var(--unknown);
+}
+
+.detail-raw {
+  font-size: 0.75rem;
+  max-height: 16rem;
+  overflow: auto;
+  background: #0f0f0f;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+}

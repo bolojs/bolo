@@ -1,0 +1,368 @@
+name: Compatibility Harness
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: 'Comma-separated package names to test (overrides affected-package detection)'
+        required: false
+        type: string
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: compat-harness-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    name: Nightly package matrix
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.26.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright-core install chromium
+
+      - name: Start compat-harness dev server
+        run: |
+          cd apps/compat-harness
+          pnpm exec vite --port 5173 --host &>/tmp/harness.log &
+          HARNESS_PID=$!
+          echo $HARNESS_PID > /tmp/harness.pid
+          for i in $(seq 1 60); do
+            if curl -s http://localhost:5173 > /dev/null; then
+              echo "Harness dev server is ready"
+              break
+            fi
+            if ! kill -0 $HARNESS_PID 2>/dev/null; then
+              echo "Harness dev server failed to start"
+              cat /tmp/harness.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Run package matrix
+        run: node apps/compat-harness/bin/cli.js --json --url http://localhost:5173 --output apps/site/landing/public/results/package-matrix.json
+
+      - name: Stop compat-harness dev server
+        if: always()
+        run: |
+          if [ -f /tmp/harness.pid ]; then
+            kill $(cat /tmp/harness.pid) || true
+            rm -f /tmp/harness.pid
+          fi
+
+      - name: Commit updated package-matrix.json
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add apps/site/landing/public/results/package-matrix.json
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'ci: nightly package-matrix update'
+            git push
+          fi
+
+  detect-affected-packages:
+    name: Detect affected packages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.detect.outputs.packages }}
+      count: ${{ steps.detect.outputs.count }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.26.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Detect affected packages
+        id: detect
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          OVERRIDE_PACKAGES: ${{ github.event.inputs.packages }}
+        run: |
+          node --input-type=module - <<'EOF'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import { execSync } from 'node:child_process';
+
+          const overrideRaw = process.env.OVERRIDE_PACKAGES;
+          const override = overrideRaw ? overrideRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+          const baseRef = process.env.BASE_REF;
+
+          const map = JSON.parse(readFileSync('apps/compat-harness/src/package-api-map.json', 'utf8'));
+          const allPackages = Object.keys(map);
+
+          let affected = [];
+          if (override.length > 0) {
+            affected = override.filter(p => allPackages.includes(p));
+          } else {
+            try {
+              execSync(`git fetch --depth=1 origin ${baseRef}`, { stdio: 'ignore' });
+            } catch {}
+
+            let changedFiles = [];
+            try {
+              const diff = execSync(`git diff --name-only origin/${baseRef}...HEAD`, {
+                encoding: 'utf8',
+                stdio: ['ignore', 'pipe', 'ignore'],
+              });
+              changedFiles = diff.split('\n').filter(Boolean);
+            } catch {}
+
+            const runtimeDirs = ['packages/runtime/', 'packages/node-runtime-shims/'];
+            const runtimeChanged = changedFiles.some(f => runtimeDirs.some(d => f.startsWith(d)));
+
+            if (runtimeChanged) {
+              affected = allPackages;
+            } else {
+              const webShimsDir = 'packages/node-web-shims/';
+              const webShimsChanged = changedFiles.filter(f => f.startsWith(webShimsDir));
+              if (webShimsChanged.length > 0) {
+                const apiNames = [...new Set(Object.values(map).flat())];
+                const changedApis = new Set();
+                for (const f of webShimsChanged) {
+                  const parts = f.split('/');
+                  const matches = apiNames.filter(api => {
+                    return parts.includes(api) || f.endsWith(`/${api}.ts`) || f.endsWith(`/${api}.js`);
+                  });
+                  if (matches.length === 0) {
+                    apiNames.forEach(api => changedApis.add(api));
+                  } else {
+                    matches.forEach(api => changedApis.add(api));
+                  }
+                }
+                for (const [pkg, apis] of Object.entries(map)) {
+                  if (apis.some(api => changedApis.has(api))) affected.push(pkg);
+                }
+              }
+              affected = [...new Set(affected)];
+            }
+          }
+
+          const json = JSON.stringify(affected);
+          const count = affected.length;
+          console.log(`affected packages: ${json}`);
+          console.log(`count: ${count}`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `packages=${json}\n`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `count=${count}\n`);
+          EOF
+
+  pr-delta:
+    name: PR delta package matrix (shard ${{ matrix.shard }})
+    needs: detect-affected-packages
+    if: github.event_name == 'pull_request' && needs.detect-affected-packages.outputs.count != '0'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [0, 1, 2, 3]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.26.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright-core install chromium
+
+      - name: Start compat-harness dev server
+        run: |
+          cd apps/compat-harness
+          pnpm exec vite --port 5173 --host &>/tmp/harness.log &
+          HARNESS_PID=$!
+          echo $HARNESS_PID > /tmp/harness.pid
+          for i in $(seq 1 60); do
+            if curl -s http://localhost:5173 > /dev/null; then
+              echo "Harness dev server is ready"
+              break
+            fi
+            if ! kill -0 $HARNESS_PID 2>/dev/null; then
+              echo "Harness dev server failed to start"
+              cat /tmp/harness.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Run affected package shard
+        run: node apps/compat-harness/bin/cli.js --json --url http://localhost:5173 --packages '${{ needs.detect-affected-packages.outputs.packages }}' --shard-index ${{ matrix.shard }} --shard-total 4 --output package-matrix-shard-${{ matrix.shard }}.json
+
+      - name: Stop compat-harness dev server
+        if: always()
+        run: |
+          if [ -f /tmp/harness.pid ]; then
+            kill $(cat /tmp/harness.pid) || true
+            rm -f /tmp/harness.pid
+          fi
+
+      - name: Upload shard result
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-matrix-shard-${{ matrix.shard }}
+          path: package-matrix-shard-${{ matrix.shard }}.json
+          retention-days: 7
+
+  merge-pr-delta:
+    name: Merge PR delta results
+    needs: [detect-affected-packages, pr-delta]
+    if: github.event_name == 'pull_request' && needs.detect-affected-packages.outputs.count != '0'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download shard results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: package-matrix-shard-*
+          path: compat-shards
+          merge-multiple: true
+
+      - name: Merge results and compare with baseline
+        id: merge
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          node --input-type=module - <<'EOF'
+          import { readdir, readFile, writeFile } from 'node:fs/promises';
+          import { execSync } from 'node:child_process';
+
+          const shardDir = 'compat-shards';
+          const files = (await readdir(shardDir)).filter(
+            f => f.startsWith('package-matrix-shard-') && f.endsWith('.json'),
+          );
+          let results = [];
+          for (const f of files) {
+            const parsed = JSON.parse(await readFile(`${shardDir}/${f}`, 'utf8'));
+            const arr = Array.isArray(parsed) ? parsed : parsed.packages;
+            if (Array.isArray(arr)) results = results.concat(arr);
+          }
+
+          try {
+            execSync(`git fetch --depth=1 origin ${process.env.BASE_REF}`, { stdio: 'ignore' });
+          } catch {}
+
+          let baseline = { packages: [] };
+          try {
+            const raw = execSync(`git show origin/${process.env.BASE_REF}:apps/site/landing/public/results/package-matrix.json`, {
+              encoding: 'utf8',
+              stdio: ['ignore', 'pipe', 'ignore'],
+            });
+            const parsed = JSON.parse(raw);
+            baseline = Array.isArray(parsed) ? { packages: parsed } : parsed;
+          } catch {
+            baseline = { packages: [] };
+          }
+
+          const baselineMap = new Map((baseline.packages || []).map(p => [p.name, p]));
+
+          const changedRows = [];
+          const failures = [];
+          for (const p of results) {
+            const base = baselineMap.get(p.name);
+            const baseStatus = base?.status ?? 'n/a';
+            const changed = !base || base.status !== p.status;
+            if (changed) changedRows.push({ name: p.name, base: baseStatus, current: p.status });
+            if (p.status !== 'pass') failures.push(p.name);
+          }
+
+          const summary = [
+            '## Compatibility delta results',
+            '',
+            '| Package | Base | Current |',
+            '|---|---|---|',
+            ...changedRows.map(r => `| ${r.name} | ${r.base} | ${r.current} |`),
+            '',
+            failures.length === 0
+              ? 'All affected packages pass.'
+              : `❌ ${failures.length} affected package(s) did not pass: ${failures.join(', ')}`,
+          ].join('\n');
+
+          await writeFile('compat-delta-summary.md', summary);
+          console.log(summary);
+
+          if (failures.length > 0) {
+            process.exit(1);
+          }
+          EOF
+
+      - name: Upload combined delta result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compat-delta-result
+          path: |
+            compat-delta-summary.md
+            compat-shards/
+          retention-days: 7
+
+      - name: Comment delta results on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'compat-delta-summary.md';
+            if (!fs.existsSync(path)) {
+              core.setFailed('Summary file not found');
+              return;
+            }
+            const body = fs.readFileSync(path, 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });

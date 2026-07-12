@@ -12,7 +12,7 @@ Run Node.js, Bun, and Deno apps entirely in the browser with zero server depende
 git clone https://github.com/browser-containers/browser-containers
 cd browser-containers
 pnpm install && pnpm build
-pnpm --filter @browser-containers/demo dev
+pnpm --filter @browser-containers/site-demo dev
 ```
 
 ## Why this exists

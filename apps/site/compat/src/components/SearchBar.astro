@@ -1,0 +1,27 @@
+<div class="search-bar">
+  <label for="compat-search" class="visually-hidden">Filter packages</label>
+  <div class="terminal-input">
+    <span class="terminal-prompt" aria-hidden="true">$</span>
+    <input
+      type="search"
+      id="compat-search"
+      autocomplete="off"
+      placeholder="check support <query>"
+      aria-label="Filter packages"
+    />
+    <span class="terminal-cursor" aria-hidden="true"></span>
+  </div>
+</div>
+
+<script>
+  const input = document.getElementById('compat-search');
+
+  document.addEventListener('keydown', (e) => {
+    const active = document.activeElement;
+    const typing = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement;
+    if (e.key === '/' && !typing) {
+      e.preventDefault();
+      input?.focus();
+    }
+  });
+</script>

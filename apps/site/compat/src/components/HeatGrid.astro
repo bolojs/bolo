@@ -1,0 +1,109 @@
+---
+export interface Column {
+  key: string;
+  label: string;
+  measured: boolean;
+}
+
+export interface RowDetail {
+  features: string[];
+  knownIssues: string[];
+  links: string[];
+  raw: string;
+}
+
+export interface CellData {
+  status: string;
+  note: string;
+}
+
+export interface Row {
+  id: string;
+  name: string;
+  category: string;
+  categoryLabel: string;
+  description: string;
+  wasmOnly: boolean;
+  cells: Record<string, CellData>;
+  details: RowDetail;
+}
+
+interface Props {
+  rows: Row[];
+  columns: Column[];
+  categories: { key: string; label: string }[];
+}
+
+const { rows, columns, categories } = Astro.props;
+const grouped = categories.map((cat) => ({
+  ...cat,
+  rows: rows.filter((r) => r.category === cat.key),
+}));
+
+const statusSymbol = (status: string) => {
+  switch (status) {
+    case 'pass':
+      return '✓';
+    case 'partial':
+      return '~';
+    case 'fail':
+      return '✕';
+    default:
+      return '?';
+  }
+};
+---
+
+<table class="heat-grid" data-columns={JSON.stringify(columns)}>
+  <thead>
+    <tr>
+      <th class="row-header" scope="col">Package / API</th>
+      {columns.map((col) => <th scope="col">{col.label}</th>)}
+    </tr>
+  </thead>
+  <tbody>
+    {
+      grouped.map((group) => (
+        <>
+          <tr class="category-header" data-category={group.key}>
+            <th colspan={columns.length + 1} scope="colgroup">
+              {group.label}
+            </th>
+          </tr>
+          {group.rows.map((row) => (
+            <tr
+              class="compat-row"
+              data-name={row.name}
+              data-description={row.description}
+              data-category={row.category}
+              data-row={JSON.stringify(row)}
+            >
+              <th class="row-name" scope="row">{row.name}</th>
+              {columns.map((col) => {
+                const cell = row.cells[col.key];
+                if (!cell) return null;
+                const statusClass = `cell--${cell.status}`;
+                const wasmClass = row.wasmOnly ? ' cell--wasm' : '';
+                return (
+                  <td>
+                    <button
+                      type="button"
+                      class={`cell ${statusClass}${wasmClass}`}
+                      data-column={col.key}
+                      data-column-label={col.label}
+                      aria-label={`${row.name} on ${col.label}: ${cell.note}`}
+                    >
+                      <span class="cell-status" aria-hidden="true">
+                        {statusSymbol(cell.status)}
+                      </span>
+                    </button>
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </>
+      ))
+    }
+  </tbody>
+</table>

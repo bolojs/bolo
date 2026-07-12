@@ -1,0 +1,22 @@
+{
+  "name": "@browser-containers/site-compat",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "pnpm run sync-data && astro build",
+    "dev": "portless run --name compat --force astro dev",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "sync-data": "node scripts/build-data.js"
+  },
+  "dependencies": {
+    "astro": "^5.7.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "portless": "latest",
+    "typescript": "^5.8.0"
+  }
+}
