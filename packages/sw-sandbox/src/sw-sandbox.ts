@@ -26,7 +26,11 @@ export class SWSandbox {
     if (typeof navigator === "undefined" || !navigator.serviceWorker) {
       throw new Error("ServiceWorker not supported");
     }
-    await navigator.serviceWorker.register(this.swPath);
+    // Scope defaults to the directory the SW lives in. For "/sw.js" the
+    // derived scope is "/" — same as today; for "/demo/sw.js" it becomes
+    // "/demo/" — required when mounted under a sub-path.
+    const scope = this.swPath.slice(0, this.swPath.lastIndexOf("/") + 1);
+    await navigator.serviceWorker.register(this.swPath, { scope });
     const registration = await navigator.serviceWorker.ready;
 
     const channel = new MessageChannel();

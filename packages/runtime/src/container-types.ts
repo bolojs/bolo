@@ -17,6 +17,12 @@ export interface BootOptions {
   sandbox?: SandboxBackend;
   /** Skip sandboxing entirely. Only for trusted code. */
   dangerouslyAllowSameOrigin?: boolean;
+  /**
+   * Absolute URL path to the ServiceWorker script (e.g. "/sw.js" for root
+   * deploys, "/demo/sw.js" when mounted under a sub-path). Default: "/sw.js".
+   * Scope is derived from the directory the script lives in.
+   */
+  swPath?: string;
 }
 
 // ── Virtual filesystem tree ───────────────────────────────────────────

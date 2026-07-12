@@ -40,6 +40,10 @@ const resolvePolyfillsShim = (): Plugin => ({
 });
 
 export default defineConfig({
+  // Mounted at /demo/ by the Pages gateway; base only affects generated
+  // links/asset paths, dist/ stays flat. App.tsx uses import.meta.env.BASE_URL
+  // for boot({ swPath }) so the SW resolves to /demo/sw.js under the prefix.
+  base: '/demo/',
   plugins: [
     solidPlugin(),
     resolvePolyfillsShim(),

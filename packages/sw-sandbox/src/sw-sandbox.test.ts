@@ -66,7 +66,7 @@ describe("SWSandbox", () => {
     const sandbox = await createPromise;
 
     expect(sandbox).toBeInstanceOf(SWSandbox);
-    expect(navigator.serviceWorker.register).toHaveBeenCalledWith("/sw.js");
+    expect(navigator.serviceWorker.register).toHaveBeenCalledWith("/sw.js", { scope: "/" });
     expect(mockSw.postMessage).toHaveBeenCalledWith(
       { type: "INIT_PORT" },
       expect.arrayContaining([expect.anything()]),

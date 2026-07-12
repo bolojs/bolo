@@ -57,7 +57,10 @@ export default function App() {
 
   onMount(async () => {
     try {
-      container = await boot({ workdirName: "/home/web" });
+      container = await boot({
+        workdirName: "/home/web",
+        swPath: `${import.meta.env.BASE_URL}sw.js`,
+      });
 
       const unsubPort = container.on("port", (_port, type, url) => {
         if (type === "open") {

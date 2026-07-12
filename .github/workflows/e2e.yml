@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DEMO_URL: http://localhost:5173
+      DEMO_URL: http://localhost:5173/demo/
 
     steps:
       - name: Checkout code
