@@ -38,24 +38,6 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.13)(@types/node@25.6.0)(happy-dom@17.6.3)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0)
 
-  apps/compat:
-    dependencies:
-      astro:
-        specifier: ^5.7.0
-        version: 5.18.2(@types/node@25.6.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0)
-    devDependencies:
-      '@astrojs/check':
-        specifier: ^0.9.0
-        version: 0.9.9(prettier@3.9.5)(typescript@5.9.3)
-      portless:
-        specifier: latest
-        version: 0.15.1
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
-
-  apps/compat-dashboard: {}
-
   apps/compat-harness:
     dependencies:
       '@browser-containers/node-web-shims':
@@ -80,110 +62,6 @@ importers:
       vite-plugin-node-polyfills:
         specifier: ^0.28.0
         version: 0.28.0(rollup@4.60.1)(vite@6.4.2(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
-
-  apps/demo:
-    dependencies:
-      '@browser-containers/node-web-shims':
-        specifier: workspace:*
-        version: link:../../packages/node-web-shims
-      '@browser-containers/npm':
-        specifier: workspace:*
-        version: link:../../packages/npm
-      '@browser-containers/runtime':
-        specifier: workspace:*
-        version: link:../../packages/runtime
-      '@browser-containers/sw-sandbox':
-        specifier: workspace:*
-        version: link:../../packages/sw-sandbox
-      '@browser-containers/vfs-bus':
-        specifier: workspace:*
-        version: link:../../packages/vfs-bus
-      '@browser-containers/vite-server':
-        specifier: workspace:*
-        version: link:../../packages/vite-server
-      '@xterm/addon-fit':
-        specifier: ^0.10.0
-        version: 0.10.0(@xterm/xterm@5.5.0)
-      '@xterm/xterm':
-        specifier: ^5.5.0
-        version: 5.5.0
-      solid-js:
-        specifier: ^1.9.0
-        version: 1.9.12
-      unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
-    devDependencies:
-      portless:
-        specifier: latest
-        version: 0.15.1
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
-      vite:
-        specifier: ^6.0.0
-        version: 6.4.2(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0)
-      vite-plugin-node-polyfills:
-        specifier: ^0.28.0
-        version: 0.28.0(rollup@4.60.1)(vite@6.4.2(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
-      vite-plugin-solid:
-        specifier: ^2.11.0
-        version: 2.11.12(solid-js@1.9.12)(vite@6.4.2(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
-
-  apps/site:
-    dependencies:
-      '@astrojs/starlight':
-        specifier: ^0.37.0
-        version: 0.37.7(astro@5.18.2(@types/node@25.6.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0))
-      '@codemirror/lang-javascript':
-        specifier: ^6.2.2
-        version: 6.2.5
-      '@codemirror/state':
-        specifier: ^6.5.0
-        version: 6.7.1
-      '@codemirror/view':
-        specifier: ^6.35.0
-        version: 6.43.6
-      '@xterm/addon-fit':
-        specifier: ^0.10.0
-        version: 0.10.0(@xterm/xterm@5.5.0)
-      '@xterm/xterm':
-        specifier: ^5.5.0
-        version: 5.5.0
-      astro:
-        specifier: ^5.7.0
-        version: 5.18.2(@types/node@25.6.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0)
-      astro-expressive-code:
-        specifier: ^0.41.1
-        version: 0.41.7(astro@5.18.2(@types/node@25.6.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0))
-      astro-pagefind:
-        specifier: ^2.0.1
-        version: 2.0.1(astro@5.18.2(@types/node@25.6.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0))
-      sharp:
-        specifier: ^0.35.3
-        version: 0.35.3(@types/node@25.6.0)
-      starlight-llms-txt:
-        specifier: ^0.7.0
-        version: 0.7.0(@astrojs/starlight@0.37.7(astro@5.18.2(@types/node@25.6.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0)))(astro@5.18.2(@types/node@25.6.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0))
-    devDependencies:
-      '@astrojs/check':
-        specifier: ^0.9.0
-        version: 0.9.9(prettier@3.9.5)(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: ^8.32.0
-        version: 8.63.0(eslint@9.39.5)(typescript@5.9.3)
-      eslint:
-        specifier: ^9.24.0
-        version: 9.39.5
-      eslint-plugin-astro:
-        specifier: ^1.3.1
-        version: 1.7.0(eslint@9.39.5)
-      portless:
-        specifier: latest
-        version: 0.15.1
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
 
   apps/site/compat:
     dependencies:
