@@ -28,17 +28,6 @@ export default defineConfig({
         'Cross-Origin-Opener-Policy': 'same-origin',
         'Cross-Origin-Embedder-Policy': 'require-corp',
       },
-      proxy: {
-        // In dev, /compat is served by the standalone compat app's own dev
-        // server (run separately via `pnpm --filter @browser-containers/compat dev`).
-        // Route through its stable portless hostname rather than a raw port,
-        // since portless assigns that port dynamically per run.
-        '/compat': {
-          target: 'https://compat.localhost:1355',
-          changeOrigin: true,
-          secure: false,
-        },
-      },
     },
   },
 });

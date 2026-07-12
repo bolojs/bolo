@@ -5,7 +5,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "astro build && node scripts/copy-compat.mjs",
+    "build": "astro build",
     "dev": "portless run --name site --force astro dev",
     "preview": "astro preview",
     "lint": "eslint .",
