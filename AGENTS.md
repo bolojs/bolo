@@ -22,7 +22,12 @@ packages/
   npm/               Browser-native package installer (registry resolve + tarball extract)
   vite-server/       BrowserViteServer — Vite dev server on main thread
 apps/
-  demo/              IDE-like demo app
+  site/              browser-containers.pages.dev (one product on one domain)
+    landing/         @browser-containers/site-landing    Astro/Starlight, mounted at "/" by router
+    compat/          @browser-containers/site-compat     Astro heat-grid,     mounted at "/compat"
+    demo/            @browser-containers/site-demo       Vite/Solid,          mounted at "/demo"
+    router/          @browser-containers/site-router     Pages Functions gateway (Service Bindings)
+  compat-harness/    Nightly npm-package matrix harness (data source for /compat)
 tests/
   unit/              Vitest, no browser
   integration/       Vitest + happy-dom
@@ -32,13 +37,9 @@ tests/
 ## Documentation Map
 
 - **This file** — project overview and conventions
-- **PRD** — [`docs/prd.md`](docs/prd.md)
-- **Architecture decisions** — [`docs/adr/0001-two-tier-runtime.md`](docs/adr/0001-two-tier-runtime.md) · [`docs/adr/0002-vfs-bus-single-owner.md`](docs/adr/0002-vfs-bus-single-owner.md) · [`docs/adr/0003-no-webpack-nextjs.md`](docs/adr/0003-no-webpack-nextjs.md) · [`docs/adr/0004-package-manager-strategy.md`](docs/adr/0004-package-manager-strategy.md)
-- **Implementation plan** — `tmp/plan.md` (ephemeral)
-- **Shim coverage** — [`docs/shim-coverage.md`](docs/shim-coverage.md)
-- **Node.js compat assessment** — [`docs/compat.md`](docs/compat.md)
-- **Package manager support** — [`docs/package-managers.md`](docs/package-managers.md)
-- **WASM registry** — [`docs/wasm-registry.md`](docs/wasm-registry.md)
+- **PRD, ADRs, contributing guide (internal)** — [`.agents/docs/`](.agents/docs/). Browse locally with `pnpm docs:internal`. PRD: `.agents/docs/prd.md`. ADRs: `.agents/docs/adr/0001-...md`, ...0006. Shim contributing: `.agents/docs/contributing-shims.md`.
+- **End-user docs (public)** — deployed Starlight, source [`apps/site/landing/src/content/docs/docs/`](apps/site/landing/src/content/docs/docs/). Live URL pattern `https://browser-containers.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
+- **Implementation plan** — `.agents/plans/<date>-<purpose>.md` (ephemeral working plans)
 
 ## WHERE TO LOOK
 
@@ -53,7 +54,7 @@ tests/
 | Container API | `packages/runtime` | RuntimeWorker (V8) + SandboxPool (QuickJS) |
 | Package install | `packages/npm` | Browser-native installer + esm.sh fallback |
 | Vite dev server | `packages/vite-server` | Main thread, HMR via BroadcastChannel |
-| Demo app | `apps/demo` | IDE-like UI wiring all packages together |
+| Demo app | `apps/site/demo` | IDE-like UI wiring all packages together, mounted at `/demo` |
 
 ## CONVENTIONS
 

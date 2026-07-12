@@ -95,16 +95,13 @@ const registry = createLiveShimRegistry({
 
 ## Documentation
 
-- [Getting started](docs/getting-started.md)
-- [API reference](docs/api.md)
-- [Alternatives](docs/alternatives.md)
-- [PRD](docs/prd.md)
-- [ADR-0001](docs/adr/0001-two-tier-runtime.md) - two-tier runtime architecture
-- [ADR-0002](docs/adr/0002-vfs-bus-single-owner.md) - single-owner VFS design
-- [ADR-0003](docs/adr/0003-no-webpack-nextjs.md) - no Webpack/Next.js support
-- [ADR-0006](docs/adr/0006-sandbox-pivot-iframe.md) - sandbox pivot to browser-native iframe isolation
-- [Shim coverage](docs/shim-coverage.md)
-- [WASM registry](docs/wasm-registry.md)
+- [Getting started](https://browser-containers.pages.dev/docs/getting-started/)
+- [API reference](https://browser-containers.pages.dev/docs/api/)
+- [Alternatives](https://browser-containers.pages.dev/docs/alternatives/)
+- [Shim coverage](https://browser-containers.pages.dev/docs/shim-coverage/)
+- [WASM registry](https://browser-containers.pages.dev/docs/wasm-registry/)
+
+Internal docs (PRD, ADRs, contributing guide) live under [`.agents/docs/`](.agents/docs/) — run `pnpm docs:internal` to browse.
 
 ## License
 
