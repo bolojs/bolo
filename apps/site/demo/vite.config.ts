@@ -6,16 +6,16 @@ import solidPlugin from 'vite-plugin-solid';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { nodeWebShims } from '@browser-containers/node-web-shims/vite-plugin';
 
-const shimsDir = fileURLToPath(new URL('../../packages/node-web-shims/dist/', import.meta.url));
+const shimsDir = fileURLToPath(new URL('../../../packages/node-web-shims/dist/', import.meta.url));
 // unenv's own runtime modules import deep subpaths directly (e.g. `stream.mjs`
 // imports `node:stream/promises`) with no dedicated wrapper in node-web-shims;
 // resolve straight to unenv's module rather than adding a wrapper per subpath.
 // Resolved from node-web-shims' own package scope (via createRequire), not
-// apps/demo's — apps/demo has its own, older unenv (pulled in transitively by
+// apps/site/demo's — apps/site/demo has its own, older unenv (pulled in transitively by
 // vite-plugin-node-polyfills) whose `exports` map doesn't have a `./node/*`
 // pattern, so a plain `import.meta.resolve` here would resolve the wrong one.
 const requireFromNodeWebShims = createRequire(
-  fileURLToPath(new URL('../../packages/node-web-shims/package.json', import.meta.url)),
+  fileURLToPath(new URL('../../../packages/node-web-shims/package.json', import.meta.url)),
 );
 const streamPromisesShim = requireFromNodeWebShims.resolve('unenv/node/stream/promises');
 
