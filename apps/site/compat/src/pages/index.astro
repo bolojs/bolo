@@ -74,9 +74,11 @@ const packageCount = getPackageCount();
         pkg.hidden = !t || name.includes(t) ? false : true;
       }
       for (const cat of categoryEls) {
-        const key = cat.dataset.category ?? '';
-        cat.hidden =
-          document.querySelectorAll(`.heat-calendar-package[data-category="${key}"]:not([hidden])`).length === 0;
+        const keys = (cat.dataset.category ?? '').split(',').filter(Boolean);
+        const visibleInSection = keys.some((k) =>
+          document.querySelectorAll(`.heat-calendar-package[data-category="${k}"]:not([hidden])`).length > 0
+        );
+        cat.hidden = !visibleInSection;
       }
     }
 

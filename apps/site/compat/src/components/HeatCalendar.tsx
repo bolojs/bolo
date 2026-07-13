@@ -33,55 +33,82 @@ const STATUS_COLOR: Record<string, string> = {
 const STUB_LINK =
   'https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml';
 
+// ponytail: group everything-but-node-core under one heading; node core APIs stand alone.
+// See index.astro search script — the merged section's data-category is a comma-joined
+// key list, and the script splits + matches any for visibility.
+const TOP_NPM_PACKAGES_LABEL = 'Top npm packages';
+
 export function HeatCalendar({ categories, rows, latest }: HeatCalendarProps) {
-  const grouped = categories.map((cat) => ({
-    ...cat,
-    rows: rows.filter((r) => r.category === cat.key),
-  }));
+  const labelByKey = new Map(categories.map((c) => [c.key, c.label]));
+
+  const nodeCoreRows = rows.filter((r) => r.category === 'node-core');
+  const topRows = rows.filter((r) => r.category !== 'node-core');
+  const topCategoryKeys = [
+    ...new Set(topRows.map((r) => r.category)),
+  ];
 
   return (
-    <div className="heat-calendar">
-      {grouped.map((group) => (
+    <div className="heat-calendar" aria-label="Browser compatibility status grid">
+      {topRows.length > 0 && (
         <section
-          key={group.key}
           className="heat-calendar-category"
-          data-category={group.key}
-          aria-label={`${group.label} compatibility status grid`}
+          data-category={topCategoryKeys.join(',')}
         >
-          <h3 className="heat-calendar-heading">{group.label}</h3>
+          <h3 className="heat-calendar-heading">{TOP_NPM_PACKAGES_LABEL}</h3>
           <div className="heat-calendar-grid">
-            {group.rows.map((pkg) => {
-              const info = latest[pkg.id];
-              const status = info?.status ?? 'unknown';
-              const date = info?.date ?? 'no run yet';
-              const link = info?.link ?? STUB_LINK;
-              const tooltip = `${pkg.name} — ${date}: ${status}`;
-
-              return (
-                <a
-                  key={pkg.id}
-                  href={link}
-                  target="_blank"
-                  rel="noopener"
-                  className="heat-calendar-package"
-                  data-name={pkg.name}
-                  data-category={group.key}
-                  title={tooltip}
-                  aria-label={tooltip}
-                >
-                  <span
-                    className="heat-calendar-cell"
-                    style={{
-                      backgroundColor:
-                        STATUS_COLOR[status] ?? STATUS_COLOR.unknown,
-                    }}
-                  />
-                </a>
-              );
-            })}
+            {renderCells(topRows, labelByKey, latest)}
           </div>
         </section>
-      ))}
+      )}
+
+      {nodeCoreRows.length > 0 && (
+        <section
+          className="heat-calendar-category"
+          data-category="node-core"
+        >
+          <h3 className="heat-calendar-heading">Node core APIs</h3>
+          <div className="heat-calendar-grid">
+            {renderCells(nodeCoreRows, labelByKey, latest)}
+          </div>
+        </section>
+      )}
     </div>
   );
+}
+
+function renderCells(
+  rows: Row[],
+  labelByKey: Map<string, string>,
+  latest: Record<string, LatestInfo>,
+) {
+  return rows.map((pkg) => {
+    const info = latest[pkg.id];
+    const status = info?.status ?? 'unknown';
+    const date = info?.date ?? 'no run yet';
+    const link = info?.link ?? STUB_LINK;
+    const categoryLabel = labelByKey.get(pkg.category) ?? pkg.category;
+    const tooltip = `${categoryLabel} — ${pkg.name} — ${date}: ${status}`;
+
+    return (
+      <a
+        key={pkg.id}
+        href={link}
+        target="_blank"
+        rel="noopener"
+        className="heat-calendar-package"
+        data-name={pkg.name}
+        data-category={pkg.category}
+        title={tooltip}
+        aria-label={tooltip}
+      >
+        <span
+          className="heat-calendar-cell"
+          style={{
+            backgroundColor:
+              STATUS_COLOR[status] ?? STATUS_COLOR.unknown,
+          }}
+        />
+      </a>
+    );
+  });
 }
