@@ -9,12 +9,9 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: write
-
 jobs:
-  build:
-    name: Build apps
+  deploy:
+    name: Build and deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,159 +30,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build landing + compat + demo
+      - name: Build all apps
         env:
           SITE_DOMAIN: ${{ vars.SITE_DOMAIN }}
         run: |
           pnpm turbo run build \
             --filter=@browser-containers/site-landing \
             --filter=@browser-containers/site-compat \
-            --filter=@browser-containers/site-demo
+            --filter=@browser-containers/site-demo \
+            --filter=@browser-containers/site-docs
 
-      - name: Upload landing dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: landing-dist
-          path: apps/site/landing/dist
-          if-no-files-found: error
-          retention-days: 1
+      - name: Assemble merged site
+        run: |
+          mkdir -p deploy
+          cp -r apps/site/landing/dist/* deploy/
+          mkdir -p deploy/compat && cp -r apps/site/compat/dist/* deploy/compat/
+          mkdir -p deploy/demo && cp -r apps/site/demo/dist/* deploy/demo/
+          mkdir -p deploy/docs && cp -r apps/site/docs/dist/* deploy/docs/
+          cp apps/site/_headers deploy/_headers
+          cp apps/site/_redirects deploy/_redirects
+          rm -f deploy/compat/_headers deploy/demo/_headers deploy/docs/_headers
 
-      - name: Upload compat dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: compat-dist
-          path: apps/site/compat/dist
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Upload demo dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: demo-dist
-          path: apps/site/demo/dist
-          if-no-files-found: error
-          retention-days: 1
-
-  verify-topology:
-    name: Verify gateway topology
-    needs: build
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.26.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Download landing dist
-        uses: actions/download-artifact@v4
-        with:
-          name: landing-dist
-          path: apps/site/landing/dist
-
-      - name: Download compat dist
-        uses: actions/download-artifact@v4
-        with:
-          name: compat-dist
-          path: apps/site/compat/dist
-
-      - name: Download demo dist
-        uses: actions/download-artifact@v4
-        with:
-          name: demo-dist
-          path: apps/site/demo/dist
-
-      - name: Run topology parity test
-        run: pnpm --filter @browser-containers/site-router test:topology -- --skip-build
-
-  deploy-landing:
-    name: Deploy landing
-    needs: [build, verify-topology]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download landing dist
-        uses: actions/download-artifact@v4
-        with:
-          name: landing-dist
-          path: apps/site/landing/dist
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/site/landing
-          command: pages deploy ./dist --project-name=browser-containers-site
-
-  deploy-compat:
-    name: Deploy compat
-    needs: [build, verify-topology]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download compat dist
-        uses: actions/download-artifact@v4
-        with:
-          name: compat-dist
-          path: apps/site/compat/dist
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/site/compat
-          command: pages deploy ./dist --project-name=browser-containers-compat
-
-  deploy-demo:
-    name: Deploy demo
-    needs: [build, verify-topology]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download demo dist
-        uses: actions/download-artifact@v4
-        with:
-          name: demo-dist
-          path: apps/site/demo/dist
-
-      - name: Install wrangler globally
+      - name: Install wrangler
         run: npm install -g wrangler
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/site/demo
-          command: pages deploy ./dist --project-name=browser-containers-demo
-
-  deploy-router:
-    name: Deploy gateway
-    needs: [deploy-landing, deploy-compat, deploy-demo]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy gateway
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/site/router
-          command: pages deploy ./public --project-name=browser-containers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: wrangler pages deploy ./deploy --project-name=browser-containers
