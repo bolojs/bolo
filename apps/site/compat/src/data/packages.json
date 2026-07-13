@@ -1,38 +1,13 @@
 {
   "meta": {
-    "generatedAt": "2026-07-13T12:59:33.471Z",
+    "generatedAt": "2026-07-13T19:05:43.188Z",
     "source": "apps/site/landing/public/results"
   },
   "columns": [
     {
-      "key": "node24",
-      "label": "Node 24 Krypton",
-      "measured": false
-    },
-    {
-      "key": "node22",
-      "label": "Node 22 Jod",
-      "measured": false
-    },
-    {
-      "key": "deno",
-      "label": "Deno 2",
-      "measured": false
-    },
-    {
-      "key": "bun",
-      "label": "Bun 1.x",
-      "measured": false
-    },
-    {
       "key": "browser",
       "label": "Browser (latest)",
       "measured": true
-    },
-    {
-      "key": "safari",
-      "label": "Safari (latest)",
-      "measured": false
     }
   ],
   "categories": [
@@ -82,29 +57,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -126,29 +81,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -170,29 +105,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -214,29 +129,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -260,29 +155,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -304,29 +179,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -350,29 +205,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -394,29 +229,9 @@
       "description": "",
       "wasmOnly": true,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Browser ready"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -442,29 +257,9 @@
       "description": "",
       "wasmOnly": true,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Browser ready"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -490,29 +285,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Browser ready"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -536,29 +311,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not browser ready"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -582,29 +337,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -628,29 +363,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not browser ready"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -674,29 +389,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -720,29 +415,9 @@
       "description": "",
       "wasmOnly": true,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not browser ready"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -767,29 +442,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -813,29 +468,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -859,29 +494,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -905,29 +520,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -949,29 +544,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -995,29 +570,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1039,29 +594,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1083,29 +618,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1129,29 +644,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1175,29 +670,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1219,29 +694,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1263,29 +718,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1307,29 +742,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1353,29 +768,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1397,29 +792,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1443,29 +818,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1487,29 +842,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1531,29 +866,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1575,29 +890,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1619,29 +914,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1663,29 +938,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "partial",
           "note": "Partial support"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1708,29 +963,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "partial",
           "note": "Partial support"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1752,29 +987,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "pass",
           "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1796,29 +1011,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {
@@ -1842,29 +1037,9 @@
       "description": "",
       "wasmOnly": false,
       "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
         "browser": {
           "status": "fail",
           "note": "Not supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
         }
       },
       "details": {

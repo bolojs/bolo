@@ -1,0 +1,4882 @@
+{
+  "fetch": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "axios": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "node-fetch": [
+    {
+      "date": "2026-06-14",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "undici": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "fs-extra": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "globby": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "chokidar": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "esbuild": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "swc": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "tsc": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "sass": [
+    {
+      "date": "2026-06-14",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "rollup": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "webpack": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "vite": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "parcel": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "vitest": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "jest": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "express": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "fastify": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "h3": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "polka": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "crypto-js": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "bcrypt": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "argon2": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "handlebars": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "ejs": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "pug": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "stream": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "buffer": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "crypto": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "path": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "url": [
+    {
+      "date": "2026-06-14",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "querystring": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "zlib": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "os": [
+    {
+      "date": "2026-06-14",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "partial"
+    }
+  ],
+  "util": [
+    {
+      "date": "2026-06-14",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "partial"
+    }
+  ],
+  "assert": [
+    {
+      "date": "2026-06-14",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "pass"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "pass"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "pass"
+    }
+  ],
+  "fs": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ],
+  "http": [
+    {
+      "date": "2026-06-14",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-15",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-16",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-17",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-18",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-19",
+      "status": "partial"
+    },
+    {
+      "date": "2026-06-20",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-21",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-22",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-23",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-24",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-25",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-26",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-27",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-28",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-29",
+      "status": "fail"
+    },
+    {
+      "date": "2026-06-30",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-01",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-02",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-03",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-04",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-05",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-06",
+      "status": "partial"
+    },
+    {
+      "date": "2026-07-07",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-08",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-09",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-10",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-11",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-12",
+      "status": "fail"
+    },
+    {
+      "date": "2026-07-13",
+      "status": "fail"
+    }
+  ]
+}

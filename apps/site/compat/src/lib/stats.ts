@@ -1,7 +1,7 @@
-import data from '../data/packages.json';
+import data from "../data/packages.json";
 
-// ponytail: packages.json cells are inferred as a literal-keyed object, but
-// col.key is a runtime string keyed off the same columns — cast to a record.
+// ponytail: packages.json only ships the browser column now, so stats can read
+// that single cell directly instead of scanning measuredColumns.
 type CellMap = Record<string, { status: string; note: string }>;
 
 export interface CategorySummary {
@@ -13,25 +13,20 @@ export interface CategorySummary {
   fail: number;
 }
 
-const measuredColumns = data.columns.filter((col) => col.measured);
-
 function isSupported(status: string | undefined): boolean {
-  return status === 'pass' || status === 'partial';
+  return status === "pass" || status === "partial";
 }
 
 export function getHeadlineStat() {
-  const total = data.rows.length * measuredColumns.length;
-  let supported = 0;
-  for (const row of data.rows) {
-    for (const col of measuredColumns) {
-      if (isSupported((row.cells as CellMap)[col.key]?.status)) supported += 1;
-    }
-  }
+  const total = data.rows.length;
+  const supported = data.rows.filter((row) =>
+    isSupported((row.cells as CellMap).browser?.status),
+  ).length;
   return {
     supported,
     total,
     percent: total === 0 ? 0 : Math.round((supported / total) * 100),
-    columns: measuredColumns.map((c) => c.label),
+    columns: ["Browser"],
   };
 }
 
@@ -42,12 +37,10 @@ export function getCategorySummaries(): CategorySummary[] {
     let partial = 0;
     let fail = 0;
     for (const row of rows) {
-      for (const col of measuredColumns) {
-        const status = (row.cells as CellMap)[col.key]?.status;
-        if (status === 'pass') pass += 1;
-        else if (status === 'partial') partial += 1;
-        else if (status === 'fail') fail += 1;
-      }
+      const status = (row.cells as CellMap).browser?.status;
+      if (status === "pass") pass += 1;
+      else if (status === "partial") partial += 1;
+      else if (status === "fail") fail += 1;
     }
     return { key: cat.key, label: cat.label, total: rows.length, pass, partial, fail };
   });
