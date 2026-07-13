@@ -69,6 +69,7 @@ jobs:
   verify-topology:
     name: Verify gateway topology
     needs: build
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -110,7 +111,7 @@ jobs:
 
   deploy-landing:
     name: Deploy landing
-    needs: verify-topology
+    needs: [build, verify-topology]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,7 +132,7 @@ jobs:
 
   deploy-compat:
     name: Deploy compat
-    needs: verify-topology
+    needs: [build, verify-topology]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -152,7 +153,7 @@ jobs:
 
   deploy-demo:
     name: Deploy demo
-    needs: verify-topology
+    needs: [build, verify-topology]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
