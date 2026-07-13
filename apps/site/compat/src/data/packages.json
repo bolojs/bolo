@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-07-13T20:10:50.517Z",
+    "generatedAt": "2026-07-13T20:54:39.224Z",
     "source": "apps/site/landing/public/results"
   },
   "columns": [
@@ -253,6 +253,182 @@
       }
     },
     {
+      "id": "got",
+      "name": "got",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP client"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/got"
+        ],
+        "raw": "{\n  \"name\": \"got\",\n  \"class\": \"HTTP client\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "ky",
+      "name": "ky",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP client"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/ky"
+        ],
+        "raw": "{\n  \"name\": \"ky\",\n  \"class\": \"HTTP client\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "http-proxy-agent",
+      "name": "http-proxy-agent",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP client"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/http-proxy-agent"
+        ],
+        "raw": "{\n  \"name\": \"http-proxy-agent\",\n  \"class\": \"HTTP client\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "form-data",
+      "name": "form-data",
+      "category": "http-clients",
+      "categoryLabel": "HTTP clients",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP client"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/form-data"
+        ],
+        "raw": "{\n  \"name\": \"form-data\",\n  \"class\": \"HTTP client\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
       "id": "fs-extra",
       "name": "fs-extra",
       "category": "file-system",
@@ -384,6 +560,226 @@
           "https://www.npmjs.com/package/chokidar"
         ],
         "raw": "{\n  \"name\": \"chokidar\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"duration\": 82.00499987602234\n}"
+      }
+    },
+    {
+      "id": "rimraf",
+      "name": "rimraf",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: File system"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/rimraf"
+        ],
+        "raw": "{\n  \"name\": \"rimraf\",\n  \"class\": \"File system\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "glob",
+      "name": "glob",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: File system"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/glob"
+        ],
+        "raw": "{\n  \"name\": \"glob\",\n  \"class\": \"File system\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "mkdirp",
+      "name": "mkdirp",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: File system"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/mkdirp"
+        ],
+        "raw": "{\n  \"name\": \"mkdirp\",\n  \"class\": \"File system\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "del",
+      "name": "del",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: File system"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/del"
+        ],
+        "raw": "{\n  \"name\": \"del\",\n  \"class\": \"File system\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "memfs",
+      "name": "memfs",
+      "category": "file-system",
+      "categoryLabel": "File system",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: File system"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/memfs"
+        ],
+        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"unknown\"\n}"
       }
     },
     {
@@ -575,6 +971,230 @@
       }
     },
     {
+      "id": "lightningcss",
+      "name": "lightningcss",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": true,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Browser ready"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "WASM package: lightningcss-wasm",
+          "WASM target: wasm32-unknown-unknown",
+          "Browser ready: true"
+        ],
+        "knownIssues": [
+          "WASM build available for browser transforms."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/lightningcss"
+        ],
+        "raw": "{\n  \"name\": \"lightningcss\",\n  \"npm\": \"lightningcss\",\n  \"wasmPackage\": \"lightningcss-wasm\",\n  \"browserReady\": true,\n  \"wasmTarget\": \"wasm32-unknown-unknown\",\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"stable\",\n  \"category\": \"css\",\n  \"notes\": \"WASM build available for browser transforms.\"\n}"
+      }
+    },
+    {
+      "id": "postcss",
+      "name": "postcss",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Build tool"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/postcss"
+        ],
+        "raw": "{\n  \"name\": \"postcss\",\n  \"class\": \"Build tool\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "babel",
+      "name": "babel",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Build tool"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/babel"
+        ],
+        "raw": "{\n  \"name\": \"babel\",\n  \"class\": \"Build tool\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "sucrase",
+      "name": "sucrase",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Build tool"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/sucrase"
+        ],
+        "raw": "{\n  \"name\": \"sucrase\",\n  \"class\": \"Build tool\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "acorn",
+      "name": "acorn",
+      "category": "build-tools",
+      "categoryLabel": "Build tools",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Build tool"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/acorn"
+        ],
+        "raw": "{\n  \"name\": \"acorn\",\n  \"class\": \"Build tool\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
       "id": "rollup",
       "name": "rollup",
       "category": "bundlers",
@@ -760,6 +1380,96 @@
       }
     },
     {
+      "id": "rspack",
+      "name": "rspack",
+      "category": "bundlers",
+      "categoryLabel": "Bundlers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Limited browser support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Browser ready: false"
+        ],
+        "knownIssues": [
+          "Rust-based, Node.js focused; browser WASM target not ready."
+        ],
+        "links": [
+          "https://www.npmjs.com/package/@rspack/core"
+        ],
+        "raw": "{\n  \"name\": \"rspack\",\n  \"npm\": \"@rspack/core\",\n  \"wasmPackage\": null,\n  \"browserReady\": false,\n  \"wasmTarget\": null,\n  \"requiresSimd\": false,\n  \"requiresThreads\": false,\n  \"status\": \"wip\",\n  \"category\": \"bundler\",\n  \"notes\": \"Rust-based, Node.js focused; browser WASM target not ready.\"\n}"
+      }
+    },
+    {
+      "id": "turbo",
+      "name": "turbo",
+      "category": "bundlers",
+      "categoryLabel": "Bundlers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Bundler"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/turbo"
+        ],
+        "raw": "{\n  \"name\": \"turbo\",\n  \"class\": \"Bundler\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
       "id": "vitest",
       "name": "vitest",
       "category": "testing",
@@ -849,6 +1559,182 @@
           "https://www.npmjs.com/package/jest"
         ],
         "raw": "{\n  \"name\": \"jest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"duration\": 196.63499999046326,\n  \"error\": \"Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20%22https%3A%2F%2Fesm.sh%2Fjest%22%3B%0Atry%20%7B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A\"\n}"
+      }
+    },
+    {
+      "id": "chai",
+      "name": "chai",
+      "category": "testing",
+      "categoryLabel": "Testing",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Testing"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/chai"
+        ],
+        "raw": "{\n  \"name\": \"chai\",\n  \"class\": \"Testing\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "sinon",
+      "name": "sinon",
+      "category": "testing",
+      "categoryLabel": "Testing",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Testing"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/sinon"
+        ],
+        "raw": "{\n  \"name\": \"sinon\",\n  \"class\": \"Testing\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "dompurify",
+      "name": "dompurify",
+      "category": "testing",
+      "categoryLabel": "Testing",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Testing"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/dompurify"
+        ],
+        "raw": "{\n  \"name\": \"dompurify\",\n  \"class\": \"Testing\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "linkedom",
+      "name": "linkedom",
+      "category": "testing",
+      "categoryLabel": "Testing",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Testing"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/linkedom"
+        ],
+        "raw": "{\n  \"name\": \"linkedom\",\n  \"class\": \"Testing\",\n  \"status\": \"unknown\"\n}"
       }
     },
     {
@@ -1032,6 +1918,622 @@
       }
     },
     {
+      "id": "hono",
+      "name": "hono",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/hono"
+        ],
+        "raw": "{\n  \"name\": \"hono\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 140.79999995231628\n}"
+      }
+    },
+    {
+      "id": "elysia",
+      "name": "elysia",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/elysia"
+        ],
+        "raw": "{\n  \"name\": \"elysia\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 240.74000000953674\n}"
+      }
+    },
+    {
+      "id": "itty-router",
+      "name": "itty-router",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/itty-router"
+        ],
+        "raw": "{\n  \"name\": \"itty-router\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 93.22499990463257\n}"
+      }
+    },
+    {
+      "id": "koa",
+      "name": "koa",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/koa"
+        ],
+        "raw": "{\n  \"name\": \"koa\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 198.5550000667572\n}"
+      }
+    },
+    {
+      "id": "cors",
+      "name": "cors",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/cors"
+        ],
+        "raw": "{\n  \"name\": \"cors\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "helmet",
+      "name": "helmet",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/helmet"
+        ],
+        "raw": "{\n  \"name\": \"helmet\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "morgan",
+      "name": "morgan",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/morgan"
+        ],
+        "raw": "{\n  \"name\": \"morgan\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "compression",
+      "name": "compression",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/compression"
+        ],
+        "raw": "{\n  \"name\": \"compression\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "serve-static",
+      "name": "serve-static",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/serve-static"
+        ],
+        "raw": "{\n  \"name\": \"serve-static\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "cookie-parser",
+      "name": "cookie-parser",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/cookie-parser"
+        ],
+        "raw": "{\n  \"name\": \"cookie-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "body-parser",
+      "name": "body-parser",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/body-parser"
+        ],
+        "raw": "{\n  \"name\": \"body-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "pino",
+      "name": "pino",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/pino"
+        ],
+        "raw": "{\n  \"name\": \"pino\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "winston",
+      "name": "winston",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/winston"
+        ],
+        "raw": "{\n  \"name\": \"winston\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "ws",
+      "name": "ws",
+      "category": "http-servers",
+      "categoryLabel": "HTTP servers",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/ws"
+        ],
+        "raw": "{\n  \"name\": \"ws\",\n  \"class\": \"HTTP server\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
       "id": "crypto-js",
       "name": "crypto-js",
       "category": "crypto",
@@ -1168,6 +2670,314 @@
       }
     },
     {
+      "id": "sha-js",
+      "name": "sha.js",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/sha.js"
+        ],
+        "raw": "{\n  \"name\": \"sha.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "hash-js",
+      "name": "hash.js",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/hash.js"
+        ],
+        "raw": "{\n  \"name\": \"hash.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "md5",
+      "name": "md5",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/md5"
+        ],
+        "raw": "{\n  \"name\": \"md5\",\n  \"class\": \"Crypto\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "create-hash",
+      "name": "create-hash",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/create-hash"
+        ],
+        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "jose",
+      "name": "jose",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/jose"
+        ],
+        "raw": "{\n  \"name\": \"jose\",\n  \"class\": \"Crypto\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "jsonwebtoken",
+      "name": "jsonwebtoken",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/jsonwebtoken"
+        ],
+        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "pbkdf2",
+      "name": "pbkdf2",
+      "category": "crypto",
+      "categoryLabel": "Crypto",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/pbkdf2"
+        ],
+        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
       "id": "handlebars",
       "name": "handlebars",
       "category": "templates",
@@ -1297,6 +3107,1548 @@
           "https://www.npmjs.com/package/pug"
         ],
         "raw": "{\n  \"name\": \"pug\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 233.88499999046326\n}"
+      }
+    },
+    {
+      "id": "marked",
+      "name": "marked",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Template"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/marked"
+        ],
+        "raw": "{\n  \"name\": \"marked\",\n  \"class\": \"Template\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "markdown-it",
+      "name": "markdown-it",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Template"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/markdown-it"
+        ],
+        "raw": "{\n  \"name\": \"markdown-it\",\n  \"class\": \"Template\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "micromark",
+      "name": "micromark",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Template"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/micromark"
+        ],
+        "raw": "{\n  \"name\": \"micromark\",\n  \"class\": \"Template\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "nunjucks",
+      "name": "nunjucks",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Template"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/nunjucks"
+        ],
+        "raw": "{\n  \"name\": \"nunjucks\",\n  \"class\": \"Template\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "liquidjs",
+      "name": "liquidjs",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Template"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/liquidjs"
+        ],
+        "raw": "{\n  \"name\": \"liquidjs\",\n  \"class\": \"Template\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "mustache",
+      "name": "mustache",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Template"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/mustache"
+        ],
+        "raw": "{\n  \"name\": \"mustache\",\n  \"class\": \"Template\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "twig",
+      "name": "twig",
+      "category": "templates",
+      "categoryLabel": "Templates",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Template"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/twig"
+        ],
+        "raw": "{\n  \"name\": \"twig\",\n  \"class\": \"Template\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "zod",
+      "name": "zod",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/zod"
+        ],
+        "raw": "{\n  \"name\": \"zod\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 109.00999999046326\n}"
+      }
+    },
+    {
+      "id": "ajv",
+      "name": "ajv",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/ajv"
+        ],
+        "raw": "{\n  \"name\": \"ajv\",\n  \"class\": \"Validation\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "joi",
+      "name": "joi",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/joi"
+        ],
+        "raw": "{\n  \"name\": \"joi\",\n  \"class\": \"Validation\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "valibot",
+      "name": "valibot",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/valibot"
+        ],
+        "raw": "{\n  \"name\": \"valibot\",\n  \"class\": \"Validation\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "yup",
+      "name": "yup",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/yup"
+        ],
+        "raw": "{\n  \"name\": \"yup\",\n  \"class\": \"Validation\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "fast-json-stringify",
+      "name": "fast-json-stringify",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/fast-json-stringify"
+        ],
+        "raw": "{\n  \"name\": \"fast-json-stringify\",\n  \"class\": \"Validation\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "superstruct",
+      "name": "superstruct",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/superstruct"
+        ],
+        "raw": "{\n  \"name\": \"superstruct\",\n  \"class\": \"Validation\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "io-ts",
+      "name": "io-ts",
+      "category": "validation",
+      "categoryLabel": "validation",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Validation"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/io-ts"
+        ],
+        "raw": "{\n  \"name\": \"io-ts\",\n  \"class\": \"Validation\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "uuid",
+      "name": "uuid",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [
+          "The requested module 'https://esm.sh/uuid' does not provide an export named 'default'"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/uuid"
+        ],
+        "raw": "{\n  \"name\": \"uuid\",\n  \"class\": \"Utility\",\n  \"status\": \"fail\",\n  \"duration\": 59.68499994277954,\n  \"error\": \"The requested module 'https://esm.sh/uuid' does not provide an export named 'default'\"\n}"
+      }
+    },
+    {
+      "id": "lodash",
+      "name": "lodash",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/lodash"
+        ],
+        "raw": "{\n  \"name\": \"lodash\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 82.84999990463257\n}"
+      }
+    },
+    {
+      "id": "chalk",
+      "name": "chalk",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/chalk"
+        ],
+        "raw": "{\n  \"name\": \"chalk\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 61.1949999332428\n}"
+      }
+    },
+    {
+      "id": "nanoid",
+      "name": "nanoid",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/nanoid"
+        ],
+        "raw": "{\n  \"name\": \"nanoid\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "dotenv",
+      "name": "dotenv",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/dotenv"
+        ],
+        "raw": "{\n  \"name\": \"dotenv\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "js-yaml",
+      "name": "js-yaml",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/js-yaml"
+        ],
+        "raw": "{\n  \"name\": \"js-yaml\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "json5",
+      "name": "json5",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/json5"
+        ],
+        "raw": "{\n  \"name\": \"json5\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "semver",
+      "name": "semver",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/semver"
+        ],
+        "raw": "{\n  \"name\": \"semver\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "ms",
+      "name": "ms",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/ms"
+        ],
+        "raw": "{\n  \"name\": \"ms\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "debug",
+      "name": "debug",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/debug"
+        ],
+        "raw": "{\n  \"name\": \"debug\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "deepmerge",
+      "name": "deepmerge",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/deepmerge"
+        ],
+        "raw": "{\n  \"name\": \"deepmerge\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "query-string",
+      "name": "query-string",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/query-string"
+        ],
+        "raw": "{\n  \"name\": \"query-string\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "fast-deep-equal",
+      "name": "fast-deep-equal",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/fast-deep-equal"
+        ],
+        "raw": "{\n  \"name\": \"fast-deep-equal\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "change-case",
+      "name": "change-case",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/change-case"
+        ],
+        "raw": "{\n  \"name\": \"change-case\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "p-limit",
+      "name": "p-limit",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/p-limit"
+        ],
+        "raw": "{\n  \"name\": \"p-limit\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "lru-cache",
+      "name": "lru-cache",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/lru-cache"
+        ],
+        "raw": "{\n  \"name\": \"lru-cache\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "date-fns",
+      "name": "date-fns",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/date-fns"
+        ],
+        "raw": "{\n  \"name\": \"date-fns\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "dayjs",
+      "name": "dayjs",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/dayjs"
+        ],
+        "raw": "{\n  \"name\": \"dayjs\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "luxon",
+      "name": "luxon",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/luxon"
+        ],
+        "raw": "{\n  \"name\": \"luxon\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
+      }
+    },
+    {
+      "id": "throttle-debounce",
+      "name": "throttle-debounce",
+      "category": "utilities",
+      "categoryLabel": "utilities",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "unknown",
+          "note": "No data"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Utility"
+        ],
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/throttle-debounce"
+        ],
+        "raw": "{\n  \"name\": \"throttle-debounce\",\n  \"class\": \"Utility\",\n  \"status\": \"unknown\"\n}"
       }
     },
     {
@@ -1612,50 +4964,6 @@
       }
     },
     {
-      "id": "zlib",
-      "name": "zlib",
-      "category": "node-core",
-      "categoryLabel": "Node core APIs",
-      "description": "",
-      "wasmOnly": false,
-      "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "browser": {
-          "status": "pass",
-          "note": "Supported"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
-        }
-      },
-      "details": {
-        "features": [
-          "Class: Node core API"
-        ],
-        "knownIssues": [],
-        "links": [
-          "https://www.npmjs.com/package/zlib"
-        ],
-        "raw": "{\n  \"name\": \"zlib\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 5.164999961853027\n}"
-      }
-    },
-    {
       "id": "os",
       "name": "os",
       "category": "node-core",
@@ -1693,11 +5001,11 @@
           "1/3 tests passed"
         ],
         "knownIssues": [
-          "test-os-cpus.js: os.cpus() is not supported in browser",
-          "test-os-freemem.js: os.freemem() is not supported in browser"
+          "test-os-checked-function.js: Not supported in browser",
+          "test-os-homedir-no-envvar.js: Not supported in browser"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-os-arch.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-os-cpus.js\",\n    \"status\": \"fail\",\n    \"error\": \"os.cpus() is not supported in browser\"\n  },\n  {\n    \"file\": \"test-os-freemem.js\",\n    \"status\": \"fail\",\n    \"error\": \"os.freemem() is not supported in browser\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-os-eol.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-os-checked-function.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-os-homedir-no-envvar.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
       }
     },
     {
@@ -1738,10 +5046,10 @@
           "2/3 tests passed"
         ],
         "knownIssues": [
-          "test-util-promisify.js: util.promisify requires custom Symbol"
+          "test-util-types.js: Not supported in browser"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-util-promisify.js\",\n    \"status\": \"fail\",\n    \"error\": \"util.promisify requires custom Symbol\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-util-inspect.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
       }
     },
     {
@@ -1785,7 +5093,7 @@
           "No known issues"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-assert-ok.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-equal.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-throws.js\",\n    \"status\": \"pass\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-assert.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-fail.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-async.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -1826,12 +5134,12 @@
           "0/3 tests passed"
         ],
         "knownIssues": [
-          "test-fs-readfile.js: fs.readFile not yet backed by OPFS",
-          "test-fs-writefile.js: fs.writeFile not yet backed by OPFS",
-          "test-fs-readdir.js: fs.readdir not yet backed by OPFS"
+          "test-fs-mkdir.js: Not supported in browser",
+          "test-fs-write-file.js: Not supported in browser",
+          "test-fs-readfile.js: Not supported in browser"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"fail\",\n    \"error\": \"fs.readFile not yet backed by OPFS\"\n  },\n  {\n    \"file\": \"test-fs-writefile.js\",\n    \"status\": \"fail\",\n    \"error\": \"fs.writeFile not yet backed by OPFS\"\n  },\n  {\n    \"file\": \"test-fs-readdir.js\",\n    \"status\": \"fail\",\n    \"error\": \"fs.readdir not yet backed by OPFS\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-fs-mkdir.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-fs-write-file.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
       }
     },
     {
@@ -1872,12 +5180,368 @@
           "0/3 tests passed"
         ],
         "knownIssues": [
-          "test-http-server.js: http.Server not supported in browser",
-          "test-http-request.js: http.ClientRequest not supported",
-          "test-http-agent.js: http.Agent not supported"
+          "test-http-status-code.js: Not supported in browser",
+          "test-http-methods.js: Not supported in browser",
+          "test-http-write-head.js: Not supported in browser"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-http-server.js\",\n    \"status\": \"fail\",\n    \"error\": \"http.Server not supported in browser\"\n  },\n  {\n    \"file\": \"test-http-request.js\",\n    \"status\": \"fail\",\n    \"error\": \"http.ClientRequest not supported\"\n  },\n  {\n    \"file\": \"test-http-agent.js\",\n    \"status\": \"fail\",\n    \"error\": \"http.Agent not supported\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-http-status-code.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-http-methods.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-http-write-head.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
+      }
+    },
+    {
+      "id": "process",
+      "name": "process",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "1/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-process-next-tick.js: Not supported in browser",
+          "test-process-hrtime.js: Not supported in browser"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-process-env.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-process-next-tick.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-process-hrtime.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
+      }
+    },
+    {
+      "id": "timers",
+      "name": "timers",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "2/2 tests passed"
+        ],
+        "knownIssues": [
+          "No known issues"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-timers-args.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "console",
+      "name": "console",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "pass",
+          "note": "Supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "3/3 tests passed"
+        ],
+        "knownIssues": [
+          "No known issues"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-console-clear.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-console-count.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-console-methods.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "child-process",
+      "name": "child_process",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "0/2 tests passed"
+        ],
+        "knownIssues": [
+          "test-child-process-spawnsync.js: Not supported in browser",
+          "test-child-process-execsync-maxbuf.js: Not supported in browser"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-child-process-spawnsync.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-child-process-execsync-maxbuf.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
+      }
+    },
+    {
+      "id": "worker-threads",
+      "name": "worker_threads",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "1/3 tests passed"
+        ],
+        "knownIssues": [
+          "test-worker-exit-event-error.js: Not supported in browser",
+          "test-worker-load-file-with-extension-other-than-js.js: Not supported in browser"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-worker-message-port-constructor.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-worker-exit-event-error.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-worker-load-file-with-extension-other-than-js.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
+      }
+    },
+    {
+      "id": "perf-hooks",
+      "name": "perf_hooks",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "0/1 tests passed"
+        ],
+        "knownIssues": [
+          "test-performanceobserver.js: Not supported in browser"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-performanceobserver.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
+      }
+    },
+    {
+      "id": "net",
+      "name": "net",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "0/1 tests passed"
+        ],
+        "knownIssues": [
+          "test-net-connect-buffer.js: Not supported in browser"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-net-connect-buffer.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
+      }
+    },
+    {
+      "id": "dns",
+      "name": "dns",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "0/2 tests passed"
+        ],
+        "knownIssues": [
+          "test-dns-set-default-order.js: Not supported in browser",
+          "test-dns-setlocaladdress.js: Not supported in browser"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-dns-set-default-order.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  },\n  {\n    \"file\": \"test-dns-setlocaladdress.js\",\n    \"status\": \"fail\",\n    \"error\": \"Not supported in browser\"\n  }\n]"
       }
     }
   ]

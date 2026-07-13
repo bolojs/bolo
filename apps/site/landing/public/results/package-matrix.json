@@ -274,6 +274,346 @@
       "class": "Node core API",
       "status": "pass",
       "duration": 5.164999961853027
+    },
+    {
+      "name": "ajv",
+      "class": "Validation",
+      "status": "unknown"
+    },
+    {
+      "name": "joi",
+      "class": "Validation",
+      "status": "unknown"
+    },
+    {
+      "name": "valibot",
+      "class": "Validation",
+      "status": "unknown"
+    },
+    {
+      "name": "yup",
+      "class": "Validation",
+      "status": "unknown"
+    },
+    {
+      "name": "fast-json-stringify",
+      "class": "Validation",
+      "status": "unknown"
+    },
+    {
+      "name": "superstruct",
+      "class": "Validation",
+      "status": "unknown"
+    },
+    {
+      "name": "io-ts",
+      "class": "Validation",
+      "status": "unknown"
+    },
+    {
+      "name": "nanoid",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "dotenv",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "js-yaml",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "json5",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "semver",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "ms",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "debug",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "deepmerge",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "query-string",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "fast-deep-equal",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "change-case",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "p-limit",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "lru-cache",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "date-fns",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "dayjs",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "luxon",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "throttle-debounce",
+      "class": "Utility",
+      "status": "unknown"
+    },
+    {
+      "name": "rimraf",
+      "class": "File system",
+      "status": "unknown"
+    },
+    {
+      "name": "glob",
+      "class": "File system",
+      "status": "unknown"
+    },
+    {
+      "name": "mkdirp",
+      "class": "File system",
+      "status": "unknown"
+    },
+    {
+      "name": "del",
+      "class": "File system",
+      "status": "unknown"
+    },
+    {
+      "name": "memfs",
+      "class": "File system",
+      "status": "unknown"
+    },
+    {
+      "name": "cors",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "helmet",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "morgan",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "compression",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "serve-static",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "cookie-parser",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "body-parser",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "pino",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "winston",
+      "class": "HTTP server",
+      "status": "unknown"
+    },
+    {
+      "name": "got",
+      "class": "HTTP client",
+      "status": "unknown"
+    },
+    {
+      "name": "ky",
+      "class": "HTTP client",
+      "status": "unknown"
+    },
+    {
+      "name": "http-proxy-agent",
+      "class": "HTTP client",
+      "status": "unknown"
+    },
+    {
+      "name": "form-data",
+      "class": "HTTP client",
+      "status": "unknown"
+    },
+    {
+      "name": "sha.js",
+      "class": "Crypto",
+      "status": "unknown"
+    },
+    {
+      "name": "hash.js",
+      "class": "Crypto",
+      "status": "unknown"
+    },
+    {
+      "name": "md5",
+      "class": "Crypto",
+      "status": "unknown"
+    },
+    {
+      "name": "create-hash",
+      "class": "Crypto",
+      "status": "unknown"
+    },
+    {
+      "name": "jose",
+      "class": "Crypto",
+      "status": "unknown"
+    },
+    {
+      "name": "jsonwebtoken",
+      "class": "Crypto",
+      "status": "unknown"
+    },
+    {
+      "name": "pbkdf2",
+      "class": "Crypto",
+      "status": "unknown"
+    },
+    {
+      "name": "marked",
+      "class": "Template",
+      "status": "unknown"
+    },
+    {
+      "name": "markdown-it",
+      "class": "Template",
+      "status": "unknown"
+    },
+    {
+      "name": "micromark",
+      "class": "Template",
+      "status": "unknown"
+    },
+    {
+      "name": "nunjucks",
+      "class": "Template",
+      "status": "unknown"
+    },
+    {
+      "name": "liquidjs",
+      "class": "Template",
+      "status": "unknown"
+    },
+    {
+      "name": "mustache",
+      "class": "Template",
+      "status": "unknown"
+    },
+    {
+      "name": "twig",
+      "class": "Template",
+      "status": "unknown"
+    },
+    {
+      "name": "chai",
+      "class": "Testing",
+      "status": "unknown"
+    },
+    {
+      "name": "sinon",
+      "class": "Testing",
+      "status": "unknown"
+    },
+    {
+      "name": "dompurify",
+      "class": "Testing",
+      "status": "unknown"
+    },
+    {
+      "name": "linkedom",
+      "class": "Testing",
+      "status": "unknown"
+    },
+    {
+      "name": "lightningcss",
+      "class": "Build tool",
+      "status": "unknown"
+    },
+    {
+      "name": "postcss",
+      "class": "Build tool",
+      "status": "unknown"
+    },
+    {
+      "name": "babel",
+      "class": "Build tool",
+      "status": "unknown"
+    },
+    {
+      "name": "sucrase",
+      "class": "Build tool",
+      "status": "unknown"
+    },
+    {
+      "name": "acorn",
+      "class": "Build tool",
+      "status": "unknown"
+    },
+    {
+      "name": "rspack",
+      "class": "Bundler",
+      "status": "unknown"
+    },
+    {
+      "name": "turbo",
+      "class": "Bundler",
+      "status": "unknown"
+    },
+    {
+      "name": "ws",
+      "class": "HTTP server",
+      "status": "unknown"
     }
   ]
 }
