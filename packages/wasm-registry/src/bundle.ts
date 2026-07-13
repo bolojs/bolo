@@ -15,16 +15,34 @@ declare global {
   // QA tools, not size-sensitive) can opt into serving them locally, same-
   // origin, instead of trading correctness for a smaller production bundle.
   // Left unset, apps keep the prior CDN behavior.
+  //
+  // Per-package flags exist for static-build hosts (e.g. apps/site/demo) that
+  // bundle only rolldown/browser same-origin but still want oxc-transform from
+  // the CDN. The aggregate `__preferLocalBundler` still drives both for
+  // dev-server hosts such as compat-harness.
   var __preferLocalBundler: boolean | undefined;
+  var __preferLocalRolldown: boolean | undefined;
+  var __preferLocalOxc: boolean | undefined;
 }
 
-const preferLocal = () => Boolean(globalThis.process?.versions?.node || globalThis.__preferLocalBundler);
+const preferLocalRolldown = () =>
+  Boolean(
+    globalThis.process?.versions?.node ||
+    globalThis.__preferLocalBundler ||
+    globalThis.__preferLocalRolldown,
+  );
+const preferLocalOxc = () =>
+  Boolean(
+    globalThis.process?.versions?.node ||
+    globalThis.__preferLocalBundler ||
+    globalThis.__preferLocalOxc,
+  );
 
 // rolldown/browser: lazy CDN load with Node.js/local-bundler fallback
 let _rolldown: Promise<typeof import("@rolldown/browser")> | undefined;
 const getRolldown = () => {
   if (!_rolldown) {
-    _rolldown = preferLocal()
+    _rolldown = preferLocalRolldown()
       ? import("@rolldown/browser")
       : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
         import(/* @vite-ignore */ "https://esm.sh/@rolldown/browser@latest");
@@ -36,7 +54,7 @@ const getRolldown = () => {
 let _oxc: Promise<typeof import("oxc-transform")> | undefined;
 const getOxc = () => {
   if (!_oxc) {
-    _oxc = preferLocal()
+    _oxc = preferLocalOxc()
       ? import("oxc-transform")
       : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
         import(/* @vite-ignore */ "https://esm.sh/oxc-transform@latest");
