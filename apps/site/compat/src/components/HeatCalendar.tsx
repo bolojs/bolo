@@ -67,14 +67,15 @@ export function HeatCalendar({ categories, rows, latest }: HeatCalendarProps) {
                   data-name={pkg.name}
                   data-category={group.key}
                   title={tooltip}
+                  aria-label={tooltip}
                 >
-                  <div
+                  <span
                     className="heat-calendar-cell"
                     style={{
-                      backgroundColor: STATUS_COLOR[status] ?? STATUS_COLOR.unknown,
+                      backgroundColor:
+                        STATUS_COLOR[status] ?? STATUS_COLOR.unknown,
                     }}
                   />
-                  <span className="heat-calendar-package-name">{pkg.name}</span>
                 </a>
               );
             })}
