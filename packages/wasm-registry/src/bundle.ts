@@ -2,11 +2,29 @@ import type { VfsBus } from "@browser-containers/vfs-bus";
 import type { Plugin } from "@rolldown/browser";
 import { buildEsmShUrl } from "@browser-containers/npm";
 
-// rolldown/browser: lazy CDN load with Node.js fallback
+declare global {
+  // Set by a host app (see apps/compat-harness/src/main.ts) to load
+  // rolldown/browser + oxc-transform as bare specifiers — bundled/served by
+  // the host's own dev server from node_modules — instead of from esm.sh.
+  // esm.sh-hosted @rolldown/browser panics in real browsers: its WASI worker
+  // pool does `new Worker(new URL('./wasi-worker-browser.mjs',
+  // import.meta.url))` with no `{ type: 'module' }`, and classic workers can
+  // never load a cross-origin script (no CORS override exists), so the CDN's
+  // own origin breaks it. Both packages are real (dev)dependencies of this
+  // package already; apps that don't ship this bundler to end users (internal
+  // QA tools, not size-sensitive) can opt into serving them locally, same-
+  // origin, instead of trading correctness for a smaller production bundle.
+  // Left unset, apps keep the prior CDN behavior.
+  var __preferLocalBundler: boolean | undefined;
+}
+
+const preferLocal = () => Boolean(globalThis.process?.versions?.node || globalThis.__preferLocalBundler);
+
+// rolldown/browser: lazy CDN load with Node.js/local-bundler fallback
 let _rolldown: Promise<typeof import("@rolldown/browser")> | undefined;
 const getRolldown = () => {
   if (!_rolldown) {
-    _rolldown = globalThis.process?.versions?.node
+    _rolldown = preferLocal()
       ? import("@rolldown/browser")
       : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
         import(/* @vite-ignore */ "https://esm.sh/@rolldown/browser@latest");
@@ -14,11 +32,11 @@ const getRolldown = () => {
   return _rolldown;
 };
 
-// oxc-transform: lazy CDN load with Node.js fallback
+// oxc-transform: lazy CDN load with Node.js/local-bundler fallback
 let _oxc: Promise<typeof import("oxc-transform")> | undefined;
 const getOxc = () => {
   if (!_oxc) {
-    _oxc = globalThis.process?.versions?.node
+    _oxc = preferLocal()
       ? import("oxc-transform")
       : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
         import(/* @vite-ignore */ "https://esm.sh/oxc-transform@latest");
@@ -427,6 +445,11 @@ const esmShFallbackPlugin = (vfs: VfsBus, warnings: string[]): Plugin => ({
   async resolveId(id, importer) {
     if (id.startsWith(".") || id.startsWith("/") || id.startsWith("#")) return null;
     if (NODE_BUILTIN_NAMES.has(id)) return null;
+    // Already a fully-qualified URL (e.g. package-runner.ts writes
+    // `import x from 'https://esm.sh/axios'` directly) — leave it as-is
+    // rather than treating "https:" as a bare package name and rebuilding
+    // it through buildEsmShUrl, which doubles the esm.sh prefix.
+    if (id.startsWith("https://") || id.startsWith("http://")) return { id, external: true };
 
     const importerDir = importer ? dirname(importer) : "/";
     const isScoped = id.startsWith("@");
