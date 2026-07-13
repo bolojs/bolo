@@ -2,6 +2,19 @@ import { boot, type BrowserContainer } from "@browser-containers/runtime";
 import { NodeTestRunner, type ModuleManifest, type TestResult } from "./runner.js";
 import { PackageMatrixRunner, type PackageResult } from "./package-runner.js";
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __preferLocalBundler: boolean | undefined;
+}
+
+// Loads @browser-containers/wasm-registry's rolldown/browser + oxc-transform
+// as bare specifiers (served by this app's own Vite dev server from
+// node_modules) instead of from esm.sh — see that package's bundle.ts for why
+// esm.sh-hosted rolldown panics in real browsers. compat-harness is an
+// internal QA tool, never shipped to end users, so bundle size doesn't
+// matter here the way it does for apps/site/demo and apps/site/landing.
+globalThis.__preferLocalBundler = true;
+
 export interface ExecResult {
   exitCode: number;
   output: string;
@@ -53,6 +66,7 @@ window.__compatHarness = {
   ready: false,
 
   boot: async () => {
+    if (window.__compatHarness.ready) return;
     container = await boot({ workdirName: "/home/harness" });
     window.__compatHarness.ready = true;
   },
