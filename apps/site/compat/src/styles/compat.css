@@ -127,9 +127,7 @@
 @media (min-width: 768px) {
   .bento {
     grid-template-columns: 1.4fr 1fr;
-    grid-template-areas:
-      "headline stat"
-      "categories categories";
+    grid-template-areas: "headline stat";
   }
 
   .bento-cell--headline {
@@ -138,10 +136,6 @@
 
   .bento-cell--stat {
     grid-area: stat;
-  }
-
-  .bento-cell--categories {
-    grid-area: categories;
   }
 }
 
@@ -536,12 +530,208 @@
   color: var(--unknown);
 }
 
-.detail-raw {
-  font-size: 0.75rem;
-  max-height: 16rem;
-  overflow: auto;
-  background: #0f0f0f;
+/* Search command (skills.sh-style package search) */
+.search-command {
+  margin: 3.5rem 0;
+}
+
+.search-command-field {
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.search-command-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  font-family: var(--font-mono);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-command-input-wrap:focus-within {
+  border-color: var(--muted);
+  box-shadow: 0 0 0 3px rgba(163, 163, 163, 0.12);
+}
+
+.search-command-prompt {
+  color: var(--muted);
+  font-weight: 500;
+  user-select: none;
+  line-height: 1;
+}
+
+.search-command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  min-width: 0;
+}
+
+.search-command-input::placeholder {
+  color: var(--muted);
+}
+
+.search-command-input::-webkit-search-cancel-button,
+.search-command-input::-webkit-search-decoration {
+  appearance: none;
+}
+
+.search-command-shortcut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.375rem;
   border: 1px solid var(--border);
   border-radius: 0.375rem;
-  padding: 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.search-command-shortcut.is-hidden {
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+.search-command-results {
+  max-width: 36rem;
+  margin: 1.25rem auto 0;
+}
+
+.search-command-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.search-command-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.search-command-item {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+
+.search-command-item:last-child {
+  border-bottom: none;
+}
+
+.search-command-item:hover {
+  background-color: var(--border);
+}
+
+.search-command-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+}
+
+.search-command-name {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-command-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.search-command-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.search-command-dot.status-pass {
+  background: var(--pass);
+}
+
+.search-command-dot.status-partial {
+  background: var(--partial);
+}
+
+.search-command-dot.status-fail {
+  background: var(--fail);
+}
+
+.search-command-dot.status-unknown {
+  background: var(--unknown);
+}
+
+.search-command-status-text {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  min-width: 3.5rem;
+  text-align: right;
+}
+
+.search-command-expand {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--muted);
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.search-command-expand:hover {
+  color: var(--fg);
+  background-color: var(--border);
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .search-command {
+    margin: 2.5rem 0;
+  }
+
+  .search-command-link {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .search-command-status-text {
+    display: none;
+  }
 }
