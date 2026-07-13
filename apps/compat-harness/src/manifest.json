@@ -36,6 +36,13 @@
         "test/parallel/test-querystring-escape.js"
       ]
     },
+    "zlib": {
+      "files": [
+        "test/parallel/test-zlib-close-in-ondata.js",
+        "test/parallel/test-zlib-create-raw.js",
+        "test/parallel/test-zlib-no-stream.js"
+      ]
+    },
     "os": {
       "files": [
         "test/parallel/test-os-eol.js",
@@ -83,6 +90,158 @@
         "test/parallel/test-http-status-code.js",
         "test/parallel/test-http-methods.js",
         "test/parallel/test-http-write-head.js"
+      ]
+    },
+    "process": {
+      "files": [
+        "test/parallel/test-process-env.js",
+        "test/parallel/test-process-next-tick.js",
+        "test/parallel/test-process-hrtime.js"
+      ]
+    },
+    "timers": {
+      "files": [
+        "test/parallel/test-timers-args.js",
+        "test/parallel/test-timers-immediate.js"
+      ]
+    },
+    "console": {
+      "files": [
+        "test/parallel/test-console-clear.js",
+        "test/parallel/test-console-count.js",
+        "test/parallel/test-console-methods.js"
+      ]
+    },
+    "child_process": {
+      "files": [
+        "test/parallel/test-child-process-spawnsync.js",
+        "test/parallel/test-child-process-execsync-maxbuf.js"
+      ]
+    },
+    "worker_threads": {
+      "files": [
+        "test/parallel/test-worker-message-port-constructor.js",
+        "test/parallel/test-worker-exit-event-error.js",
+        "test/parallel/test-worker-load-file-with-extension-other-than-js.js"
+      ]
+    },
+    "perf_hooks": {
+      "files": [
+        "test/parallel/test-performanceobserver.js"
+      ]
+    },
+    "net": {
+      "files": [
+        "test/parallel/test-net-connect-buffer.js"
+      ]
+    },
+    "dns": {
+      "files": [
+        "test/parallel/test-dns-set-default-order.js",
+        "test/parallel/test-dns-setlocaladdress.js"
+      ]
+    },
+    "https": {
+      "files": [
+        "test/parallel/test-https-agent-constructor.js",
+        "test/parallel/test-https-request-arguments.js",
+        "test/parallel/test-https-close.js"
+      ]
+    },
+    "tls": {
+      "files": [
+        "test/parallel/test-tls-legacy-deprecated.js",
+        "test/parallel/test-tls-ticket-12.js",
+        "test/parallel/test-tls-wrap-no-abort.js"
+      ]
+    },
+    "dgram": {
+      "files": [
+        "test/parallel/test-dgram-abort-closed.js",
+        "test/parallel/test-dgram-send-callback-buffer-empty-address.js",
+        "test/parallel/test-dgram-bind.js"
+      ]
+    },
+    "cluster": {
+      "files": [
+        "test/parallel/test-cluster-basic.js",
+        "test/parallel/test-cluster-call-and-destroy.js",
+        "test/parallel/test-cluster-invalid-message.js"
+      ]
+    },
+    "vm": {
+      "files": [
+        "test/parallel/test-vm-script-throw-in-tostring.js",
+        "test/parallel/test-vm-indexed-properties.js",
+        "test/parallel/test-vm-deleting-property.js"
+      ]
+    },
+    "repl": {
+      "files": [
+        "test/parallel/test-repl-no-terminal.js",
+        "test/parallel/test-repl-stdin-push-null.js",
+        "test/parallel/test-repl-throw-null-or-undefined.js"
+      ]
+    },
+    "readline": {
+      "files": [
+        "test/parallel/test-readline-interface-no-trailing-newline.js",
+        "test/parallel/test-readline-carriage-return-between-chunks.js",
+        "test/parallel/test-readline-interface-recursive-writes.js"
+      ]
+    },
+    "tty": {
+      "files": [
+        "test/parallel/test-tty-stdin-end.js",
+        "test/parallel/test-tty-backwards-api.js"
+      ]
+    },
+    "inspector": {
+      "files": [
+        "test/parallel/test-inspector-stops-no-file.js",
+        "test/parallel/test-inspector-already-activated-cli.js",
+        "test/parallel/test-inspector-open-port-integer-overflow.js"
+      ]
+    },
+    "async_hooks": {
+      "files": [
+        "test/parallel/test-async-hooks-constructor.js",
+        "test/parallel/test-async-hooks-enable-during-promise.js",
+        "test/parallel/test-async-hooks-run-in-async-scope-caught-exception.js"
+      ]
+    },
+    "module": {
+      "files": [
+        "test/parallel/test-module-wrap.js",
+        "test/parallel/test-module-wrapper.js",
+        "test/parallel/test-module-main-extension-lookup.js"
+      ]
+    },
+    "string_decoder": {
+      "files": [
+        "test/parallel/test-string-decoder-end.js",
+        "test/parallel/test-string-decoder-fuzz.js"
+      ]
+    },
+    "v8": {
+      "files": [
+        "test/parallel/test-v8-deserialize-buffer.js",
+        "test/parallel/test-v8-flag-pool-size-0.js",
+        "test/parallel/test-v8-getheapsnapshot-twice.js"
+      ]
+    },
+    "diagnostics_channel": {
+      "files": [
+        "test/parallel/test-diagnostics-channel-has-subscribers.js",
+        "test/parallel/test-diagnostics-channel-sync-unsubscribe.js",
+        "test/parallel/test-diagnostics-channel-object-channel-pub-sub.js"
+      ]
+    },
+    "fs/promises": {
+      "files": [
+        "test/parallel/test-fs-promises-exists.js",
+        "test/parallel/test-fs-promises-readfile-empty.js",
+        "test/parallel/test-fs-promises-file-handle-dispose.js"
       ]
     }
   }
