@@ -1,0 +1,202 @@
+{
+  "fetch": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "axios": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "node-fetch": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "undici": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "fs-extra": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "globby": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "chokidar": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "esbuild": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "swc": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "tsc": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "sass": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "rollup": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "webpack": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "vite": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "parcel": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "vitest": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "jest": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "express": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "fastify": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "h3": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "polka": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "crypto-js": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "bcrypt": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "argon2": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "handlebars": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "ejs": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "pug": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "events": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "stream": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "buffer": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "crypto": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "path": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "url": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "querystring": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "zlib": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "os": {
+    "status": "partial",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "util": {
+    "status": "partial",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "assert": {
+    "status": "pass",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "fs": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  },
+  "http": {
+    "status": "fail",
+    "date": "2026-07-13",
+    "link": "https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml"
+  }
+}

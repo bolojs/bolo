@@ -169,12 +169,6 @@
   align-items: start;
 }
 
-@media (min-width: 1024px) {
-  .compat-main {
-    grid-template-columns: 1fr 320px;
-  }
-}
-
 /* Terminal search bar */
 .search-bar {
   margin-bottom: 1.5rem;
@@ -258,7 +252,76 @@
   border-radius: 0.125rem;
 }
 
-/* Grid */
+/* Heat calendar: per-category 1D status grid */
+.heat-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.75rem;
+}
+
+.heat-calendar-category {
+  min-width: 0;
+}
+
+.heat-calendar-category[hidden] {
+  display: none;
+}
+
+.heat-calendar-heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg);
+  margin-bottom: 0.75rem;
+}
+
+.heat-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.75rem;
+}
+
+.heat-calendar-package {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  text-decoration: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.heat-calendar-package[hidden] {
+  display: none;
+}
+
+.heat-calendar-cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.25rem;
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.heat-calendar-package:hover .heat-calendar-cell {
+  filter: brightness(1.15);
+  transform: scale(1.02);
+}
+
+.heat-calendar-package-name {
+  display: block;
+  word-break: break-word;
+  line-height: 1.2;
+  max-width: 100%;
+}
+
+.heat-calendar-cell:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
 .grid-wrapper {
   overflow-x: auto;
   border: 1px solid var(--border);

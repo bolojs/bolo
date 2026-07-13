@@ -1,12 +1,12 @@
 ---
 import CompatLayout from '../layouts/CompatLayout.astro';
 import SearchBar from '../components/SearchBar.astro';
-import HeatGrid from '../components/HeatGrid.astro';
-import CellDetail from '../components/CellDetail.astro';
+import { HeatCalendar } from '../components/HeatCalendar.tsx';
 import data from '../data/packages.json';
+import latest from '../data/latest.json';
 import { getHeadlineStat, getCategorySummaries, getPackageCount } from '../lib/stats';
 
-const { columns, categories, rows } = data;
+const { categories, rows } = data;
 const stat = getHeadlineStat();
 const categorySummaries = getCategorySummaries();
 const packageCount = getPackageCount();
@@ -52,75 +52,37 @@ const packageCount = getPackageCount();
   <div class="compat-main">
     <div class="bezel-outer">
       <div class="grid-wrapper">
-        <HeatGrid rows={rows} columns={columns} categories={categories} />
+        <HeatCalendar
+          client:visible
+          categories={categories}
+          rows={rows}
+          latest={latest}
+        />
       </div>
     </div>
-    <CellDetail />
   </div>
 
   <script>
     const search = document.getElementById('compat-search') as HTMLInputElement | null;
-    const rowEls = document.querySelectorAll<HTMLElement>('.compat-row');
-    const headerEls = document.querySelectorAll<HTMLElement>('.category-header');
-    const detail = document.getElementById('compat-detail') as HTMLElement | null;
+    const packageEls = document.querySelectorAll<HTMLElement>('.heat-calendar-package');
+    const categoryEls = document.querySelectorAll<HTMLElement>('.heat-calendar-category');
 
     function filterRows(term: string) {
       const t = term.trim().toLowerCase();
-      for (const row of rowEls) {
-        const name = row.dataset.name?.toLowerCase() ?? '';
-        const desc = (row.dataset.description ?? '').toLowerCase();
-        row.hidden = !t || name.includes(t) || desc.includes(t) ? false : true;
+      for (const pkg of packageEls) {
+        const name = pkg.dataset.name?.toLowerCase() ?? '';
+        pkg.hidden = !t || name.includes(t) ? false : true;
       }
-      for (const header of headerEls) {
-        const cat = header.dataset.category ?? '';
-        header.hidden =
-          document.querySelectorAll(`.compat-row[data-category="${cat}"]:not([hidden])`).length === 0;
+      for (const cat of categoryEls) {
+        const key = cat.dataset.category ?? '';
+        cat.hidden =
+          document.querySelectorAll(`.heat-calendar-package[data-category="${key}"]:not([hidden])`).length === 0;
       }
     }
 
     search?.addEventListener('input', (e) => {
       const target = e.currentTarget as HTMLInputElement;
       filterRows(target.value);
-    });
-
-    document.querySelector<HTMLElement>('.heat-grid')?.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const cell = target.closest('.cell') as HTMLElement | null;
-      if (!cell) return;
-      const rowEl = cell.closest('.compat-row') as HTMLElement | null;
-      if (!rowEl) return;
-      const row = JSON.parse(rowEl.dataset.row ?? '{}') as Record<string, any>;
-      const colKey = cell.dataset.column ?? '';
-      const colLabel = cell.dataset.columnLabel ?? '';
-      const cellData = row.cells?.[colKey] as Record<string, string> | undefined;
-      if (!cellData || !detail) return;
-
-      const detailHtml = `
-        <h2 class="detail-title">${row.name}</h2>
-        <p class="detail-meta">${row.categoryLabel} · ${colLabel}</p>
-        ${row.description ? `<p class="detail-description">${row.description}</p>` : ''}
-        <div class="detail-status">
-          <span class="badge badge--${cellData.status}">${cellData.status}</span>
-          <span>${cellData.note}</span>
-        </div>
-        ${row.details.features.length ? `
-          <h3>Features</h3>
-          <ul>${row.details.features.map((f: string) => `<li>${f}</li>`).join('')}</ul>
-        ` : ''}
-        ${row.details.knownIssues.length ? `
-          <h3>Known issues</h3>
-          <ul>${row.details.knownIssues.map((i: string) => `<li>${i}</li>`).join('')}</ul>
-        ` : ''}
-        ${row.details.links.length ? `
-          <h3>Links</h3>
-          <ul>${row.details.links.map((l: string) => `<li><a href="${l}" target="_blank" rel="noopener noreferrer">${l}</a></li>`).join('')}</ul>
-        ` : ''}
-        <h3>Raw output</h3>
-        <pre class="detail-raw">${row.details.raw || 'No raw data'}</pre>
-      `;
-
-      detail.innerHTML = detailHtml;
-      detail.classList.add('is-active');
     });
   </script>
 </CompatLayout>

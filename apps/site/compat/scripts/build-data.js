@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -6,6 +6,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const sourceDir = join(__dirname, '..', '..', 'landing', 'public', 'results');
 const outDir = join(dirname(__dirname), 'src', 'data');
 const outFile = join(outDir, 'packages.json');
+const latestFile = join(outDir, 'latest.json');
+const historyFile = join(outDir, 'history.json');
 
 const nodeCompat = JSON.parse(readFileSync(join(sourceDir, 'node-compat.json'), 'utf8'));
 const packageMatrix = JSON.parse(readFileSync(join(sourceDir, 'package-matrix.json'), 'utf8'));
@@ -202,6 +204,49 @@ const output = {
   rows,
 };
 
+const STUB_RUN_URL =
+  'https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml';
+
+function resolveRunUrl(id) {
+  const argIdx = process.argv.indexOf('--run-url');
+  const argUrl = argIdx >= 0 ? process.argv[argIdx + 1] : undefined;
+  if (argUrl) return argUrl;
+  if (process.env.RUN_URL) return process.env.RUN_URL;
+  const entries = history[id] ?? [];
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const link = entries[i]?.link;
+    if (link) return link;
+  }
+  return STUB_RUN_URL;
+}
+
+function writeJsonAtomic(filePath, data) {
+  const tmp = `${filePath}.tmp`;
+  writeFileSync(tmp, JSON.stringify(data, null, 2));
+  renameSync(tmp, filePath);
+}
+
+const today = new Date().toISOString().slice(0, 10);
+const history = existsSync(historyFile) ? JSON.parse(readFileSync(historyFile, 'utf8')) : {};
+const latest = {};
+
+for (const row of rows) {
+  const status = row.cells.browser.status;
+  const link = resolveRunUrl(row.id);
+  latest[row.id] = { status, date: today, link };
+
+  const arr = history[row.id] ?? [];
+  const idx = arr.findIndex((e) => e.date === today);
+  const entry = { date: today, status, link };
+  if (idx >= 0) arr[idx] = entry;
+  else arr.push(entry);
+  history[row.id] = arr.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 mkdirSync(outDir, { recursive: true });
-writeFileSync(outFile, JSON.stringify(output, null, 2));
+writeJsonAtomic(outFile, output);
+writeJsonAtomic(latestFile, latest);
+writeJsonAtomic(historyFile, history);
 console.log(`Wrote ${outFile}`);
+console.log(`Wrote ${latestFile}`);
+console.log(`Wrote ${historyFile}`);
