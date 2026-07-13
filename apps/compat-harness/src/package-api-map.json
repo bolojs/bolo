@@ -1,45 +1,320 @@
 {
-  "fetch": ["url"],
-  "axios": ["http", "url"],
-  "node-fetch": ["http", "url"],
-  "undici": ["http", "url", "stream"],
-  "fs-extra": ["fs", "path"],
-  "globby": ["fs", "path"],
-  "chokidar": ["fs", "path"],
-  "esbuild": ["fs", "path", "os"],
-  "swc": ["fs", "path"],
-  "tsc": ["fs", "path"],
-  "sass": ["fs", "path"],
-  "rollup": ["fs", "path"],
-  "webpack": ["fs", "path", "os"],
-  "vite": ["fs", "path", "os"],
-  "parcel": ["fs", "path"],
-  "vitest": ["fs", "path", "os"],
-  "jest": ["fs", "path", "os"],
-  "express": ["http", "fs", "path"],
-  "fastify": ["http", "fs", "path"],
-  "h3": ["http", "url", "stream"],
-  "polka": ["http", "fs", "path"],
-  "crypto-js": ["crypto"],
-  "bcrypt": ["crypto"],
-  "argon2": ["crypto"],
-  "handlebars": ["fs", "path"],
-  "ejs": ["fs", "path"],
-  "pug": ["fs", "path"],
+  "fetch": [
+    "url"
+  ],
+  "axios": [
+    "http",
+    "url"
+  ],
+  "node-fetch": [
+    "http",
+    "url"
+  ],
+  "undici": [
+    "http",
+    "url",
+    "stream"
+  ],
+  "fs-extra": [
+    "fs",
+    "path"
+  ],
+  "globby": [
+    "fs",
+    "path"
+  ],
+  "chokidar": [
+    "fs",
+    "path"
+  ],
+  "esbuild": [
+    "fs",
+    "path",
+    "os"
+  ],
+  "swc": [
+    "fs",
+    "path"
+  ],
+  "tsc": [
+    "fs",
+    "path"
+  ],
+  "sass": [
+    "fs",
+    "path"
+  ],
+  "rollup": [
+    "fs",
+    "path"
+  ],
+  "webpack": [
+    "fs",
+    "path",
+    "os"
+  ],
+  "vite": [
+    "fs",
+    "path",
+    "os"
+  ],
+  "parcel": [
+    "fs",
+    "path"
+  ],
+  "vitest": [
+    "fs",
+    "path",
+    "os"
+  ],
+  "jest": [
+    "fs",
+    "path",
+    "os"
+  ],
+  "express": [
+    "http",
+    "fs",
+    "path"
+  ],
+  "fastify": [
+    "http",
+    "fs",
+    "path"
+  ],
+  "h3": [
+    "http",
+    "url",
+    "stream"
+  ],
+  "polka": [
+    "http",
+    "fs",
+    "path"
+  ],
+  "crypto-js": [
+    "crypto"
+  ],
+  "bcrypt": [
+    "crypto"
+  ],
+  "argon2": [
+    "crypto"
+  ],
+  "handlebars": [
+    "fs",
+    "path"
+  ],
+  "ejs": [
+    "fs",
+    "path"
+  ],
+  "pug": [
+    "fs",
+    "path"
+  ],
   "hono": [],
   "elysia": [],
-  "itty-router": ["url"],
-  "koa": ["http", "fs"],
+  "itty-router": [
+    "url"
+  ],
+  "koa": [
+    "http",
+    "fs"
+  ],
   "zod": [],
-  "uuid": ["crypto"],
+  "uuid": [
+    "crypto"
+  ],
   "lodash": [],
-  "chalk": ["util", "tty"],
-  "events": ["events"],
-  "stream": ["stream"],
-  "buffer": ["buffer"],
-  "crypto": ["crypto"],
-  "path": ["path"],
-  "url": ["url"],
-  "querystring": ["querystring"],
-  "zlib": ["zlib"]
+  "chalk": [
+    "util",
+    "tty"
+  ],
+  "events": [
+    "events"
+  ],
+  "stream": [
+    "stream"
+  ],
+  "buffer": [
+    "buffer"
+  ],
+  "crypto": [
+    "crypto"
+  ],
+  "path": [
+    "path"
+  ],
+  "url": [
+    "url"
+  ],
+  "querystring": [
+    "querystring"
+  ],
+  "zlib": [
+    "zlib"
+  ],
+  "ajv": [],
+  "joi": [],
+  "valibot": [],
+  "yup": [],
+  "fast-json-stringify": [],
+  "superstruct": [],
+  "io-ts": [],
+  "nanoid": [
+    "crypto"
+  ],
+  "dotenv": [],
+  "js-yaml": [],
+  "json5": [],
+  "semver": [],
+  "ms": [],
+  "debug": [],
+  "deepmerge": [],
+  "query-string": [
+    "querystring"
+  ],
+  "fast-deep-equal": [],
+  "change-case": [],
+  "p-limit": [],
+  "lru-cache": [],
+  "date-fns": [],
+  "dayjs": [],
+  "luxon": [],
+  "throttle-debounce": [],
+  "rimraf": [
+    "fs",
+    "path"
+  ],
+  "glob": [
+    "fs",
+    "path"
+  ],
+  "mkdirp": [
+    "fs",
+    "path"
+  ],
+  "del": [
+    "fs",
+    "path"
+  ],
+  "memfs": [
+    "fs",
+    "path"
+  ],
+  "cors": [
+    "http"
+  ],
+  "helmet": [
+    "http"
+  ],
+  "morgan": [
+    "http",
+    "stream"
+  ],
+  "compression": [
+    "http",
+    "stream",
+    "zlib"
+  ],
+  "serve-static": [
+    "http",
+    "fs",
+    "path"
+  ],
+  "cookie-parser": [
+    "http"
+  ],
+  "body-parser": [
+    "http",
+    "stream"
+  ],
+  "pino": [
+    "stream",
+    "util"
+  ],
+  "winston": [
+    "util",
+    "stream"
+  ],
+  "got": [
+    "http",
+    "stream",
+    "url"
+  ],
+  "ky": [],
+  "http-proxy-agent": [
+    "http",
+    "net",
+    "url"
+  ],
+  "form-data": [
+    "stream",
+    "util"
+  ],
+  "sha.js": [
+    "crypto",
+    "stream"
+  ],
+  "hash.js": [
+    "crypto"
+  ],
+  "md5": [
+    "crypto"
+  ],
+  "create-hash": [
+    "crypto"
+  ],
+  "jose": [],
+  "jsonwebtoken": [
+    "crypto"
+  ],
+  "pbkdf2": [
+    "crypto"
+  ],
+  "marked": [],
+  "markdown-it": [],
+  "micromark": [],
+  "nunjucks": [
+    "fs",
+    "path"
+  ],
+  "liquidjs": [],
+  "mustache": [],
+  "twig": [
+    "fs",
+    "path"
+  ],
+  "chai": [
+    "assert",
+    "util"
+  ],
+  "sinon": [],
+  "dompurify": [],
+  "linkedom": [],
+  "lightningcss": [],
+  "postcss": [
+    "url"
+  ],
+  "babel": [
+    "fs",
+    "path",
+    "util"
+  ],
+  "sucrase": [
+    "fs",
+    "path"
+  ],
+  "acorn": [],
+  "rspack": [
+    "fs",
+    "path"
+  ],
+  "turbo": [],
+  "ws": [
+    "events",
+    "stream",
+    "http"
+  ]
 }
