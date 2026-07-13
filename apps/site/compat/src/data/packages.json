@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-07-12T19:17:30.082Z",
+    "generatedAt": "2026-07-13T12:59:33.471Z",
     "source": "apps/site/landing/public/results"
   },
   "columns": [
@@ -99,8 +99,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -108,10 +108,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: HTTP client"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/fetch"
+        ],
+        "raw": "{\n  \"name\": \"fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"duration\": 1922.2799999713898\n}"
       }
     },
     {
@@ -139,8 +143,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -148,10 +152,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: HTTP client"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/axios"
+        ],
+        "raw": "{\n  \"name\": \"axios\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"duration\": 398.4249999523163\n}"
       }
     },
     {
@@ -179,8 +187,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -188,10 +196,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: HTTP client"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/node-fetch"
+        ],
+        "raw": "{\n  \"name\": \"node-fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"duration\": 129.72499990463257\n}"
       }
     },
     {
@@ -219,8 +231,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -228,10 +240,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: HTTP client"
+        ],
+        "knownIssues": [
+          "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20undici%20from%20%22https%3A%2F%2Fesm.sh%2Fundici%22%3B%0Atry%20%7B%0A%09undici.request%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/undici"
+        ],
+        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 84.20499992370605,\n  \"error\": \"Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20undici%20from%20%22https%3A%2F%2Fesm.sh%2Fundici%22%3B%0Atry%20%7B%0A%09undici.request%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A\"\n}"
       }
     },
     {
@@ -259,8 +277,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -268,10 +286,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: File system"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/fs-extra"
+        ],
+        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"duration\": 163.44000005722046\n}"
       }
     },
     {
@@ -299,8 +321,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -308,10 +330,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: File system"
+        ],
+        "knownIssues": [
+          "The requested module '/unicorn-magic@^0.4.0/node?target=es2022' does not provide an export named 'toPath'"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/globby"
+        ],
+        "raw": "{\n  \"name\": \"globby\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 193.48499989509583,\n  \"error\": \"The requested module '/unicorn-magic@^0.4.0/node?target=es2022' does not provide an export named 'toPath'\"\n}"
       }
     },
     {
@@ -339,8 +367,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -348,10 +376,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: File system"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/chokidar"
+        ],
+        "raw": "{\n  \"name\": \"chokidar\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"duration\": 82.00499987602234\n}"
       }
     },
     {
@@ -567,8 +599,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -576,10 +608,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: Bundler"
+        ],
+        "knownIssues": [
+          "The requested module 'https://esm.sh/rollup' does not provide an export named 'default'"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/rollup"
+        ],
+        "raw": "{\n  \"name\": \"rollup\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 62.97499990463257,\n  \"error\": \"The requested module 'https://esm.sh/rollup' does not provide an export named 'default'\"\n}"
       }
     },
     {
@@ -653,8 +691,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -662,10 +700,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: Bundler"
+        ],
+        "knownIssues": [
+          "The requested module 'https://esm.sh/vite' does not provide an export named 'default'"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/vite"
+        ],
+        "raw": "{\n  \"name\": \"vite\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 182.41999983787537,\n  \"error\": \"The requested module 'https://esm.sh/vite' does not provide an export named 'default'\"\n}"
       }
     },
     {
@@ -740,8 +784,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -749,10 +793,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: Testing"
+        ],
+        "knownIssues": [
+          "The requested module 'https://esm.sh/vitest' does not provide an export named 'default'"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/vitest"
+        ],
+        "raw": "{\n  \"name\": \"vitest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"duration\": 111.30999994277954,\n  \"error\": \"The requested module 'https://esm.sh/vitest' does not provide an export named 'default'\"\n}"
       }
     },
     {
@@ -780,8 +830,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -789,10 +839,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: Testing"
+        ],
+        "knownIssues": [
+          "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20%22https%3A%2F%2Fesm.sh%2Fjest%22%3B%0Atry%20%7B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/jest"
+        ],
+        "raw": "{\n  \"name\": \"jest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"duration\": 196.63499999046326,\n  \"error\": \"Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20%22https%3A%2F%2Fesm.sh%2Fjest%22%3B%0Atry%20%7B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A\"\n}"
       }
     },
     {
@@ -830,15 +886,15 @@
       },
       "details": {
         "features": [
-          "Class: T2"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "http.Server not supported"
+          "Object prototype may only be an Object or null: undefined"
         ],
         "links": [
           "https://www.npmjs.com/package/express"
         ],
-        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"T2\",\n  \"status\": \"fail\",\n  \"error\": \"http.Server not supported\"\n}"
+        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 299.97500014305115,\n  \"error\": \"Object prototype may only be an Object or null: undefined\"\n}"
       }
     },
     {
@@ -866,8 +922,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -875,10 +931,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: HTTP server"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/fastify"
+        ],
+        "raw": "{\n  \"name\": \"fastify\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 215.66499996185303\n}"
       }
     },
     {
@@ -906,8 +966,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -915,10 +975,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: HTTP server"
+        ],
+        "knownIssues": [
+          "The requested module 'https://esm.sh/h3' does not provide an export named 'default'"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/h3"
+        ],
+        "raw": "{\n  \"name\": \"h3\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 118.29999995231628,\n  \"error\": \"The requested module 'https://esm.sh/h3' does not provide an export named 'default'\"\n}"
       }
     },
     {
@@ -946,8 +1012,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -955,10 +1021,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: HTTP server"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/polka"
+        ],
+        "raw": "{\n  \"name\": \"polka\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 147.49000000953674\n}"
       }
     },
     {
@@ -986,8 +1056,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -995,10 +1065,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: Crypto"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/crypto-js"
+        ],
+        "raw": "{\n  \"name\": \"crypto-js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 61.56500005722046\n}"
       }
     },
     {
@@ -1026,8 +1100,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1035,10 +1109,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [
+          "No native build was found for platform=linux arch= runtime=node abi=undefined uv= libc=glibc node=22.14.0\n    loaded from: /bcrypt@6.0.0/es2022"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/bcrypt"
+        ],
+        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 83.65000009536743,\n  \"error\": \"No native build was found for platform=linux arch= runtime=node abi=undefined uv= libc=glibc node=22.14.0\\n    loaded from: /bcrypt@6.0.0/es2022\"\n}"
       }
     },
     {
@@ -1066,8 +1146,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1075,10 +1155,16 @@
         }
       },
       "details": {
-        "features": [],
-        "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "features": [
+          "Class: Crypto"
+        ],
+        "knownIssues": [
+          "No native build was found for platform=linux arch= runtime=node abi=undefined uv= libc=glibc node=22.14.0\n    loaded from: /argon2@0.44.0/es2022"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/argon2"
+        ],
+        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 83.91000008583069,\n  \"error\": \"No native build was found for platform=linux arch= runtime=node abi=undefined uv= libc=glibc node=22.14.0\\n    loaded from: /argon2@0.44.0/es2022\"\n}"
       }
     },
     {
@@ -1106,8 +1192,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1115,10 +1201,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: Template"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/handlebars"
+        ],
+        "raw": "{\n  \"name\": \"handlebars\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 91.96999979019165\n}"
       }
     },
     {
@@ -1146,8 +1236,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1155,10 +1245,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: Template"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/ejs"
+        ],
+        "raw": "{\n  \"name\": \"ejs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 56.46000003814697\n}"
       }
     },
     {
@@ -1186,8 +1280,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1195,15 +1289,65 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: Template"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/pug"
+        ],
+        "raw": "{\n  \"name\": \"pug\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 233.88499999046326\n}"
       }
     },
     {
       "id": "events",
       "name": "events",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "fail",
+          "note": "Not supported"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "Class: Node core API"
+        ],
+        "knownIssues": [
+          "Build failed with 1 error:\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"EventEmitter\" is not exported by \"browser-containers-node-shim:events\".\n   \u001b[38;5;246m╭\u001b[0m\u001b[38;5;246m─\u001b[0m\u001b[38;5;246m[\u001b[0m probe/events.mjs:2:10 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0mEventEmitter\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m          ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m"
+        ],
+        "links": [
+          "https://www.npmjs.com/package/events"
+        ],
+        "raw": "{\n  \"name\": \"events\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 8.504999876022339,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[MISSING_EXPORT] \\u001b[0m\\\"EventEmitter\\\" is not exported by \\\"browser-containers-node-shim:events\\\".\\n   \\u001b[38;5;246m╭\\u001b[0m\\u001b[38;5;246m─\\u001b[0m\\u001b[38;5;246m[\\u001b[0m probe/events.mjs:2:10 \\u001b[38;5;246m]\\u001b[0m\\n   \\u001b[38;5;246m│\\u001b[0m\\n \\u001b[38;5;246m2 │\\u001b[0m \\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m{\\u001b[0m\\u001b[38;5;249m \\u001b[0mEventEmitter\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m          ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\"\n}"
+      }
+    },
+    {
+      "id": "stream",
+      "name": "stream",
       "category": "node-core",
       "categoryLabel": "Node core APIs",
       "description": "",
@@ -1236,58 +1380,13 @@
       },
       "details": {
         "features": [
-          "3/3 tests passed"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "No known issues"
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/stream"
         ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-events-once.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-events-listener-count.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-events-getmaxlisteners.js\",\n    \"status\": \"pass\"\n  }\n]"
-      }
-    },
-    {
-      "id": "stream",
-      "name": "stream",
-      "category": "node-core",
-      "categoryLabel": "Node core APIs",
-      "description": "",
-      "wasmOnly": false,
-      "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "browser": {
-          "status": "partial",
-          "note": "Partial support"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
-        }
-      },
-      "details": {
-        "features": [
-          "1/3 tests passed"
-        ],
-        "knownIssues": [
-          "test-stream-writable.js: Writable backpressure not implemented",
-          "test-stream-pipeline.js: stream.pipeline() not supported"
-        ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-stream-readable.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-stream-writable.js\",\n    \"status\": \"fail\",\n    \"error\": \"Writable backpressure not implemented\"\n  },\n  {\n    \"file\": \"test-stream-pipeline.js\",\n    \"status\": \"fail\",\n    \"error\": \"stream.pipeline() not supported\"\n  }\n]"
+        "raw": "{\n  \"name\": \"stream\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 5.799999952316284\n}"
       }
     },
     {
@@ -1315,8 +1414,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "partial",
-          "note": "Partial support"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1325,13 +1424,15 @@
       },
       "details": {
         "features": [
-          "2/3 tests passed"
+          "Class: Node core API"
         ],
         "knownIssues": [
-          "test-buffer-from.js: Buffer.from(arrayBuffer) not supported"
+          "Identifier 'Buffer' has already been declared"
         ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-buffer-alloc.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-buffer-concat.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-buffer-from.js\",\n    \"status\": \"fail\",\n    \"error\": \"Buffer.from(arrayBuffer) not supported\"\n  }\n]"
+        "links": [
+          "https://www.npmjs.com/package/buffer"
+        ],
+        "raw": "{\n  \"name\": \"buffer\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 5.254999876022339,\n  \"error\": \"Identifier 'Buffer' has already been declared\"\n}"
       }
     },
     {
@@ -1359,8 +1460,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "partial",
-          "note": "Partial support"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1369,14 +1470,13 @@
       },
       "details": {
         "features": [
-          "1/3 tests passed"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "test-crypto-createhash.js: createHash not implemented, use Web Crypto",
-          "test-crypto-hash-update.js: createHash not implemented, use Web Crypto"
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/crypto"
         ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-crypto-randombytes.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-crypto-createhash.js\",\n    \"status\": \"fail\",\n    \"error\": \"createHash not implemented, use Web Crypto\"\n  },\n  {\n    \"file\": \"test-crypto-hash-update.js\",\n    \"status\": \"fail\",\n    \"error\": \"createHash not implemented, use Web Crypto\"\n  }\n]"
+        "raw": "{\n  \"name\": \"crypto\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 5.400000095367432\n}"
       }
     },
     {
@@ -1414,13 +1514,13 @@
       },
       "details": {
         "features": [
-          "3/3 tests passed"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "No known issues"
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/path"
         ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-path-basename.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-path-dirname.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-path-extname.js\",\n    \"status\": \"pass\"\n  }\n]"
+        "raw": "{\n  \"name\": \"path\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 5.130000114440918\n}"
       }
     },
     {
@@ -1458,13 +1558,13 @@
       },
       "details": {
         "features": [
-          "3/3 tests passed"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "No known issues"
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/url"
         ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-url-parse.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-url-format.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-url-resolve.js\",\n    \"status\": \"pass\"\n  }\n]"
+        "raw": "{\n  \"name\": \"url\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 4.829999923706055\n}"
       }
     },
     {
@@ -1502,13 +1602,13 @@
       },
       "details": {
         "features": [
-          "3/3 tests passed"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "No known issues"
+        "knownIssues": [],
+        "links": [
+          "https://www.npmjs.com/package/querystring"
         ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-querystring-parse.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-querystring-stringify.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-querystring-escape.js\",\n    \"status\": \"pass\"\n  }\n]"
+        "raw": "{\n  \"name\": \"querystring\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 4.690000057220459\n}"
       }
     },
     {
@@ -1536,8 +1636,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1545,10 +1645,14 @@
         }
       },
       "details": {
-        "features": [],
+        "features": [
+          "Class: Node core API"
+        ],
         "knownIssues": [],
-        "links": [],
-        "raw": ""
+        "links": [
+          "https://www.npmjs.com/package/zlib"
+        ],
+        "raw": "{\n  \"name\": \"zlib\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 5.164999961853027\n}"
       }
     },
     {
