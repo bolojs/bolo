@@ -57,6 +57,9 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
 
   try {
     vfs = new VfsBus();
+    // IframeSandbox.init() snapshots the workdir via readdirSync before any
+    // file is ever written to it — the dir must exist in the VFS up front.
+    await vfs.mkdir(workdir, { recursive: true });
 
     let sandbox: SWSandbox;
     try {
