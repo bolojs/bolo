@@ -7,7 +7,7 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "echo 'no TypeScript in router (wrangler-only config)'",
     "test:topology": "node scripts/test-topology.mjs"
   },
   "devDependencies": {
