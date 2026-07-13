@@ -1,55 +1,33 @@
 ---
 import CompatLayout from '../layouts/CompatLayout.astro';
-import SearchBar from '../components/SearchBar.astro';
+import SearchCommand from '../components/SearchCommand.astro';
 import { HeatCalendar } from '../components/HeatCalendar.tsx';
 import data from '../data/packages.json';
 import latest from '../data/latest.json';
-import { getHeadlineStat, getCategorySummaries, getPackageCount } from '../lib/stats';
+import { getHeadlineStat, getPackageCount } from '../lib/stats';
 
 const { categories, rows } = data;
 const stat = getHeadlineStat();
-const categorySummaries = getCategorySummaries();
 const packageCount = getPackageCount();
 ---
 
 <CompatLayout title="Compatibility">
   <header class="compat-hero bento">
-  <div class="bento-cell bento-cell--headline">
-    <span class="eyebrow">Real browser-measured data</span>
-    <h1>ARE WE WEB YET?</h1>
-    <p class="lead">Tracking browser, runtime, and package support across {packageCount} Node.js APIs and libraries.</p>
-  </div>
+    <div class="bento-cell bento-cell--headline">
+      <span class="eyebrow">Real browser-measured data</span>
+      <h1>ARE WE WEB YET?</h1>
+      <p class="lead">Tracking browser, runtime, and package support across {packageCount} Node.js APIs and libraries.</p>
+    </div>
 
-  <div class="bento-cell bento-cell--stat">
-    <span class="stat-value">{stat.percent}%</span>
-    <span class="stat-label">{stat.supported} of {stat.total} checks supported in-browser today</span>
-  </div>
-
-  <div class="bento-cell bento-cell--categories">
-    <span class="bento-cell-title">Ecosystem summary</span>
-    <ul class="category-summary-list">
-      {categorySummaries.map((cat) => (
-        <li class="category-summary-item">
-          <span class="category-summary-label">{cat.label}</span>
-          <span class="category-summary-count">{cat.pass + cat.partial}/{cat.total}</span>
-        </li>
-      ))}
-    </ul>
-  </div>
+    <div class="bento-cell bento-cell--stat">
+      <span class="stat-value">{stat.percent}%</span>
+      <span class="stat-label">{stat.supported} of {stat.total} checks supported in-browser today</span>
+    </div>
   </header>
 
-  <SearchBar />
+  <SearchCommand />
 
-  <h2 class="section-heading">ECOSYSTEM COMPATIBILITY</h2>
-
-  <div class="compat-legend" aria-label="Compatibility status legend">
-    <span class="legend-item"><span class="legend-swatch cell--pass"></span> Supported</span>
-    <span class="legend-item"><span class="legend-swatch cell--partial"></span> Partial</span>
-    <span class="legend-item"><span class="legend-swatch cell--fail"></span> Unsupported</span>
-    <span class="legend-item"><span class="legend-swatch cell--unknown"></span> Unknown</span>
-  </div>
-
-  <div class="compat-main">
+  <div class="compat-main" id="compat-grid">
     <div class="bezel-outer">
       <div class="grid-wrapper">
         <HeatCalendar
@@ -61,30 +39,4 @@ const packageCount = getPackageCount();
       </div>
     </div>
   </div>
-
-  <script>
-    const search = document.getElementById('compat-search') as HTMLInputElement | null;
-    const packageEls = document.querySelectorAll<HTMLElement>('.heat-calendar-package');
-    const categoryEls = document.querySelectorAll<HTMLElement>('.heat-calendar-category');
-
-    function filterRows(term: string) {
-      const t = term.trim().toLowerCase();
-      for (const pkg of packageEls) {
-        const name = pkg.dataset.name?.toLowerCase() ?? '';
-        pkg.hidden = !t || name.includes(t) ? false : true;
-      }
-      for (const cat of categoryEls) {
-        const keys = (cat.dataset.category ?? '').split(',').filter(Boolean);
-        const visibleInSection = keys.some((k) =>
-          document.querySelectorAll(`.heat-calendar-package[data-category="${k}"]:not([hidden])`).length > 0
-        );
-        cat.hidden = !visibleInSection;
-      }
-    }
-
-    search?.addEventListener('input', (e) => {
-      const target = e.currentTarget as HTMLInputElement;
-      filterRows(target.value);
-    });
-  </script>
 </CompatLayout>
