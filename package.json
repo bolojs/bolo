@@ -14,7 +14,8 @@
     "test:e2e": "pnpm --filter @browser-containers/e2e test",
     "test:e2e:verbose": "pnpm --filter @browser-containers/e2e test:verbose",
     "docs:internal": "docmd dev --cwd .agents",
-    "docs:internal:build": "docmd build --cwd .agents"
+    "docs:internal:build": "docmd build --cwd .agents",
+    "compat:refresh": "bash apps/compat-harness/bin/run-local.sh"
   },
   "devDependencies": {
     "@docmd/core": "^0.8.12",
