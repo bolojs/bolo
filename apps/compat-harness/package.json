@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "compat-harness": "./bin/cli.js"
+  },
   "scripts": {
     "build": "vite build",
     "dev": "portless run --name compat-harness --force vite",
     "preview": "portless run --name compat-harness --force vite preview",
-    "lint": "oxlint src",
-    "format": "oxfmt --check src",
+    "cli": "node bin/cli.js",
+    "lint": "oxlint src bin",
+    "format": "oxfmt --check src bin",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -16,6 +20,7 @@
     "@browser-containers/runtime": "workspace:*"
   },
   "devDependencies": {
+    "playwright-core": "^1.59.1",
     "portless": "latest",
     "typescript": "^5.8.0",
     "vite": "^6.0.0",

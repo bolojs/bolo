@@ -9,9 +9,17 @@ export interface PackageResult {
   duration?: number;
 }
 
+export interface PackageEntry {
+  name: string;
+  class: string;
+  probe?: string;
+  source?: string;
+  import?: boolean;
+}
+
 export interface PackageMatrix {
   version: string;
-  packages: { name: string; class: string; probe: string }[];
+  packages: PackageEntry[];
 }
 
 export class PackageMatrixRunner {
@@ -32,7 +40,7 @@ export class PackageMatrixRunner {
 
     for (const pkg of this.matrix.packages) {
       const path = `/probe/${pkg.name}.mjs`;
-      const source = this.buildProbe(pkg.name, pkg.probe);
+      const source = this.buildProbe(pkg);
       const start = performance.now();
 
       try {
@@ -40,7 +48,11 @@ export class PackageMatrixRunner {
         const { exitCode, output } = await this.harness.exec(path);
         const duration = performance.now() - start;
         const status = this.classify(exitCode, output);
-        results.push({ name: pkg.name, class: pkg.class, status, duration });
+        const result: PackageResult = { name: pkg.name, class: pkg.class, status, duration };
+        if (status === "fail") {
+          result.error = output.trim() || "probe failed";
+        }
+        results.push(result);
       } catch (err) {
         const duration = performance.now() - start;
         results.push({
@@ -60,10 +72,15 @@ export class PackageMatrixRunner {
     await this.harness.teardown();
   }
 
-  private buildProbe(name: string, probe: string): string {
-    return `import ${this.importIdentifier(name)} from 'https://esm.sh/${name}';
+  private buildProbe(pkg: PackageEntry): string {
+    if (pkg.source) return pkg.source;
+    const importLine =
+      pkg.import !== false
+        ? `import ${this.importIdentifier(pkg.name)} from 'https://esm.sh/${pkg.name}';`
+        : "";
+    return `${importLine}
 try {
-  ${probe};
+  ${pkg.probe};
   console.log('PASS');
 } catch (e) {
   console.error(e.message);
