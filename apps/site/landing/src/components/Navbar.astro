@@ -3,14 +3,14 @@ import ThemeToggle from './ThemeToggle.astro';
 
 const currentPath = Astro.url.pathname;
 const links = [
-  { href: '/docs', label: 'docs', isActive: (path: string) => path === '/docs' || path.startsWith('/docs/') },
-  { href: '/compat', label: 'compat', isActive: (path: string) => path === '/compat' || path === '/compat/' },
+  { href: '/docs/', label: 'Docs', isActive: (path: string) => path === '/docs' || path.startsWith('/docs/') },
+  { href: '/compat', label: 'Are We Web Yet?', isActive: (path: string) => path === '/compat' || path === '/compat/' },
 ];
 ---
 
-<header class="navbar">
-  <div class="container navbar-inner">
-    <a href="/" class="wordmark" aria-label="browser-containers home">
+<header class="navbar-shell">
+  <div class="navbar-inner" data-stagger>
+    <a href="/" class="wordmark" data-stagger-item aria-label="browser-containers home">
       <span class="mark" aria-hidden="true">◈</span>
       <span class="wordmark-text">browser-containers</span>
     </a>
@@ -23,6 +23,7 @@ const links = [
             <a
               href={link.href}
               class:list={['nav-link', { active }]}
+              data-stagger-item
               aria-current={active ? 'page' : undefined}
             >
               {link.label}
@@ -35,17 +36,45 @@ const links = [
         target="_blank"
         rel="noopener noreferrer"
         class="nav-link"
+        data-stagger-item
       >
         GitHub
       </a>
-      <ThemeToggle />
+      <span data-stagger-item><ThemeToggle /></span>
+      <a href="/docs/" class="nav-cta" data-stagger-item data-magnetic>Get Started</a>
     </nav>
   </div>
 </header>
 
+<script>
+  import { animate, stagger } from 'motion';
+
+  animate(
+    '[data-stagger-item]',
+    { opacity: [0, 1], y: [-8, 0] },
+    { duration: 0.4, delay: stagger(0.05), ease: [0.16, 1, 0.3, 1] },
+  );
+
+  const cta = document.querySelector<HTMLElement>('.nav-cta[data-magnetic]');
+  if (cta) {
+    cta.addEventListener('mousemove', (e) => {
+      const rect = cta.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      animate(cta, { x: x * 0.3, y: y * 0.3 }, { duration: 0.2 });
+    });
+    cta.addEventListener('mouseleave', () => {
+      animate(cta, { x: 0, y: 0 }, { duration: 0.3, ease: 'easeOut' });
+    });
+  }
+</script>
+
 <style>
-  .navbar {
-    border-bottom: 1px solid var(--border);
+  .navbar-shell {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 40;
+    padding-inline: 1.25rem;
   }
 
   .navbar-inner {
@@ -53,8 +82,16 @@ const links = [
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding-block: 1rem;
+    padding: 0.625rem 0.875rem;
     flex-wrap: wrap;
+    max-width: 1100px;
+    margin-inline: auto;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background-color: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
   }
 
   .wordmark {
@@ -107,6 +144,31 @@ const links = [
   @media (min-width: 640px) {
     .nav-links {
       gap: 1.25rem;
+    }
+  }
+
+  .nav-cta {
+    display: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 999px;
+    background-color: var(--fg);
+    color: var(--bg);
+    border: 1px solid var(--fg);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .nav-cta:hover {
+    background-color: transparent;
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  @media (min-width: 640px) {
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
     }
   }
 </style>

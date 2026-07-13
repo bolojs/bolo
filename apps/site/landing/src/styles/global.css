@@ -1,3 +1,21 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* Tailwind v4's `dark:` variant defaults to prefers-color-scheme; repoint it
+   at the existing [data-theme] toggle mechanism so both stay in sync. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --font-sans: "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-bg-alt: var(--bg-alt);
+}
+
 /* CSS variables are defined here so they are available before the theme toggle renders. */
 :root {
   --bg: #fafafa;
@@ -148,67 +166,5 @@ pre {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-/* Starlight palette overrides to match the landing page theme. */
-:root {
-  --sl-color-white: #fafafa;
-  --sl-color-black: #0a0a0a;
-  --sl-color-text: var(--fg);
-  --sl-color-text-accent: var(--fg);
-  --sl-color-bg: var(--bg);
-  --sl-color-bg-nav: var(--bg);
-  --sl-color-bg-sidebar: var(--bg);
-  --sl-color-bg-alt: var(--bg-alt);
-  --sl-color-hairline: var(--border);
-  --sl-color-hairline-shade: var(--border);
-  --sl-color-hairline-light: var(--border);
-  --sl-color-gray-1: #f2f2f2;
-  --sl-color-gray-2: #e5e5e5;
-  --sl-color-gray-3: #d4d4d4;
-  --sl-color-gray-4: #a3a3a3;
-  --sl-color-gray-5: #737373;
-  --sl-color-gray-6: #525252;
-  --sl-font: var(--font-sans);
-  --sl-font-mono: var(--font-mono);
-  --sl-font-system: var(--font-sans);
-}
-
-[data-theme="dark"] {
-  --sl-color-white: #0a0a0a;
-  --sl-color-black: #fafafa;
-  --sl-color-text: var(--fg);
-  --sl-color-text-accent: var(--fg);
-  --sl-color-bg: var(--bg);
-  --sl-color-bg-nav: var(--bg);
-  --sl-color-bg-sidebar: var(--bg);
-  --sl-color-bg-alt: var(--bg-alt);
-  --sl-color-hairline: var(--border);
-  --sl-color-hairline-shade: var(--border);
-  --sl-color-hairline-light: var(--border);
-  --sl-color-gray-1: #171717;
-  --sl-color-gray-2: #262626;
-  --sl-color-gray-3: #404040;
-  --sl-color-gray-4: #525252;
-  --sl-color-gray-5: #737373;
-  --sl-color-gray-6: #a3a3a3;
-}
-
-/* Starlight uses a fixed-width sidebar layout; keep the landing page unaffected. */
-.sl-container {
-  --sl-sidebar-width: 18rem;
-  --sl-content-width: 50rem;
-}
-
-/* Match Starlight links to the landing page style. */
-.sl-link-card,
-.sl-link-button,
-.starlight-aside {
-  border-color: var(--border);
-}
-
-/* Expressive Code blocks already inherit --font-mono; keep borders subtle. */
-.expressive-code {
-  border-color: var(--border);
 }
 
