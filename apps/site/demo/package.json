@@ -18,6 +18,7 @@
     "@browser-containers/sw-sandbox": "workspace:*",
     "@browser-containers/vfs-bus": "workspace:*",
     "@browser-containers/vite-server": "workspace:*",
+    "@rolldown/browser": "^1.1.5",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.35.0",

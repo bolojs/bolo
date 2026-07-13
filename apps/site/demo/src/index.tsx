@@ -1,3 +1,10 @@
+// Load @rolldown/browser as a bundled (same-origin) module so its WASI worker
+// isn't spawned cross-origin (issue #12). oxc-transform stays on CDN — see bundle.ts.
+declare global {
+  var __preferLocalRolldown: boolean | undefined;
+}
+globalThis.__preferLocalRolldown = true;
+
 import { render } from "solid-js/web";
 import App from "./App";
 import "./style.css";
