@@ -23,7 +23,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     if (url.pathname === prefix) {
       const redirected = new URL(url);
       redirected.pathname = `${prefix}/`;
-      return Response.redirect(redirected, 308);
+      return Response.redirect(redirected.href, 308);
     }
     if (url.pathname.startsWith(`${prefix}/`)) {
       const rewritten = new URL(url);

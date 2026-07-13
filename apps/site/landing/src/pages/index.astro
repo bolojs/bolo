@@ -57,8 +57,8 @@ const description = 'A fully client-side Node.js runtime. Run Node.js applicatio
     });
   }
 
-  inView('[data-reveal]', ({ target }) => {
-    animate(target, { opacity: 1, y: [24, 0] }, { duration: 0.6, ease: [0.16, 1, 0.3, 1] });
+  inView('[data-reveal]', (el) => {
+    animate(el, { opacity: 1, y: [24, 0] }, { duration: 0.6, ease: [0.16, 1, 0.3, 1] });
   });
 </script>
 

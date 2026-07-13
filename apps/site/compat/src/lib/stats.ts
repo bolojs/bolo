@@ -1,5 +1,9 @@
 import data from '../data/packages.json';
 
+// ponytail: packages.json cells are inferred as a literal-keyed object, but
+// col.key is a runtime string keyed off the same columns — cast to a record.
+type CellMap = Record<string, { status: string; note: string }>;
+
 export interface CategorySummary {
   key: string;
   label: string;
@@ -11,7 +15,7 @@ export interface CategorySummary {
 
 const measuredColumns = data.columns.filter((col) => col.measured);
 
-function isSupported(status: string): boolean {
+function isSupported(status: string | undefined): boolean {
   return status === 'pass' || status === 'partial';
 }
 
@@ -20,7 +24,7 @@ export function getHeadlineStat() {
   let supported = 0;
   for (const row of data.rows) {
     for (const col of measuredColumns) {
-      if (isSupported(row.cells[col.key]?.status)) supported += 1;
+      if (isSupported((row.cells as CellMap)[col.key]?.status)) supported += 1;
     }
   }
   return {
@@ -39,7 +43,7 @@ export function getCategorySummaries(): CategorySummary[] {
     let fail = 0;
     for (const row of rows) {
       for (const col of measuredColumns) {
-        const status = row.cells[col.key]?.status;
+        const status = (row.cells as CellMap)[col.key]?.status;
         if (status === 'pass') pass += 1;
         else if (status === 'partial') partial += 1;
         else if (status === 'fail') fail += 1;
