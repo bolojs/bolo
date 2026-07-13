@@ -46,12 +46,13 @@ function fail(messages) {
 const landingDist = join(routerDir, "..", "landing", "dist");
 const compatDist = join(routerDir, "..", "compat", "dist");
 const demoDist = join(routerDir, "..", "demo", "dist");
+const docsDist = join(routerDir, "..", "docs", "dist");
 
 if (
   !skipBuild &&
-  (!existsSync(landingDist) || !existsSync(compatDist) || !existsSync(demoDist))
+  (!existsSync(landingDist) || !existsSync(compatDist) || !existsSync(demoDist) || !existsSync(docsDist))
 ) {
-  log("dist/ missing in landing/compat/demo — building…");
+  log("dist/ missing in landing/compat/demo/docs — building…");
   await new Promise((resolve, reject) => {
     const proc = spawn(
       "pnpm",
@@ -62,6 +63,7 @@ if (
         "--filter=@browser-containers/site-landing",
         "--filter=@browser-containers/site-compat",
         "--filter=@browser-containers/site-demo",
+        "--filter=@browser-containers/site-docs",
       ],
       { cwd: repoRoot, stdio: "inherit" },
     );
@@ -78,6 +80,7 @@ const configs = [
   "apps/site/landing/wrangler.jsonc",
   "apps/site/compat/wrangler.jsonc",
   "apps/site/demo/wrangler.jsonc",
+  "apps/site/docs/wrangler.jsonc",
 ];
 
 log(`starting wrangler dev on :${port} (multi-config)…`);
@@ -177,6 +180,10 @@ await check("demo index", "/demo", {
   headers: { "cross-origin-opener-policy": "same-origin" },
 });
 await check("demo sw", "/demo/sw.js", {
+  status: 200,
+  headers: { "cross-origin-opener-policy": "same-origin" },
+});
+await check("docs index", "/docs", {
   status: 200,
   headers: { "cross-origin-opener-policy": "same-origin" },
 });

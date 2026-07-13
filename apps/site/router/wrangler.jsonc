@@ -6,6 +6,7 @@
   "services": [
     { "binding": "SITE", "service": "browser-containers-site" },
     { "binding": "COMPAT", "service": "browser-containers-compat" },
-    { "binding": "DEMO", "service": "browser-containers-demo" }
+    { "binding": "DEMO", "service": "browser-containers-demo" },
+    { "binding": "DOCS", "service": "browser-containers-docs" }
   ]
 }

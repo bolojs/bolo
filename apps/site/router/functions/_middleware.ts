@@ -2,11 +2,13 @@ interface Env {
   SITE: Fetcher;
   COMPAT: Fetcher;
   DEMO: Fetcher;
+  DOCS: Fetcher;
 }
 
 const MOUNTS: Array<{ prefix: string; binding: keyof Env }> = [
   { prefix: '/compat', binding: 'COMPAT' },
   { prefix: '/demo', binding: 'DEMO' },
+  { prefix: '/docs', binding: 'DOCS' },
 ];
 
 export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
