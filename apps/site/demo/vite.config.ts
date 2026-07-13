@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import tailwindcss from '@tailwindcss/vite';
 import { nodeWebShims } from '@browser-containers/node-web-shims/vite-plugin';
 
 const shimsDir = fileURLToPath(new URL('../../../packages/node-web-shims/dist/', import.meta.url));
@@ -45,6 +46,7 @@ export default defineConfig({
   // for boot({ swPath }) so the SW resolves to /demo/sw.js under the prefix.
   base: '/demo/',
   plugins: [
+    tailwindcss(),
     solidPlugin(),
     resolvePolyfillsShim(),
     nodeWebShims(),
