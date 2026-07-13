@@ -12,11 +12,16 @@
     "sync-data": "node scripts/build-data.js"
   },
   "dependencies": {
-    "astro": "^5.7.0"
+    "@fontsource-variable/geist": "^5.2.9",
+    "@fontsource-variable/geist-mono": "^5.2.8",
+    "astro": "^5.7.0",
+    "phosphor-icons-astro": "^2.1.1-17042025"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.0",
+    "@tailwindcss/vite": "^4.3.2",
     "portless": "latest",
+    "tailwindcss": "^4.3.2",
     "typescript": "^5.8.0"
   }
 }

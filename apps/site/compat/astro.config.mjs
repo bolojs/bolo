@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : 'https://browser-containers.pages.dev',
@@ -10,6 +11,7 @@ export default defineConfig({
     },
   },
   vite: {
+    plugins: [tailwindcss()],
     server: {
       headers: {
         'Cross-Origin-Opener-Policy': 'same-origin',

@@ -4,14 +4,38 @@ import SearchBar from '../components/SearchBar.astro';
 import HeatGrid from '../components/HeatGrid.astro';
 import CellDetail from '../components/CellDetail.astro';
 import data from '../data/packages.json';
+import { getHeadlineStat, getCategorySummaries, getPackageCount } from '../lib/stats';
 
 const { columns, categories, rows } = data;
+const stat = getHeadlineStat();
+const categorySummaries = getCategorySummaries();
+const packageCount = getPackageCount();
 ---
 
 <CompatLayout title="Compatibility">
-  <header class="compat-header">
+  <header class="compat-hero bento">
+  <div class="bento-cell bento-cell--headline">
+    <span class="eyebrow">Real browser-measured data</span>
     <h1>ARE WE WEB YET?</h1>
-    <p class="lead">Check browser, runtime, and package support across versions.</p>
+    <p class="lead">Tracking browser, runtime, and package support across {packageCount} Node.js APIs and libraries.</p>
+  </div>
+
+  <div class="bento-cell bento-cell--stat">
+    <span class="stat-value">{stat.percent}%</span>
+    <span class="stat-label">{stat.supported} of {stat.total} checks supported in-browser today</span>
+  </div>
+
+  <div class="bento-cell bento-cell--categories">
+    <span class="bento-cell-title">Ecosystem summary</span>
+    <ul class="category-summary-list">
+      {categorySummaries.map((cat) => (
+        <li class="category-summary-item">
+          <span class="category-summary-label">{cat.label}</span>
+          <span class="category-summary-count">{cat.pass + cat.partial}/{cat.total}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
   </header>
 
   <SearchBar />
@@ -26,8 +50,10 @@ const { columns, categories, rows } = data;
   </div>
 
   <div class="compat-main">
-    <div class="grid-wrapper">
-      <HeatGrid rows={rows} columns={columns} categories={categories} />
+    <div class="bezel-outer">
+      <div class="grid-wrapper">
+        <HeatGrid rows={rows} columns={columns} categories={categories} />
+      </div>
     </div>
     <CellDetail />
   </div>
