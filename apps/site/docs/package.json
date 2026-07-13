@@ -1,0 +1,16 @@
+{
+  "name": "@browser-containers/site-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "node scripts/copy-fonts.mjs && docmd dev",
+    "build": "node scripts/copy-fonts.mjs && docmd build && cp _headers dist/_headers"
+  },
+  "devDependencies": {
+    "@docmd/core": "^0.8.12",
+    "@fontsource-variable/geist": "^5.2.9",
+    "@fontsource-variable/geist-mono": "^5.2.8"
+  }
+}

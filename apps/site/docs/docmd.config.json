@@ -1,0 +1,11 @@
+{
+  "title": "browser-containers",
+  "src": "./docs",
+  "out": "./dist",
+  "base": "/docs/",
+  "theme": {
+    "name": "sky",
+    "appearance": "system",
+    "customCss": ["/assets/branding.css"]
+  }
+}
