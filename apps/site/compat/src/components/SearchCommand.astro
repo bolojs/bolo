@@ -1,0 +1,173 @@
+---
+import packages from '../data/packages.json';
+import latestJson from '../data/latest.json';
+
+interface LatestInfo {
+  status?: string;
+  date?: string;
+  link?: string;
+}
+
+const latest = latestJson as Record<string, LatestInfo>;
+
+const NPM_PACKAGES = packages.rows.filter((r) => r.category !== 'node-core');
+const NPM_COUNT = NPM_PACKAGES.length;
+
+const DEFAULT_IDS = ['fetch', 'axios', 'node-fetch'];
+const DEFAULT_PACKAGES = DEFAULT_IDS.map((id) =>
+  NPM_PACKAGES.find((p) => p.id === id),
+).filter((p): p is NonNullable<typeof p> => p != null);
+
+const STATUS_LABEL: Record<string, string> = {
+  pass: 'pass',
+  partial: 'partial',
+  fail: 'fail',
+  unknown: 'unknown',
+};
+
+const PACKAGE_DATA = NPM_PACKAGES.map((pkg) => {
+  const info = latest[pkg.id];
+  return {
+    id: pkg.id,
+    name: pkg.name,
+    status: info?.status ?? 'unknown',
+  };
+});
+---
+
+<section class="search-command" aria-label="Package search">
+  <div class="search-command-field">
+    <label for="search-command-input" class="search-command-label visually-hidden">
+      Search packages
+    </label>
+    <div class="search-command-input-wrap">
+      <span class="search-command-prompt" aria-hidden="true">›</span>
+      <input
+        id="search-command-input"
+        class="search-command-input"
+        type="search"
+        autocomplete="off"
+        placeholder="Search 103 packages..."
+        aria-label="Search packages"
+        data-count={NPM_COUNT}
+      />
+      <kbd class="search-command-shortcut" aria-hidden="true">/</kbd>
+    </div>
+  </div>
+
+  <div class="search-command-results">
+    <p class="search-command-heading" id="search-command-heading">Top packages</p>
+    <ul class="search-command-list" id="search-command-list" aria-live="polite">
+      {DEFAULT_PACKAGES.map((pkg) => {
+        const info = latest[pkg.id];
+        const status = info?.status ?? 'unknown';
+        return (
+          <li class="search-command-item" data-name={pkg.name} data-status={status}>
+            <a href={`https://www.npmjs.com/package/${pkg.name}`} target="_blank" rel="noopener" class="search-command-link">
+              <span class="search-command-name">{pkg.name}</span>
+              <span class="search-command-status">
+                <span class={`search-command-dot status-${status}`} aria-hidden="true" />
+                <span class="search-command-status-text">{STATUS_LABEL[status]}</span>
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+    <a href="#compat-grid" class="search-command-expand">
+      + {NPM_COUNT} packages listed
+    </a>
+  </div>
+</section>
+
+<script is:inline define:vars={{ packageData: PACKAGE_DATA }}>
+  const input = document.getElementById('search-command-input');
+  const list = document.getElementById('search-command-list');
+  const heading = document.getElementById('search-command-heading');
+  const shortcut = input?.parentElement?.querySelector('.search-command-shortcut');
+  const expand = document.querySelector('.search-command-expand');
+  const totalCount = input?.dataset.count ? parseInt(input.dataset.count, 10) : packageData.length;
+
+  const STATUS_LABEL = { pass: 'pass', partial: 'partial', fail: 'fail', unknown: 'unknown' };
+
+  function renderResults(matches) {
+    if (!list) return;
+    list.innerHTML = '';
+
+    for (const pkg of matches) {
+      const li = document.createElement('li');
+      li.className = 'search-command-item';
+      li.setAttribute('data-name', pkg.name);
+      li.setAttribute('data-status', pkg.status);
+
+      const a = document.createElement('a');
+      a.className = 'search-command-link';
+      a.href = `https://www.npmjs.com/package/${pkg.name}`;
+      a.target = '_blank';
+      a.rel = 'noopener';
+
+      const name = document.createElement('span');
+      name.className = 'search-command-name';
+      name.textContent = pkg.name;
+
+      const statusWrap = document.createElement('span');
+      statusWrap.className = 'search-command-status';
+
+      const dot = document.createElement('span');
+      dot.className = `search-command-dot status-${pkg.status}`;
+      dot.setAttribute('aria-hidden', 'true');
+
+      const statusText = document.createElement('span');
+      statusText.className = 'search-command-status-text';
+      statusText.textContent = STATUS_LABEL[pkg.status] ?? pkg.status;
+
+      statusWrap.append(dot, statusText);
+      a.append(name, statusWrap);
+      li.appendChild(a);
+      list.appendChild(li);
+    }
+  }
+
+  function filter(term) {
+    const t = term.trim().toLowerCase();
+    if (!t) {
+      const defaults = packageData.filter((p) => ['fetch', 'axios', 'node-fetch'].includes(p.id));
+      renderResults(defaults);
+      if (heading) heading.textContent = 'Top packages';
+      if (expand) expand.textContent = `+ ${totalCount} packages listed`;
+      return;
+    }
+
+    const allMatches = packageData.filter((p) => p.name.toLowerCase().includes(t));
+    const topMatches = allMatches.slice(0, 3);
+
+    renderResults(topMatches);
+    if (heading) {
+      heading.textContent = `${topMatches.length} package${topMatches.length === 1 ? '' : 's'} match`;
+    }
+    if (expand) {
+      expand.textContent = `+ ${allMatches.length} packages listed`;
+    }
+  }
+
+  input?.addEventListener('input', (e) => {
+    filter(e.currentTarget.value);
+  });
+
+  input?.addEventListener('focus', () => {
+    shortcut?.classList.add('is-hidden');
+  });
+
+  input?.addEventListener('blur', () => {
+    if (!input.value) shortcut?.classList.remove('is-hidden');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const active = document.activeElement;
+    const typing = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active?.isContentEditable;
+    if (e.key === '/' && !typing) {
+      e.preventDefault();
+      input?.focus();
+    }
+  });
+</script>
