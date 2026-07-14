@@ -2,6 +2,11 @@
    compat is the design reference — do not fork values here without updating
    compat too, and vice versa. */
 @import "tailwindcss";
+
+/* Tailwind v4's automatic content detection is rooted at each app's own
+   directory and won't cross into this shared dir — every app that imports
+   this file needs its Tailwind utilities generated from shared components too. */
+@source "./components/**/*.{astro,tsx,ts}";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 
