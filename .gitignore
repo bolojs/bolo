@@ -15,6 +15,7 @@ tmp/
 .osgrep
 *.log
 .gauge/
+tests/e2e/bin/gauge
 tests/e2e/screenshots/
 tests/e2e/reports/
 .agents/site/
