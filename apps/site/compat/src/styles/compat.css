@@ -760,7 +760,7 @@
   }
 
   .search-command-link {
-    padding: 0.75rem 0.875rem;
+    padding: 0.75rem 0;
   }
 
   .search-command-status-text {
@@ -770,4 +770,121 @@
   .search-command-kind {
     display: none;
   }
+}
+
+/* Hover card (shadcn-style rich tooltip for heatmap cells) */
+.hover-card-content {
+  z-index: 50;
+  min-width: 200px;
+  max-width: 280px;
+  padding: 0.875rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-sans);
+  color: var(--fg);
+  outline: none;
+  animation: hover-card-fade-in 150ms ease-out;
+}
+
+.hover-card-content[data-state="closed"] {
+  animation: hover-card-fade-out 100ms ease-in;
+}
+
+@keyframes hover-card-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hover-card-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.hover-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.hover-card-name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hover-card-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--unknown-bg);
+  color: var(--unknown);
+  flex-shrink: 0;
+}
+
+.hover-card-badge.status-pass {
+  background: var(--pass-bg);
+  color: var(--pass);
+}
+
+.hover-card-badge.status-partial {
+  background: var(--partial-bg);
+  color: var(--partial);
+}
+
+.hover-card-badge.status-fail {
+  background: var(--fail-bg);
+  color: var(--fail);
+}
+
+.hover-card-category {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.hover-card-date {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.hover-card-link {
+  display: inline-block;
+  width: 100%;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.hover-card-link:hover {
+  text-decoration: underline;
 }
