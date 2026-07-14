@@ -16,9 +16,9 @@ const currentPath = Astro.url.pathname;
 
 <header class="navbar">
   <div class="container navbar-inner">
-    <a href="/" class="wordmark" aria-label="browser-containers home">
-      <span class="mark" aria-hidden="true">◈</span>
-      <span class="wordmark-text">browser-containers</span>
+    <a href="/" class="wordmark" aria-label="bolo home">
+      <img class="mark" src="/navbar-mark.png" width="20" height="20" alt="" aria-hidden="true" />
+      <span class="wordmark-text">bolo</span>
     </a>
 
     <nav class="nav-links" aria-label="primary">
@@ -34,7 +34,7 @@ const currentPath = Astro.url.pathname;
         ))
       }
       <a
-        href="https://github.com/browser-containers/browser-containers"
+        href="https://github.com/bolojs/bolo"
         target="_blank"
         rel="noopener noreferrer"
         class="nav-link"
@@ -70,8 +70,9 @@ const currentPath = Astro.url.pathname;
   }
 
   .mark {
-    font-size: 1.25rem;
-    line-height: 1;
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   .wordmark-text {
