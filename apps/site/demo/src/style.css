@@ -14,7 +14,9 @@
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #0d1117;
+  /* Matches the terminal bezel's --terminal-bg (#111111) it's embedded in on
+     the landing hero, so the 1px gap between .app-panels doesn't show a seam. */
+  background: #111111;
   color: #e6edf3;
   height: 100dvh;
   display: flex;
