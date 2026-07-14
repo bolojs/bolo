@@ -16,9 +16,8 @@ packages/
   sw-sandbox/        ServiceWorker-based network proxy for virtual localhost
   node-web-shims/    node:* → Web API bridges (crypto, stream, buffer, path, url, events, os, http, worker_threads)
   node-runtime-shims/  node:* → VfsBus/sw-sandbox bridges (fs, http createServer, net, child_process)
-  sandbox-policy/    Opt-in AI agent sandboxing (network, memory, CPU, filesystem caps)
   wasm-registry/     Native binary → WASM dispatcher (esbuild, tsc, sass, swc)
-  runtime/           Core container API — RuntimeWorker (V8) + SandboxPool (QuickJS)
+  runtime/           Core container API — RuntimeWorker (V8) + IframeSandbox; pluggable SandboxBackend
   npm/               Browser-native package installer (registry resolve + tarball extract)
   vite-server/       BrowserViteServer — Vite dev server on main thread
 apps/
@@ -49,9 +48,9 @@ tests/
 | Network proxy | `packages/sw-sandbox` | ServiceWorker intercepts virtual origin, MessageChannel bridge |
 | Web API shims | `packages/node-web-shims` | node:* → Web API via unenv, independently usable |
 | Runtime shims | `packages/node-runtime-shims` | node:* → VfsBus/SW, depends on vfs-bus + sw-sandbox |
-| Sandbox policy | `packages/sandbox-policy` | Opt-in, zero overhead when unused |
 | WASM tools | `packages/wasm-registry` | Lazy-loaded native binary → WASM dispatcher |
-| Container API | `packages/runtime` | RuntimeWorker (V8) + SandboxPool (QuickJS) |
+| Container API | `packages/runtime` | RuntimeWorker (V8) + IframeSandbox; pluggable SandboxBackend |
+| QuickJS agent sandbox | [browser-containers/quickjs-sandbox](https://github.com/browser-containers/quickjs-sandbox) | Separate repo; optional SandboxBackend + policy library |
 | Package install | `packages/npm` | Browser-native installer + esm.sh fallback |
 | Vite dev server | `packages/vite-server` | Main thread, HMR via BroadcastChannel |
 | Demo app | `apps/site/demo` | IDE-like UI wiring all packages together, mounted at `/demo` |

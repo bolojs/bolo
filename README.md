@@ -87,11 +87,13 @@ const registry = createLiveShimRegistry({
 | [`sw-sandbox`](packages/sw-sandbox) | ServiceWorker-based network proxy for virtual localhost |
 | [`node-web-shims`](packages/node-web-shims) | `node:*` to Web API bridges |
 | [`node-runtime-shims`](packages/node-runtime-shims) | `node:*` to VfsBus/sw-sandbox bridges |
-| [`sandbox-policy`](packages/sandbox-policy) | Opt-in sandbox policy types (QuickJS backend) |
 | [`wasm-registry`](packages/wasm-registry) | Native binary to WASM dispatcher (esbuild, tsc, sass, swc) |
 | [`runtime`](packages/runtime) | Core container API (V8 + iframe sandbox) |
 | [`npm`](packages/npm) | Package installation in the browser |
 | [`vite-server`](packages/vite-server) | Vite dev server on main thread |
+
+The QuickJS agent sandbox (`quickjs-sandbox` + its `sandbox-policy` policy library) has
+moved to its own repo: [browser-containers/quickjs-sandbox](https://github.com/browser-containers/quickjs-sandbox).
 
 ## Documentation
 
