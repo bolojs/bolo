@@ -6,7 +6,7 @@ Browser-based Node.js runtime monorepo. Open-source, fully client-side. Run Node
 
 ## PROJECT MANAGEMENT
 
-GitHub Project: https://github.com/orgs/browser-containers/projects/1 — all work must link to a refined task here (see global backlog policy).
+GitHub Project: https://github.com/orgs/bolojs/projects/1 — all work must link to a refined task here (see global backlog policy).
 
 ## STRUCTURE
 
@@ -21,11 +21,11 @@ packages/
   npm/               Browser-native package installer (registry resolve + tarball extract)
   vite-server/       BrowserViteServer — Vite dev server on main thread
 apps/
-  site/              browser-containers.pages.dev, one static Pages deploy (build outputs merged, no router)
-    landing/         @browser-containers/site-landing    Astro/React marketing site, served at "/"
-    compat/          @browser-containers/site-compat     Astro heat-grid,            served at "/compat"
-    demo/            @browser-containers/site-demo       Vite/Solid,                 served at "/demo"
-    docs/            @browser-containers/site-docs       Astro Starlight,            served at "/docs"
+  site/              bolojs.pages.dev, one static Pages deploy (build outputs merged, no router)
+    landing/         @bolojs/site-landing    Astro/React marketing site, served at "/"
+    compat/          @bolojs/site-compat     Astro heat-grid,            served at "/compat"
+    demo/            @bolojs/site-demo       Vite/Solid,                 served at "/demo"
+    docs/            @bolojs/site-docs       Astro Starlight,            served at "/docs"
   compat-harness/    Nightly npm-package matrix harness (data source for /compat)
 tests/
   unit/              Vitest, no browser
@@ -37,7 +37,7 @@ tests/
 
 - **This file** — project overview and conventions
 - **PRD, ADRs, contributing guide (internal)** — [`.agents/docs/`](.agents/docs/). Browse locally with `pnpm docs:internal`. PRD: `.agents/docs/prd.md`. ADRs: `.agents/docs/adr/0001-...md`, ...0006. Shim contributing: `.agents/docs/contributing-shims.md`.
-- **End-user docs (public)** — Astro Starlight app, source [`apps/site/docs/src/content/docs/`](apps/site/docs/src/content/docs/). Live URL pattern `https://browser-containers.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
+- **End-user docs (public)** — Astro Starlight app, source [`apps/site/docs/src/content/docs/`](apps/site/docs/src/content/docs/). Live URL pattern `https://bolojs.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
 - **Implementation plan** — `.agents/plans/<date>-<purpose>.md` (ephemeral working plans)
 
 ## WHERE TO LOOK
@@ -50,7 +50,7 @@ tests/
 | Runtime shims | `packages/node-runtime-shims` | node:* → VfsBus/SW, depends on vfs-bus + sw-sandbox |
 | Bundler / WASM tools | `packages/wasm-registry` | rolldown + oxc-transform (real bundler); `registerWasmTool()` seam for more |
 | Container API | `packages/runtime` | RuntimeWorker (V8) + IframeSandbox; pluggable SandboxBackend |
-| QuickJS agent sandbox | [browser-containers/quickjs-sandbox](https://github.com/browser-containers/quickjs-sandbox) | Separate repo; optional SandboxBackend + policy library |
+| QuickJS agent sandbox | [bolojs/quickjs-sandbox](https://github.com/bolojs/quickjs-sandbox) | Separate repo; optional SandboxBackend + policy library |
 | Package install | `packages/npm` | Browser-native installer + esm.sh fallback |
 | Vite dev server | `packages/vite-server` | Main thread, HMR via BroadcastChannel |
 | Demo app | `apps/site/demo` | IDE-like UI wiring all packages together, mounted at `/demo` |
@@ -97,7 +97,7 @@ Agents running from the main worktree may use `.sisyphus/boulder.json` as normal
 
 Dev servers use [portless](https://github.com/vercel-labs/portless) for stable `.localhost` URLs instead of port numbers. First run auto-starts the HTTPS proxy on port 443 and generates a local CA (run `npx portless trust` if you see certificate warnings).
 
-- **Git worktrees**: must live under `./.worktrees/` (see Universal Rules). Each gets a unique subdomain (e.g. `fix-ui.browser-containers.localhost`)
+- **Git worktrees**: must live under `./.worktrees/` (see Universal Rules). Each gets a unique subdomain (e.g. `fix-ui.bolo.localhost`)
 - **Bypass**: set `PORTLESS=0` to run without the proxy (e.g. `PORTLESS=0 bun run dev-web`)
 - **Install**: already included as a dev dependency (`npx portless` or via scripts)
 

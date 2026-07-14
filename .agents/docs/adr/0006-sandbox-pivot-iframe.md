@@ -19,7 +19,7 @@ almostnode.dev uses exactly this approach. No WASM sandbox. No QuickJS. Just a c
 
 Replace QuickJS with a cross-origin iframe (`sandbox="allow-scripts"`, no `allow-same-origin`) as the default sandbox. The browser same-origin policy is the security boundary. The iframe gets an opaque origin and cannot access parent DOM, localStorage, sessionStorage, cookies, IndexedDB, OPFS, or SharedArrayBuffer.
 
-Move QuickJS to `@browser-containers/quickjs-sandbox` as an opt-in community package for users who need memory caps, CPU instruction counting, or per-path filesystem ACLs.
+Move QuickJS to `@bolojs/quickjs-sandbox` as an opt-in community package for users who need memory caps, CPU instruction counting, or per-path filesystem ACLs.
 
 ## Consequences
 

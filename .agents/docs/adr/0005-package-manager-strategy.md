@@ -10,7 +10,7 @@ Implemented — supersedes the package manager section of [ADR-0004](0004-packag
 
 This ADR updates and supersedes the PM section of ADR-0004, keeping the overall direction but replacing the per-format translation approach with a **single, unified, format-agnostic lockfile compatibility layer** inspired by aube's IR design, now scoped as a standalone, framework-agnostic unjs package named **`@unjs/lockfile`**.
 
-The browser-containers monorepo is the primary consumer and co-steward of `@unjs/lockfile`, not its owner.
+The bolo monorepo is the primary consumer and co-steward of `@unjs/lockfile`, not its owner.
 
 ---
 
@@ -117,11 +117,11 @@ However, **bun lockfile reading IS feasible**, contrary to what ADR-0004 implied
 - `bun.lock` (text, bun 1.1+, JSONC): trivially parseable with `JSON.parse()` after stripping trailing commas. Supported by `lockparse` and `@hyrious/bun.lockb`.
 - `bun.lockb` (binary, bun <1.1): `@hyrious/bun.lockb` (MIT, hyrious) is a complete TypeScript port of bun's Zig deserializer — zero deps, browser-runnable. It produces yarn.lock v1 text, which is then re-parsed via `@yarnpkg/lockfile`. This two-step path covers all bun.lockb versions.
 
-bun lockfile *writing* (producing a bun.lock after install) is out of scope for browser-containers v1.
+bun lockfile *writing* (producing a bun.lock after install) is out of scope for bolo v1.
 
 ### 6. Position WinterTC (ECMA-429) compliance as a tier label
 
-WinterCG (Ecma TC55, ECMA-429) formalizes the minimum common Web API surface. browser-containers is approximately 85-90% compliant through native Web APIs plus `node-web-shims`. The `navigator.userAgent` and `unhandledrejection` gaps are each closable in under 20 lines.
+WinterCG (Ecma TC55, ECMA-429) formalizes the minimum common Web API surface. bolo is approximately 85-90% compliant through native Web APIs plus `node-web-shims`. The `navigator.userAgent` and `unhandledrejection` gaps are each closable in under 20 lines.
 
 Once the WPT subset test suite is published (ongoing as of late 2025 per WinterTC55 issues), we can publish a compliance audit and market a precise percentage against the ECMA-429 2025 snapshot.
 
@@ -137,9 +137,9 @@ Once the WPT subset test suite is published (ongoing as of late 2025 per WinterT
 
 ## Consequences
 
-- Users with `bun.lock`, `pnpm-lock.yaml`, or `yarn.lock` projects can drop them into browser-containers without converting to npm — `@unjs/lockfile` reads the existing lockfile and `PackageManager` with `'lockfile-only'` strategy installs from the resolved tarball URLs.
+- Users with `bun.lock`, `pnpm-lock.yaml`, or `yarn.lock` projects can drop them into bolo without converting to npm — `@unjs/lockfile` reads the existing lockfile and `PackageManager` with `'lockfile-only'` strategy installs from the resolved tarball URLs.
 - `@unjs/lockfile` is a reusable, framework-agnostic unjs package. It can be published independently, cited in the unjs ecosystem, and consumed by Deno, Bun, Node, or any runtime that needs lockfile-to-graph translation.
 - The symlink table (memfs forwarding) is the single dependency that unlocks several downstream capabilities and should be prioritized immediately.
 - Hardlink-dependent features (pnpm CAS dedup, vltpkg `@vltpkg/cache`) remain permanently unsupported due to browser filesystem constraints.
 - Install performance and disk usage in the VFS will be worse than a native hardlinking PM. This is a documented architectural trade-off.
-- WebContainers (StackBlitz) runs real CLIs via WASM Node.js but requires a commercial license for production use and is architecturally incompatible with the fetch-only/memfs-only constraints of browser-containers. The lockfile-translation approach is the correct architectural choice for a browser-native FOSS project.
+- WebContainers (StackBlitz) runs real CLIs via WASM Node.js but requires a commercial license for production use and is architecturally incompatible with the fetch-only/memfs-only constraints of bolo. The lockfile-translation approach is the correct architectural choice for a browser-native FOSS project.

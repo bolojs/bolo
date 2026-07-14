@@ -12,7 +12,7 @@ The root cause was shared mutable state with multiple writers and no coordinatio
 
 ## Decision
 
-Adopt a single-owner VFS architecture via `@browser-containers/vfs-bus`:
+Adopt a single-owner VFS architecture via `@bolojs/vfs-bus`:
 
 - **One VfsBus instance** (singleton via `vfsRegistry`) is shared by all consumers.
 - **Single write authority**: Only `VfsController` on the main thread may write. All other consumers receive read-only views or go through VfsController's API.

@@ -5,11 +5,11 @@ All shims MUST use the factory pattern. Never import singleton instances directl
 
 ```typescript
 // correct
-import type { VfsBus } from '@browser-containers/vfs-bus';
+import type { VfsBus } from '@bolojs/vfs-bus';
 export const createFsShim = (vfs: VfsBus) => { ... };
 
 // forbidden
-import { vfsRegistry } from '@browser-containers/vfs-bus';
+import { vfsRegistry } from '@bolojs/vfs-bus';
 ```
 
 ## Dependencies

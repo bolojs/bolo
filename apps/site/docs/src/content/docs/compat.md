@@ -4,7 +4,7 @@ description: Compatibility tiers and support status for Node.js APIs and package
 ---
 
 This document assesses how much of the Node.js ecosystem actually runs in
-browser-containers, organized into tiers. For the per-module implementation
+bolo, organized into tiers. For the per-module implementation
 table, see [shim-coverage.md](/docs/shim-coverage/).
 
 ## Compatibility tiers

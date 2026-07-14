@@ -17,4 +17,4 @@ Explicitly exclude Webpack and Next.js from v1 scope. Users who need Webpack or 
 
 Our runtime targets workloads that run on Cloudflare Workers, Deno Deploy, or edge runtimes — plus our added advantage of `node:fs` and `node:stream` support. This covers Hono, Express, Fastify, Elysia, Vercel AI SDK, and most AI agent frameworks.
 
-Vite is the only bundler we support, and it runs as our dev server (`@browser-containers/vite-server`). This avoids the complexity of supporting competing build systems while covering the vast majority of modern frontend and full-stack TypeScript workloads.
+Vite is the only bundler we support, and it runs as our dev server (`@bolojs/vite-server`). This avoids the complexity of supporting competing build systems while covering the vast majority of modern frontend and full-stack TypeScript workloads.

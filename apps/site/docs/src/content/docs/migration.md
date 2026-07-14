@@ -1,11 +1,11 @@
 ---
 title: Migration Guide
-description: Moving from WebContainers or Nodebox to browser-containers.
+description: Moving from WebContainers or Nodebox to bolo.
 ---
 
 ## Concept mapping
 
-| Concept | WebContainers | Nodebox | browser-containers |
+| Concept | WebContainers | Nodebox | bolo |
 |---------|--------------|---------|-------------------|
 | Boot | `WebContainer.boot()` | `new Nodebox({ iframe }); .connect()` | `boot()` |
 | Mount files | `.mount(files)` | `fs.init(fileMap)` | `vfs.writeFile(path, content)` per file, or `vfs.restore(snapshot)` for bulk |
@@ -34,10 +34,10 @@ proc.output.pipeTo(new WritableStream({ write: (chunk) => console.log(chunk) }))
 await proc.exit;
 ```
 
-### After (browser-containers)
+### After (bolo)
 
 ```ts
-import { boot } from '@browser-containers/runtime';
+import { boot } from '@bolojs/runtime';
 
 const container = await boot();
 
@@ -79,7 +79,7 @@ const { stdout } = await shell.runCommand('node', ['index.js']);
 console.log(stdout);
 ```
 
-### After (browser-containers)
+### After (bolo)
 
 ```ts
 // (same boot sequence as above)

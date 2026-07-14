@@ -1,11 +1,10 @@
 ---
 title: Alternatives Comparison
-description: How browser-containers compares to WebContainers, Nodebox, and other browser runtimes.
+description: How bolo compares to WebContainers, Nodebox, and other browser runtimes.
 ---
-
 ## Overview
 
-browser-containers is one of several projects that let you run JavaScript/Node.js code
+bolo is one of several projects that let you run JavaScript/Node.js code
 in the browser without a server. This page compares it honestly against the closest
 alternatives so you can choose the right tool.
 
@@ -14,23 +13,25 @@ Embedding requires cloning the repo. See [getting-started.md](/docs/getting-star
 
 ## Comparison table
 
-| | **browser-containers** | **WebContainers** | **Nodebox** | **OpenWebContainer** | **quickjs-emscripten** |
-|---|---|---|---|---|---|
-| **License** | Apache 2.0 | Proprietary | MIT + Commons Clause | MIT | MIT |
-| **npm published** | No (workspace-only) | Yes | Yes | No | Yes |
-| **Boot time** | ~100 ms (QuickJS) / ~500 ms (V8 worker) | 2–5 s | ~100 ms | Fast (QuickJS) | ~50 ms |
-| **Bundle size** | TBD | Multi-MB | ~600 KB gzipped | Small | Small |
-| **Node.js compat** | Partial (shims) | Full (via WASM) | 40+ polyfills | Shell sim only, no npm | Limited |
-| **Native packages (NAPI)** | No | Yes | No | No | No |
-| **VFS + persistence** | Yes (memfs + OPFS) | Yes | Yes | Yes | No |
-| **Preview / live server** | Yes (SW + iframe) | Yes | Yes | No | No |
-| **AI agent sandbox** | Yes (QuickJS, C-level caps) | No | No | No | Yes |
-| **High-level `boot()` API** | Yes | Yes | Yes | No | No |
-| **Dual execution tiers** | Yes (V8 trusted + QuickJS untrusted) | No | No | No | No |
+
+|                             | **bolo**                                | **WebContainers** | **Nodebox**          | **OpenWebContainer**   | **quickjs-emscripten** |
+| --------------------------- | --------------------------------------- | ----------------- | -------------------- | ---------------------- | ---------------------- |
+| **License**                 | Apache 2.0                              | Proprietary       | MIT + Commons Clause | MIT                    | MIT                    |
+| **npm published**           | Yes                                     | Yes               | Yes                  | No                     | Yes                    |
+| **Boot time**               | ~100 ms (QuickJS) / ~500 ms (V8 worker) | 2–5 s             | ~100 ms              | Fast (QuickJS)         | ~50 ms                 |
+| **Bundle size**             | TBD                                     | Multi-MB          | ~600 KB gzipped      | Small                  | Small                  |
+| **Node.js compat**          | Partial (shims)                         | Full (via WASM)   | 40+ polyfills        | Shell sim only, no npm | Limited                |
+| **Native packages (NAPI)**  | No                                      | Yes               | No                   | No                     | No                     |
+| **VFS + persistence**       | Yes (memfs + OPFS)                      | Yes               | Yes                  | Yes                    | No                     |
+| **Preview / live server**   | Yes (SW + iframe)                       | Yes               | Yes                  | No                     | No                     |
+| **AI agent sandbox**        | Yes (QuickJS, C-level caps)             | No                | No                   | No                     | Yes                    |
+| **High-level `boot()` API** | Yes                                     | Yes               | Yes                  | No                     | No                     |
+| **Dual execution tiers**    | Yes (V8 trusted + QuickJS untrusted)    | No                | No                   | No                     | No                     |
+
 
 Nodebox is dual-licensed MIT + [Commons Clause](https://commonsclause.com/), which is
 **not OSI-approved** — it restricts selling or hosting the software itself as a
-commercial product/service. browser-containers' plain Apache 2.0 has no such restriction.
+commercial product/service. bolo' plain Apache 2.0 has no such restriction.
 
 For context, the proprietary high bar in this space is **BrowserPod** and **WebVM**
 (both Leaning Technologies, built on the **CheerpX** engine — x86-to-WASM JIT + Linux
@@ -40,18 +41,18 @@ npm packages/toolchains, multi-process concurrency, inbound networking. WebVM's 
 engine underneath requires a commercial license for any organizational use, so neither
 project clears the FOSS bar and both are excluded from the comparison table above.
 
-## When to choose browser-containers
+## When to choose bolo
 
 - You need to **sandbox untrusted AI-generated code** with hard memory/CPU caps that
-  cannot be bypassed from JavaScript. The QuickJS tier (via `SandboxPool`) imposes
-  C-level limits on every execution.
+cannot be bypassed from JavaScript. The QuickJS tier (via `SandboxPool`) imposes
+C-level limits on every execution.
 - You want an **Apache 2.0 licensed** runtime with no proprietary lock-in.
 - You need a **client-side bundler** (rolldown + oxc-transform, wired in) with a
-  `registerWasmTool()` seam for adding more native-binary-to-WASM tools, or want to run
-  arbitrary **`wasm32-wasip1` CLI binaries** (Rust/C/Zig tools compiled to WASI) through
-  that same seam.
+`registerWasmTool()` seam for adding more native-binary-to-WASM tools, or want to run
+arbitrary `**wasm32-wasip1` CLI binaries** (Rust/C/Zig tools compiled to WASI) through
+that same seam.
 - You are building a platform where the **V8 trusted tier** runs user tooling and the
-  **QuickJS untrusted tier** runs user-submitted or AI-generated code separately.
+**QuickJS untrusted tier** runs user-submitted or AI-generated code separately.
 - You need **OPFS-backed VFS persistence** across sessions.
 
 ## When to choose an alternative

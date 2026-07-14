@@ -3,7 +3,7 @@ title: Package Manager Support
 description: npm, yarn, pnpm, bun, JSR, and the browser-native package manager landscape.
 ---
 
-Status of package installation and registry support in browser-containers,
+Status of package installation and registry support in bolo,
 plus an exploration of which package managers and registries we can realistically
 support in a browser-only runtime. The architectural decision is recorded in
 [ADR-0004](/docs/adr/0004-package-manager-strategy/).

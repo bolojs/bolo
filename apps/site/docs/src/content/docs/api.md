@@ -3,14 +3,14 @@ title: API Reference
 description: VfsBus, ShellService, SandboxBackend/IframeSandbox, RuntimeWorker, SWSandbox, and the demo contract.
 ---
 
-## VfsBus (`@browser-containers/vfs-bus`)
+## VfsBus (`@bolojs/vfs-bus`)
 
 Single-owner observable virtual filesystem backed by memfs (hot layer) and OPFS (cold layer).
 The hot layer is authoritative; OPFS is a best-effort persistence cache that degrades silently.
 Files not accessed for 5 minutes are evicted from the hot layer (cold layer keeps a copy).
 
 ```ts
-import { VfsBus } from '@browser-containers/vfs-bus';
+import { VfsBus } from '@bolojs/vfs-bus';
 const vfs = new VfsBus();
 ```
 
@@ -45,12 +45,12 @@ vfs.on('rename', ({ path }) => { /* file renamed */ });
 
 ---
 
-## ShellService (`@browser-containers/runtime`)
+## ShellService (`@bolojs/runtime`)
 
 Routes shell commands to the appropriate execution tier.
 
 ```ts
-import { ShellService } from '@browser-containers/runtime';
+import { ShellService } from '@bolojs/runtime';
 
 const shell = new ShellService({ vfs, packageManager, runtimeWorker, sandbox });
 ```
@@ -92,7 +92,7 @@ Unknown commands return exit code `127`.
 
 ---
 
-## SandboxBackend / IframeSandbox (`@browser-containers/runtime`)
+## SandboxBackend / IframeSandbox (`@bolojs/runtime`)
 
 Untrusted-code execution is pluggable behind a small interface:
 
@@ -112,7 +112,7 @@ The default implementation is `IframeSandbox` — a cross-origin, opaque-origin 
 (browser-native isolation, no WASM runtime to load):
 
 ```ts
-import { IframeSandbox } from '@browser-containers/runtime';
+import { IframeSandbox } from '@bolojs/runtime';
 const sandbox = new IframeSandbox();
 const { result, error } = await sandbox.run('2 + 2');
 // result: '4', error: undefined
@@ -123,17 +123,17 @@ const { result, error } = await sandbox.run('2 + 2');
 
 For hard, C-level memory/CPU/stack caps (not just origin isolation), implement
 `SandboxBackend` with the QuickJS-based `SandboxPool` from the separate
-[`quickjs-sandbox`](https://github.com/browser-containers/quickjs-sandbox) package and
-pass it as `sandbox` — it's opt-in and not a dependency of `@browser-containers/runtime`.
+[`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox) package and
+pass it as `sandbox` — it's opt-in and not a dependency of `@bolojs/runtime`.
 
 ---
 
-## RuntimeWorker (`@browser-containers/runtime`)
+## RuntimeWorker (`@bolojs/runtime`)
 
 Trusted code execution tier. Runs scripts in a dedicated Web Worker.
 
 ```ts
-import { RuntimeWorker } from '@browser-containers/runtime';
+import { RuntimeWorker } from '@bolojs/runtime';
 const worker = new RuntimeWorker(vfs, sandbox);
 ```
 
@@ -157,12 +157,12 @@ A watchdog terminates the Worker if no heartbeat is received for >10 seconds.
 
 ---
 
-## SWSandbox (`@browser-containers/sw-sandbox`)
+## SWSandbox (`@bolojs/sw-sandbox`)
 
 ServiceWorker-based network proxy that intercepts requests to a virtual origin.
 
 ```ts
-import { SWSandbox } from '@browser-containers/sw-sandbox';
+import { SWSandbox } from '@bolojs/sw-sandbox';
 const sandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });
 ```
 
@@ -184,11 +184,11 @@ sandbox.onFetch(async (req) => {
 
 ### `setPolicyRegistry(registry)`
 
-Attach a `Map<string, unknown>` of sandbox policies. Used by `@browser-containers/sandbox-policy`.
+Attach a `Map<string, unknown>` of sandbox policies. Used by `@bolojs/sandbox-policy`.
 
 ---
 
-## Extension points (`@browser-containers/node-runtime-shims`)
+## Extension points (`@bolojs/node-runtime-shims`)
 
 Some Node.js features need capabilities the browser can't provide natively. Instead of
 blocking these forever, `createLiveShimRegistry` exposes backend hooks:
@@ -202,7 +202,7 @@ blocking these forever, `createLiveShimRegistry` exposes backend hooks:
 | Worker threads | Stub (`isMainThread=true`) | `workerThreadsBackend: (deps) => workerThreadsNamespace` |
 
 ```ts
-import { createLiveShimRegistry } from '@browser-containers/node-runtime-shims';
+import { createLiveShimRegistry } from '@bolojs/node-runtime-shims';
 
 const registry = createLiveShimRegistry({
   vfs,

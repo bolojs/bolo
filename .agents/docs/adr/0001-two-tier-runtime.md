@@ -22,4 +22,4 @@ Adopt a two-tier runtime architecture:
 
 The performance cost of QuickJS (interpreter-only, ~2–5% overhead at N=1024 interrupt cycles) is negligible for AI agents because they are I/O-bound — LLM API latency (~seconds) dwarfs JS execution time (~milliseconds).
 
-Sandbox policy (`@browser-containers/sandbox-policy`) is opt-in. When no policy is configured (`SandboxPresets.none`), the sandbox-policy library is not loaded — zero overhead for trusted-only usage.
+Sandbox policy (`@bolojs/sandbox-policy`) is opt-in. When no policy is configured (`SandboxPresets.none`), the sandbox-policy library is not loaded — zero overhead for trusted-only usage.

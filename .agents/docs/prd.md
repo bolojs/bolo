@@ -1,13 +1,13 @@
 
 ## Vision
 
-A fully client-side, drop-in Node.js/Bun/Deno runtime for the browser. Developers drop their existing project into browser-containers and it works — no lockfile conversion, no CLI replacement, no workarounds. Zero server dependency. FOSS, modular, and designed for early funding.
+A fully client-side, drop-in Node.js/Bun/Deno runtime for the browser. Developers drop their existing project into bolo and it works — no lockfile conversion, no CLI replacement, no workarounds. Zero server dependency. FOSS, modular, and designed for early funding.
 
 The project is also the foundation for AI agent platforms that need sandboxed, observable JavaScript execution with resource controls.
 
 ## Compatibility Tiers
 
-browser-containers targets three compatibility tiers. Each tier has a different shim requirement and a different user proposition.
+bolo targets three compatibility tiers. Each tier has a different shim requirement and a different user proposition.
 
 | Tier | Label | Shim required? | Covers |
 |------|-------|----------------|--------|
@@ -129,19 +129,19 @@ ServiceWorker intercepts all traffic on the virtual origin (`sandbox.localhost`)
 | **bun** | ✅ `bun.lock` / `bun.lockb` | ❌ | `@unjs/lockfile` → fetch tarballs |
 | **JSR** | N/A | N/A | `npm.jsr.io` mirror + `jsr:` alias |
 
-**Note:** All four lockfile formats produce an identical install graph. A project with a `yarn.lock` or `pnpm-lock.yaml` works in browser-containers without any conversion — the lockfile is read, resolved, and tarballs are fetched directly from the `resolved:` URLs already in the lockfile.
+**Note:** All four lockfile formats produce an identical install graph. A project with a `yarn.lock` or `pnpm-lock.yaml` works in bolo without any conversion — the lockfile is read, resolved, and tarballs are fetched directly from the `resolved:` URLs already in the lockfile.
 
 ## Modularity
 
 The project is structured as a pnpm monorepo. Each package is independently consumable:
 
-- `@browser-containers/vfs-bus` — standalone VFS (memfs + OPFS)
-- `@browser-containers/node-web-shims` — 22 `node:*` → Web API bridges (unenv-backed, works in any project)
-- `@browser-containers/node-runtime-shims` — runtime-backed shim factories
-- `@browser-containers/sandbox-policy` — ACL-based sandbox policy
-- `@browser-containers/wasm-registry` — WASM tool loader (esbuild, tsc, sass, swc)
-- `@browser-containers/runtime` — container API (RuntimeWorker + SandboxPool)
-- **`@unjs/lockfile`** — standalone, framework-agnostic multi-format lockfile parser (published to npm, MIT, zero browser-containers deps)
+- `@bolojs/vfs-bus` — standalone VFS (memfs + OPFS)
+- `@bolojs/node-web-shims` — 22 `node:*` → Web API bridges (unenv-backed, works in any project)
+- `@bolojs/node-runtime-shims` — runtime-backed shim factories
+- `@bolojs/sandbox-policy` — ACL-based sandbox policy
+- `@bolojs/wasm-registry` — WASM tool loader (esbuild, tsc, sass, swc)
+- `@bolojs/runtime` — container API (RuntimeWorker + SandboxPool)
+- **`@unjs/lockfile`** — standalone, framework-agnostic multi-format lockfile parser (published to npm, MIT, zero bolo deps)
 
 ## License
 

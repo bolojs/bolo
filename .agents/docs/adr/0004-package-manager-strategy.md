@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-browser-containers runs Node.js entirely in the browser with zero server
+bolo runs Node.js entirely in the browser with zero server
 dependency. Today the only working package manager is **npm-in-browser**, the
 real `npm/cli` source compiled to a single ESM module with Node globals shimmed
 at build time. The question this ADR answers is how to extend package manager

@@ -3,7 +3,7 @@ title: Documentation
 description: Everything you need to run Node.js in the browser.
 ---
 
-Welcome to the browser-containers documentation.
+Welcome to the bolo documentation.
 
 - [Getting Started](/docs/getting-started/)
 - [API Reference](/docs/api/)

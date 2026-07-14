@@ -3,7 +3,7 @@ title: WASM Registry
 description: The bundler (rolldown + oxc-transform) plus a lazy-load extension seam for more WASM tools.
 ---
 
-`@browser-containers/wasm-registry` ships the real bundler used in production — [rolldown](https://rolldown.rs) for bundling and [oxc-transform](https://oxc.rs) for TS/JSX transforms — plus a generic `registerWasmTool()` seam for adding more native-binary-to-WASM tools later.
+`@bolojs/wasm-registry` ships the real bundler used in production — [rolldown](https://rolldown.rs) for bundling and [oxc-transform](https://oxc.rs) for TS/JSX transforms — plus a generic `registerWasmTool()` seam for adding more native-binary-to-WASM tools later.
 
 ## What's actually wired up
 
@@ -16,7 +16,7 @@ description: The bundler (rolldown + oxc-transform) plus a lazy-load extension s
 `registerWasmTool()` lets a host app register additional native binaries (esbuild, tsc, sass, swc, or anything else compiled to WASM/WASI) behind the same lazy-load dispatcher. Nothing beyond rolldown/oxc-transform is registered by default — this is a seam for consumers to plug into, not a preinstalled toolchain.
 
 ```typescript
-import { registerWasmTool } from '@browser-containers/wasm-registry';
+import { registerWasmTool } from '@bolojs/wasm-registry';
 
 registerWasmTool('my-tool', async () => {
   const mod = await import('my-wasm-tool');
@@ -32,7 +32,7 @@ registerWasmTool('my-tool', async () => {
 ### Resolving a registered tool
 
 ```typescript
-import { resolveWasmTool } from '@browser-containers/wasm-registry';
+import { resolveWasmTool } from '@bolojs/wasm-registry';
 
 const tool = await resolveWasmTool('my-tool');
 if (tool) {
@@ -44,8 +44,8 @@ if (tool) {
 ### Wiring into the child_process shim
 
 ```typescript
-import { createChildProcessShim } from '@browser-containers/node-runtime-shims';
-import { createWasmRegistry } from '@browser-containers/wasm-registry';
+import { createChildProcessShim } from '@bolojs/node-runtime-shims';
+import { createWasmRegistry } from '@bolojs/wasm-registry';
 
 const registry = createWasmRegistry();
 const shell = createShellService(); // from sw-sandbox
