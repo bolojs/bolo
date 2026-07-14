@@ -16,17 +16,16 @@ packages/
   sw-sandbox/        ServiceWorker-based network proxy for virtual localhost
   node-web-shims/    node:* → Web API bridges (crypto, stream, buffer, path, url, events, os, http, worker_threads)
   node-runtime-shims/  node:* → VfsBus/sw-sandbox bridges (fs, http createServer, net, child_process)
-  sandbox-policy/    Opt-in AI agent sandboxing (network, memory, CPU, filesystem caps)
-  wasm-registry/     Native binary → WASM dispatcher (esbuild, tsc, sass, swc)
-  runtime/           Core container API — RuntimeWorker (V8) + SandboxPool (QuickJS)
+  wasm-registry/     Bundler (rolldown + oxc-transform, wired in-house) + registerWasmTool() extension seam
+  runtime/           Core container API — RuntimeWorker (V8) + IframeSandbox; pluggable SandboxBackend
   npm/               Browser-native package installer (registry resolve + tarball extract)
   vite-server/       BrowserViteServer — Vite dev server on main thread
 apps/
-  site/              browser-containers.pages.dev (one product on one domain)
-    landing/         @browser-containers/site-landing    Astro/Starlight, mounted at "/" by router
-    compat/          @browser-containers/site-compat     Astro heat-grid,     mounted at "/compat"
-    demo/            @browser-containers/site-demo       Vite/Solid,          mounted at "/demo"
-    router/          @browser-containers/site-router     Pages Functions gateway (Service Bindings)
+  site/              browser-containers.pages.dev, one static Pages deploy (build outputs merged, no router)
+    landing/         @browser-containers/site-landing    Astro/React marketing site, served at "/"
+    compat/          @browser-containers/site-compat     Astro heat-grid,            served at "/compat"
+    demo/            @browser-containers/site-demo       Vite/Solid,                 served at "/demo"
+    docs/            @browser-containers/site-docs       Astro Starlight,            served at "/docs"
   compat-harness/    Nightly npm-package matrix harness (data source for /compat)
 tests/
   unit/              Vitest, no browser
@@ -38,7 +37,7 @@ tests/
 
 - **This file** — project overview and conventions
 - **PRD, ADRs, contributing guide (internal)** — [`.agents/docs/`](.agents/docs/). Browse locally with `pnpm docs:internal`. PRD: `.agents/docs/prd.md`. ADRs: `.agents/docs/adr/0001-...md`, ...0006. Shim contributing: `.agents/docs/contributing-shims.md`.
-- **End-user docs (public)** — deployed Starlight, source [`apps/site/landing/src/content/docs/docs/`](apps/site/landing/src/content/docs/docs/). Live URL pattern `https://browser-containers.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
+- **End-user docs (public)** — Astro Starlight app, source [`apps/site/docs/src/content/docs/`](apps/site/docs/src/content/docs/). Live URL pattern `https://browser-containers.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
 - **Implementation plan** — `.agents/plans/<date>-<purpose>.md` (ephemeral working plans)
 
 ## WHERE TO LOOK
@@ -49,9 +48,9 @@ tests/
 | Network proxy | `packages/sw-sandbox` | ServiceWorker intercepts virtual origin, MessageChannel bridge |
 | Web API shims | `packages/node-web-shims` | node:* → Web API via unenv, independently usable |
 | Runtime shims | `packages/node-runtime-shims` | node:* → VfsBus/SW, depends on vfs-bus + sw-sandbox |
-| Sandbox policy | `packages/sandbox-policy` | Opt-in, zero overhead when unused |
-| WASM tools | `packages/wasm-registry` | Lazy-loaded native binary → WASM dispatcher |
-| Container API | `packages/runtime` | RuntimeWorker (V8) + SandboxPool (QuickJS) |
+| Bundler / WASM tools | `packages/wasm-registry` | rolldown + oxc-transform (real bundler); `registerWasmTool()` seam for more |
+| Container API | `packages/runtime` | RuntimeWorker (V8) + IframeSandbox; pluggable SandboxBackend |
+| QuickJS agent sandbox | [browser-containers/quickjs-sandbox](https://github.com/browser-containers/quickjs-sandbox) | Separate repo; optional SandboxBackend + policy library |
 | Package install | `packages/npm` | Browser-native installer + esm.sh fallback |
 | Vite dev server | `packages/vite-server` | Main thread, HMR via BroadcastChannel |
 | Demo app | `apps/site/demo` | IDE-like UI wiring all packages together, mounted at `/demo` |

@@ -1,15 +1,24 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-07-09T00:00:00Z",
+  "generatedAt": "2026-07-13T00:00:00Z",
   "modules": [
     {
       "name": "path",
       "passed": 3,
       "total": 3,
       "tests": [
-        { "file": "test-path-basename.js", "status": "pass" },
-        { "file": "test-path-dirname.js", "status": "pass" },
-        { "file": "test-path-extname.js", "status": "pass" }
+        {
+          "file": "test-path-basename.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-path-dirname.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-path-extname.js",
+          "status": "pass"
+        }
       ]
     },
     {
@@ -17,9 +26,19 @@
       "passed": 2,
       "total": 3,
       "tests": [
-        { "file": "test-buffer-alloc.js", "status": "pass" },
-        { "file": "test-buffer-concat.js", "status": "pass" },
-        { "file": "test-buffer-from.js", "status": "fail", "error": "Buffer.from(arrayBuffer) not supported" }
+        {
+          "file": "test-buffer-alloc.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-buffer-concat.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-buffer-from.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     },
     {
@@ -27,9 +46,18 @@
       "passed": 3,
       "total": 3,
       "tests": [
-        { "file": "test-events-once.js", "status": "pass" },
-        { "file": "test-events-listener-count.js", "status": "pass" },
-        { "file": "test-events-getmaxlisteners.js", "status": "pass" }
+        {
+          "file": "test-events-once.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-events-listener-count-with-listener.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-events-getmaxlisteners.js",
+          "status": "pass"
+        }
       ]
     },
     {
@@ -37,19 +65,54 @@
       "passed": 3,
       "total": 3,
       "tests": [
-        { "file": "test-url-parse.js", "status": "pass" },
-        { "file": "test-url-format.js", "status": "pass" },
-        { "file": "test-url-resolve.js", "status": "pass" }
+        {
+          "file": "test-url-format.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-url-relative.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-url-parse-query.js",
+          "status": "pass"
+        }
       ]
     },
     {
       "name": "querystring",
-      "passed": 3,
+      "passed": 2,
+      "total": 2,
+      "tests": [
+        {
+          "file": "test-querystring.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-querystring-escape.js",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "zlib",
+      "passed": 1,
       "total": 3,
       "tests": [
-        { "file": "test-querystring-parse.js", "status": "pass" },
-        { "file": "test-querystring-stringify.js", "status": "pass" },
-        { "file": "test-querystring-escape.js", "status": "pass" }
+        {
+          "file": "test-zlib-close-in-ondata.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-zlib-create-raw.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-zlib-no-stream.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     },
     {
@@ -57,9 +120,20 @@
       "passed": 1,
       "total": 3,
       "tests": [
-        { "file": "test-os-arch.js", "status": "pass" },
-        { "file": "test-os-cpus.js", "status": "fail", "error": "os.cpus() is not supported in browser" },
-        { "file": "test-os-freemem.js", "status": "fail", "error": "os.freemem() is not supported in browser" }
+        {
+          "file": "test-os-eol.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-os-checked-function.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-os-homedir-no-envvar.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     },
     {
@@ -67,9 +141,19 @@
       "passed": 2,
       "total": 3,
       "tests": [
-        { "file": "test-util-format.js", "status": "pass" },
-        { "file": "test-util-types.js", "status": "pass" },
-        { "file": "test-util-promisify.js", "status": "fail", "error": "util.promisify requires custom Symbol" }
+        {
+          "file": "test-util-format.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-util-inspect.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-util-types.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     },
     {
@@ -77,9 +161,18 @@
       "passed": 3,
       "total": 3,
       "tests": [
-        { "file": "test-assert-ok.js", "status": "pass" },
-        { "file": "test-assert-equal.js", "status": "pass" },
-        { "file": "test-assert-throws.js", "status": "pass" }
+        {
+          "file": "test-assert.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-assert-fail.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-assert-async.js",
+          "status": "pass"
+        }
       ]
     },
     {
@@ -87,9 +180,20 @@
       "passed": 1,
       "total": 3,
       "tests": [
-        { "file": "test-stream-readable.js", "status": "pass" },
-        { "file": "test-stream-writable.js", "status": "fail", "error": "Writable backpressure not implemented" },
-        { "file": "test-stream-pipeline.js", "status": "fail", "error": "stream.pipeline() not supported" }
+        {
+          "file": "test-stream-pipe-event.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-stream-readable-event.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-stream-writable-finished.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     },
     {
@@ -97,9 +201,21 @@
       "passed": 0,
       "total": 3,
       "tests": [
-        { "file": "test-fs-readfile.js", "status": "fail", "error": "fs.readFile not yet backed by OPFS" },
-        { "file": "test-fs-writefile.js", "status": "fail", "error": "fs.writeFile not yet backed by OPFS" },
-        { "file": "test-fs-readdir.js", "status": "fail", "error": "fs.readdir not yet backed by OPFS" }
+        {
+          "file": "test-fs-mkdir.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-fs-write-file.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-fs-readfile.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     },
     {
@@ -107,9 +223,20 @@
       "passed": 1,
       "total": 3,
       "tests": [
-        { "file": "test-crypto-randombytes.js", "status": "pass" },
-        { "file": "test-crypto-createhash.js", "status": "fail", "error": "createHash not implemented, use Web Crypto" },
-        { "file": "test-crypto-hash-update.js", "status": "fail", "error": "createHash not implemented, use Web Crypto" }
+        {
+          "file": "test-crypto-hash.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-crypto-hmac.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-crypto-randomuuid.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     },
     {
@@ -117,9 +244,467 @@
       "passed": 0,
       "total": 3,
       "tests": [
-        { "file": "test-http-server.js", "status": "fail", "error": "http.Server not supported in browser" },
-        { "file": "test-http-request.js", "status": "fail", "error": "http.ClientRequest not supported" },
-        { "file": "test-http-agent.js", "status": "fail", "error": "http.Agent not supported" }
+        {
+          "file": "test-http-status-code.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-http-methods.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-http-write-head.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "process",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-process-env.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-process-next-tick.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-process-hrtime.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "timers",
+      "passed": 2,
+      "total": 2,
+      "tests": [
+        {
+          "file": "test-timers-args.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-immediate.js",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "console",
+      "passed": 3,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-console-clear.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-console-count.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-console-methods.js",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "child_process",
+      "passed": 0,
+      "total": 2,
+      "tests": [
+        {
+          "file": "test-child-process-spawnsync.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-child-process-execsync-maxbuf.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "worker_threads",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-worker-message-port-constructor.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-worker-exit-event-error.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-worker-load-file-with-extension-other-than-js.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "perf_hooks",
+      "passed": 0,
+      "total": 1,
+      "tests": [
+        {
+          "file": "test-performanceobserver.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "net",
+      "passed": 0,
+      "total": 1,
+      "tests": [
+        {
+          "file": "test-net-connect-buffer.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "dns",
+      "passed": 0,
+      "total": 2,
+      "tests": [
+        {
+          "file": "test-dns-set-default-order.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-dns-setlocaladdress.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "https",
+      "passed": 0,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-https-agent-constructor.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-https-request-arguments.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-https-close.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "tls",
+      "passed": 0,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-tls-legacy-deprecated.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-tls-ticket-12.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-tls-wrap-no-abort.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "dgram",
+      "passed": 0,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-dgram-abort-closed.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-dgram-send-callback-buffer-empty-address.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-dgram-bind.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "cluster",
+      "passed": 0,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-cluster-basic.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-cluster-call-and-destroy.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-cluster-invalid-message.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "vm",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-vm-script-throw-in-tostring.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-vm-indexed-properties.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-vm-deleting-property.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "repl",
+      "passed": 0,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-repl-no-terminal.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-repl-stdin-push-null.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-repl-throw-null-or-undefined.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "readline",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-readline-interface-no-trailing-newline.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-readline-carriage-return-between-chunks.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-readline-interface-recursive-writes.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "tty",
+      "passed": 1,
+      "total": 2,
+      "tests": [
+        {
+          "file": "test-tty-stdin-end.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-tty-backwards-api.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "inspector",
+      "passed": 0,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-inspector-stops-no-file.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-inspector-already-activated-cli.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-inspector-open-port-integer-overflow.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "async_hooks",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-async-hooks-constructor.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-async-hooks-enable-during-promise.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-async-hooks-run-in-async-scope-caught-exception.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "module",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-module-wrap.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-module-wrapper.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-module-main-extension-lookup.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "string_decoder",
+      "passed": 1,
+      "total": 2,
+      "tests": [
+        {
+          "file": "test-string-decoder-end.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-string-decoder-fuzz.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "v8",
+      "passed": 0,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-v8-deserialize-buffer.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-v8-flag-pool-size-0.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-v8-getheapsnapshot-twice.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "diagnostics_channel",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-diagnostics-channel-has-subscribers.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-diagnostics-channel-sync-unsubscribe.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-diagnostics-channel-object-channel-pub-sub.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
+      ]
+    },
+    {
+      "name": "fs/promises",
+      "passed": 1,
+      "total": 3,
+      "tests": [
+        {
+          "file": "test-fs-promises-exists.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-fs-promises-readfile-empty.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        },
+        {
+          "file": "test-fs-promises-file-handle-dispose.js",
+          "status": "fail",
+          "error": "Not supported in browser"
+        }
       ]
     }
   ]

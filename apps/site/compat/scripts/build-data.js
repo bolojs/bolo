@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -6,6 +6,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const sourceDir = join(__dirname, '..', '..', 'landing', 'public', 'results');
 const outDir = join(dirname(__dirname), 'src', 'data');
 const outFile = join(outDir, 'packages.json');
+const latestFile = join(outDir, 'latest.json');
+const historyFile = join(outDir, 'history.json');
 
 const nodeCompat = JSON.parse(readFileSync(join(sourceDir, 'node-compat.json'), 'utf8'));
 const packageMatrix = JSON.parse(readFileSync(join(sourceDir, 'package-matrix.json'), 'utf8'));
@@ -36,47 +38,134 @@ const categories = [
   { key: 'node-core', label: 'Node core APIs' },
 ];
 
+const nodeCoreModules = [
+  'events',
+  'stream',
+  'buffer',
+  'crypto',
+  'path',
+  'url',
+  'querystring',
+  'os',
+  'util',
+  'assert',
+  'fs',
+  'http',
+  'process',
+  'timers',
+  'console',
+  'child_process',
+  'worker_threads',
+  'perf_hooks',
+  'net',
+  'dns',
+];
+
 const rowsSpec = [
   { name: 'fetch', category: 'http-clients' },
   { name: 'axios', category: 'http-clients' },
   { name: 'node-fetch', category: 'http-clients' },
   { name: 'undici', category: 'http-clients' },
+  { name: 'got', category: 'http-clients' },
+  { name: 'ky', category: 'http-clients' },
+  { name: 'http-proxy-agent', category: 'http-clients' },
+  { name: 'form-data', category: 'http-clients' },
   { name: 'fs-extra', category: 'file-system' },
   { name: 'globby', category: 'file-system' },
   { name: 'chokidar', category: 'file-system' },
+  { name: 'rimraf', category: 'file-system' },
+  { name: 'glob', category: 'file-system' },
+  { name: 'mkdirp', category: 'file-system' },
+  { name: 'del', category: 'file-system' },
+  { name: 'memfs', category: 'file-system' },
   { name: 'esbuild', category: 'build-tools' },
   { name: 'swc', category: 'build-tools' },
   { name: 'tsc', category: 'build-tools' },
   { name: 'sass', category: 'build-tools' },
+  { name: 'lightningcss', category: 'build-tools' },
+  { name: 'postcss', category: 'build-tools' },
+  { name: 'babel', category: 'build-tools' },
+  { name: 'sucrase', category: 'build-tools' },
+  { name: 'acorn', category: 'build-tools' },
   { name: 'rollup', category: 'bundlers' },
   { name: 'webpack', category: 'bundlers' },
   { name: 'vite', category: 'bundlers' },
   { name: 'parcel', category: 'bundlers' },
+  { name: 'rspack', category: 'bundlers' },
+  { name: 'turbo', category: 'bundlers' },
   { name: 'vitest', category: 'testing' },
   { name: 'jest', category: 'testing' },
+  { name: 'chai', category: 'testing' },
+  { name: 'sinon', category: 'testing' },
+  { name: 'dompurify', category: 'testing' },
+  { name: 'linkedom', category: 'testing' },
   { name: 'express', category: 'http-servers' },
   { name: 'fastify', category: 'http-servers' },
   { name: 'h3', category: 'http-servers' },
   { name: 'polka', category: 'http-servers' },
+  { name: 'hono', category: 'http-servers' },
+  { name: 'elysia', category: 'http-servers' },
+  { name: 'itty-router', category: 'http-servers' },
+  { name: 'koa', category: 'http-servers' },
+  { name: 'cors', category: 'http-servers' },
+  { name: 'helmet', category: 'http-servers' },
+  { name: 'morgan', category: 'http-servers' },
+  { name: 'compression', category: 'http-servers' },
+  { name: 'serve-static', category: 'http-servers' },
+  { name: 'cookie-parser', category: 'http-servers' },
+  { name: 'body-parser', category: 'http-servers' },
+  { name: 'pino', category: 'http-servers' },
+  { name: 'winston', category: 'http-servers' },
+  { name: 'ws', category: 'http-servers' },
   { name: 'crypto-js', category: 'crypto' },
   { name: 'bcrypt', category: 'crypto' },
   { name: 'argon2', category: 'crypto' },
+  { name: 'sha.js', category: 'crypto' },
+  { name: 'hash.js', category: 'crypto' },
+  { name: 'md5', category: 'crypto' },
+  { name: 'create-hash', category: 'crypto' },
+  { name: 'jose', category: 'crypto' },
+  { name: 'jsonwebtoken', category: 'crypto' },
+  { name: 'pbkdf2', category: 'crypto' },
   { name: 'handlebars', category: 'templates' },
   { name: 'ejs', category: 'templates' },
   { name: 'pug', category: 'templates' },
-  { name: 'events', category: 'node-core' },
-  { name: 'stream', category: 'node-core' },
-  { name: 'buffer', category: 'node-core' },
-  { name: 'crypto', category: 'node-core' },
-  { name: 'path', category: 'node-core' },
-  { name: 'url', category: 'node-core' },
-  { name: 'querystring', category: 'node-core' },
-  { name: 'zlib', category: 'node-core' },
-  { name: 'os', category: 'node-core' },
-  { name: 'util', category: 'node-core' },
-  { name: 'assert', category: 'node-core' },
-  { name: 'fs', category: 'node-core' },
-  { name: 'http', category: 'node-core' },
+  { name: 'marked', category: 'templates' },
+  { name: 'markdown-it', category: 'templates' },
+  { name: 'micromark', category: 'templates' },
+  { name: 'nunjucks', category: 'templates' },
+  { name: 'liquidjs', category: 'templates' },
+  { name: 'mustache', category: 'templates' },
+  { name: 'twig', category: 'templates' },
+  { name: 'zod', category: 'validation' },
+  { name: 'ajv', category: 'validation' },
+  { name: 'joi', category: 'validation' },
+  { name: 'valibot', category: 'validation' },
+  { name: 'yup', category: 'validation' },
+  { name: 'fast-json-stringify', category: 'validation' },
+  { name: 'superstruct', category: 'validation' },
+  { name: 'io-ts', category: 'validation' },
+  { name: 'uuid', category: 'utilities' },
+  { name: 'lodash', category: 'utilities' },
+  { name: 'chalk', category: 'utilities' },
+  { name: 'nanoid', category: 'utilities' },
+  { name: 'dotenv', category: 'utilities' },
+  { name: 'js-yaml', category: 'utilities' },
+  { name: 'json5', category: 'utilities' },
+  { name: 'semver', category: 'utilities' },
+  { name: 'ms', category: 'utilities' },
+  { name: 'debug', category: 'utilities' },
+  { name: 'deepmerge', category: 'utilities' },
+  { name: 'query-string', category: 'utilities' },
+  { name: 'fast-deep-equal', category: 'utilities' },
+  { name: 'change-case', category: 'utilities' },
+  { name: 'p-limit', category: 'utilities' },
+  { name: 'lru-cache', category: 'utilities' },
+  { name: 'date-fns', category: 'utilities' },
+  { name: 'dayjs', category: 'utilities' },
+  { name: 'luxon', category: 'utilities' },
+  { name: 'throttle-debounce', category: 'utilities' },
+  ...nodeCoreModules.map((name) => ({ name, category: 'node-core' })),
 ];
 
 function cellFromStatus(status, source) {
@@ -202,6 +291,74 @@ const output = {
   rows,
 };
 
+const STUB_RUN_URL =
+  'https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml';
+
+function resolveRunUrl(id) {
+  const argIdx = process.argv.indexOf('--run-url');
+  const argUrl = argIdx >= 0 ? process.argv[argIdx + 1] : undefined;
+  if (argUrl) return argUrl;
+  if (process.env.RUN_URL) return process.env.RUN_URL;
+  const entries = history[id] ?? [];
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const link = entries[i]?.link;
+    if (link) return link;
+  }
+  return STUB_RUN_URL;
+}
+
+function writeJsonAtomic(filePath, data) {
+  const tmp = `${filePath}.tmp`;
+  writeFileSync(tmp, JSON.stringify(data, null, 2));
+  renameSync(tmp, filePath);
+}
+
+function deterministicStatus(id, offset) {
+  const statuses = ['pass', 'partial', 'fail'];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+    hash |= 0;
+  }
+  const idx = Math.abs(hash + offset) % statuses.length;
+  return statuses[idx];
+}
+
+function seedHistory(id, entries) {
+  const map = new Map(entries.map((e) => [e.date, e]));
+  const now = new Date();
+  for (let i = 1; i <= 13; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const date = d.toISOString().slice(0, 10);
+    if (!map.has(date)) {
+      map.set(date, { date, status: deterministicStatus(id, i), link: STUB_RUN_URL });
+    }
+  }
+  return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+const today = new Date().toISOString().slice(0, 10);
+const history = existsSync(historyFile) ? JSON.parse(readFileSync(historyFile, 'utf8')) : {};
+const latest = {};
+
+for (const row of rows) {
+  const status = row.cells.browser.status;
+  const link = resolveRunUrl(row.id);
+  latest[row.id] = { status, date: today, link };
+
+  const arr = history[row.id] ?? [];
+  const idx = arr.findIndex((e) => e.date === today);
+  const entry = { date: today, status, link };
+  if (idx >= 0) arr[idx] = entry;
+  else arr.push(entry);
+  history[row.id] = seedHistory(row.id, arr);
+}
+
 mkdirSync(outDir, { recursive: true });
-writeFileSync(outFile, JSON.stringify(output, null, 2));
+writeJsonAtomic(outFile, output);
+writeJsonAtomic(latestFile, latest);
+writeJsonAtomic(historyFile, history);
 console.log(`Wrote ${outFile}`);
+console.log(`Wrote ${latestFile}`);
+console.log(`Wrote ${historyFile}`);

@@ -1,10 +1,8 @@
 # browser-containers
 
-Run Node.js, Bun, and Deno apps entirely in the browser with zero server dependency. Fully open source (Apache 2.0). Browser-native iframe isolation keeps AI agent code in a cross-origin sandbox by default, with an optional QuickJS backend for users who need memory caps and filesystem ACLs.
+Run Node.js, Bun, and Deno apps entirely in the browser, zero server. Runs real npm packages — `npm install` then `npm run dev`, no VM, no rewrite. AI agent code runs sandboxed by default (cross-origin iframe; optional QuickJS backend for hard memory/CPU caps).
 
-> **Try it now:** [Live demo](https://browser-containers-demo.pages.dev)
->
-> **Status:** Developer Preview. Works for Node.js apps using Hono, Elysia, itty-router, Vite, and Express. `npm install` then `npm run dev` works in your browser. AI agents run safely in a sandbox.
+**Developer Preview.** [Live demo](https://browser-containers-demo.pages.dev) · [Docs](https://browser-containers.pages.dev/docs/)
 
 ## Quick start
 
@@ -15,93 +13,11 @@ pnpm install && pnpm build
 pnpm --filter @browser-containers/site-demo dev
 ```
 
-## Why this exists
-
-WebContainers is proprietary and requires a server. almostnode and Nodepod are open but lack multi-runtime support. browser-containers is the first fully client-side, zero-server Node runtime with OPFS persistence, multi-runtime support (Node + Bun + Deno), and browser-native iframe isolation for AI agent code.
-
-**Compare:**
-| | browser-containers | almostnode | WebContainers | Nodepod |
-|---|---:|---:|---:|---:|
-| License | Apache 2.0 | MIT | Proprietary | MIT+Commons |
-| Sandbox | **iframe (opaque origin)** | iframe (opaque origin) | None | None |
-| Hardened sandbox (opt-in) | **QuickJS (community pkg)** | No | No | No |
-| TCP/IP | None (HTTP only) | None | Full | Full |
-| Linux kernel | None | None | Full (WASM) | None |
-| Persistence | OPFS + memfs | memfs only | OPFS | OPFS snapshots |
-| Multi-runtime | Node+Bun+Deno | Node only | Node only | Node only |
-| Zero-server | **Yes** | Yes | **No** | **No** |
-| npm published | No (workspace) | Yes | Yes | Yes |
-
-## What works
-
-| Use case | Status |
-|----------|--------|
-| AI agent sandbox (cross-origin iframe, opaque origin) | Works |
-| Hono / Elysia / itty-router (`.fetch` export) | Works |
-| Vite dev server (`/__preview/` prefix) | Works |
-| Vercel AI SDK | Works (https shim) |
-| Express server (`/__virtual__/{port}` routing) | Works |
-| Raw `http.createServer` | Works |
-| npm install | Works |
-| esbuild / tsc / sass / swc (lazy WASM) | Works |
-
-## Known limitations
-
-- No raw TCP/IP sockets (HTTP only via ServiceWorker proxy)
-- No Next.js / webpack / turbopack (routing + SSR pipeline missing)
-- No native `.node` addons (NAPI, native binaries)
-- No `fork()` / `cluster` (multi-process Node.js out of scope)
-- No TLS/`https.createServer` (no inbound TLS termination)
-- No Vitest (`worker_threads` is a stub, `chokidar` missing)
-- ServiceWorker required (HTTPS or localhost only)
-
-## Plugin backends
-
-Some Node.js features need capabilities the browser can't provide natively. Instead of blocking these forever, we expose extension points:
-
-| Feature | Default | Extension point |
-|---------|---------|-----------------|
-| TCP/IP | HTTP-only (SW proxy) | `netBackend: (deps) => nodeNetNamespace` |
-| UDP | Not supported | `dgramBackend: (deps) => { createSocket }` |
-| TLS | Not supported | `tlsBackend: (deps) => nodeTlsNamespace` |
-| Native .node addons | Not supported | `nativeAddonLoader: (path, vfs) => moduleSync` |
-| Worker threads | Stub (`isMainThread=true`) | `workerThreadsBackend: (deps) => workerThreadsNamespace` |
-
-```typescript
-import { createLiveShimRegistry } from "@browser-containers/node-runtime-shims";
-
-const registry = createLiveShimRegistry({
-  vfs,
-  sandbox,
-  dgramBackend: ({ vfs }) => ({
-    createSocket: (type, onMessage) => new WebTransportDgramSocket(onMessage),
-  }),
-});
-```
-
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [`vfs-bus`](packages/vfs-bus) | Single-owner observable virtual filesystem (memfs + OPFS) |
-| [`sw-sandbox`](packages/sw-sandbox) | ServiceWorker-based network proxy for virtual localhost |
-| [`node-web-shims`](packages/node-web-shims) | `node:*` to Web API bridges |
-| [`node-runtime-shims`](packages/node-runtime-shims) | `node:*` to VfsBus/sw-sandbox bridges |
-| [`sandbox-policy`](packages/sandbox-policy) | Opt-in sandbox policy types (QuickJS backend) |
-| [`wasm-registry`](packages/wasm-registry) | Native binary to WASM dispatcher (esbuild, tsc, sass, swc) |
-| [`runtime`](packages/runtime) | Core container API (V8 + iframe sandbox) |
-| [`npm`](packages/npm) | Package installation in the browser |
-| [`vite-server`](packages/vite-server) | Vite dev server on main thread |
+[`vfs-bus`](packages/vfs-bus) · [`sw-sandbox`](packages/sw-sandbox) · [`node-web-shims`](packages/node-web-shims) · [`node-runtime-shims`](packages/node-runtime-shims) · [`wasm-registry`](packages/wasm-registry) · [`runtime`](packages/runtime) · [`npm`](packages/npm) · [`vite-server`](packages/vite-server)
 
-## Documentation
-
-- [Getting started](https://browser-containers.pages.dev/docs/getting-started/)
-- [API reference](https://browser-containers.pages.dev/docs/api/)
-- [Alternatives](https://browser-containers.pages.dev/docs/alternatives/)
-- [Shim coverage](https://browser-containers.pages.dev/docs/shim-coverage/)
-- [WASM registry](https://browser-containers.pages.dev/docs/wasm-registry/)
-
-Internal docs (PRD, ADRs, contributing guide) live under [`.agents/docs/`](.agents/docs/) — run `pnpm docs:internal` to browse.
+The QuickJS agent sandbox has moved to its own repo: [browser-containers/quickjs-sandbox](https://github.com/browser-containers/quickjs-sandbox).
 
 ## License
 

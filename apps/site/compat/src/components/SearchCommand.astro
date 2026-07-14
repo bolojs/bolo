@@ -1,0 +1,236 @@
+---
+import packages from '../data/packages.json';
+import latestJson from '../data/latest.json';
+
+interface LatestInfo {
+  status?: string;
+  date?: string;
+  link?: string;
+}
+
+const latest = latestJson as Record<string, LatestInfo>;
+
+const DEFAULT_IDS = ['fetch', 'axios', 'node-fetch', 'events', 'stream', 'buffer'];
+const TOTAL_COUNT = packages.rows.length;
+
+const STATUS_LABEL: Record<string, string> = {
+  pass: 'pass',
+  partial: 'partial',
+  fail: 'fail',
+  unknown: 'unknown',
+};
+
+function kindFor(row: (typeof packages.rows)[number]): 'npm' | 'node' {
+  return row.category === 'node-core' ? 'node' : 'npm';
+}
+
+function linkFor(row: (typeof packages.rows)[number]): string {
+  return row.category === 'node-core'
+    ? `https://nodejs.org/api/${row.name}.html`
+    : `https://www.npmjs.com/package/${row.name}`;
+}
+
+const LIBRARY_DATA = packages.rows.map((pkg) => {
+  const info = latest[pkg.id];
+  return {
+    id: pkg.id,
+    name: pkg.name,
+    status: info?.status ?? 'unknown',
+    kind: kindFor(pkg),
+    url: linkFor(pkg),
+  };
+});
+
+const DEFAULT_ORDERED = DEFAULT_IDS.map((id) =>
+  LIBRARY_DATA.find((p) => p.id === id),
+).filter((p): p is NonNullable<typeof p> => p != null);
+
+const remainingAll = LIBRARY_DATA.filter(
+  (p) => !DEFAULT_IDS.includes(p.id),
+);
+
+const orderedAll = [...DEFAULT_ORDERED, ...remainingAll];
+
+const REMAINING_COUNT = remainingAll.length;
+---
+
+<section class="search-command" aria-label="Library search">
+  <div class="search-command-field">
+    <label for="search-command-input" class="search-command-label visually-hidden">
+      Search libraries
+    </label>
+    <div class="search-command-input-wrap">
+      <span class="search-command-prompt" aria-hidden="true">›</span>
+      <input
+        id="search-command-input"
+        class="search-command-input"
+        type="search"
+        autocomplete="off"
+        placeholder="Search 123 libraries..."
+        aria-label="Search libraries"
+        data-count={TOTAL_COUNT}
+      />
+      <kbd class="search-command-shortcut" aria-hidden="true">/</kbd>
+    </div>
+  </div>
+
+  <div class="search-command-results">
+    <div class="search-command-default" id="search-command-default">
+      <div class="search-command-expand-block" data-expanded="false">
+        <ul class="search-command-list" id="search-command-list-all">
+          {orderedAll.map((pkg: { id: string; name: string; status: string; kind: string; url: string }) => (
+            <li class="search-command-item" data-name={pkg.name} data-status={pkg.status} data-kind={pkg.kind}>
+              <a href={pkg.url} target="_blank" rel="noopener" class="search-command-link">
+                <span class="search-command-name-wrap">
+                  <span class="search-command-name">{pkg.name}</span>
+                  <span class="search-command-kind">{pkg.kind}</span>
+                </span>
+                <span class="search-command-status">
+                  <span class={`search-command-dot status-${pkg.status}`} aria-hidden="true" />
+                  <span class="search-command-status-text">{STATUS_LABEL[pkg.status]}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          class="search-command-expand"
+          id="search-command-expand-toggle"
+          aria-expanded="false"
+          aria-controls="search-command-list-all"
+        >
+          <span class="search-command-expand-collapsed">+ {REMAINING_COUNT} more libraries</span>
+          <span class="search-command-expand-expanded">− Show less</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="search-command-matches" id="search-command-matches" hidden>
+      <p class="search-command-heading" id="search-command-heading">0 libraries match</p>
+      <ul class="search-command-list" id="search-command-list" aria-live="polite">
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script is:inline define:vars={{ libraryData: LIBRARY_DATA }}>
+  const input = document.getElementById('search-command-input');
+  const defaultPanel = document.getElementById('search-command-default');
+  const matchesPanel = document.getElementById('search-command-matches');
+  const list = document.getElementById('search-command-list');
+  const heading = document.getElementById('search-command-heading');
+  const shortcut = input?.parentElement?.querySelector('.search-command-shortcut');
+  const expandBlock = document.querySelector('.search-command-expand-block');
+  const expandToggle = document.getElementById('search-command-expand-toggle');
+
+  const STATUS_LABEL = { pass: 'pass', partial: 'partial', fail: 'fail', unknown: 'unknown' };
+
+  function makeItem(pkg) {
+    const li = document.createElement('li');
+    li.className = 'search-command-item';
+    li.setAttribute('data-name', pkg.name);
+    li.setAttribute('data-status', pkg.status);
+    li.setAttribute('data-kind', pkg.kind);
+
+    const a = document.createElement('a');
+    a.className = 'search-command-link';
+    a.href = pkg.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+
+    const nameWrap = document.createElement('span');
+    nameWrap.className = 'search-command-name-wrap';
+
+    const name = document.createElement('span');
+    name.className = 'search-command-name';
+    name.textContent = pkg.name;
+
+    const kind = document.createElement('span');
+    kind.className = 'search-command-kind';
+    kind.textContent = pkg.kind;
+
+    nameWrap.append(name, kind);
+
+    const statusWrap = document.createElement('span');
+    statusWrap.className = 'search-command-status';
+
+    const dot = document.createElement('span');
+    dot.className = `search-command-dot status-${pkg.status}`;
+    dot.setAttribute('aria-hidden', 'true');
+
+    const statusText = document.createElement('span');
+    statusText.className = 'search-command-status-text';
+    statusText.textContent = STATUS_LABEL[pkg.status] ?? pkg.status;
+
+    statusWrap.append(dot, statusText);
+    a.append(nameWrap, statusWrap);
+    li.appendChild(a);
+    return li;
+  }
+
+  function renderResults(matches) {
+    if (!list) return;
+    list.innerHTML = '';
+    for (const pkg of matches) {
+      list.appendChild(makeItem(pkg));
+    }
+  }
+
+  function rank(term, pkg) {
+    const name = pkg.name.toLowerCase();
+    if (name === term) return -2;
+    if (name.startsWith(term)) return -1;
+    return 0;
+  }
+
+  function filter(term) {
+    const t = term.trim().toLowerCase();
+
+    if (!t) {
+      defaultPanel?.removeAttribute('hidden');
+      matchesPanel?.setAttribute('hidden', '');
+      return;
+    }
+
+    defaultPanel?.setAttribute('hidden', '');
+    matchesPanel?.removeAttribute('hidden');
+
+    const matches = libraryData
+      .filter((p) => p.name.toLowerCase().includes(t))
+      .sort((a, b) => rank(t, a) - rank(t, b) || a.name.localeCompare(b.name));
+
+    renderResults(matches);
+
+    if (heading) {
+      heading.textContent = `${matches.length} librar${matches.length === 1 ? 'y' : 'ies'} match`;
+    }
+  }
+
+  expandToggle?.addEventListener('click', () => {
+    const expanded = expandBlock?.getAttribute('data-expanded') === 'true';
+    expandBlock?.setAttribute('data-expanded', String(!expanded));
+    expandToggle.setAttribute('aria-expanded', String(!expanded));
+  });
+
+  input?.addEventListener('input', (e) => {
+    filter(e.currentTarget.value);
+  });
+
+  input?.addEventListener('focus', () => {
+    shortcut?.classList.add('is-hidden');
+  });
+
+  input?.addEventListener('blur', () => {
+    if (!input.value) shortcut?.classList.remove('is-hidden');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const active = document.activeElement;
+    const typing = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active?.isContentEditable;
+    if (e.key === '/' && !typing) {
+      e.preventDefault();
+      input?.focus();
+    }
+  });
+</script>

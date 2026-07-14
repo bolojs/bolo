@@ -22,7 +22,6 @@
     "just-bash": "^3.1.0"
   },
   "devDependencies": {
-    "@browser-containers/sandbox-policy": "workspace:*",
     "@types/node": "^22.0.0",
     "happy-dom": "^17.0.0",
     "typescript": "^5.8.0",

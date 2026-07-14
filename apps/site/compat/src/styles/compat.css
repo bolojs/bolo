@@ -127,9 +127,7 @@
 @media (min-width: 768px) {
   .bento {
     grid-template-columns: 1.4fr 1fr;
-    grid-template-areas:
-      "headline stat"
-      "categories categories";
+    grid-template-areas: "headline stat";
   }
 
   .bento-cell--headline {
@@ -138,10 +136,6 @@
 
   .bento-cell--stat {
     grid-area: stat;
-  }
-
-  .bento-cell--categories {
-    grid-area: categories;
   }
 }
 
@@ -167,12 +161,6 @@
   grid-template-columns: 1fr;
   gap: 1.5rem;
   align-items: start;
-}
-
-@media (min-width: 1024px) {
-  .compat-main {
-    grid-template-columns: 1fr 320px;
-  }
 }
 
 /* Terminal search bar */
@@ -258,7 +246,68 @@
   border-radius: 0.125rem;
 }
 
-/* Grid */
+/* Heat calendar: two sections — "Top npm packages" (merged) + "Node core APIs" (standalone) */
+.heat-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border-radius: 0.625rem;
+}
+
+.heat-calendar-category {
+  min-width: 0;
+}
+
+.heat-calendar-category[hidden] {
+  display: none;
+}
+
+.heat-calendar-heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg);
+  margin-bottom: 0.75rem;
+}
+
+.heat-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 14px);
+  gap: 3px;
+}
+
+.heat-calendar-package {
+  display: block;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.heat-calendar-package[hidden] {
+  display: none;
+}
+
+.heat-calendar-cell {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  transition: filter 0.1s ease;
+}
+
+.heat-calendar-package:hover .heat-calendar-cell {
+  filter: brightness(1.3);
+}
+
+.heat-calendar-cell:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
 .grid-wrapper {
   overflow-x: auto;
   border: 1px solid var(--border);
@@ -483,12 +532,409 @@
   color: var(--unknown);
 }
 
-.detail-raw {
-  font-size: 0.75rem;
-  max-height: 16rem;
-  overflow: auto;
-  background: #0f0f0f;
+/* Search command (skills.sh-style full-bleed package search) */
+.search-command {
+  margin: 3.5rem 0;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding-inline: 2rem;
+}
+
+.search-command-field {
+  width: 100%;
+}
+
+.search-command-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  transition: border-color 0.15s ease;
+}
+
+.search-command-input-wrap:focus-within {
+  border-bottom-color: var(--muted);
+}
+
+.search-command-prompt {
+  color: var(--muted);
+  font-weight: 500;
+  user-select: none;
+  line-height: 1;
+}
+
+.search-command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  min-width: 0;
+}
+
+.search-command-input::placeholder {
+  color: var(--muted);
+}
+
+.search-command-input::-webkit-search-cancel-button,
+.search-command-input::-webkit-search-decoration {
+  appearance: none;
+}
+
+.search-command-shortcut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.375rem;
   border: 1px solid var(--border);
   border-radius: 0.375rem;
-  padding: 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.search-command-shortcut.is-hidden {
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+.search-command-results {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.search-command-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.search-command-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  transition: opacity 0.2s ease;
+}
+
+.search-command-matches[hidden] {
+  display: none;
+}
+
+.search-command-item {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+
+.search-command-item:hover {
+  background-color: var(--border);
+}
+
+.search-command-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.search-command-name {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-command-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.search-command-kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.search-command-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.search-command-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.search-command-dot.status-pass {
+  background: var(--pass);
+}
+
+.search-command-dot.status-partial {
+  background: var(--partial);
+}
+
+.search-command-dot.status-fail {
+  background: var(--fail);
+}
+
+.search-command-dot.status-unknown {
+  background: var(--unknown);
+}
+
+.search-command-status-text {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  min-width: 3.5rem;
+  text-align: right;
+}
+
+.search-command-expand-block {
+  margin-top: 0.875rem;
+}
+
+/* single-list clip pattern: ONE <ul> with all 123 items, clipped to ~4 when
+   collapsed. Mask-image (not an overlay div) fades the cutoff so it survives
+   the light/dark theme toggle with no extra rules. */
+.search-command-expand-block .search-command-list {
+  max-height: 235px; /* ~4 items */
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  transition: max-height 0.2s ease;
+}
+
+.search-command-expand-block[data-expanded="true"] .search-command-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-command-expand-block .search-command-list {
+    transition: none;
+  }
+}
+
+/* when the user is typing, the single list is hidden via [hidden] */
+.search-command-expand-block .search-command-list[hidden] {
+  display: none;
+}
+
+.search-command-expand-block .search-command-expand {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--muted);
+  cursor: pointer;
+  margin-top: 0.75rem;
+  background: transparent;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.search-command-expand-block .search-command-expand:hover {
+  color: var(--fg);
+  background-color: var(--border);
+}
+
+.search-command-expand-collapsed,
+.search-command-expand-expanded {
+  display: inline;
+}
+
+.search-command-expand-block .search-command-expand-expanded {
+  display: none;
+}
+
+.search-command-expand-block[data-expanded="true"] .search-command-expand-collapsed {
+  display: none;
+}
+
+.search-command-expand-block[data-expanded="true"] .search-command-expand-expanded {
+  display: inline;
+}
+
+@media (max-width: 640px) {
+  .search-command {
+    margin: 2.5rem 0;
+  }
+
+  .search-command-link {
+    padding: 0.75rem 0;
+  }
+
+  .search-command-status-text {
+    display: none;
+  }
+
+  .search-command-kind {
+    display: none;
+  }
+}
+
+/* Hover card (shadcn-style rich tooltip for heatmap cells) */
+.hover-card-content {
+  z-index: 50;
+  min-width: 200px;
+  max-width: 280px;
+  padding: 0.875rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-sans);
+  color: var(--fg);
+  outline: none;
+  animation: hover-card-fade-in 150ms ease-out;
+}
+
+.hover-card-content[data-state="closed"] {
+  animation: hover-card-fade-out 100ms ease-in;
+}
+
+@keyframes hover-card-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hover-card-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.hover-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.hover-card-name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hover-card-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--unknown-bg);
+  color: var(--unknown);
+  flex-shrink: 0;
+}
+
+.hover-card-badge.status-pass {
+  background: var(--pass-bg);
+  color: var(--pass);
+}
+
+.hover-card-badge.status-partial {
+  background: var(--partial-bg);
+  color: var(--partial);
+}
+
+.hover-card-badge.status-fail {
+  background: var(--fail-bg);
+  color: var(--fail);
+}
+
+.hover-card-category {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.hover-card-date {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.hover-card-link {
+  display: inline-block;
+  width: 100%;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.hover-card-link:hover {
+  text-decoration: underline;
 }

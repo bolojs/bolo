@@ -1,40 +1,69 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { Button } from '../../../shared/components/ui/button.tsx';
 
 const title = 'browser-containers — Node.js in the browser';
 const description = 'A fully client-side Node.js runtime. Run Node.js applications in the browser with zero server dependency.';
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="hero" aria-label="Introduction">
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <span class="eyebrow">Zero server. Zero build step.</span>
-        <h1>Run Node.js<br />in the browser.</h1>
-        <p class="tagline">Zero-config Node.js runtime for browsers. No server. No build step.</p>
-        <div class="cta-group">
-          <a href="/docs/" class="button button-primary" data-magnetic>
+  <section
+    class="flex min-h-[85vh] items-center bg-bg bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[length:24px_24px] py-28 text-fg md:py-32"
+    aria-label="Introduction"
+  >
+    <div class="container grid grid-cols-1 items-center gap-12 md:grid-cols-[1.1fr_1fr] lg:gap-16">
+      <div class="hero-in text-left">
+        <span
+          class="hero-item mb-6 inline-block rounded-full border border-border px-3 py-1 font-mono text-[0.6875rem] font-medium uppercase tracking-[0.2em] text-muted"
+          style="animation-delay: 0ms"
+        >
+          Zero server. Zero build step.
+        </span>
+        <h1
+          class="hero-item mb-6 text-[clamp(2.75rem,6vw,5.5rem)] leading-[0.98] font-bold tracking-[-0.04em]"
+          style="animation-delay: 90ms"
+        >
+          Run Node.js<br />in the browser.
+        </h1>
+        <p
+          class="hero-item mb-9 max-w-[32ch] text-[clamp(1.125rem,2vw,1.375rem)] leading-relaxed text-muted"
+          style="animation-delay: 180ms"
+        >
+          Zero-config Node.js runtime for browsers. No server. No build step.
+        </p>
+        <div class="hero-item flex flex-wrap justify-start gap-4" style="animation-delay: 270ms">
+          <Button client:load href="/docs/" variant="primary">
             <span>Get Started</span>
-            <svg class="arrow" width="16" height="16" viewBox="0 0 256 256" fill="none" aria-hidden="true">
-              <path d="M40 128h176M144 56l72 72-72 72" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-          <a href="https://github.com/browser-containers/browser-containers" target="_blank" rel="noopener noreferrer" class="button button-secondary" data-magnetic>View on GitHub</a>
+            <span class="flex size-6 items-center justify-center rounded-full bg-bg/10 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5">
+              <svg class="size-3.5" viewBox="0 0 256 256" fill="none" aria-hidden="true">
+                <path d="M40 128h176M144 56l72 72-72 72" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </span>
+          </Button>
+          <Button
+            client:load
+            href="https://github.com/browser-containers/browser-containers"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="secondary"
+          >
+            View on GitHub
+          </Button>
         </div>
       </div>
 
-      <section class="playground" aria-label="Live demo" data-reveal>
-        <div class="bezel-outer">
-          <div class="bezel-inner terminal">
-            <div class="terminal-header">
-              <div class="terminal-dots">
-                <span class="terminal-dot red"></span>
-                <span class="terminal-dot yellow"></span>
-                <span class="terminal-dot green"></span>
+      <section class="hero-item w-full" style="animation-delay: 180ms" aria-label="Live demo">
+        <div class="rounded-2xl bg-[linear-gradient(160deg,var(--border),transparent_60%)] p-2 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+          <div class="flex h-[420px] flex-col overflow-hidden rounded-xl border border-border bg-[#111111] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
+            <div class="flex shrink-0 items-center gap-3 border-b border-border bg-white/[0.02] px-4 py-3">
+              <div class="flex gap-2">
+                <span class="size-3 rounded-full bg-[#ff5f56]"></span>
+                <span class="size-3 rounded-full bg-[#ffbd2e]"></span>
+                <span class="size-3 rounded-full bg-[#27c93f]"></span>
               </div>
-              <span class="terminal-title">demo</span>
+              <span class="flex-1 text-center font-mono text-[0.8125rem] text-muted">demo</span>
             </div>
-            <iframe class="demo-frame" src="/demo" title="browser-containers live demo" loading="lazy"></iframe>
+            <iframe class="flex-1 w-full border-0" src="/demo" title="browser-containers live demo" loading="lazy"></iframe>
           </div>
         </div>
       </section>
@@ -42,212 +71,27 @@ const description = 'A fully client-side Node.js runtime. Run Node.js applicatio
   </section>
 </BaseLayout>
 
-<script>
-  import { animate, inView } from 'motion';
-
-  for (const el of document.querySelectorAll<HTMLElement>('[data-magnetic]')) {
-    el.addEventListener('mousemove', (e) => {
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      animate(el, { x: x * 0.25, y: y * 0.25 }, { duration: 0.2 });
-    });
-    el.addEventListener('mouseleave', () => {
-      animate(el, { x: 0, y: 0 }, { duration: 0.3, ease: 'easeOut' });
-    });
-  }
-
-  inView('[data-reveal]', (el) => {
-    animate(el, { opacity: 1, y: [24, 0] }, { duration: 0.6, ease: [0.16, 1, 0.3, 1] });
-  });
-</script>
-
 <style>
-  .hero {
-    --terminal-bg: #111111;
-
-    background-color: var(--bg);
-    color: var(--fg);
-    background-image: radial-gradient(var(--border) 1px, transparent 1px);
-    background-size: 24px 24px;
-    display: flex;
-    align-items: center;
-    min-height: 85vh;
-    padding-block: 5rem 3rem;
+  /* Above-the-fold hero, so entrance is a simple on-load stagger rather than
+     an IntersectionObserver scroll reveal (there's nothing to scroll to). */
+  .hero-item {
+    animation: hero-in 800ms cubic-bezier(0.32, 0.72, 0, 1) both;
   }
 
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 3rem;
-    align-items: center;
-  }
-
-  .hero-copy {
-    text-align: left;
-  }
-
-  .eyebrow {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 1.5rem;
-  }
-
-  .hero-copy h1 {
-    font-size: clamp(2.75rem, 6vw, 5.5rem);
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 0.98;
-    margin-bottom: 1.5rem;
-  }
-
-  .tagline {
-    font-size: clamp(1.125rem, 2vw, 1.375rem);
-    color: var(--muted);
-    margin-bottom: 2.25rem;
-    line-height: 1.5;
-    max-width: 32ch;
-  }
-
-  .cta-group {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 1rem;
-  }
-
-  .button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.75rem;
-    border-radius: 999px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    will-change: transform;
-  }
-
-  .button .arrow {
-    transition: transform 0.15s ease;
-  }
-
-  .button:hover .arrow {
-    transform: translateX(3px);
-  }
-
-  .button-primary {
-    background-color: var(--fg);
-    color: var(--bg);
-    border: 1px solid var(--fg);
-  }
-
-  .button-primary:hover {
-    background-color: transparent;
-    color: var(--fg);
-    text-decoration: none;
-  }
-
-  .button-secondary {
-    background-color: transparent;
-    color: var(--fg);
-    border: 1px solid var(--border);
-  }
-
-  .button-secondary:hover {
-    border-color: var(--fg);
-    text-decoration: none;
-  }
-
-  .playground {
-    width: 100%;
-  }
-
-  /* Double-bezel: outer shell adds a soft ambient border + shadow, inner
-     core holds the actual terminal chrome — gives the frame visual depth
-     instead of a single flat border. */
-  .bezel-outer {
-    padding: 0.5rem;
-    border-radius: 1rem;
-    background: linear-gradient(160deg, var(--border), transparent 60%);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-  }
-
-  .bezel-inner {
-    border-radius: 0.75rem;
-    border: 1px solid var(--border);
-  }
-
-  .terminal {
-    width: 100%;
-    height: 420px;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--terminal-bg);
-    overflow: hidden;
-  }
-
-  .terminal-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
-    background-color: rgba(255, 255, 255, 0.02);
-    flex-shrink: 0;
-  }
-
-  .terminal-dots {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .terminal-dot {
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 50%;
-  }
-
-  .terminal-dot.red {
-    background-color: #ff5f56;
-  }
-
-  .terminal-dot.yellow {
-    background-color: #ffbd2e;
-  }
-
-  .terminal-dot.green {
-    background-color: #27c93f;
-  }
-
-  .terminal-title {
-    flex: 1;
-    text-align: center;
-    font-size: 0.8125rem;
-    color: var(--muted);
-    font-family: var(--font-mono);
-  }
-
-  .demo-frame {
-    flex: 1;
-    width: 100%;
-    border: 0;
-  }
-
-  @media (min-width: 768px) {
-    .hero-grid {
-      grid-template-columns: 1.1fr 1fr;
+  @media (prefers-reduced-motion: reduce) {
+    .hero-item {
+      animation: none;
     }
   }
 
-  @media (min-width: 1024px) {
-    .hero-grid {
-      gap: 4rem;
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 </style>

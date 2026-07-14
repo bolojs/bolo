@@ -1,48 +1,561 @@
 {
   "version": "2.0.0",
   "packages": [
-    { "name": "fetch", "class": "HTTP client", "import": false, "probe": "typeof fetch === 'function'" },
-    { "name": "axios", "class": "HTTP client", "probe": "typeof axios === 'function' && axios.create" },
-    { "name": "node-fetch", "class": "HTTP client", "probe": "typeof nodeFetch === 'function'" },
-    { "name": "undici", "class": "HTTP client", "probe": "typeof undici.request === 'function'" },
-    { "name": "fs-extra", "class": "File system", "source": "import fsExtra from 'https://esm.sh/fs-extra';\ntry {\n  const file = '/tmp/harness-fs-extra.txt';\n  await fsExtra.outputFile(file, 'ok');\n  const content = await fsExtra.readFile(file, 'utf8');\n  if (content !== 'ok') throw new Error('content mismatch');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "globby", "class": "File system", "probe": "Array.isArray(await globby('*.missing'))" },
-    { "name": "chokidar", "class": "File system", "probe": "typeof chokidar.watch === 'function'" },
-    { "name": "esbuild", "class": "Build tool", "source": "import esbuild from 'https://esm.sh/esbuild';\ntry {\n  const result = await esbuild.transform('let x = 1;', { loader: 'js' });\n  if (typeof result.code !== 'string') throw new Error('transform failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "swc", "class": "Build tool", "source": "import swc from 'https://esm.sh/@swc/wasm-web';\ntry {\n  if (typeof swc !== 'object') throw new Error('unexpected export');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "tsc", "class": "Build tool", "source": "import ts from 'https://esm.sh/typescript';\ntry {\n  const out = ts.transpile('let x: number = 1;');\n  if (typeof out !== 'string') throw new Error('transpile failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "sass", "class": "Build tool", "source": "import sass from 'https://esm.sh/sass';\ntry {\n  const result = sass.compileString('a { color: red; }');\n  if (typeof result.css !== 'string') throw new Error('no css');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "rollup", "class": "Bundler", "probe": "typeof rollup.rollup === 'function'" },
-    { "name": "webpack", "class": "Bundler", "probe": "typeof webpack === 'function'" },
-    { "name": "vite", "class": "Bundler", "probe": "typeof vite.createServer === 'function'" },
-    { "name": "parcel", "class": "Bundler", "source": "import parcel from 'https://esm.sh/parcel';\ntry {\n  if (typeof parcel !== 'object' && typeof parcel !== 'function') throw new Error('unexpected export');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "vitest", "class": "Testing", "probe": "typeof vitest.defineConfig === 'function'" },
-    { "name": "jest", "class": "Testing", "probe": "typeof jest === 'function'" },
-    { "name": "express", "class": "HTTP server", "probe": "express().get('/', (req, res) => res.send('ok'))" },
-    { "name": "fastify", "class": "HTTP server", "probe": "fastify({ logger: false }).get('/', async () => 'ok')" },
-    { "name": "h3", "class": "HTTP server", "source": "import h3 from 'https://esm.sh/h3';\ntry {\n  const app = h3.createApp();\n  app.use(h3.defineEventHandler(() => 'ok'));\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "polka", "class": "HTTP server", "probe": "polka().get('/', (req, res) => res.end('ok'))" },
-    { "name": "crypto-js", "class": "Crypto", "probe": "cryptoJs.SHA256('hello').toString()" },
-    { "name": "bcrypt", "class": "Crypto", "probe": "bcrypt.hashSync('abc', 10)" },
-    { "name": "argon2", "class": "Crypto", "probe": "await argon2.hash('abc')" },
-    { "name": "handlebars", "class": "Template", "probe": "handlebars.compile('hello {{name}}')({ name: 'world' })" },
-    { "name": "ejs", "class": "Template", "probe": "ejs.render('hello <%= name %>', { name: 'world' })" },
-    { "name": "pug", "class": "Template", "probe": "pug.render('p hello')" },
-    { "name": "hono", "class": "HTTP server", "probe": "new Hono().request('/')" },
-    { "name": "elysia", "class": "HTTP server", "probe": "new Elysia().handle(new Request('/'))" },
-    { "name": "itty-router", "class": "HTTP server", "probe": "const router = ittyRouter.Router(); router.handle(new Request('/'))" },
-    { "name": "koa", "class": "HTTP server", "probe": "new Koa().use(ctx => { ctx.body = 'ok' })" },
-    { "name": "zod", "class": "Validation", "probe": "z.object({ name: z.string() })" },
-    { "name": "uuid", "class": "Utility", "probe": "uuid.v4()" },
-    { "name": "lodash", "class": "Utility", "probe": "_.chunk(['a', 'b', 'c'], 2)" },
-    { "name": "chalk", "class": "Utility", "probe": "chalk.red('error')" },
-    { "name": "events", "class": "Node core API", "source": "import { EventEmitter } from 'node:events';\ntry {\n  new EventEmitter();\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "stream", "class": "Node core API", "source": "import { Readable } from 'node:stream';\ntry {\n  new Readable({ read() {} });\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "buffer", "class": "Node core API", "source": "import { Buffer } from 'node:buffer';\ntry {\n  Buffer.from('hello');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "crypto", "class": "Node core API", "source": "import crypto from 'node:crypto';\ntry {\n  crypto.createHash('sha256').update('hello').digest('hex');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "path", "class": "Node core API", "source": "import path from 'node:path';\ntry {\n  path.join('a', 'b');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "url", "class": "Node core API", "source": "import url from 'node:url';\ntry {\n  new url.URL('http://example.com');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "querystring", "class": "Node core API", "source": "import querystring from 'node:querystring';\ntry {\n  querystring.parse('a=1');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" },
-    { "name": "zlib", "class": "Node core API", "source": "import zlib from 'node:zlib';\ntry {\n  zlib.gzipSync('hello');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}" }
+    {
+      "name": "fetch",
+      "class": "HTTP client",
+      "import": false,
+      "probe": "typeof fetch === 'function'"
+    },
+    {
+      "name": "axios",
+      "class": "HTTP client",
+      "probe": "typeof axios === 'function' && axios.create"
+    },
+    {
+      "name": "node-fetch",
+      "class": "HTTP client",
+      "probe": "typeof nodeFetch === 'function'"
+    },
+    {
+      "name": "undici",
+      "class": "HTTP client",
+      "probe": "typeof undici.request === 'function'"
+    },
+    {
+      "name": "fs-extra",
+      "class": "File system",
+      "source": "import fsExtra from 'https://esm.sh/fs-extra';\ntry {\n  const file = '/tmp/harness-fs-extra.txt';\n  await fsExtra.outputFile(file, 'ok');\n  const content = await fsExtra.readFile(file, 'utf8');\n  if (content !== 'ok') throw new Error('content mismatch');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "globby",
+      "class": "File system",
+      "probe": "Array.isArray(await globby('*.missing'))"
+    },
+    {
+      "name": "chokidar",
+      "class": "File system",
+      "probe": "typeof chokidar.watch === 'function'"
+    },
+    {
+      "name": "esbuild",
+      "class": "Build tool",
+      "source": "import esbuild from 'https://esm.sh/esbuild';\ntry {\n  const result = await esbuild.transform('let x = 1;', { loader: 'js' });\n  if (typeof result.code !== 'string') throw new Error('transform failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "swc",
+      "class": "Build tool",
+      "source": "import swc from 'https://esm.sh/@swc/wasm-web';\ntry {\n  if (typeof swc !== 'object') throw new Error('unexpected export');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "tsc",
+      "class": "Build tool",
+      "source": "import ts from 'https://esm.sh/typescript';\ntry {\n  const out = ts.transpile('let x: number = 1;');\n  if (typeof out !== 'string') throw new Error('transpile failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "sass",
+      "class": "Build tool",
+      "source": "import sass from 'https://esm.sh/sass';\ntry {\n  const result = sass.compileString('a { color: red; }');\n  if (typeof result.css !== 'string') throw new Error('no css');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "rollup",
+      "class": "Bundler",
+      "probe": "typeof rollup.rollup === 'function'"
+    },
+    {
+      "name": "webpack",
+      "class": "Bundler",
+      "probe": "typeof webpack === 'function'"
+    },
+    {
+      "name": "vite",
+      "class": "Bundler",
+      "probe": "typeof vite.createServer === 'function'"
+    },
+    {
+      "name": "parcel",
+      "class": "Bundler",
+      "source": "import parcel from 'https://esm.sh/parcel';\ntry {\n  if (typeof parcel !== 'object' && typeof parcel !== 'function') throw new Error('unexpected export');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "vitest",
+      "class": "Testing",
+      "probe": "typeof vitest.defineConfig === 'function'"
+    },
+    {
+      "name": "jest",
+      "class": "Testing",
+      "probe": "typeof jest === 'function'"
+    },
+    {
+      "name": "express",
+      "class": "HTTP server",
+      "probe": "express().get('/', (req, res) => res.send('ok'))"
+    },
+    {
+      "name": "fastify",
+      "class": "HTTP server",
+      "probe": "fastify({ logger: false }).get('/', async () => 'ok')"
+    },
+    {
+      "name": "h3",
+      "class": "HTTP server",
+      "source": "import h3 from 'https://esm.sh/h3';\ntry {\n  const app = h3.createApp();\n  app.use(h3.defineEventHandler(() => 'ok'));\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "polka",
+      "class": "HTTP server",
+      "probe": "polka().get('/', (req, res) => res.end('ok'))"
+    },
+    {
+      "name": "crypto-js",
+      "class": "Crypto",
+      "probe": "cryptoJs.SHA256('hello').toString()"
+    },
+    {
+      "name": "bcrypt",
+      "class": "Crypto",
+      "probe": "bcrypt.hashSync('abc', 10)"
+    },
+    {
+      "name": "argon2",
+      "class": "Crypto",
+      "probe": "await argon2.hash('abc')"
+    },
+    {
+      "name": "handlebars",
+      "class": "Template",
+      "probe": "handlebars.compile('hello {{name}}')({ name: 'world' })"
+    },
+    {
+      "name": "ejs",
+      "class": "Template",
+      "probe": "ejs.render('hello <%= name %>', { name: 'world' })"
+    },
+    {
+      "name": "pug",
+      "class": "Template",
+      "probe": "pug.render('p hello')"
+    },
+    {
+      "name": "hono",
+      "class": "HTTP server",
+      "probe": "new Hono().request('/')"
+    },
+    {
+      "name": "elysia",
+      "class": "HTTP server",
+      "probe": "new Elysia().handle(new Request('/'))"
+    },
+    {
+      "name": "itty-router",
+      "class": "HTTP server",
+      "probe": "const router = ittyRouter.Router(); router.handle(new Request('/'))"
+    },
+    {
+      "name": "koa",
+      "class": "HTTP server",
+      "probe": "new Koa().use(ctx => { ctx.body = 'ok' })"
+    },
+    {
+      "name": "zod",
+      "class": "Validation",
+      "probe": "z.object({ name: z.string() })"
+    },
+    {
+      "name": "uuid",
+      "class": "Utility",
+      "probe": "uuid.v4()"
+    },
+    {
+      "name": "lodash",
+      "class": "Utility",
+      "probe": "_.chunk(['a', 'b', 'c'], 2)"
+    },
+    {
+      "name": "chalk",
+      "class": "Utility",
+      "probe": "chalk.red('error')"
+    },
+    {
+      "name": "events",
+      "class": "Node core API",
+      "source": "import { EventEmitter } from 'node:events';\ntry {\n  new EventEmitter();\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "stream",
+      "class": "Node core API",
+      "source": "import { Readable } from 'node:stream';\ntry {\n  new Readable({ read() {} });\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "buffer",
+      "class": "Node core API",
+      "source": "import { Buffer } from 'node:buffer';\ntry {\n  Buffer.from('hello');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "crypto",
+      "class": "Node core API",
+      "source": "import crypto from 'node:crypto';\ntry {\n  crypto.createHash('sha256').update('hello').digest('hex');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "path",
+      "class": "Node core API",
+      "source": "import path from 'node:path';\ntry {\n  path.join('a', 'b');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "url",
+      "class": "Node core API",
+      "source": "import url from 'node:url';\ntry {\n  new url.URL('http://example.com');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "querystring",
+      "class": "Node core API",
+      "source": "import querystring from 'node:querystring';\ntry {\n  querystring.parse('a=1');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "zlib",
+      "class": "Node core API",
+      "source": "import zlib from 'node:zlib';\ntry {\n  zlib.gzipSync('hello');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "ajv",
+      "class": "Validation",
+      "source": "import Ajv from 'https://esm.sh/ajv';\ntry {\n  const ajv = new Ajv();\n  const validate = ajv.compile({ type: 'object', properties: { name: { type: 'string' } } });\n  if (!validate({ name: 'x' })) throw new Error('validation failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "joi",
+      "class": "Validation",
+      "source": "import joi from 'https://esm.sh/joi';\ntry {\n  const schema = joi.object({ name: joi.string().required() });\n  const { error } = schema.validate({ name: 'x' });\n  if (error) throw new Error(error.message);\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "valibot",
+      "class": "Validation",
+      "source": "import * as v from 'https://esm.sh/valibot';\ntry {\n  const schema = v.object({ name: v.string() });\n  v.parse(schema, { name: 'x' });\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "yup",
+      "class": "Validation",
+      "source": "import * as yup from 'https://esm.sh/yup';\ntry {\n  const schema = yup.object({ name: yup.string().required() });\n  await schema.validate({ name: 'x' });\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "fast-json-stringify",
+      "class": "Validation",
+      "source": "import fastJson from 'https://esm.sh/fast-json-stringify';\ntry {\n  const stringify = fastJson({ type: 'object', properties: { name: { type: 'string' } } });\n  if (typeof stringify({ name: 'x' }) !== 'string') throw new Error('stringify failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "superstruct",
+      "class": "Validation",
+      "source": "import * as ss from 'https://esm.sh/superstruct';\ntry {\n  const User = ss.object({ name: ss.string() });\n  ss.assert({ name: 'x' }, User);\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "io-ts",
+      "class": "Validation",
+      "source": "import * as t from 'https://esm.sh/io-ts';\ntry {\n  const User = t.type({ name: t.string });\n  User.decode({ name: 'x' });\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "nanoid",
+      "class": "Utility",
+      "source": "import { nanoid } from 'https://esm.sh/nanoid';\ntry {\n  if (typeof nanoid() !== 'string') throw new Error('nanoid failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "dotenv",
+      "class": "Utility",
+      "source": "import dotenv from 'https://esm.sh/dotenv';\ntry {\n  if (typeof dotenv.config !== 'function') throw new Error('dotenv.config not a function');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "js-yaml",
+      "class": "Utility",
+      "source": "import yaml from 'https://esm.sh/js-yaml';\ntry {\n  const doc = yaml.load('name: x');\n  if (doc?.name !== 'x') throw new Error('yaml load failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "json5",
+      "class": "Utility",
+      "source": "import JSON5 from 'https://esm.sh/json5';\ntry {\n  const doc = JSON5.parse('{ name: \"x\" }');\n  if (doc?.name !== 'x') throw new Error('json5 parse failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "semver",
+      "class": "Utility",
+      "source": "import semver from 'https://esm.sh/semver';\ntry {\n  if (!semver.valid('1.0.0')) throw new Error('semver valid failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "ms",
+      "class": "Utility",
+      "source": "import ms from 'https://esm.sh/ms';\ntry {\n  if (ms('1d') !== 86400000) throw new Error('ms failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "debug",
+      "class": "Utility",
+      "source": "import debug from 'https://esm.sh/debug';\ntry {\n  const d = debug('test');\n  if (typeof d !== 'function') throw new Error('debug failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "deepmerge",
+      "class": "Utility",
+      "source": "import deepmerge from 'https://esm.sh/deepmerge';\ntry {\n  const out = deepmerge({ a: 1 }, { b: 2 });\n  if (out.a !== 1 || out.b !== 2) throw new Error('deepmerge failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "query-string",
+      "class": "Utility",
+      "source": "import queryString from 'https://esm.sh/query-string';\ntry {\n  const parsed = queryString.parse('a=1');\n  if (parsed.a !== '1') throw new Error('query-string parse failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "fast-deep-equal",
+      "class": "Utility",
+      "source": "import deepEqual from 'https://esm.sh/fast-deep-equal';\ntry {\n  if (!deepEqual({ a: 1 }, { a: 1 })) throw new Error('deep equal failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "change-case",
+      "class": "Utility",
+      "source": "import * as changeCase from 'https://esm.sh/change-case';\ntry {\n  if (changeCase.camelCase('foo bar') !== 'fooBar') throw new Error('change-case failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "p-limit",
+      "class": "Utility",
+      "source": "import pLimit from 'https://esm.sh/p-limit';\ntry {\n  const limit = pLimit(2);\n  if (typeof limit !== 'function') throw new Error('p-limit failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "lru-cache",
+      "class": "Utility",
+      "source": "import { LRUCache } from 'https://esm.sh/lru-cache';\ntry {\n  const cache = new LRUCache({ max: 10 });\n  cache.set('a', 1);\n  if (cache.get('a') !== 1) throw new Error('lru-cache failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "date-fns",
+      "class": "Utility",
+      "source": "import { format } from 'https://esm.sh/date-fns';\ntry {\n  const out = format(new Date(2026, 0, 1), 'yyyy-MM-dd');\n  if (out !== '2026-01-01') throw new Error('date-fns failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "dayjs",
+      "class": "Utility",
+      "source": "import dayjs from 'https://esm.sh/dayjs';\ntry {\n  const d = dayjs('2026-01-01');\n  if (!d.isValid()) throw new Error('dayjs failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "luxon",
+      "class": "Utility",
+      "source": "import { DateTime } from 'https://esm.sh/luxon';\ntry {\n  const dt = DateTime.fromISO('2026-01-01');\n  if (!dt.isValid) throw new Error('luxon failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "throttle-debounce",
+      "class": "Utility",
+      "source": "import { throttle, debounce } from 'https://esm.sh/throttle-debounce';\ntry {\n  if (typeof throttle !== 'function' || typeof debounce !== 'function') throw new Error('throttle-debounce failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "rimraf",
+      "class": "File system",
+      "source": "import rimraf from 'https://esm.sh/rimraf';\ntry {\n  if (typeof rimraf !== 'function') throw new Error('rimraf failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "glob",
+      "class": "File system",
+      "source": "import glob from 'https://esm.sh/glob';\ntry {\n  if (typeof glob.glob !== 'function') throw new Error('glob failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "mkdirp",
+      "class": "File system",
+      "source": "import mkdirp from 'https://esm.sh/mkdirp';\ntry {\n  if (typeof mkdirp !== 'function') throw new Error('mkdirp failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "del",
+      "class": "File system",
+      "source": "import { deleteAsync } from 'https://esm.sh/del';\ntry {\n  if (typeof deleteAsync !== 'function') throw new Error('del failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "memfs",
+      "class": "File system",
+      "source": "import { createFsFromVolume, Volume } from 'https://esm.sh/memfs';\ntry {\n  const vol = new Volume();\n  const fs = createFsFromVolume(vol);\n  fs.writeFileSync('/a', 'x');\n  if (fs.readFileSync('/a', 'utf8') !== 'x') throw new Error('memfs failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "cors",
+      "class": "HTTP server",
+      "source": "import cors from 'https://esm.sh/cors';\ntry {\n  if (typeof cors !== 'function') throw new Error('cors failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "helmet",
+      "class": "HTTP server",
+      "source": "import helmet from 'https://esm.sh/helmet';\ntry {\n  if (typeof helmet !== 'function') throw new Error('helmet failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "morgan",
+      "class": "HTTP server",
+      "source": "import morgan from 'https://esm.sh/morgan';\ntry {\n  if (typeof morgan !== 'function') throw new Error('morgan failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "compression",
+      "class": "HTTP server",
+      "source": "import compression from 'https://esm.sh/compression';\ntry {\n  if (typeof compression !== 'function') throw new Error('compression failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "serve-static",
+      "class": "HTTP server",
+      "source": "import serveStatic from 'https://esm.sh/serve-static';\ntry {\n  if (typeof serveStatic !== 'function') throw new Error('serve-static failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "cookie-parser",
+      "class": "HTTP server",
+      "source": "import cookieParser from 'https://esm.sh/cookie-parser';\ntry {\n  if (typeof cookieParser !== 'function') throw new Error('cookie-parser failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "body-parser",
+      "class": "HTTP server",
+      "source": "import bodyParser from 'https://esm.sh/body-parser';\ntry {\n  if (typeof bodyParser.json !== 'function') throw new Error('body-parser failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "pino",
+      "class": "HTTP server",
+      "source": "import pino from 'https://esm.sh/pino';\ntry {\n  const logger = pino({ level: 'silent' });\n  if (typeof logger.info !== 'function') throw new Error('pino failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "winston",
+      "class": "HTTP server",
+      "source": "import winston from 'https://esm.sh/winston';\ntry {\n  const logger = winston.createLogger({ silent: true });\n  if (typeof logger.info !== 'function') throw new Error('winston failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "got",
+      "class": "HTTP client",
+      "source": "import got from 'https://esm.sh/got';\ntry {\n  if (typeof got.get !== 'function') throw new Error('got failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "ky",
+      "class": "HTTP client",
+      "source": "import ky from 'https://esm.sh/ky';\ntry {\n  if (typeof ky.get !== 'function') throw new Error('ky failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "http-proxy-agent",
+      "class": "HTTP client",
+      "source": "import { HttpProxyAgent } from 'https://esm.sh/http-proxy-agent';\ntry {\n  const agent = new HttpProxyAgent('http://localhost:8080');\n  if (typeof agent !== 'object') throw new Error('http-proxy-agent failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "form-data",
+      "class": "HTTP client",
+      "source": "import FormData from 'https://esm.sh/form-data';\ntry {\n  const form = new FormData();\n  form.append('a', '1');\n  if (typeof form.getHeaders !== 'function') throw new Error('form-data failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "sha.js",
+      "class": "Crypto",
+      "source": "import SHA from 'https://esm.sh/sha.js';\ntry {\n  const sha = new SHA.sha256();\n  sha.update('hello');\n  if (sha.digest('hex').length !== 64) throw new Error('sha.js failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "hash.js",
+      "class": "Crypto",
+      "source": "import hash from 'https://esm.sh/hash.js';\ntry {\n  const h = hash.utils.sha256('hello');\n  if (h.length !== 64) throw new Error('hash.js failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "md5",
+      "class": "Crypto",
+      "source": "import md5 from 'https://esm.sh/md5';\ntry {\n  if (md5('hello') !== '5d41402abc4b2a76b9719d911017c592') throw new Error('md5 failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "create-hash",
+      "class": "Crypto",
+      "source": "import createHash from 'https://esm.sh/create-hash';\ntry {\n  const h = createHash('sha256').update('hello').digest('hex');\n  if (h.length !== 64) throw new Error('create-hash failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "jose",
+      "class": "Crypto",
+      "source": "import * as jose from 'https://esm.sh/jose';\ntry {\n  if (typeof jose.jwtVerify !== 'function') throw new Error('jose failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "jsonwebtoken",
+      "class": "Crypto",
+      "source": "import jwt from 'https://esm.sh/jsonwebtoken';\ntry {\n  const token = jwt.sign({ sub: 'x' }, 'secret');\n  const decoded = jwt.verify(token, 'secret');\n  if (decoded.sub !== 'x') throw new Error('jsonwebtoken failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "pbkdf2",
+      "class": "Crypto",
+      "source": "import pbkdf2 from 'https://esm.sh/pbkdf2';\ntry {\n  if (typeof pbkdf2.pbkdf2Sync !== 'function') throw new Error('pbkdf2 failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "marked",
+      "class": "Template",
+      "source": "import { marked } from 'https://esm.sh/marked';\ntry {\n  const html = marked.parse('# hello');\n  if (!html.includes('<h1')) throw new Error('marked failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "markdown-it",
+      "class": "Template",
+      "source": "import MarkdownIt from 'https://esm.sh/markdown-it';\ntry {\n  const md = new MarkdownIt();\n  const html = md.render('# hello');\n  if (!html.includes('<h1')) throw new Error('markdown-it failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "micromark",
+      "class": "Template",
+      "source": "import { micromark } from 'https://esm.sh/micromark';\ntry {\n  const html = micromark('# hello');\n  if (!html.includes('<h1')) throw new Error('micromark failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "nunjucks",
+      "class": "Template",
+      "source": "import nunjucks from 'https://esm.sh/nunjucks';\ntry {\n  const html = nunjucks.renderString('hello {{name}}', { name: 'world' });\n  if (html !== 'hello world') throw new Error('nunjucks failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "liquidjs",
+      "class": "Template",
+      "source": "import { Liquid } from 'https://esm.sh/liquidjs';\ntry {\n  const engine = new Liquid();\n  const html = await engine.parseAndRender('hello {{name}}', { name: 'world' });\n  if (html !== 'hello world') throw new Error('liquidjs failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "mustache",
+      "class": "Template",
+      "source": "import mustache from 'https://esm.sh/mustache';\ntry {\n  const html = mustache.render('hello {{name}}', { name: 'world' });\n  if (html !== 'hello world') throw new Error('mustache failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "twig",
+      "class": "Template",
+      "source": "import twig from 'https://esm.sh/twig';\ntry {\n  const template = twig.twig({ data: 'hello {{name}}' });\n  const html = template.render({ name: 'world' });\n  if (html !== 'hello world') throw new Error('twig failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "chai",
+      "class": "Testing",
+      "source": "import { expect } from 'https://esm.sh/chai';\ntry {\n  expect(1).to.equal(1);\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "sinon",
+      "class": "Testing",
+      "source": "import sinon from 'https://esm.sh/sinon';\ntry {\n  const spy = sinon.spy();\n  spy();\n  if (!spy.calledOnce) throw new Error('sinon failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "dompurify",
+      "class": "Testing",
+      "source": "import DOMPurify from 'https://esm.sh/dompurify';\ntry {\n  const clean = DOMPurify.sanitize('<script>x</script>');\n  if (clean.includes('<script')) throw new Error('dompurify failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "linkedom",
+      "class": "Testing",
+      "source": "import { parseHTML } from 'https://esm.sh/linkedom';\ntry {\n  const document = parseHTML('<html><body>hi</body></html>').document;\n  if (document.body.textContent !== 'hi') throw new Error('linkedom failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "lightningcss",
+      "class": "Build tool",
+      "source": "import * as lightningcss from 'https://esm.sh/lightningcss';\ntry {\n  if (typeof lightningcss.transform !== 'function') throw new Error('lightningcss failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "postcss",
+      "class": "Build tool",
+      "source": "import postcss from 'https://esm.sh/postcss';\ntry {\n  const result = postcss.parse('a { color: red; }');\n  if (result.nodes.length !== 1) throw new Error('postcss failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "babel",
+      "class": "Build tool",
+      "source": "import * as babel from 'https://esm.sh/@babel/core';\ntry {\n  const result = babel.transformSync('const x = 1;', { presets: [] });\n  if (typeof result.code !== 'string') throw new Error('babel failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "sucrase",
+      "class": "Build tool",
+      "source": "import { transform } from 'https://esm.sh/sucrase';\ntry {\n  const result = transform('const x = 1;', { transforms: ['imports'] });\n  if (typeof result.code !== 'string') throw new Error('sucrase failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "acorn",
+      "class": "Build tool",
+      "source": "import * as acorn from 'https://esm.sh/acorn';\ntry {\n  const ast = acorn.parse('const x = 1;', { ecmaVersion: 2022 });\n  if (ast.type !== 'Program') throw new Error('acorn failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "rspack",
+      "class": "Bundler",
+      "source": "import * as rspack from 'https://esm.sh/@rspack/core';\ntry {\n  if (typeof rspack !== 'object') throw new Error('rspack failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "turbo",
+      "class": "Bundler",
+      "source": "import * as turbo from 'https://esm.sh/@turbo/worker';\ntry {\n  if (typeof turbo !== 'object') throw new Error('turbo failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    },
+    {
+      "name": "ws",
+      "class": "HTTP server",
+      "source": "import * as ws from 'https://esm.sh/ws';\ntry {\n  if (typeof ws.WebSocket !== 'function') throw new Error('ws failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+    }
   ]
 }
