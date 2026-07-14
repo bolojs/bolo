@@ -530,14 +530,20 @@
   color: var(--unknown);
 }
 
-/* Search command (skills.sh-style package search) */
+/* Search command (skills.sh-style full-bleed package search) */
 .search-command {
   margin: 3.5rem 0;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding-inline: 2rem;
 }
 
 .search-command-field {
-  max-width: 36rem;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .search-command-input-wrap {
@@ -545,17 +551,17 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  padding: 0.875rem 1rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 0.625rem;
+  padding: 0.875rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
   font-family: var(--font-mono);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 
 .search-command-input-wrap:focus-within {
-  border-color: var(--muted);
-  box-shadow: 0 0 0 3px rgba(163, 163, 163, 0.12);
+  border-bottom-color: var(--muted);
 }
 
 .search-command-prompt {
@@ -608,8 +614,8 @@
 }
 
 .search-command-results {
-  max-width: 36rem;
-  margin: 1.25rem auto 0;
+  width: 100%;
+  margin-top: 1.25rem;
 }
 
 .search-command-heading {
@@ -625,9 +631,8 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  border: 1px solid var(--border);
-  border-radius: 0.625rem;
-  overflow: hidden;
+  border: none;
+  border-radius: 0;
   transition: opacity 0.2s ease;
 }
 
@@ -644,10 +649,6 @@
   transition: background-color 0.15s ease;
 }
 
-.search-command-item:last-child {
-  border-bottom: none;
-}
-
 .search-command-item:hover {
   background-color: var(--border);
 }
@@ -657,7 +658,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.875rem 1rem;
+  padding: 1rem 0;
 }
 
 .search-command-name {
