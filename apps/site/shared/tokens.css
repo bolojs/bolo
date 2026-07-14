@@ -3,6 +3,11 @@
    compat too, and vice versa. */
 @import "tailwindcss";
 
+/* Variable values live in theme-vars.css so non-Tailwind consumers (e.g. the
+   Starlight docs site) can share them without pulling in the Tailwind wiring
+   in this file. */
+@import "./theme-vars.css";
+
 /* Tailwind v4's automatic content detection is rooted at each app's own
    directory and won't cross into this shared dir — every app that imports
    this file needs its Tailwind utilities generated from shared components too. */
@@ -21,21 +26,4 @@
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-border: var(--border);
-}
-
-/* CSS variables are defined here so they are available before the theme toggle renders. */
-:root {
-  --bg: #fafafa;
-  --fg: #0a0a0a;
-  --muted: #737373;
-  --border: #e5e5e5;
-  --font-sans: "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-}
-
-[data-theme="dark"] {
-  --bg: #000000;
-  --fg: #f5f5f5;
-  --muted: #a3a3a3;
-  --border: #262626;
 }

@@ -1,0 +1,20 @@
+/* Canonical design-token *values*, sourced from apps/site/compat/src/styles/global.css.
+   compat is the design reference — do not fork values here without updating
+   compat too, and vice versa. Split out from tokens.css so consumers that
+   don't want the Tailwind wiring (e.g. Starlight) can still share the same
+   variables. */
+:root {
+  --bg: #fafafa;
+  --fg: #0a0a0a;
+  --muted: #737373;
+  --border: #e5e5e5;
+  --font-sans: "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+[data-theme="dark"] {
+  --bg: #000000;
+  --fg: #f5f5f5;
+  --muted: #a3a3a3;
+  --border: #262626;
+}
