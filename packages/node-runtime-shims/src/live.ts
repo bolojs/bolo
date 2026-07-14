@@ -1,7 +1,7 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
-import type { SWSandbox } from "@browser-containers/sw-sandbox";
-import * as nodeWebShims from "@browser-containers/node-web-shims";
-import { installUnhandledRejectionHandler } from "@browser-containers/node-web-shims";
+import type { VfsBus } from "@bolojs/vfs-bus";
+import type { SWSandbox } from "@bolojs/sw-sandbox";
+import * as nodeWebShims from "@bolojs/node-web-shims";
+import { installUnhandledRejectionHandler } from "@bolojs/node-web-shims";
 import { createFsShim } from "./fs-shim.js";
 import { createHttpShim } from "./http-shim.js";
 import {
@@ -52,7 +52,7 @@ export interface LiveShimRegistryOptions {
  * Builds the map of node builtin name -> live shim instance for the current
  * container (bound to its own `VfsBus`/`SWSandbox`). A bundled user app reads
  * this map at run time via `globalThis.__browserContainers.shims` — see
- * `bundleEntry`'s node-alias plugin in `@browser-containers/wasm-registry`.
+ * `bundleEntry`'s node-alias plugin in `@bolojs/wasm-registry`.
  */
 export const createLiveShimRegistry = (
   options: LiveShimRegistryOptions,

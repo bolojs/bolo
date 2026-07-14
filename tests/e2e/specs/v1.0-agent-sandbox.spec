@@ -2,7 +2,7 @@
 
 ## Agent installs and boots
 
-* I install packages "@browser-containers/runtime"
+* I install packages "@bolojs/runtime"
 * I write file "/agent/index.js" with content "export async function agent() { console.log('Agent booted'); return { status: 'ready' }; }"
 * I run "runtime run /agent/index.js"
 * The agent output contains "Agent booted"

@@ -81,7 +81,7 @@ jobs:
           fi
 
       - name: Regenerate site-compat data
-        run: pnpm --filter @browser-containers/site-compat sync-data
+        run: pnpm --filter @bolojs/site-compat sync-data
 
       - name: Commit updated package-matrix.json
         run: |

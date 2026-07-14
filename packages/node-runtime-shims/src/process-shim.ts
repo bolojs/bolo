@@ -1,4 +1,4 @@
-import { createEventsShim } from "@browser-containers/node-web-shims";
+import { createEventsShim } from "@bolojs/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
 
@@ -84,7 +84,7 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     browser: true,
     pid: 1,
     ppid: 0,
-    title: "browser-containers",
+    title: "bolo",
     nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) =>
       queueMicrotask(() => fn(...args)),
     cwd: () => cwd,

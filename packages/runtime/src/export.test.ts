@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VfsBus } from "@browser-containers/vfs-bus";
+import { VfsBus } from "@bolojs/vfs-bus";
 import { createExport } from "./export.js";
 import { createMount } from "./mount.js";
 

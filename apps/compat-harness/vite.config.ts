@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import { nodeWebShims } from '@browser-containers/node-web-shims/vite-plugin';
+import { nodeWebShims } from '@bolojs/node-web-shims/vite-plugin';
 
 const shimsDir = fileURLToPath(new URL('../../packages/node-web-shims/dist/', import.meta.url));
 // Same rationale as apps/demo/vite.config.ts: unenv's own runtime modules
@@ -112,7 +112,7 @@ export default defineConfig({
   // asset/worker URLs.
   optimizeDeps: {
     exclude: [
-      '@browser-containers/runtime',
+      '@bolojs/runtime',
       'oxc-transform',
       '@rolldown/browser',
       'typescript',

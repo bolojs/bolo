@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/node-runtime-shims",
+  "name": "@bolojs/node-runtime-shims",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,9 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@browser-containers/vfs-bus": "workspace:*",
-    "@browser-containers/sw-sandbox": "workspace:*",
-    "@browser-containers/node-web-shims": "workspace:*",
+    "@bolojs/vfs-bus": "workspace:*",
+    "@bolojs/sw-sandbox": "workspace:*",
+    "@bolojs/node-web-shims": "workspace:*",
     "quickjs-emscripten-core": "^0.32.0",
     "@jitl/quickjs-wasmfile-release-sync": "^0.32.0"
   },

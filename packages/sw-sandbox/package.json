@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/sw-sandbox",
+  "name": "@bolojs/sw-sandbox",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",

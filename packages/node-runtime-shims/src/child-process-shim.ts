@@ -2,7 +2,7 @@ import {
   createEventsShim,
   createStreamShim,
   createBufferShim,
-} from "@browser-containers/node-web-shims";
+} from "@bolojs/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
 const { Readable, Writable } = createStreamShim();

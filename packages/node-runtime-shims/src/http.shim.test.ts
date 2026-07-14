@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { SWSandbox } from "@browser-containers/sw-sandbox";
+import type { SWSandbox } from "@bolojs/sw-sandbox";
 import { createHttpShim, createNetShim } from "./http-shim.js";
 import type http from "node:http";
 

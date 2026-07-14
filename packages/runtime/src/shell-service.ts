@@ -1,9 +1,9 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
-import type { PackageManager } from "@browser-containers/npm";
-import type { SWSandbox } from "@browser-containers/sw-sandbox";
-import { BrowserViteServer } from "@browser-containers/vite-server";
-import { bundleEntry } from "@browser-containers/wasm-registry";
-import { createLiveShimRegistry } from "@browser-containers/node-runtime-shims";
+import type { VfsBus } from "@bolojs/vfs-bus";
+import type { PackageManager } from "@bolojs/npm";
+import type { SWSandbox } from "@bolojs/sw-sandbox";
+import { BrowserViteServer } from "@bolojs/vite-server";
+import { bundleEntry } from "@bolojs/wasm-registry";
+import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
 import { Bash } from "just-bash/browser";
 import type { RuntimeWorker } from "./runtime-worker.js";
 import type { SandboxBackend } from "./sandbox-backend.js";

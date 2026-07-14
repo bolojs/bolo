@@ -1,7 +1,7 @@
 import type { SandboxBackend } from "./sandbox-backend.js";
 
 /**
- * Public API types for the browser-containers `boot()` API.
+ * Public API types for the bolo `boot()` API.
  *
  * Mirrors a WebContainers-compatible subset with explicit v1.0 scope limits
  * (no symlinks, no stat/lstat, no stdin).

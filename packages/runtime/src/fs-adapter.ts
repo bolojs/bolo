@@ -1,4 +1,4 @@
-import type { VfsBus, DirEnt as VfsDirEnt } from "@browser-containers/vfs-bus";
+import type { VfsBus, DirEnt as VfsDirEnt } from "@bolojs/vfs-bus";
 import type { FileSystemAPI, DirEnt } from "./container-types.js";
 
 export function createFileSystem(vfs: VfsBus): FileSystemAPI {

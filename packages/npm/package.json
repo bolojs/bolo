@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/npm",
+  "name": "@bolojs/npm",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,7 +16,7 @@
     "semver": "^7.6.0"
   },
   "devDependencies": {
-    "@browser-containers/vfs-bus": "workspace:*",
+    "@bolojs/vfs-bus": "workspace:*",
     "@types/semver": "^7.5.8",
     "memfs": "~4.56.11",
     "typescript": "^5.8.0",

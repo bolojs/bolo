@@ -1,5 +1,5 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
-import { transformScript } from "@browser-containers/wasm-registry";
+import type { VfsBus } from "@bolojs/vfs-bus";
+import { transformScript } from "@bolojs/wasm-registry";
 import type { SandboxBackend, SandboxRunResult } from "./sandbox-backend.js";
 
 interface Dirent {

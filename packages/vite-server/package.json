@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/vite-server",
+  "name": "@bolojs/vite-server",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@browser-containers/vfs-bus": "workspace:*",
-    "@browser-containers/wasm-registry": "workspace:*",
+    "@bolojs/vfs-bus": "workspace:*",
+    "@bolojs/wasm-registry": "workspace:*",
     "@sebastianwessel/quickjs": "^2.2.0",
     "oxc-transform": "^0.139.0",
     "typescript": "^5.8.0"

@@ -4,7 +4,7 @@
 
 * The service worker registers successfully
 * The demo page title is "browsercontainers demo"
-* The preview iframe shows "Hello from browser-containers!"
+* The preview iframe shows "Hello from bolo!"
 
 ## Filesystem verification
 

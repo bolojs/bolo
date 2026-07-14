@@ -1,4 +1,4 @@
-import type { VfsBus, WatchHandler } from "@browser-containers/vfs-bus";
+import type { VfsBus, WatchHandler } from "@bolojs/vfs-bus";
 import type { Watcher } from "./container-types.js";
 
 export function createWatchAdapter(vfs: VfsBus) {

@@ -37,7 +37,7 @@ jobs:
       # isn't undermined by that app-level bug; both apps are still
       # typechecked and linted below.
       - name: Build packages
-        run: pnpm turbo run build --filter='!@browser-containers/site-demo' --filter='!@browser-containers/compat-harness'
+        run: pnpm turbo run build --filter='!@bolojs/site-demo' --filter='!@bolojs/compat-harness'
 
       - name: Typecheck
         run: pnpm typecheck

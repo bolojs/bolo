@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { IframeSandbox } from "./iframe-sandbox";
-import { VfsBus } from "@browser-containers/vfs-bus";
+import { VfsBus } from "@bolojs/vfs-bus";
 
 describe("IframeSandbox", () => {
   it("constructs with vfs and workdir", () => {

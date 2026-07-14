@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/node-web-shims",
+  "name": "@bolojs/node-web-shims",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",

@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/wasm-registry",
+  "name": "@bolojs/wasm-registry",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
-    "@browser-containers/npm": "workspace:*",
-    "@browser-containers/vfs-bus": "workspace:*",
+    "@bolojs/npm": "workspace:*",
+    "@bolojs/vfs-bus": "workspace:*",
     "@rolldown/browser": "^1.1.5",
     "oxc-transform": "^0.139.0"
   },

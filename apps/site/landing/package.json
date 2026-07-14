@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/site-landing",
+  "name": "@bolojs/site-landing",
   "version": "0.1.0",
   "private": true,
   "type": "module",

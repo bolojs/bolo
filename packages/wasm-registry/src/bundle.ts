@@ -1,6 +1,6 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { VfsBus } from "@bolojs/vfs-bus";
 import type { Plugin } from "@rolldown/browser";
-import { buildEsmShUrl } from "@browser-containers/npm";
+import { buildEsmShUrl } from "@bolojs/npm";
 
 declare global {
   // Set by a host app (see apps/compat-harness/src/main.ts) to load
@@ -409,7 +409,7 @@ var console = {
 `.trim();
 
 const vfsPlugin = (vfs: VfsBus): Plugin => ({
-  name: "browser-containers-vfs",
+  name: "bolo-vfs",
   async resolveId(id, importer) {
     const importerDir = importer ? dirname(importer) : "/";
 
@@ -419,7 +419,7 @@ const vfsPlugin = (vfs: VfsBus): Plugin => ({
     }
 
     const remap = importer ? applyBrowserFieldRemap(vfs, importer, id) : undefined;
-    if (remap === false) return `browser-containers-empty-stub:${id}`;
+    if (remap === false) return `bolo-empty-stub:${id}`;
     const path = typeof remap === "string" ? remap : id;
 
     const isRelative = path.startsWith(".") || path.startsWith("/");
@@ -433,7 +433,7 @@ const vfsPlugin = (vfs: VfsBus): Plugin => ({
     return resolved ?? null;
   },
   async load(id) {
-    if (id.startsWith("browser-containers-empty-stub:")) {
+    if (id.startsWith("bolo-empty-stub:")) {
       return { code: "export default {};", map: null };
     }
     // Only handle VFS paths; let other plugins (e.g. node-shim) handle their own virtual schemes.
@@ -459,7 +459,7 @@ const vfsPlugin = (vfs: VfsBus): Plugin => ({
  * specifiers so rolldown falls through to this plugin.
  */
 const esmShFallbackPlugin = (vfs: VfsBus, warnings: string[]): Plugin => ({
-  name: "browser-containers-esm-sh-fallback",
+  name: "bolo-esm-sh-fallback",
   async resolveId(id, importer) {
     if (id.startsWith(".") || id.startsWith("/") || id.startsWith("#")) return null;
     if (NODE_BUILTIN_NAMES.has(id)) return null;
@@ -494,7 +494,7 @@ const nodeAliasPlugin = (
   getShim?: (builtin: string) => Record<string, unknown> | undefined,
   warnings?: string[],
 ): Plugin => ({
-  name: "browser-containers-node-alias",
+  name: "bolo-node-alias",
   async resolveId(id) {
     const builtin = id.startsWith("node:") ? id.slice(5) : id;
     if (!NODE_BUILTIN_NAMES.has(builtin)) return null;
@@ -504,11 +504,11 @@ const nodeAliasPlugin = (
       warnings?.push(`no browser shim registered for node builtin "node:${builtin}"`);
       return { id, external: true };
     }
-    return `browser-containers-node-shim:${builtin}`;
+    return `bolo-node-shim:${builtin}`;
   },
   async load(id) {
-    if (!id.startsWith("browser-containers-node-shim:")) return null;
-    const builtin = id.slice("browser-containers-node-shim:".length);
+    if (!id.startsWith("bolo-node-shim:")) return null;
+    const builtin = id.slice("bolo-node-shim:".length);
     const shim = getShim?.(builtin);
     if (!shim) {
       // Unsupported builtins are left external in resolveId; this branch is defensive.
@@ -528,7 +528,7 @@ const nodeAliasPlugin = (
 });
 
 const jsrAliasPlugin = (): Plugin => ({
-  name: "browser-containers-jsr-alias",
+  name: "bolo-jsr-alias",
   async resolveId(id, importer) {
     if (!id.startsWith("jsr:")) return null;
     const mapped = mapJsrSpecifier(id);

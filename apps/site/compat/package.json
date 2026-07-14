@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/site-compat",
+  "name": "@bolojs/site-compat",
   "version": "0.1.0",
   "private": true,
   "type": "module",

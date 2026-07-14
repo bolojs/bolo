@@ -1,8 +1,8 @@
 {
-  "name": "@browser-containers/e2e",
+  "name": "@bolojs/e2e",
   "version": "0.0.1",
   "private": true,
-  "description": "E2E tests for browser-containers using Gauge + gauge-ts",
+  "description": "E2E tests for bolo using Gauge + gauge-ts",
   "scripts": {
     "test": "gauge run specs",
     "test:verbose": "gauge run specs --verbose",

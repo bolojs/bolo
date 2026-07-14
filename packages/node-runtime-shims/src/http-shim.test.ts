@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createHttpShim } from "./http-shim";
-import type { SWSandbox } from "@browser-containers/sw-sandbox";
+import type { SWSandbox } from "@bolojs/sw-sandbox";
 
 describe("http-shim - Port Discovery Events", () => {
   let mockSandbox: SWSandbox;

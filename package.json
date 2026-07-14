@@ -1,5 +1,5 @@
 {
-  "name": "browser-containers",
+  "name": "bolo",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.26.1",
@@ -11,8 +11,8 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "typecheck": "turbo run typecheck",
-    "test:e2e": "pnpm --filter @browser-containers/e2e test",
-    "test:e2e:verbose": "pnpm --filter @browser-containers/e2e test:verbose",
+    "test:e2e": "pnpm --filter @bolojs/e2e test",
+    "test:e2e:verbose": "pnpm --filter @bolojs/e2e test:verbose",
     "docs:internal": "docmd dev --cwd .agents",
     "docs:internal:build": "docmd build --cwd .agents",
     "compat:refresh": "bash apps/compat-harness/bin/run-local.sh"

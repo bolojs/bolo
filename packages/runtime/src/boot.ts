@@ -1,8 +1,8 @@
 import type { BootOptions } from "./container-types.js";
 import { BrowserContainer, type BrowserContainerDeps } from "./container.js";
-import { VfsBus } from "@browser-containers/vfs-bus";
-import { SWSandbox } from "@browser-containers/sw-sandbox";
-import { PackageManager } from "@browser-containers/npm";
+import { VfsBus } from "@bolojs/vfs-bus";
+import { SWSandbox } from "@bolojs/sw-sandbox";
+import { PackageManager } from "@bolojs/npm";
 import { RuntimeWorker } from "./runtime-worker.js";
 import { IframeSandbox } from "./iframe-sandbox.js";
 import type { SandboxBackend } from "./sandbox-backend.js";
@@ -11,7 +11,7 @@ import { createFileSystem } from "./fs-adapter.js";
 import { createEventEmitter } from "./events.js";
 import { createMount } from "./mount.js";
 import { createExport } from "./export.js";
-import { installNavigatorUserAgent } from "@browser-containers/node-web-shims";
+import { installNavigatorUserAgent } from "@bolojs/node-web-shims";
 
 declare global {
   var __vfsBus: VfsBus | undefined;

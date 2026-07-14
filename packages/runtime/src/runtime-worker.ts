@@ -1,5 +1,5 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
-import type { SWSandbox } from "@browser-containers/sw-sandbox";
+import type { VfsBus } from "@bolojs/vfs-bus";
+import type { SWSandbox } from "@bolojs/sw-sandbox";
 
 export interface RunScriptOptions {
   filename?: string;

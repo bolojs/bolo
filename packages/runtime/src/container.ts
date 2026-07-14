@@ -6,7 +6,7 @@ import type {
   Unsubscribe,
 } from "./container-types.js";
 import type { ContainerEvents } from "./events.js";
-import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { VfsBus } from "@bolojs/vfs-bus";
 import type { MountAPI } from "./mount.js";
 import type { ExportAPI } from "./export.js";
 import type { ProcessDeps } from "./process.js";

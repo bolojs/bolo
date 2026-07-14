@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { boot } from "./boot.js";
 import { BrowserContainer } from "./container.js";
 
-vi.mock("@browser-containers/sw-sandbox", () => ({
+vi.mock("@bolojs/sw-sandbox", () => ({
   SWSandbox: {
     create: vi.fn().mockResolvedValue({
       onFetch: vi.fn(),

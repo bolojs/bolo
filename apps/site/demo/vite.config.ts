@@ -5,7 +5,7 @@ import { defineConfig, type Plugin } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import tailwindcss from "@tailwindcss/vite";
-import { nodeWebShims } from "@browser-containers/node-web-shims/vite-plugin";
+import { nodeWebShims } from "@bolojs/node-web-shims/vite-plugin";
 
 const shimsDir = fileURLToPath(new URL("../../../packages/node-web-shims/dist/", import.meta.url));
 // unenv's own runtime modules import deep subpaths directly (e.g. `stream.mjs`
@@ -92,7 +92,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("quickjs-emscripten") || id.includes("@jitl/")) return "quickjs";
           if (id.includes("memfs")) return "memfs";
-          if (id.includes("@browser-containers/npm") || id.includes("@unjs/lockfile")) return "npm";
+          if (id.includes("@bolojs/npm") || id.includes("@unjs/lockfile")) return "npm";
         },
       },
     },
@@ -135,7 +135,7 @@ export default defineConfig({
   // Excluding the package from pre-bundling keeps that URL pattern intact so Vite
   // can emit the worker as a separate chunk rather than inlining it.
   optimizeDeps: {
-    exclude: ["@browser-containers/runtime"],
+    exclude: ["@bolojs/runtime"],
     esbuildOptions: {
       plugins: [
         {

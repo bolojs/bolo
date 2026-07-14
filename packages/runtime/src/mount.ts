@@ -1,4 +1,4 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { VfsBus } from "@bolojs/vfs-bus";
 import type { FileSystemTree } from "./container-types.js";
 
 export interface MountAPI {

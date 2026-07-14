@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/site-docs",
+  "name": "@bolojs/site-docs",
   "version": "0.2.0",
   "private": true,
   "type": "module",

@@ -5,7 +5,7 @@ import { DEMO_URL } from '../lib/config';
 import { setupBrowser, teardownBrowser } from '../lib/setup';
 
 /**
- * BrowserSteps - Step definitions for browser-containers E2E tests
+ * BrowserSteps - Step definitions for bolo E2E tests
  * Uses agent-browser CLI to automate browser interactions
  */
 export default class BrowserSteps {

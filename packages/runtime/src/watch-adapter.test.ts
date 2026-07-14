@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VfsBus } from "@browser-containers/vfs-bus";
+import { VfsBus } from "@bolojs/vfs-bus";
 import { createWatchAdapter } from "./watch-adapter.js";
 
 describe("createWatchAdapter", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { VfsBus } from "@browser-containers/vfs-bus";
+import { VfsBus } from "@bolojs/vfs-bus";
 import { createFsShim } from "./fs-shim.js";
 import type fs from "node:fs";
 

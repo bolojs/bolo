@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { VfsBus } from '@browser-containers/vfs-bus';
-import { createFsShim } from '@browser-containers/node-runtime-shims';
+import { VfsBus } from '@bolojs/vfs-bus';
+import { createFsShim } from '@bolojs/node-runtime-shims';
 
 describe('Cross-package integration: VfsBus + node-runtime-shims fs shim', () => {
   it('write via fs shim, read via VfsBus directly', async () => {

@@ -3,7 +3,7 @@
 ## Service worker boots correctly
 
 * The service worker registers successfully at "/sw.js"
-* The demo page title is "browser-containers"
+* The demo page title is "bolo"
 
 ## npm install populates VFS
 
@@ -13,9 +13,9 @@
 
 ## Vite serves static files correctly
 
-* I write file "/index.html" with content "<h1>Hello from browser-containers!</h1>"
+* I write file "/index.html" with content "<h1>Hello from bolo!</h1>"
 * I run "npm run dev (using vite-server)"
-* The preview iframe shows "Hello from browser-containers!"
+* The preview iframe shows "Hello from bolo!"
 
 ## HMR updates preview
 

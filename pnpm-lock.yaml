@@ -40,10 +40,10 @@ importers:
 
   apps/compat-harness:
     dependencies:
-      '@browser-containers/node-web-shims':
+      '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../../packages/node-web-shims
-      '@browser-containers/runtime':
+      '@bolojs/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
     devDependencies:
@@ -114,22 +114,22 @@ importers:
 
   apps/site/demo:
     dependencies:
-      '@browser-containers/node-web-shims':
+      '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../../../packages/node-web-shims
-      '@browser-containers/npm':
+      '@bolojs/npm':
         specifier: workspace:*
         version: link:../../../packages/npm
-      '@browser-containers/runtime':
+      '@bolojs/runtime':
         specifier: workspace:*
         version: link:../../../packages/runtime
-      '@browser-containers/sw-sandbox':
+      '@bolojs/sw-sandbox':
         specifier: workspace:*
         version: link:../../../packages/sw-sandbox
-      '@browser-containers/vfs-bus':
+      '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../../../packages/vfs-bus
-      '@browser-containers/vite-server':
+      '@bolojs/vite-server':
         specifier: workspace:*
         version: link:../../../packages/vite-server
       '@codemirror/lang-javascript':
@@ -298,13 +298,13 @@ importers:
 
   packages/node-runtime-shims:
     dependencies:
-      '@browser-containers/node-web-shims':
+      '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../node-web-shims
-      '@browser-containers/sw-sandbox':
+      '@bolojs/sw-sandbox':
         specifier: workspace:*
         version: link:../sw-sandbox
-      '@browser-containers/vfs-bus':
+      '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../vfs-bus
       '@jitl/quickjs-wasmfile-release-sync':
@@ -361,7 +361,7 @@ importers:
         specifier: ^7.6.0
         version: 7.8.5
     devDependencies:
-      '@browser-containers/vfs-bus':
+      '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../vfs-bus
       '@types/semver':
@@ -379,25 +379,25 @@ importers:
 
   packages/runtime:
     dependencies:
-      '@browser-containers/node-runtime-shims':
+      '@bolojs/node-runtime-shims':
         specifier: workspace:*
         version: link:../node-runtime-shims
-      '@browser-containers/node-web-shims':
+      '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../node-web-shims
-      '@browser-containers/npm':
+      '@bolojs/npm':
         specifier: workspace:*
         version: link:../npm
-      '@browser-containers/sw-sandbox':
+      '@bolojs/sw-sandbox':
         specifier: workspace:*
         version: link:../sw-sandbox
-      '@browser-containers/vfs-bus':
+      '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../vfs-bus
-      '@browser-containers/vite-server':
+      '@bolojs/vite-server':
         specifier: workspace:*
         version: link:../vite-server
-      '@browser-containers/wasm-registry':
+      '@bolojs/wasm-registry':
         specifier: workspace:*
         version: link:../wasm-registry
       just-bash:
@@ -441,10 +441,10 @@ importers:
 
   packages/vite-server:
     dependencies:
-      '@browser-containers/vfs-bus':
+      '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../vfs-bus
-      '@browser-containers/wasm-registry':
+      '@bolojs/wasm-registry':
         specifier: workspace:*
         version: link:../wasm-registry
       '@sebastianwessel/quickjs':
@@ -466,10 +466,10 @@ importers:
       '@bjorn3/browser_wasi_shim':
         specifier: ^0.4.2
         version: 0.4.2
-      '@browser-containers/npm':
+      '@bolojs/npm':
         specifier: workspace:*
         version: link:../npm
-      '@browser-containers/vfs-bus':
+      '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../vfs-bus
       '@rolldown/browser':
@@ -488,10 +488,10 @@ importers:
 
   tests:
     dependencies:
-      '@browser-containers/node-runtime-shims':
+      '@bolojs/node-runtime-shims':
         specifier: workspace:*
         version: link:../packages/node-runtime-shims
-      '@browser-containers/vfs-bus':
+      '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../packages/vfs-bus
     devDependencies:

@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/vfs-bus",
+  "name": "@bolojs/vfs-bus",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",

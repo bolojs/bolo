@@ -16,7 +16,7 @@ describe("node-web-shims: vite-plugin", () => {
 
   it("should return a Vite plugin", () => {
     const plugin = nodeWebShims();
-    expect(plugin.name).toBe("@browser-containers/node-web-shims");
+    expect(plugin.name).toBe("@bolojs/node-web-shims");
   });
 
   it("should have resolveId hook", () => {

@@ -1,4 +1,4 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
+import type { VfsBus } from "@bolojs/vfs-bus";
 import { createFsFromVolume } from "memfs";
 import { parse, resolve } from "@unjs/lockfile";
 import type { InstallablePackage, LockfileGraph } from "@unjs/lockfile";

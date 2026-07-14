@@ -60,6 +60,6 @@ wait "$HARNESS_PID" 2>/dev/null || true
 unset HARNESS_PID
 
 echo "==> Regenerating compat app data from fresh matrix"
-(cd "$ROOT_DIR" && pnpm --filter @browser-containers/site-compat run sync-data)
+(cd "$ROOT_DIR" && pnpm --filter @bolojs/site-compat run sync-data)
 
 echo "==> Done"

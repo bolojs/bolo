@@ -2,8 +2,8 @@
 
 ## pi-agent LLM call gated by policy
 
-* I install packages "@browser-containers/pi-agent"
-* I write file "/llm-agent.js" with content "import { llm } from '@browser-containers/pi-agent'; export async function agent() { const response = await llm.completion('test prompt'); return response; }"
+* I install packages "@bolojs/pi-agent"
+* I write file "/llm-agent.js" with content "import { llm } from '@bolojs/pi-agent'; export async function agent() { const response = await llm.completion('test prompt'); return response; }"
 * I run "runtime run --policy no-ai /llm-agent.js"
 * The agent output contains "policy" or "blocked" or "denied"
 

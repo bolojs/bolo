@@ -1,5 +1,5 @@
-import type { VfsBus } from "@browser-containers/vfs-bus";
-import { transformScript } from "@browser-containers/wasm-registry";
+import type { VfsBus } from "@bolojs/vfs-bus";
+import { transformScript } from "@bolojs/wasm-registry";
 
 const TRANSFORMABLE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 

@@ -1,6 +1,6 @@
 import { createSignal, onMount } from "solid-js";
 import { animate } from "motion";
-import { boot, type BrowserContainer } from "@browser-containers/runtime";
+import { boot, type BrowserContainer } from "@bolojs/runtime";
 import Terminal from "./Terminal";
 import Editor from "./Editor";
 import starterPackageJson from "./starter/package.json?raw";
@@ -85,7 +85,7 @@ export default function App() {
   return (
     <div class="app">
       <header class="app-header">
-        <span class="app-title">browser-containers</span>
+        <span class="app-title">bolo</span>
         <span class={`app-status app-status--${bootState()}`}>{bootState()}</span>
       </header>
       <main class="app-panels">

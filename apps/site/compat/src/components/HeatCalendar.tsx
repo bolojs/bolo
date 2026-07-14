@@ -39,7 +39,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STUB_LINK =
-  'https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml';
+  'https://github.com/bolojs/bolo/actions/workflows/compat-harness.yml';
 
 // ponytail: group everything-but-node-core under one heading; node core APIs stand alone.
 const TOP_NPM_PACKAGES_LABEL = 'Top npm packages';

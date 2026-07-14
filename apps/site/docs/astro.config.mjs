@@ -3,12 +3,16 @@ import starlight from '@astrojs/starlight';
 import starlightLlmsTxt from 'starlight-llms-txt';
 
 export default defineConfig({
-  site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : 'https://browser-containers.pages.dev',
+  site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : 'https://bolojs.pages.dev',
   base: '/docs',
   integrations: [
     starlight({
-      title: 'browser-containers',
+      title: 'bolo',
       description: 'Everything you need to run Node.js in the browser.',
+      favicon: '/favicon.ico',
+      head: [
+        { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
+      ],
       customCss: ['./src/styles/custom.css'],
       plugins: [starlightLlmsTxt()],
       sidebar: [

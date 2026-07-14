@@ -45,7 +45,7 @@ export const nodeWebShims = (): Plugin => {
   const pkgRoot = new URL("..", import.meta.url).pathname;
 
   return {
-    name: "@browser-containers/node-web-shims",
+    name: "@bolojs/node-web-shims",
     enforce: "pre",
     async resolveId(id, importer, options) {
       const bareName = id.startsWith("node:") ? id.slice("node:".length) : id;

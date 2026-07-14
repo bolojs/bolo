@@ -1,5 +1,5 @@
 {
-  "name": "@browser-containers/compat-harness",
+  "name": "@bolojs/compat-harness",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -16,8 +16,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@browser-containers/node-web-shims": "workspace:*",
-    "@browser-containers/runtime": "workspace:*"
+    "@bolojs/node-web-shims": "workspace:*",
+    "@bolojs/runtime": "workspace:*"
   },
   "devDependencies": {
     "playwright-core": "^1.59.1",

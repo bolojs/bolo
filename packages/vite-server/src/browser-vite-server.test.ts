@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { VfsBus } from "@browser-containers/vfs-bus";
+import { VfsBus } from "@bolojs/vfs-bus";
 import { BrowserViteServer } from "./browser-vite-server.js";
 
 vi.mock("@sebastianwessel/quickjs", () => ({

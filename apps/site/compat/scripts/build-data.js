@@ -292,7 +292,7 @@ const output = {
 };
 
 const STUB_RUN_URL =
-  'https://github.com/browser-containers/browser-containers/actions/workflows/compat-harness.yml';
+  'https://github.com/bolojs/bolo/actions/workflows/compat-harness.yml';
 
 function resolveRunUrl(id) {
   const argIdx = process.argv.indexOf('--run-url');

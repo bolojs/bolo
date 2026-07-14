@@ -1,4 +1,4 @@
-import { boot, type BrowserContainer } from "@browser-containers/runtime";
+import { boot, type BrowserContainer } from "@bolojs/runtime";
 import { NodeTestRunner, type ModuleManifest, type TestResult } from "./runner.js";
 import { PackageMatrixRunner, type PackageResult } from "./package-runner.js";
 
@@ -7,7 +7,7 @@ declare global {
   var __preferLocalBundler: boolean | undefined;
 }
 
-// Loads @browser-containers/wasm-registry's rolldown/browser + oxc-transform
+// Loads @bolojs/wasm-registry's rolldown/browser + oxc-transform
 // as bare specifiers (served by this app's own Vite dev server from
 // node_modules) instead of from esm.sh — see that package's bundle.ts for why
 // esm.sh-hosted rolldown panics in real browsers. compat-harness is an
