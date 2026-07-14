@@ -35,10 +35,10 @@ jobs:
           SITE_DOMAIN: ${{ vars.SITE_DOMAIN }}
         run: |
           pnpm turbo run build \
-            --filter=@browser-containers/site-landing \
-            --filter=@browser-containers/site-compat \
-            --filter=@browser-containers/site-demo \
-            --filter=@browser-containers/site-docs
+            --filter=@bolojs/site-landing \
+            --filter=@bolojs/site-compat \
+            --filter=@bolojs/site-demo \
+            --filter=@bolojs/site-docs
 
       - name: Assemble merged site
         run: |
@@ -58,4 +58,4 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: wrangler pages deploy ./deploy --project-name=browser-containers
+        run: wrangler pages deploy ./deploy --project-name=bolojs

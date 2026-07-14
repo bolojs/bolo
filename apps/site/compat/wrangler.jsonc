@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "browser-containers-compat",
+  "name": "bolojs-compat",
   "compatibility_date": "2026-07-01",
   "pages_build_output_dir": "./dist"
 }
