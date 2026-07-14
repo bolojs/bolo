@@ -10,13 +10,9 @@ interface LatestInfo {
 
 const latest = latestJson as Record<string, LatestInfo>;
 
-const NPM_PACKAGES = packages.rows.filter((r) => r.category !== 'node-core');
-const NPM_COUNT = NPM_PACKAGES.length;
-
-const DEFAULT_IDS = ['fetch', 'axios', 'node-fetch'];
-const DEFAULT_PACKAGES = DEFAULT_IDS.map((id) =>
-  NPM_PACKAGES.find((p) => p.id === id),
-).filter((p): p is NonNullable<typeof p> => p != null);
+const DEFAULT_NPM_IDS = ['fetch', 'axios', 'node-fetch'];
+const DEFAULT_NODE_IDS = ['events', 'stream', 'buffer'];
+const TOTAL_COUNT = packages.rows.length;
 
 const STATUS_LABEL: Record<string, string> = {
   pass: 'pass',
@@ -25,20 +21,40 @@ const STATUS_LABEL: Record<string, string> = {
   unknown: 'unknown',
 };
 
-const PACKAGE_DATA = NPM_PACKAGES.map((pkg) => {
+function kindFor(row: (typeof packages.rows)[number]): 'npm' | 'node' {
+  return row.category === 'node-core' ? 'node' : 'npm';
+}
+
+function linkFor(row: (typeof packages.rows)[number]): string {
+  return row.category === 'node-core'
+    ? `https://nodejs.org/api/${row.name}.html`
+    : `https://www.npmjs.com/package/${row.name}`;
+}
+
+const LIBRARY_DATA = packages.rows.map((pkg) => {
   const info = latest[pkg.id];
   return {
     id: pkg.id,
     name: pkg.name,
     status: info?.status ?? 'unknown',
+    kind: kindFor(pkg),
+    url: linkFor(pkg),
   };
 });
+
+const defaultNpm = DEFAULT_NPM_IDS.map((id) =>
+  LIBRARY_DATA.find((p) => p.id === id),
+).filter((p): p is NonNullable<typeof p> => p != null);
+
+const defaultNode = DEFAULT_NODE_IDS.map((id) =>
+  LIBRARY_DATA.find((p) => p.id === id),
+).filter((p): p is NonNullable<typeof p> => p != null);
 ---
 
-<section class="search-command" aria-label="Package search">
+<section class="search-command" aria-label="Library search">
   <div class="search-command-field">
     <label for="search-command-input" class="search-command-label visually-hidden">
-      Search packages
+      Search libraries
     </label>
     <div class="search-command-input-wrap">
       <span class="search-command-prompt" aria-hidden="true">›</span>
@@ -47,106 +63,161 @@ const PACKAGE_DATA = NPM_PACKAGES.map((pkg) => {
         class="search-command-input"
         type="search"
         autocomplete="off"
-        placeholder="Search 103 packages..."
-        aria-label="Search packages"
-        data-count={NPM_COUNT}
+        placeholder="Search 123 libraries..."
+        aria-label="Search libraries"
+        data-count={TOTAL_COUNT}
       />
       <kbd class="search-command-shortcut" aria-hidden="true">/</kbd>
     </div>
   </div>
 
   <div class="search-command-results">
-    <p class="search-command-heading" id="search-command-heading">Top packages</p>
-    <ul class="search-command-list" id="search-command-list" aria-live="polite">
-      {DEFAULT_PACKAGES.map((pkg) => {
-        const info = latest[pkg.id];
-        const status = info?.status ?? 'unknown';
-        return (
-          <li class="search-command-item" data-name={pkg.name} data-status={status}>
-            <a href={`https://www.npmjs.com/package/${pkg.name}`} target="_blank" rel="noopener" class="search-command-link">
-              <span class="search-command-name">{pkg.name}</span>
+    <div class="search-command-default" id="search-command-default">
+      <p class="search-command-heading">Top packages</p>
+      <ul class="search-command-list" id="search-command-list-npm">
+        {defaultNpm.map((pkg) => (
+          <li class="search-command-item" data-name={pkg.name} data-status={pkg.status} data-kind={pkg.kind}>
+            <a href={pkg.url} target="_blank" rel="noopener" class="search-command-link">
+              <span class="search-command-name-wrap">
+                <span class="search-command-name">{pkg.name}</span>
+                <span class="search-command-kind">{pkg.kind}</span>
+              </span>
               <span class="search-command-status">
-                <span class={`search-command-dot status-${status}`} aria-hidden="true" />
-                <span class="search-command-status-text">{STATUS_LABEL[status]}</span>
+                <span class={`search-command-dot status-${pkg.status}`} aria-hidden="true" />
+                <span class="search-command-status-text">{STATUS_LABEL[pkg.status]}</span>
               </span>
             </a>
           </li>
-        );
-      })}
-    </ul>
+        ))}
+      </ul>
+
+      <p class="search-command-heading">Node core</p>
+      <ul class="search-command-list" id="search-command-list-node">
+        {defaultNode.map((pkg) => (
+          <li class="search-command-item" data-name={pkg.name} data-status={pkg.status} data-kind={pkg.kind}>
+            <a href={pkg.url} target="_blank" rel="noopener" class="search-command-link">
+              <span class="search-command-name-wrap">
+                <span class="search-command-name">{pkg.name}</span>
+                <span class="search-command-kind">{pkg.kind}</span>
+              </span>
+              <span class="search-command-status">
+                <span class={`search-command-dot status-${pkg.status}`} aria-hidden="true" />
+                <span class="search-command-status-text">{STATUS_LABEL[pkg.status]}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="search-command-matches" id="search-command-matches" hidden>
+      <p class="search-command-heading" id="search-command-heading">0 libraries match</p>
+      <ul class="search-command-list" id="search-command-list" aria-live="polite">
+      </ul>
+    </div>
+
     <a href="#compat-grid" class="search-command-expand">
-      + {NPM_COUNT} packages listed
+      + {TOTAL_COUNT} libraries listed
     </a>
   </div>
 </section>
 
-<script is:inline define:vars={{ packageData: PACKAGE_DATA }}>
+<script is:inline define:vars={{ libraryData: LIBRARY_DATA }}>
   const input = document.getElementById('search-command-input');
+  const defaultPanel = document.getElementById('search-command-default');
+  const matchesPanel = document.getElementById('search-command-matches');
   const list = document.getElementById('search-command-list');
   const heading = document.getElementById('search-command-heading');
   const shortcut = input?.parentElement?.querySelector('.search-command-shortcut');
   const expand = document.querySelector('.search-command-expand');
-  const totalCount = input?.dataset.count ? parseInt(input.dataset.count, 10) : packageData.length;
+  const totalCount = input?.dataset.count ? parseInt(input.dataset.count, 10) : libraryData.length;
 
   const STATUS_LABEL = { pass: 'pass', partial: 'partial', fail: 'fail', unknown: 'unknown' };
+
+  function makeItem(pkg) {
+    const li = document.createElement('li');
+    li.className = 'search-command-item';
+    li.setAttribute('data-name', pkg.name);
+    li.setAttribute('data-status', pkg.status);
+    li.setAttribute('data-kind', pkg.kind);
+
+    const a = document.createElement('a');
+    a.className = 'search-command-link';
+    a.href = pkg.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+
+    const nameWrap = document.createElement('span');
+    nameWrap.className = 'search-command-name-wrap';
+
+    const name = document.createElement('span');
+    name.className = 'search-command-name';
+    name.textContent = pkg.name;
+
+    const kind = document.createElement('span');
+    kind.className = 'search-command-kind';
+    kind.textContent = pkg.kind;
+
+    nameWrap.append(name, kind);
+
+    const statusWrap = document.createElement('span');
+    statusWrap.className = 'search-command-status';
+
+    const dot = document.createElement('span');
+    dot.className = `search-command-dot status-${pkg.status}`;
+    dot.setAttribute('aria-hidden', 'true');
+
+    const statusText = document.createElement('span');
+    statusText.className = 'search-command-status-text';
+    statusText.textContent = STATUS_LABEL[pkg.status] ?? pkg.status;
+
+    statusWrap.append(dot, statusText);
+    a.append(nameWrap, statusWrap);
+    li.appendChild(a);
+    return li;
+  }
 
   function renderResults(matches) {
     if (!list) return;
     list.innerHTML = '';
-
     for (const pkg of matches) {
-      const li = document.createElement('li');
-      li.className = 'search-command-item';
-      li.setAttribute('data-name', pkg.name);
-      li.setAttribute('data-status', pkg.status);
-
-      const a = document.createElement('a');
-      a.className = 'search-command-link';
-      a.href = `https://www.npmjs.com/package/${pkg.name}`;
-      a.target = '_blank';
-      a.rel = 'noopener';
-
-      const name = document.createElement('span');
-      name.className = 'search-command-name';
-      name.textContent = pkg.name;
-
-      const statusWrap = document.createElement('span');
-      statusWrap.className = 'search-command-status';
-
-      const dot = document.createElement('span');
-      dot.className = `search-command-dot status-${pkg.status}`;
-      dot.setAttribute('aria-hidden', 'true');
-
-      const statusText = document.createElement('span');
-      statusText.className = 'search-command-status-text';
-      statusText.textContent = STATUS_LABEL[pkg.status] ?? pkg.status;
-
-      statusWrap.append(dot, statusText);
-      a.append(name, statusWrap);
-      li.appendChild(a);
-      list.appendChild(li);
+      list.appendChild(makeItem(pkg));
     }
+  }
+
+  function rank(term, pkg) {
+    const name = pkg.name.toLowerCase();
+    if (name === term) return -2;
+    if (name.startsWith(term)) return -1;
+    return 0;
   }
 
   function filter(term) {
     const t = term.trim().toLowerCase();
+
     if (!t) {
-      const defaults = packageData.filter((p) => ['fetch', 'axios', 'node-fetch'].includes(p.id));
-      renderResults(defaults);
-      if (heading) heading.textContent = 'Top packages';
-      if (expand) expand.textContent = `+ ${totalCount} packages listed`;
+      defaultPanel?.removeAttribute('hidden');
+      matchesPanel?.setAttribute('hidden', '');
+      if (expand) expand.textContent = `+ ${totalCount} libraries listed`;
       return;
     }
 
-    const allMatches = packageData.filter((p) => p.name.toLowerCase().includes(t));
-    const topMatches = allMatches.slice(0, 3);
+    defaultPanel?.setAttribute('hidden', '');
+    matchesPanel?.removeAttribute('hidden');
 
-    renderResults(topMatches);
+    const matches = libraryData
+      .filter((p) => p.name.toLowerCase().includes(t))
+      .sort((a, b) => rank(t, a) - rank(t, b) || a.name.localeCompare(b.name))
+      .slice(0, 3);
+
+    renderResults(matches);
+
     if (heading) {
-      heading.textContent = `${topMatches.length} package${topMatches.length === 1 ? '' : 's'} match`;
+      heading.textContent = `${matches.length} librar${matches.length === 1 ? 'y' : 'ies'} match`;
     }
     if (expand) {
-      expand.textContent = `+ ${allMatches.length} packages listed`;
+      const allMatches = libraryData.filter((p) => p.name.toLowerCase().includes(t)).length;
+      expand.textContent = `+ ${allMatches} librar${allMatches === 1 ? 'y' : 'ies'} listed`;
     }
   }
 
