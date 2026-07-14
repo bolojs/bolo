@@ -46,9 +46,10 @@ project clears the FOSS bar and both are excluded from the comparison table abov
   cannot be bypassed from JavaScript. The QuickJS tier (via `SandboxPool`) imposes
   C-level limits on every execution.
 - You want an **Apache 2.0 licensed** runtime with no proprietary lock-in.
-- You need the **WASM build tool registry** (esbuild, tsc, sass, swc) running entirely
-  client-side, or want to run arbitrary **`wasm32-wasip1` CLI binaries** (Rust/C/Zig
-  tools compiled to WASI) via the same `registerWasmTool()` seam.
+- You need a **client-side bundler** (rolldown + oxc-transform, wired in) with a
+  `registerWasmTool()` seam for adding more native-binary-to-WASM tools, or want to run
+  arbitrary **`wasm32-wasip1` CLI binaries** (Rust/C/Zig tools compiled to WASI) through
+  that same seam.
 - You are building a platform where the **V8 trusted tier** runs user tooling and the
   **QuickJS untrusted tier** runs user-submitted or AI-generated code separately.
 - You need **OPFS-backed VFS persistence** across sessions.
@@ -76,6 +77,8 @@ no preview). Minimal footprint, works in Cloudflare Workers, Deno, and Node.js t
 The following capabilities exist in one or more alternatives but are not yet implemented:
 
 - **No npm publication** — must clone and build from source
+- **No raw TCP/IP sockets** — HTTP only, via the ServiceWorker proxy
+- **No TLS / `https.createServer`** — no inbound TLS termination
 - **No `fork()` / `cluster`** — multi-process Node.js patterns are out of scope
 - **No native npm packages (NAPI)** — only pure-JS and WASM packages work
 - **Webpack / Next.js** — explicitly out of scope (see [ADR-0003](/docs/adr/0003-no-webpack-nextjs/))
