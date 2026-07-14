@@ -636,10 +636,6 @@
   transition: opacity 0.2s ease;
 }
 
-.search-command-default .search-command-list + .search-command-heading {
-  margin-top: 1.25rem;
-}
-
 .search-command-matches[hidden] {
   display: none;
 }
@@ -738,7 +734,6 @@
 .search-command-expand {
   display: inline-flex;
   align-items: center;
-  margin-top: 0.875rem;
   padding: 0.375rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 0.5rem;
@@ -752,6 +747,53 @@
   color: var(--fg);
   background-color: var(--border);
   text-decoration: none;
+}
+
+.search-command-expand-block {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  margin-top: 0.875rem;
+}
+
+.search-command-expand-block summary {
+  list-style: none;
+  grid-row: 2;
+  align-self: end;
+  justify-self: start;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--bg);
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.search-command-expand-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.search-command-expand-content {
+  grid-row: 1;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.search-command-expand-collapsed,
+.search-command-expand-expanded {
+  display: inline;
+}
+
+.search-command-expand-block .search-command-expand-expanded {
+  display: none;
+}
+
+.search-command-expand-block[open] .search-command-expand-collapsed {
+  display: none;
+}
+
+.search-command-expand-block[open] .search-command-expand-expanded {
+  display: inline;
 }
 
 @media (max-width: 640px) {
