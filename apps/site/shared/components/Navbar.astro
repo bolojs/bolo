@@ -1,8 +1,17 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
 
+interface NavLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  links: NavLink[];
+}
+
+const { links } = Astro.props;
 const currentPath = Astro.url.pathname;
-const links = [{ href: '/docs', label: 'Docs' }];
 ---
 
 <header class="navbar">

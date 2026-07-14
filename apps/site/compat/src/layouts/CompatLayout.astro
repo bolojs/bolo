@@ -1,14 +1,15 @@
 ---
 import '../styles/global.css';
 import '../styles/compat.css';
-import Navbar from '../components/Navbar.astro';
-import ThemeInit from '../components/ThemeInit.astro';
+import Navbar from '../../../shared/components/Navbar.astro';
+import ThemeInit from '../../../shared/components/ThemeInit.astro';
 
 interface Props {
   title?: string;
 }
 
 const { title = 'Compatibility' } = Astro.props;
+const links = [{ href: '/docs', label: 'Docs' }];
 ---
 
 <!doctype html>
@@ -21,7 +22,7 @@ const { title = 'Compatibility' } = Astro.props;
     <slot name="head" />
   </head>
   <body>
-    <Navbar />
+    <Navbar links={links} />
     <main class="container compat-page">
       <slot />
     </main>
