@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: VfsBus, ShellService, SandboxPool, RuntimeWorker, SWSandbox, and the demo contract.
+description: VfsBus, ShellService, SandboxBackend/IframeSandbox, RuntimeWorker, SWSandbox, and the demo contract.
 ---
 
 ## VfsBus (`@browser-containers/vfs-bus`)
@@ -52,7 +52,7 @@ Routes shell commands to the appropriate execution tier.
 ```ts
 import { ShellService } from '@browser-containers/runtime';
 
-const shell = new ShellService({ vfs, packageManager, runtimeWorker, sandboxPool });
+const shell = new ShellService({ vfs, packageManager, runtimeWorker, sandbox });
 ```
 
 ### Constructor
@@ -62,8 +62,10 @@ interface ShellServiceDeps {
   vfs: VfsBus;
   packageManager: PackageManager;
   runtimeWorker: RuntimeWorker;
-  sandboxPool: SandboxPool;
-  sandbox?: ContainerAdapter;  // optional: enables `npm run dev`
+  swSandbox?: SWSandbox;      // optional: enables `npm run dev`
+  sandbox?: SandboxBackend;   // optional: enables `agent run <script>`
+  events?: ContainerEvents;
+  workdir?: string;
 }
 ```
 
@@ -84,35 +86,45 @@ const result = await shell.execute(command, {
 | `npm install [packages]` | PackageManager | Installs into VFS `/node_modules` |
 | `npm run dev` | ContainerAdapter | Requires `sandbox` dep; starts BrowserViteServer |
 | `runtime run <file>` | V8 Web Worker | Reads file from VFS, runs in RuntimeWorker |
-| `agent run <file>` | QuickJS | Reads file from VFS, runs in SandboxPool with caps |
+| `agent run <file>` | `SandboxBackend` | Reads file from VFS, runs via whatever `sandbox` dep is configured |
 
 Unknown commands return exit code `127`.
 
 ---
 
-## SandboxPool (`@browser-containers/runtime`)
+## SandboxBackend / IframeSandbox (`@browser-containers/runtime`)
 
-Untrusted code execution tier using QuickJS WASM. A fresh context is created per call.
+Untrusted-code execution is pluggable behind a small interface:
 
 ```ts
-import { SandboxPool } from '@browser-containers/runtime';
-const pool = new SandboxPool(vfs);
+interface SandboxRunResult {
+  result?: string;
+  error?: string;
+}
+
+interface SandboxBackend {
+  run(code: string): Promise<SandboxRunResult>;
+  dispose(): void;
+}
 ```
 
-### `run(code)`
+The default implementation is `IframeSandbox` — a cross-origin, opaque-origin iframe
+(browser-native isolation, no WASM runtime to load):
 
 ```ts
-const { result, error } = await pool.run('2 + 2');
+import { IframeSandbox } from '@browser-containers/runtime';
+const sandbox = new IframeSandbox();
+const { result, error } = await sandbox.run('2 + 2');
 // result: '4', error: undefined
 ```
 
-**Resource limits (C-level, cannot be bypassed by JS):**
-- Memory: 16 MB
-- Stack: 1 MB
-- Instruction count: 1 000 000 ops (interrupt returns `undefined`)
+`fs.readFileSync(path)` is available read-only inside the sandbox; write operations
+(`writeFileSync`, `mkdirSync`, `rmSync`) throw immediately.
 
-**Filesystem access inside the sandbox:** read-only via `fs.readFileSync(path)`.
-Write operations (`writeFileSync`, `mkdirSync`, `rmSync`) throw immediately.
+For hard, C-level memory/CPU/stack caps (not just origin isolation), implement
+`SandboxBackend` with the QuickJS-based `SandboxPool` from the separate
+[`quickjs-sandbox`](https://github.com/browser-containers/quickjs-sandbox) package and
+pass it as `sandbox` — it's opt-in and not a dependency of `@browser-containers/runtime`.
 
 ---
 
@@ -173,6 +185,35 @@ sandbox.onFetch(async (req) => {
 ### `setPolicyRegistry(registry)`
 
 Attach a `Map<string, unknown>` of sandbox policies. Used by `@browser-containers/sandbox-policy`.
+
+---
+
+## Extension points (`@browser-containers/node-runtime-shims`)
+
+Some Node.js features need capabilities the browser can't provide natively. Instead of
+blocking these forever, `createLiveShimRegistry` exposes backend hooks:
+
+| Feature | Default | Extension point |
+|---------|---------|-----------------|
+| TCP/IP | HTTP-only (SW proxy) | `netBackend: (deps) => nodeNetNamespace` |
+| UDP | Not supported | `dgramBackend: (deps) => { createSocket }` |
+| TLS | Not supported | `tlsBackend: (deps) => nodeTlsNamespace` |
+| Native `.node` addons | Not supported | `nativeAddonLoader: (path, vfs) => moduleSync` |
+| Worker threads | Stub (`isMainThread=true`) | `workerThreadsBackend: (deps) => workerThreadsNamespace` |
+
+```ts
+import { createLiveShimRegistry } from '@browser-containers/node-runtime-shims';
+
+const registry = createLiveShimRegistry({
+  vfs,
+  sandbox,
+  dgramBackend: ({ vfs }) => ({
+    createSocket: (type, onMessage) => new WebTransportDgramSocket(onMessage),
+  }),
+});
+```
+
+Each `deps` object passed to a backend factory is `{ vfs, sandbox }`.
 
 ---
 

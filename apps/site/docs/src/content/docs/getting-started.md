@@ -12,7 +12,7 @@ description: Clone the repo, run the demo, and embed browser-containers in your 
 ## Run the demo
 
 ```bash
-git clone https://github.com/your-org/browser-containers
+git clone https://github.com/browser-containers/browser-containers
 cd browser-containers
 pnpm install
 pnpm build
@@ -49,16 +49,16 @@ The minimum wiring to run a script in the browser:
 import { VfsBus } from '@browser-containers/vfs-bus';
 import { SWSandbox } from '@browser-containers/sw-sandbox';
 import { PackageManager } from '@browser-containers/npm';
-import { RuntimeWorker, SandboxPool, ShellService } from '@browser-containers/runtime';
+import { RuntimeWorker, IframeSandbox, ShellService } from '@browser-containers/runtime';
 
 const vfs = new VfsBus();
-const sandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });
+const swSandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });
 
-const runtimeWorker = new RuntimeWorker(vfs, sandbox);
-const sandboxPool = new SandboxPool(vfs);
+const runtimeWorker = new RuntimeWorker(vfs, swSandbox);
+const sandbox = new IframeSandbox(); // untrusted-code tier, see below
 const packageManager = new PackageManager({ vfs });
 
-const shell = new ShellService({ vfs, packageManager, runtimeWorker, sandboxPool });
+const shell = new ShellService({ vfs, packageManager, runtimeWorker, swSandbox, sandbox });
 
 // Write a file into the virtual filesystem
 await vfs.writeFile('/hello.js', `console.log('hello from browser-containers')`);
@@ -74,7 +74,8 @@ console.log('exit code:', result.exitCode); // 0
 
 ## Run untrusted AI agent code
 
-Use the QuickJS tier for code you don't trust (AI-generated scripts, plugins, etc.):
+`agent run` executes through whichever `SandboxBackend` you pass as `sandbox`. The default,
+`IframeSandbox`, isolates code in a cross-origin, opaque-origin iframe:
 
 ```ts
 await vfs.writeFile('/agent.js', `
@@ -86,9 +87,11 @@ const result = await shell.execute('agent run /agent.js');
 console.log(result.stdout); // 'processed: ...'
 ```
 
-The QuickJS tier enforces C-level hard limits: 16 MB memory, 1 MB stack, 1 M op interrupt.
-Write access to the VFS is blocked. See [ADR-0001](/docs/adr/0001-two-tier-runtime/) for the
- design rationale.
+Write access to the VFS is blocked from inside the sandbox. If you need hard, C-level
+memory/CPU/stack caps instead of origin isolation, use the QuickJS-based `SandboxPool`
+from the separate [`quickjs-sandbox`](https://github.com/browser-containers/quickjs-sandbox)
+package — it implements `SandboxBackend`, so it drops in as the same `sandbox` dep. See
+[ADR-0001](/docs/adr/0001-two-tier-runtime/) for the design rationale.
 
 ## Install packages
 
