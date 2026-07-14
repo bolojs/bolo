@@ -1,0 +1,59 @@
+@import "../../../shared/theme-vars.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* Retheme Starlight's own CSS custom properties to the shared token layer
+   (apps/site/shared/theme-vars.css, sourced from compat) so /docs matches
+   / and /compat. Starlight defaults to dark and overrides on
+   [data-theme="light"]; our tokens default light and override on
+   [data-theme="dark"] — both attach to the same `data-theme` attribute on
+   <html>, so set both selectors explicitly rather than relying on either
+   library's default. */
+:root,
+:root[data-theme="light"] {
+  --sl-color-bg: var(--bg);
+  --sl-color-bg-nav: var(--bg);
+  --sl-color-bg-sidebar: var(--bg);
+  --sl-color-bg-inline-code: var(--border);
+  --sl-color-bg-accent: var(--fg);
+  --sl-color-text: var(--fg);
+  --sl-color-text-accent: var(--fg);
+  --sl-color-text-invert: var(--bg);
+  --sl-color-hairline: var(--border);
+  --sl-color-hairline-light: var(--border);
+  --sl-color-hairline-shade: var(--border);
+  --sl-color-gray-1: var(--fg);
+  --sl-color-gray-2: var(--muted);
+  --sl-color-gray-3: var(--muted);
+  --sl-color-gray-4: var(--muted);
+  --sl-color-gray-5: var(--border);
+  --sl-color-gray-6: var(--border);
+  --sl-color-gray-7: var(--bg);
+}
+
+:root[data-theme="dark"] {
+  --sl-color-bg: var(--bg);
+  --sl-color-bg-nav: var(--bg);
+  --sl-color-bg-sidebar: var(--bg);
+  --sl-color-bg-inline-code: var(--border);
+  --sl-color-bg-accent: var(--fg);
+  --sl-color-text: var(--fg);
+  --sl-color-text-accent: var(--fg);
+  --sl-color-text-invert: var(--bg);
+  --sl-color-hairline: var(--border);
+  --sl-color-hairline-light: var(--border);
+  --sl-color-hairline-shade: var(--border);
+  --sl-color-gray-1: var(--fg);
+  --sl-color-gray-2: var(--muted);
+  --sl-color-gray-3: var(--muted);
+  --sl-color-gray-4: var(--muted);
+  --sl-color-gray-5: var(--border);
+  --sl-color-gray-6: var(--border);
+  --sl-color-black: var(--bg);
+  --sl-color-white: var(--fg);
+}
+
+:root {
+  --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
+}
