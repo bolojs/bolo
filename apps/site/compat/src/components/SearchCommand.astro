@@ -41,13 +41,15 @@ const LIBRARY_DATA = packages.rows.map((pkg) => {
   };
 });
 
-const defaultAll = DEFAULT_IDS.map((id) =>
+const DEFAULT_ORDERED = DEFAULT_IDS.map((id) =>
   LIBRARY_DATA.find((p) => p.id === id),
 ).filter((p): p is NonNullable<typeof p> => p != null);
 
 const remainingAll = LIBRARY_DATA.filter(
   (p) => !DEFAULT_IDS.includes(p.id),
 );
+
+const orderedAll = [...DEFAULT_ORDERED, ...remainingAll];
 
 const REMAINING_COUNT = remainingAll.length;
 ---
@@ -74,38 +76,13 @@ const REMAINING_COUNT = remainingAll.length;
 
   <div class="search-command-results">
     <div class="search-command-default" id="search-command-default">
-      <ul class="search-command-list" id="search-command-list-default">
-        {defaultAll.map((pkg) => (
-          <li class="search-command-item" data-name={pkg.name} data-status={pkg.status} data-kind={pkg.kind}>
-            <a href={pkg.url} target="_blank" rel="noopener" class="search-command-link">
-              <span class="search-command-name-wrap">
-                <span class="search-command-name">{pkg.name}</span>
-                <span class="search-command-kind">{pkg.kind}</span>
-              </span>
-              <span class="search-command-status">
-                <span class={`search-command-dot status-${pkg.status}`} aria-hidden="true" />
-                <span class="search-command-status-text">{STATUS_LABEL[pkg.status]}</span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-
-    <div class="search-command-matches" id="search-command-matches" hidden>
-      <p class="search-command-heading" id="search-command-heading">0 libraries match</p>
-      <ul class="search-command-list" id="search-command-list" aria-live="polite">
-      </ul>
-    </div>
-
-    <details class="search-command-expand-block">
-      <summary class="search-command-expand">
-        <span class="search-command-expand-collapsed">+ {REMAINING_COUNT} more libraries</span>
-        <span class="search-command-expand-expanded">− Show less</span>
-      </summary>
-      <div class="search-command-expand-content">
-        <ul class="search-command-list" id="search-command-list-remaining">
-          {remainingAll.map((pkg) => (
+      <details class="search-command-expand-block">
+        <summary class="search-command-expand">
+          <span class="search-command-expand-collapsed">+ {REMAINING_COUNT} more libraries</span>
+          <span class="search-command-expand-expanded">− Show less</span>
+        </summary>
+        <ul class="search-command-list" id="search-command-list-all">
+          {orderedAll.map((pkg: { id: string; name: string; status: string; kind: string; url: string }) => (
             <li class="search-command-item" data-name={pkg.name} data-status={pkg.status} data-kind={pkg.kind}>
               <a href={pkg.url} target="_blank" rel="noopener" class="search-command-link">
                 <span class="search-command-name-wrap">
@@ -120,8 +97,14 @@ const REMAINING_COUNT = remainingAll.length;
             </li>
           ))}
         </ul>
-      </div>
-    </details>
+      </details>
+    </div>
+
+    <div class="search-command-matches" id="search-command-matches" hidden>
+      <p class="search-command-heading" id="search-command-heading">0 libraries match</p>
+      <ul class="search-command-list" id="search-command-list" aria-live="polite">
+      </ul>
+    </div>
   </div>
 </section>
 
@@ -207,8 +190,7 @@ const REMAINING_COUNT = remainingAll.length;
 
     const matches = libraryData
       .filter((p) => p.name.toLowerCase().includes(t))
-      .sort((a, b) => rank(t, a) - rank(t, b) || a.name.localeCompare(b.name))
-      .slice(0, 3);
+      .sort((a, b) => rank(t, a) - rank(t, b) || a.name.localeCompare(b.name));
 
     renderResults(matches);
 
