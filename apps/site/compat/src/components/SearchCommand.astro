@@ -76,11 +76,7 @@ const REMAINING_COUNT = remainingAll.length;
 
   <div class="search-command-results">
     <div class="search-command-default" id="search-command-default">
-      <details class="search-command-expand-block">
-        <summary class="search-command-expand">
-          <span class="search-command-expand-collapsed">+ {REMAINING_COUNT} more libraries</span>
-          <span class="search-command-expand-expanded">− Show less</span>
-        </summary>
+      <div class="search-command-expand-block" data-expanded="false">
         <ul class="search-command-list" id="search-command-list-all">
           {orderedAll.map((pkg: { id: string; name: string; status: string; kind: string; url: string }) => (
             <li class="search-command-item" data-name={pkg.name} data-status={pkg.status} data-kind={pkg.kind}>
@@ -97,7 +93,17 @@ const REMAINING_COUNT = remainingAll.length;
             </li>
           ))}
         </ul>
-      </details>
+        <button
+          type="button"
+          class="search-command-expand"
+          id="search-command-expand-toggle"
+          aria-expanded="false"
+          aria-controls="search-command-list-all"
+        >
+          <span class="search-command-expand-collapsed">+ {REMAINING_COUNT} more libraries</span>
+          <span class="search-command-expand-expanded">− Show less</span>
+        </button>
+      </div>
     </div>
 
     <div class="search-command-matches" id="search-command-matches" hidden>
@@ -115,6 +121,8 @@ const REMAINING_COUNT = remainingAll.length;
   const list = document.getElementById('search-command-list');
   const heading = document.getElementById('search-command-heading');
   const shortcut = input?.parentElement?.querySelector('.search-command-shortcut');
+  const expandBlock = document.querySelector('.search-command-expand-block');
+  const expandToggle = document.getElementById('search-command-expand-toggle');
 
   const STATUS_LABEL = { pass: 'pass', partial: 'partial', fail: 'fail', unknown: 'unknown' };
 
@@ -198,6 +206,12 @@ const REMAINING_COUNT = remainingAll.length;
       heading.textContent = `${matches.length} librar${matches.length === 1 ? 'y' : 'ies'} match`;
     }
   }
+
+  expandToggle?.addEventListener('click', () => {
+    const expanded = expandBlock?.getAttribute('data-expanded') === 'true';
+    expandBlock?.setAttribute('data-expanded', String(!expanded));
+    expandToggle.setAttribute('aria-expanded', String(!expanded));
+  });
 
   input?.addEventListener('input', (e) => {
     filter(e.currentTarget.value);

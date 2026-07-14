@@ -252,6 +252,8 @@
   flex-direction: column;
   gap: 2rem;
   padding: 0.75rem;
+  background: var(--bg);
+  border-radius: 0.625rem;
 }
 
 .heat-calendar-category {
@@ -735,7 +737,36 @@
   margin-top: 0.875rem;
 }
 
-.search-command-expand-block summary {
+/* single-list clip pattern: ONE <ul> with all 123 items, clipped to ~4 when
+   collapsed. Mask-image (not an overlay div) fades the cutoff so it survives
+   the light/dark theme toggle with no extra rules. */
+.search-command-expand-block .search-command-list {
+  max-height: 235px; /* ~4 items */
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  transition: max-height 0.2s ease;
+}
+
+.search-command-expand-block[data-expanded="true"] .search-command-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-command-expand-block .search-command-list {
+    transition: none;
+  }
+}
+
+/* when the user is typing, the single list is hidden via [hidden] */
+.search-command-expand-block .search-command-list[hidden] {
+  display: none;
+}
+
+.search-command-expand-block .search-command-expand {
   list-style: none;
   display: inline-flex;
   align-items: center;
@@ -746,34 +777,14 @@
   font-size: 0.8125rem;
   color: var(--muted);
   cursor: pointer;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
+  background: transparent;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.search-command-expand-block summary:hover {
+.search-command-expand-block .search-command-expand:hover {
   color: var(--fg);
   background-color: var(--border);
-}
-
-.search-command-expand-block summary::-webkit-details-marker {
-  display: none;
-}
-
-/* single-list clip pattern: ONE <ul> with all 123 items, clipped to ~6 when closed */
-.search-command-expand-block .search-command-list {
-  max-height: 350px; /* ~6 items */
-  overflow: hidden;
-  transition: max-height 0.2s ease;
-}
-
-.search-command-expand-block[open] .search-command-list {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-/* when the user is typing, the single list is hidden via [hidden] */
-.search-command-expand-block .search-command-list[hidden] {
-  display: none;
 }
 
 .search-command-expand-collapsed,
@@ -785,11 +796,11 @@
   display: none;
 }
 
-.search-command-expand-block[open] .search-command-expand-collapsed {
+.search-command-expand-block[data-expanded="true"] .search-command-expand-collapsed {
   display: none;
 }
 
-.search-command-expand-block[open] .search-command-expand-expanded {
+.search-command-expand-block[data-expanded="true"] .search-command-expand-expanded {
   display: inline;
 }
 
