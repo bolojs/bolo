@@ -9,6 +9,21 @@ import ScenarioPicker from "./ScenarioPicker";
 import ChipMarquee from "./ChipMarquee";
 import { defaultScenario, type QuickAction, type Scenario } from "./scenarios";
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __preferLocalRolldown: boolean | undefined;
+}
+
+// @rolldown/browser is a same-origin bundled dependency of this app (unlike
+// oxc-transform, which stays on esm.sh). The esm.sh-hosted build panics in
+// real browsers — its WASI worker pool does `new Worker(new URL(...))` with
+// no `{ type: 'module' }`, and classic workers can't load a cross-origin
+// script — surfacing as a raw WASM "unreachable" trap (JavaScriptCore: hits
+// this immediately on Safari/iOS; V8: printed as terminal output instead of
+// throwing). See @bolojs/wasm-registry's bundle.ts for the CDN-fallback logic
+// this flag opts out of.
+globalThis.__preferLocalRolldown = true;
+
 type BootState = "booting" | "installing" | "switching" | "ready" | "error";
 
 const statusDotStyles: Record<BootState, string> = {
