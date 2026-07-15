@@ -28,6 +28,7 @@
     "@fontsource-variable/geist-mono": "^5.2.8",
     "@lezer/highlight": "^1.2.3",
     "@rolldown/browser": "^1.1.5",
+    "@shimmer-from-structure/solid": "^2.4.5",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
     "astro": "^5.7.0",

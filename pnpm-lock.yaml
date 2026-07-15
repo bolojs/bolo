@@ -187,6 +187,9 @@ importers:
       '@rolldown/browser':
         specifier: ^1.1.5
         version: 1.1.5
+      '@shimmer-from-structure/solid':
+        specifier: ^2.4.5
+        version: 2.4.5(solid-js@1.9.12)
       '@xterm/addon-fit':
         specifier: ^0.10.0
         version: 0.10.0(@xterm/xterm@5.5.0)
@@ -2852,6 +2855,14 @@ packages:
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
+
+  '@shimmer-from-structure/core@2.4.5':
+    resolution: {integrity: sha512-SenOK0gKhXw7vz0mPjRZXkl0Bf11Yp/ATEG2wK5T0zrbZQQzUX9RssZIq+Xdx6G7+4fZAhoCioRpqjhE/6H93g==}
+
+  '@shimmer-from-structure/solid@2.4.5':
+    resolution: {integrity: sha512-avcLjxDWRPCBxM6x717K5+/uZBr52tSMAV5tvUWdKk1Y3ixSvy65UcrbVTGo0sYCf5QGMlAXfly0mCJ3eU3DDw==}
+    peerDependencies:
+      solid-js: ^1.9.0
 
   '@sinclair/typebox@0.34.50':
     resolution: {integrity: sha512-ydBWw0G6WFwWHzh9RK4B5c690UkreOG0llq0r+DaI7LgKgxigf8mhHzIPI3S0850g1BPkq/zpuCfrq4QFgUlTQ==}
@@ -8361,6 +8372,13 @@ snapshots:
       '@types/hast': 3.0.5
 
   '@shikijs/vscode-textmate@10.0.2': {}
+
+  '@shimmer-from-structure/core@2.4.5': {}
+
+  '@shimmer-from-structure/solid@2.4.5(solid-js@1.9.12)':
+    dependencies:
+      '@shimmer-from-structure/core': 2.4.5
+      solid-js: 1.9.12
 
   '@sinclair/typebox@0.34.50': {}
 

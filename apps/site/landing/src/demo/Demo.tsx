@@ -1,5 +1,6 @@
 /** @jsxImportSource solid-js */
 import { createSignal, onMount } from "solid-js";
+import { Shimmer } from "@shimmer-from-structure/solid";
 import { boot, type BrowserContainer } from "@bolojs/runtime";
 import Terminal from "./Terminal";
 import Editor from "./Editor";
@@ -152,7 +153,9 @@ export default function Demo() {
           onSelect={setActiveTab}
         />
         <div class="min-h-0 flex-1 overflow-hidden" classList={{ hidden: activeTab() !== "code" }}>
-          <Editor value={source()} onChange={setSource} />
+          <Shimmer loading={bootState() === "booting"}>
+            <Editor value={source()} onChange={setSource} />
+          </Shimmer>
         </div>
         <div class="min-h-0 flex-1 overflow-hidden" classList={{ hidden: activeTab() !== "preview" }}>
           <Preview url={previewUrl()} />
@@ -167,13 +170,15 @@ export default function Demo() {
         class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm"
         style={{ flex: "1 1 0%", "min-height": "100px" }}
       >
-        <Terminal
-          lines={lines()}
-          disabled={bootState() !== "ready"}
-          inputValue={inputValue()}
-          focusTrigger={focusInput()}
-          onSubmit={handleSubmit}
-        />
+        <Shimmer loading={bootState() === "booting"}>
+          <Terminal
+            lines={lines()}
+            disabled={bootState() !== "ready"}
+            inputValue={inputValue()}
+            focusTrigger={focusInput()}
+            onSubmit={handleSubmit}
+          />
+        </Shimmer>
       </section>
 
       <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted">

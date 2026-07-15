@@ -26,6 +26,17 @@
   --fg: #d4d4d4;
 }
 
+/* Shimmer's wrapper divs are plain blocks (height:auto), which breaks the
+   flex/h-full height cascade Editor and Terminal depend on to size
+   themselves. Force them to inherit the height of their flex-sized parent. */
+.demo-shell div:has(> .shimmer-measure-container) {
+  height: 100%;
+}
+
+.demo-shell .shimmer-measure-container {
+  height: 100%;
+}
+
 .marquee-track {
   animation: marquee 22s linear infinite;
 }
