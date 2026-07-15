@@ -30,14 +30,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # apps/demo and apps/compat-harness's production `vite build` share a
-      # pre-existing, unrelated break (vite-plugin-node-polyfills can't
-      # resolve a shim import from packages/runtime/dist) — tracked
-      # separately. Scope this gate to the packages/* library builds so it
-      # isn't undermined by that app-level bug; both apps are still
-      # typechecked and linted below.
+      # apps/compat-harness's production `vite build` has a pre-existing,
+      # unrelated break (vite-plugin-node-polyfills can't resolve a shim
+      # import from packages/runtime/dist) — tracked separately. Scope this
+      # gate to the packages/* library builds so it isn't undermined by that
+      # app-level bug; the app is still typechecked and linted below.
       - name: Build packages
-        run: pnpm turbo run build --filter='!@bolojs/site-demo' --filter='!@bolojs/compat-harness'
+        run: pnpm turbo run build --filter='!@bolojs/compat-harness'
 
       - name: Typecheck
         run: pnpm typecheck

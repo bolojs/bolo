@@ -37,7 +37,6 @@ jobs:
           pnpm turbo run build \
             --filter=@bolojs/site-landing \
             --filter=@bolojs/site-compat \
-            --filter=@bolojs/site-demo \
             --filter=@bolojs/site-docs
 
       - name: Assemble merged site
@@ -45,11 +44,10 @@ jobs:
           mkdir -p deploy
           cp -r apps/site/landing/dist/* deploy/
           mkdir -p deploy/compat && cp -r apps/site/compat/dist/* deploy/compat/
-          mkdir -p deploy/demo && cp -r apps/site/demo/dist/* deploy/demo/
           mkdir -p deploy/docs && cp -r apps/site/docs/dist/* deploy/docs/
           cp apps/site/_headers deploy/_headers
           cp apps/site/_redirects deploy/_redirects
-          rm -f deploy/compat/_headers deploy/demo/_headers deploy/docs/_headers
+          rm -f deploy/compat/_headers deploy/docs/_headers
 
       - name: Install wrangler
         run: npm install -g wrangler

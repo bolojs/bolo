@@ -112,82 +112,6 @@ importers:
         specifier: ^5.8.0
         version: 5.9.3
 
-  apps/site/demo:
-    dependencies:
-      '@bolojs/node-web-shims':
-        specifier: workspace:*
-        version: link:../../../packages/node-web-shims
-      '@bolojs/npm':
-        specifier: workspace:*
-        version: link:../../../packages/npm
-      '@bolojs/runtime':
-        specifier: workspace:*
-        version: link:../../../packages/runtime
-      '@bolojs/sw-sandbox':
-        specifier: workspace:*
-        version: link:../../../packages/sw-sandbox
-      '@bolojs/vfs-bus':
-        specifier: workspace:*
-        version: link:../../../packages/vfs-bus
-      '@bolojs/vite-server':
-        specifier: workspace:*
-        version: link:../../../packages/vite-server
-      '@codemirror/lang-javascript':
-        specifier: ^6.2.2
-        version: 6.2.5
-      '@codemirror/state':
-        specifier: ^6.5.0
-        version: 6.7.1
-      '@codemirror/view':
-        specifier: ^6.35.0
-        version: 6.43.6
-      '@fontsource-variable/geist':
-        specifier: ^5.2.9
-        version: 5.2.9
-      '@fontsource-variable/geist-mono':
-        specifier: ^5.2.8
-        version: 5.2.8
-      '@rolldown/browser':
-        specifier: ^1.1.5
-        version: 1.1.5
-      '@xterm/addon-fit':
-        specifier: ^0.10.0
-        version: 0.10.0(@xterm/xterm@5.5.0)
-      '@xterm/xterm':
-        specifier: ^5.5.0
-        version: 5.5.0
-      motion:
-        specifier: ^12.42.2
-        version: 12.42.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      solid-js:
-        specifier: ^1.9.0
-        version: 1.9.12
-      unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
-    devDependencies:
-      '@tailwindcss/vite':
-        specifier: ^4.3.2
-        version: 4.3.2(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
-      portless:
-        specifier: latest
-        version: 0.15.2
-      tailwindcss:
-        specifier: ^4.3.2
-        version: 4.3.2
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
-      vite:
-        specifier: ^6.0.0
-        version: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0)
-      vite-plugin-node-polyfills:
-        specifier: ^0.28.0
-        version: 0.28.0(rollup@4.60.1)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
-      vite-plugin-solid:
-        specifier: ^2.11.0
-        version: 2.11.12(solid-js@1.9.12)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
-
   apps/site/docs:
     dependencies:
       '@astrojs/starlight':
@@ -5226,12 +5150,6 @@ packages:
   playwright-core@1.59.1:
     resolution: {integrity: sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==}
     engines: {node: '>=18'}
-    hasBin: true
-
-  portless@0.15.2:
-    resolution: {integrity: sha512-jyTXeRUfYgVerW/YMP1bexm79da0+55K0HgHQukHEJMmpp9AsXKVLywF4F+NnutSO1yV91AX2IK7DWAH+i2pKg==}
-    engines: {node: '>=24'}
-    os: [darwin, linux, win32]
     hasBin: true
 
   portless@0.15.3:
@@ -11468,8 +11386,6 @@ snapshots:
       find-up: 5.0.0
 
   playwright-core@1.59.1: {}
-
-  portless@0.15.2: {}
 
   portless@0.15.3: {}
 
