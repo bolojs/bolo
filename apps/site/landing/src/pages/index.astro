@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { Button } from '../../../shared/components/ui/button.tsx';
+import Demo from '../demo/Demo.tsx';
 
 const title = 'bolo — Node.js in the browser';
 const description = 'A fully client-side Node.js runtime. Run Node.js applications in the browser with zero server dependency.';
@@ -54,8 +55,11 @@ const description = 'A fully client-side Node.js runtime. Run Node.js applicatio
 
       <section class="hero-item w-full" style="animation-delay: 180ms" aria-label="Live demo">
         <div class="rounded-2xl bg-[linear-gradient(160deg,var(--border),transparent_60%)] p-2 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-          <div class="flex h-[420px] flex-col overflow-hidden rounded-xl border border-border bg-[#111111] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
-            <div class="flex shrink-0 items-center gap-3 border-b border-border bg-white/[0.02] px-4 py-3">
+          <div
+            class="flex h-[460px] flex-col overflow-hidden rounded-xl border border-border bg-[#111111] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+            data-theme="dark"
+          >
+            <div class="flex shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.02] px-4 py-3">
               <div class="flex gap-2">
                 <span class="size-3 rounded-full bg-[#ff5f56]"></span>
                 <span class="size-3 rounded-full bg-[#ffbd2e]"></span>
@@ -63,7 +67,7 @@ const description = 'A fully client-side Node.js runtime. Run Node.js applicatio
               </div>
               <span class="flex-1 text-center font-mono text-[0.8125rem] text-muted">demo</span>
             </div>
-            <iframe class="flex-1 w-full border-0" src="/demo/" title="bolo live demo" loading="lazy"></iframe>
+            <Demo client:only="solid-js" />
           </div>
         </div>
       </section>

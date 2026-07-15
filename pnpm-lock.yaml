@@ -141,6 +141,9 @@ importers:
       '@codemirror/view':
         specifier: ^6.35.0
         version: 6.43.6
+      '@fontsource-variable/geist':
+        specifier: ^5.2.9
+        version: 5.2.9
       '@fontsource-variable/geist-mono':
         specifier: ^5.2.8
         version: 5.2.8
@@ -215,15 +218,57 @@ importers:
       '@astrojs/react':
         specifier: ^4.2.0
         version: 4.4.2(@types/node@25.6.0)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(jiti@2.7.0)(lightningcss@1.32.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.99.0)(yaml@2.9.0)
+      '@astrojs/solid-js':
+        specifier: ^5.0.10
+        version: 5.1.3(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(solid-js@1.9.12)(yaml@2.9.0)
+      '@bolojs/node-web-shims':
+        specifier: workspace:*
+        version: link:../../../packages/node-web-shims
+      '@bolojs/npm':
+        specifier: workspace:*
+        version: link:../../../packages/npm
+      '@bolojs/runtime':
+        specifier: workspace:*
+        version: link:../../../packages/runtime
+      '@bolojs/sw-sandbox':
+        specifier: workspace:*
+        version: link:../../../packages/sw-sandbox
+      '@bolojs/vfs-bus':
+        specifier: workspace:*
+        version: link:../../../packages/vfs-bus
+      '@bolojs/vite-server':
+        specifier: workspace:*
+        version: link:../../../packages/vite-server
+      '@codemirror/lang-javascript':
+        specifier: ^6.2.2
+        version: 6.2.5
+      '@codemirror/state':
+        specifier: ^6.5.0
+        version: 6.7.1
+      '@codemirror/view':
+        specifier: ^6.35.0
+        version: 6.43.6
       '@fontsource-variable/geist':
         specifier: ^5.2.9
         version: 5.2.9
       '@fontsource-variable/geist-mono':
         specifier: ^5.2.8
         version: 5.2.8
+      '@rolldown/browser':
+        specifier: ^1.1.5
+        version: 1.1.5
+      '@xterm/addon-fit':
+        specifier: ^0.10.0
+        version: 0.10.0(@xterm/xterm@5.5.0)
+      '@xterm/xterm':
+        specifier: ^5.5.0
+        version: 5.5.0
       astro:
         specifier: ^5.7.0
         version: 5.18.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0)
+      motion:
+        specifier: ^12.42.2
+        version: 12.42.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       phosphor-icons-astro:
         specifier: ^2.1.1-17042025
         version: 2.1.1-17042025
@@ -236,6 +281,12 @@ importers:
       sharp:
         specifier: ^0.35.3
         version: 0.35.3(@types/node@25.6.0)
+      solid-js:
+        specifier: ^1.9.0
+        version: 1.9.12
+      unenv:
+        specifier: ^1.10.0
+        version: 1.10.0
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.0
@@ -267,6 +318,15 @@ importers:
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0)
+      vite-plugin-node-polyfills:
+        specifier: ^0.28.0
+        version: 0.28.0(rollup@4.60.1)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
+      vite-plugin-solid:
+        specifier: ^2.11.0
+        version: 2.11.12(solid-js@1.9.12)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
 
   packages/@unjs/lockfile:
     dependencies:
@@ -583,6 +643,16 @@ packages:
 
   '@astrojs/sitemap@3.7.3':
     resolution: {integrity: sha512-f8euLVsyeAmAkSm/1M2Kb8sL8byQmfgbvBNaHFItCheTj/IpiJYSEWVcqDHZ/yEHxiS7+w87mQkzwZaPHmk5GA==}
+
+  '@astrojs/solid-js@5.1.3':
+    resolution: {integrity: sha512-KxfYt4y1d7BuSw6EsN1EaPoGYsIES7bEI6AtTbncuabRUUMZs+mOWOeOdmgnwVLj+jbNbhBjUZsqr77eUviZdw==}
+    engines: {node: 18.20.8 || ^20.3.0 || >=22.0.0}
+    peerDependencies:
+      solid-devtools: ^0.30.1
+      solid-js: ^1.8.5
+    peerDependenciesMeta:
+      solid-devtools:
+        optional: true
 
   '@astrojs/starlight@0.37.7':
     resolution: {integrity: sha512-KyBnou8aKIlPJUSNx6a1SN7XyH22oj/VAvTGC+Edld4Bnei1A//pmCRTBvSrSeoGrdUjK0ErFUfaEhhO1bPfDg==}
@@ -6518,6 +6588,26 @@ snapshots:
       sitemap: 9.0.1
       stream-replace-string: 2.0.0
       zod: 4.4.3
+
+  '@astrojs/solid-js@5.1.3(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(solid-js@1.9.12)(yaml@2.9.0)':
+    dependencies:
+      solid-js: 1.9.12
+      vite: 6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0)
+      vite-plugin-solid: 2.11.12(solid-js@1.9.12)(vite@6.4.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(sass@1.99.0)(yaml@2.9.0))
+    transitivePeerDependencies:
+      - '@testing-library/jest-dom'
+      - '@types/node'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
 
   '@astrojs/starlight@0.37.7(astro@5.18.2(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.9.0))':
     dependencies:
