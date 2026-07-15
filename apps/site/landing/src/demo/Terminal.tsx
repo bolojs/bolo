@@ -141,9 +141,9 @@ export default function Terminal(props: Props) {
   };
 
   return (
-    <section class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+    <section class="flex min-h-0 flex-1 flex-col overflow-hidden pt-3 px-3">
       <div ref={container} aria-label="Output" class="min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)]" />
-      <div class="mt-2 flex shrink-0 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[13px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus-within:border-[var(--accent)]/30 focus-within:bg-white/[0.05]">
+      <div class="mt-0 flex shrink-0 items-center gap-2 pb-3 text-[13px]">
         <span aria-hidden="true" class="text-[var(--accent)]" style={{ "font-family": "var(--font-mono)" }}>
           &gt;
         </span>

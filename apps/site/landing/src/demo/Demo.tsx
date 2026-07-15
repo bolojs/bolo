@@ -11,19 +11,21 @@ import { defaultScenario, type QuickAction, type Scenario } from "./scenarios";
 
 type BootState = "booting" | "installing" | "switching" | "ready" | "error";
 
-const statusStyles: Record<BootState, string> = {
-  booting: "bg-white/5 text-muted",
-  installing: "bg-white/5 text-muted",
-  switching: "bg-white/5 text-muted",
-  ready: "bg-[var(--success-bg)] text-[var(--success)]",
-  error: "bg-[var(--danger-bg)] text-[var(--danger)]",
+const statusDotStyles: Record<BootState, string> = {
+  booting: "bg-muted animate-pulse",
+  installing: "bg-muted animate-pulse",
+  switching: "bg-muted animate-pulse",
+  ready: "bg-[var(--success)]",
+  error: "bg-[var(--danger)]",
 };
 
-const panelShell =
-  "flex min-h-0 flex-col overflow-hidden rounded-[1.25rem] bg-white/[0.03] p-1 ring-1 ring-white/[0.08] shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]";
-
-const innerCard =
-  "flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1rem] bg-[var(--surface-2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]";
+const statusLabels: Record<BootState, string> = {
+  booting: "booting…",
+  installing: "installing…",
+  switching: "switching…",
+  ready: "ready",
+  error: "error",
+};
 
 export default function Demo() {
   const [bootState, setBootState] = createSignal<BootState>("booting");
@@ -119,50 +121,45 @@ export default function Demo() {
   };
 
   return (
-    <div class="flex h-full min-h-0 flex-col overflow-hidden">
-      <header class="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-2.5">
-        <span class="text-[13px] font-semibold tracking-tight text-fg">bolo</span>
+    <div class="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+      <div class="flex shrink-0 items-center justify-between rounded-xl border border-border bg-white px-3 py-1.5">
         <ScenarioPicker active={activeScenario()} disabled={bootState() !== "ready"} onSelect={bootScenario} />
-        <span
-          class={`ml-auto rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.15em] transition-colors duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${statusStyles[bootState()]}`}
-        >
-          {bootState()}
-        </span>
-      </header>
+      </div>
 
-      <main class="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3">
-        <div class={panelShell} style={{ flex: "1.6 1 0%", "min-height": "180px" }}>
-          <section class={innerCard}>
-            <EditorTabs activeTab={activeTab()} servesHttp={activeScenario().servesHttp} onSelect={setActiveTab} />
-            <div class="min-h-0 flex-1 overflow-hidden" classList={{ hidden: activeTab() !== "code" }}>
-              <Editor value={source()} onChange={setSource} />
-            </div>
-            <div class="min-h-0 flex-1 overflow-hidden" classList={{ hidden: activeTab() !== "preview" }}>
-              <Preview url={previewUrl()} />
-            </div>
-          </section>
+      <section
+        class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm"
+        style={{ flex: "1.6 1 0%", "min-height": "160px" }}
+      >
+        <EditorTabs activeTab={activeTab()} servesHttp={activeScenario().servesHttp} onSelect={setActiveTab} />
+        <div class="min-h-0 flex-1 overflow-hidden" classList={{ hidden: activeTab() !== "code" }}>
+          <Editor value={source()} onChange={setSource} />
         </div>
+        <div class="min-h-0 flex-1 overflow-hidden" classList={{ hidden: activeTab() !== "preview" }}>
+          <Preview url={previewUrl()} />
+        </div>
+      </section>
 
-        <div class="shrink-0">
-          <ChipMarquee
-            actions={activeScenario().quickActions}
-            disabled={bootState() !== "ready"}
-            onRun={pasteCommand}
-          />
-        </div>
+      <div class="shrink-0">
+        <ChipMarquee actions={activeScenario().quickActions} disabled={bootState() !== "ready"} onRun={pasteCommand} />
+      </div>
 
-        <div class={panelShell} style={{ flex: "1 1 0%", "min-height": "120px" }}>
-          <section class={innerCard}>
-            <Terminal
-              lines={lines()}
-              disabled={bootState() !== "ready"}
-              inputValue={inputValue()}
-              focusTrigger={focusInput()}
-              onSubmit={handleSubmit}
-            />
-          </section>
-        </div>
-      </main>
+      <section
+        class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm"
+        style={{ flex: "1 1 0%", "min-height": "100px" }}
+      >
+        <Terminal
+          lines={lines()}
+          disabled={bootState() !== "ready"}
+          inputValue={inputValue()}
+          focusTrigger={focusInput()}
+          onSubmit={handleSubmit}
+        />
+      </section>
+
+      <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted">
+        <span class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`} />
+        <span>{statusLabels[bootState()]}</span>
+      </div>
     </div>
   );
 }

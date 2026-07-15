@@ -1,5 +1,16 @@
 @import "../../../shared/tokens.css";
 
+/* Demo-local tokens, light "digital paper" default. */
+:root {
+  --accent: #131313;
+  --accent-dim: color-mix(in srgb, var(--accent) 12%, transparent);
+  --surface-2: #ffffff;
+  --success: #16a34a;
+  --success-bg: color-mix(in srgb, var(--success) 12%, transparent);
+  --danger: #ba1a1a;
+  --danger-bg: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
 /* Demo-local tokens used inside the dark demo card (data-theme="dark"). */
 [data-theme="dark"] {
   --accent: #7c8aff;
@@ -9,30 +20,6 @@
   --success-bg: color-mix(in srgb, var(--success) 16%, transparent);
   --danger: #f87171;
   --danger-bg: color-mix(in srgb, var(--danger) 16%, transparent);
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 18s linear infinite;
-}
-
-.animate-marquee:hover,
-.animate-marquee:focus-within {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
-    animation: none;
-  }
 }
 
 /* Tailwind v4 puts its utilities in `@layer utilities`. Unlayered CSS always

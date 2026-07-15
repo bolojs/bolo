@@ -3,6 +3,15 @@ import { onCleanup, onMount } from "solid-js";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { tags } from "@lezer/highlight";
+
+const lightHighlightStyle = HighlightStyle.define([
+  { tag: tags.keyword, color: "#9333ea" },
+  { tag: [tags.string, tags.special(tags.string)], color: "#dc2626" },
+  { tag: [tags.variableName, tags.propertyName], color: "#2563eb" },
+  { tag: tags.comment, color: "#16a34a" },
+]);
 
 interface Props {
   value: string;
@@ -24,6 +33,7 @@ export default function Editor(props: Props) {
       doc: props.value,
       extensions: [
         javascript(),
+        syntaxHighlighting(lightHighlightStyle),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             props.onChange(update.state.doc.toString());

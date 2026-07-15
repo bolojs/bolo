@@ -52,7 +52,7 @@ importers:
         version: 1.59.1
       portless:
         specifier: latest
-        version: 0.15.2
+        version: 0.15.3
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
@@ -104,7 +104,7 @@ importers:
         version: 19.2.3(@types/react@19.2.17)
       portless:
         specifier: latest
-        version: 0.15.2
+        version: 0.15.3
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -242,6 +242,9 @@ importers:
       '@codemirror/lang-javascript':
         specifier: ^6.2.2
         version: 6.2.5
+      '@codemirror/language':
+        specifier: ^6.11.3
+        version: 6.12.4
       '@codemirror/state':
         specifier: ^6.5.0
         version: 6.7.1
@@ -254,6 +257,9 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: ^5.2.8
         version: 5.2.8
+      '@lezer/highlight':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@rolldown/browser':
         specifier: ^1.1.5
         version: 1.1.5
@@ -311,7 +317,7 @@ importers:
         version: 1.7.0(eslint@9.39.5(jiti@2.7.0))
       portless:
         specifier: latest
-        version: 0.15.2
+        version: 0.15.3
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -5224,6 +5230,12 @@ packages:
 
   portless@0.15.2:
     resolution: {integrity: sha512-jyTXeRUfYgVerW/YMP1bexm79da0+55K0HgHQukHEJMmpp9AsXKVLywF4F+NnutSO1yV91AX2IK7DWAH+i2pKg==}
+    engines: {node: '>=24'}
+    os: [darwin, linux, win32]
+    hasBin: true
+
+  portless@0.15.3:
+    resolution: {integrity: sha512-2xm7SOHMhl6QOZZS3hwdtVT7D/908TDH8+Sebc1TJRJcaTVtTwMR4Mv/oI5JsdeiMh/6Im+Tp4e/OsPn+skOJQ==}
     engines: {node: '>=24'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -11458,6 +11470,8 @@ snapshots:
   playwright-core@1.59.1: {}
 
   portless@0.15.2: {}
+
+  portless@0.15.3: {}
 
   possible-typed-array-names@1.1.0: {}
 
