@@ -21,7 +21,7 @@ const pressAnimate = (el: HTMLButtonElement) => {
 };
 
 export default function ChipMarquee(props: Props) {
-  const chip = (action: QuickAction) => {
+  const chip = (action: QuickAction, key: string) => {
     const isDisabled = props.disabled || !!action.reason;
     return (
       <button
@@ -29,14 +29,23 @@ export default function ChipMarquee(props: Props) {
         ref={pressAnimate}
         disabled={isDisabled}
         aria-disabled={isDisabled}
+        tabIndex={key.endsWith(":1") ? -1 : 0}
+        aria-hidden={key.endsWith(":1") ? true : undefined}
         title={action.reason ?? (props.disabled ? "waiting for runtime…" : undefined)}
         onClick={() => !isDisabled && props.onRun(action)}
-        class="rounded-xl border border-border bg-white px-3.5 py-1.5 text-[12px] font-medium text-fg transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
+        class="rounded-xl border border-border bg-[var(--surface-2)] px-3.5 py-1.5 text-[12px] font-medium text-fg whitespace-nowrap transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[color-mix(in_srgb,var(--fg)_6%,var(--surface-2))] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[var(--surface-2)]"
       >
         {action.label}
       </button>
     );
   };
 
-  return <div class="flex flex-wrap gap-2">{props.actions.map((action) => chip(action))}</div>;
+  return (
+    <div class="overflow-hidden">
+      <div class="marquee-track flex w-max flex-nowrap gap-2">
+        {props.actions.map((action) => chip(action, `${action.label}:0`))}
+        {props.actions.map((action) => chip(action, `${action.label}:1`))}
+      </div>
+    </div>
+  );
 }

@@ -1,5 +1,5 @@
 import type { Scenario } from "../types";
-import indexJs from "./index.js?raw";
+import indexTs from "./index.ts?raw";
 import packageJson from "./package.json?raw";
 
 export const consoleHello: Scenario = {
@@ -8,10 +8,10 @@ export const consoleHello: Scenario = {
   description: "A minimal Node script using chalk to print colored output.",
   files: {
     "package.json": packageJson,
-    "index.js": indexJs,
+    "index.ts": indexTs,
   },
   quickActions: [
-    { label: "Run app", command: "node", args: ["index.js"] },
+    { label: "Run app", command: "node", args: ["index.ts"] },
     { label: "List files", command: "ls", args: ["-l"] },
     { label: "Install deps", command: "npm", args: ["install"] },
     { label: "View package.json", command: "cat", args: ["package.json"] },

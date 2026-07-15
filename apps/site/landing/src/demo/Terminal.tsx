@@ -1,5 +1,5 @@
 /** @jsxImportSource solid-js */
-import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { createEffect, onCleanup, onMount } from "solid-js";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
@@ -14,15 +14,15 @@ interface Props {
 
 export default function Terminal(props: Props) {
   let container!: HTMLDivElement;
-  let inputRef!: HTMLInputElement;
   let xterm: XTerm | undefined;
   let fitAddon: FitAddon | undefined;
 
-  const [value, setValue] = createSignal("");
-  const [history, setHistory] = createSignal<string[]>([]);
-  const [historyIndex, setHistoryIndex] = createSignal<number | null>(null);
+  let lineBuffer = "";
+  let history: string[] = [];
+  let historyIndex: number | null = null;
+  let prevDisabled = true;
 
-  onMount(() => {
+  const buildTheme = () => {
     const style = getComputedStyle(container);
     const bg = style.getPropertyValue("--surface-2").trim() || "#0a0a0a";
     const fg = style.getPropertyValue("--fg").trim();
@@ -32,40 +32,98 @@ export default function Terminal(props: Props) {
     const success = style.getPropertyValue("--success").trim();
     const accentDim = style.getPropertyValue("--accent-dim").trim();
 
+    return {
+      background: bg,
+      foreground: fg,
+      cursor: accent,
+      selectionBackground: accentDim,
+      black: bg,
+      brightBlack: muted,
+      red: danger,
+      brightRed: danger,
+      green: success,
+      brightGreen: success,
+      yellow: "#e3b341",
+      brightYellow: "#e3b341",
+      blue: accent,
+      brightBlue: accent,
+      magenta: "#bc8cff",
+      brightMagenta: "#d2a8ff",
+      cyan: "#39c5cf",
+      brightCyan: "#56d4dd",
+      white: fg,
+      brightWhite: fg,
+    };
+  };
+
+  onMount(() => {
     xterm = new XTerm({
       convertEol: true,
-      disableStdin: true,
-      cursorBlink: false,
+      disableStdin: false,
+      cursorBlink: true,
       fontFamily: "var(--font-mono)",
       fontSize: 13,
-      theme: {
-        background: bg,
-        foreground: fg,
-        cursor: accent,
-        selectionBackground: accentDim,
-        black: bg,
-        brightBlack: muted,
-        red: danger,
-        brightRed: danger,
-        green: success,
-        brightGreen: success,
-        yellow: "#e3b341",
-        brightYellow: "#e3b341",
-        blue: accent,
-        brightBlue: accent,
-        magenta: "#bc8cff",
-        brightMagenta: "#d2a8ff",
-        cyan: "#39c5cf",
-        brightCyan: "#56d4dd",
-        white: fg,
-        brightWhite: fg,
-      },
+      theme: buildTheme(),
     });
+
+    const themeObserver = new MutationObserver(() => {
+      if (xterm) xterm.options.theme = buildTheme();
+    });
+    themeObserver.observe(document.documentElement, { attributeFilter: ["data-theme"] });
 
     fitAddon = new FitAddon();
     xterm.loadAddon(fitAddon);
     xterm.open(container);
     fitAddon.fit();
+
+    const eraseVisible = (n: number) => {
+      for (let i = 0; i < n; i++) xterm?.write("\b \b");
+    };
+
+    xterm.onData((data) => {
+      if (props.disabled) return;
+
+      if (data === "\r") {
+        const line = lineBuffer.trim();
+        if (!line) return;
+        xterm?.write("\r\n");
+        props.onSubmit(line);
+        history.push(line);
+        historyIndex = null;
+        lineBuffer = "";
+        xterm?.write("\r\n> ");
+      } else if (data === "\x7f") {
+        if (lineBuffer.length === 0) return;
+        lineBuffer = lineBuffer.slice(0, -1);
+        xterm?.write("\b \b");
+      } else if (data === "\x1b[A") {
+        if (history.length === 0) return;
+        const idx = historyIndex === null ? history.length - 1 : Math.max(0, historyIndex - 1);
+        const entry = history[idx];
+        if (entry === undefined) return;
+        historyIndex = idx;
+        eraseVisible(lineBuffer.length);
+        lineBuffer = entry;
+        xterm?.write(entry);
+      } else if (data === "\x1b[B") {
+        if (historyIndex === null) return;
+        if (historyIndex >= history.length - 1) {
+          historyIndex = null;
+          eraseVisible(lineBuffer.length);
+          lineBuffer = "";
+        } else {
+          const next = history[historyIndex + 1];
+          if (next === undefined) return;
+          historyIndex += 1;
+          eraseVisible(lineBuffer.length);
+          lineBuffer = next;
+          xterm?.write(next);
+        }
+      } else if (data >= " " || data === "\t") {
+        lineBuffer += data;
+        xterm?.write(data);
+      }
+    });
 
     let written = 0;
     createEffect(() => {
@@ -73,9 +131,9 @@ export default function Terminal(props: Props) {
       if (lines.length < written) {
         xterm?.clear();
         written = 0;
-        setHistory([]);
-        setHistoryIndex(null);
-        setValue("");
+        lineBuffer = "";
+        history = [];
+        historyIndex = null;
       }
       for (let i = written; i < lines.length; i++) {
         const line = lines[i];
@@ -85,15 +143,27 @@ export default function Terminal(props: Props) {
     });
 
     createEffect(() => {
+      const disabled = props.disabled;
+      if (!disabled && prevDisabled) {
+        xterm?.write("\r\n> ");
+      }
+      prevDisabled = disabled;
+    });
+
+    createEffect(() => {
       const v = props.inputValue;
-      if (v !== undefined) setValue(v);
+      if (!v) return;
+      eraseVisible(lineBuffer.length);
+      lineBuffer = v;
+      xterm?.write(v);
+      xterm?.focus();
     });
 
     createEffect(() => {
       // Trigger focus whenever the parent asks us to (e.g. chip click).
       props.focusTrigger;
       queueMicrotask(() => {
-        inputRef?.focus();
+        xterm?.focus();
       });
     });
 
@@ -103,65 +173,13 @@ export default function Terminal(props: Props) {
     onCleanup(() => {
       xterm?.dispose();
       ro.disconnect();
+      themeObserver.disconnect();
     });
   });
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter") {
-      const line = value().trim();
-      if (!line) return;
-      props.onSubmit(line);
-      setHistory((h) => [...h, line]);
-      setHistoryIndex(null);
-      setValue("");
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      const h = history();
-      if (h.length === 0) return;
-      const idx = historyIndex() === null ? h.length - 1 : Math.max(0, historyIndex()! - 1);
-      const entry = h[idx];
-      if (entry === undefined) return;
-      setHistoryIndex(idx);
-      setValue(entry);
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      const h = history();
-      const idx = historyIndex();
-      if (idx === null) return;
-      if (idx >= h.length - 1) {
-        setHistoryIndex(null);
-        setValue("");
-      } else {
-        const next = h[idx + 1];
-        if (next === undefined) return;
-        setHistoryIndex(idx + 1);
-        setValue(next);
-      }
-    }
-  };
-
   return (
-    <section class="flex min-h-0 flex-1 flex-col overflow-hidden pt-3 px-3">
-      <div ref={container} aria-label="Output" class="min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)]" />
-      <div class="mt-0 flex shrink-0 items-center gap-2 pb-3 text-[13px]">
-        <span aria-hidden="true" class="text-[var(--accent)]" style={{ "font-family": "var(--font-mono)" }}>
-          &gt;
-        </span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={value()}
-          disabled={props.disabled}
-          onInput={(e: Event & { currentTarget: HTMLInputElement }) => setValue(e.currentTarget.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={props.disabled ? "waiting for runtime…" : "run a command…"}
-          aria-label="Terminal command input"
-          spellcheck={false}
-          autocomplete="off"
-          class="min-w-0 flex-1 bg-transparent text-fg outline-none placeholder:text-muted disabled:cursor-not-allowed"
-          style={{ "font-family": "var(--font-mono)" }}
-        />
-      </div>
+    <section class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+      <div ref={container} aria-label="Terminal" class="min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2" />
     </section>
   );
 }

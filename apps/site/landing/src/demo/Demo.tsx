@@ -46,7 +46,7 @@ export default function Demo() {
   const [bootState, setBootState] = createSignal<BootState>("booting");
   const [lines, setLines] = createSignal<string[]>([]);
   const [activeScenario, setActiveScenario] = createSignal<Scenario>(defaultScenario);
-  const [source, setSource] = createSignal(defaultScenario.files["index.js"]);
+  const [source, setSource] = createSignal(defaultScenario.files["index.ts"]);
   const [activeTab, setActiveTab] = createSignal<EditorTab>("code");
   const [previewUrl, setPreviewUrl] = createSignal<string | null>(null);
   const [inputValue, setInputValue] = createSignal("");
@@ -89,7 +89,7 @@ export default function Demo() {
       setLines([]);
       setInputValue("");
       setActiveScenario(scenario);
-      setSource(scenario.files["index.js"]);
+      setSource(scenario.files["index.ts"]);
       setActiveTab("code");
       setPreviewUrl(null);
 
@@ -101,7 +101,7 @@ export default function Demo() {
 
       await container.mount({
         "package.json": { file: { contents: scenario.files["package.json"] } },
-        "index.js": { file: { contents: scenario.files["index.js"] } },
+        "index.ts": { file: { contents: scenario.files["index.ts"] } },
       });
 
       setBootState("installing");
@@ -123,7 +123,7 @@ export default function Demo() {
     if (!container) return;
     const trimmed = line.trim();
     if (!trimmed) return;
-    await container.fs.writeFile(`${container.workdir}/index.js`, source());
+    await container.fs.writeFile(`${container.workdir}/index.ts`, source());
     const [command, ...args] = trimmed.split(/\s+/);
     if (!command) return;
     await runCommand(command, args);
@@ -136,16 +136,21 @@ export default function Demo() {
   };
 
   return (
-    <div class="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
-      <div class="flex shrink-0 items-center justify-between rounded-xl border border-border bg-white px-3 py-1.5">
+    <div class="demo-shell flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+      <div class="flex shrink-0 items-center justify-between rounded-xl border border-border bg-[var(--surface-2)] px-3 py-1.5">
         <ScenarioPicker active={activeScenario()} disabled={bootState() !== "ready"} onSelect={bootScenario} />
       </div>
 
       <section
-        class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm"
+        class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm"
         style={{ flex: "1.6 1 0%", "min-height": "160px" }}
       >
-        <EditorTabs activeTab={activeTab()} servesHttp={activeScenario().servesHttp} onSelect={setActiveTab} />
+        <EditorTabs
+          activeTab={activeTab()}
+          servesHttp={activeScenario().servesHttp}
+          fileName={Object.keys(activeScenario().files).find((f) => f !== "package.json")!}
+          onSelect={setActiveTab}
+        />
         <div class="min-h-0 flex-1 overflow-hidden" classList={{ hidden: activeTab() !== "code" }}>
           <Editor value={source()} onChange={setSource} />
         </div>
@@ -159,7 +164,7 @@ export default function Demo() {
       </div>
 
       <section
-        class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm"
+        class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm"
         style={{ flex: "1 1 0%", "min-height": "100px" }}
       >
         <Terminal

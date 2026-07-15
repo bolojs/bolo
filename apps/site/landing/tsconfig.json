@@ -2,5 +2,6 @@
   "extends": "astro/tsconfigs/strictest",
   "compilerOptions": {
     "types": ["astro/client"]
-  }
+  },
+  "exclude": ["dist", "src/demo/scenarios/*/index.ts"]
 }

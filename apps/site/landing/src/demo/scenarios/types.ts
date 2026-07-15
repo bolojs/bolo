@@ -11,7 +11,7 @@ export interface Scenario {
   description?: string;
   files: {
     "package.json": string;
-    "index.js": string;
+    "index.ts": string;
   };
   quickActions: QuickAction[];
   servesHttp: boolean;

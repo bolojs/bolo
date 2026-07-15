@@ -9,10 +9,10 @@ const description = 'A fully client-side Node.js runtime. Run Node.js applicatio
 
 <BaseLayout title={title} description={description}>
   <section
-    class="flex min-h-[85vh] items-center bg-bg bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[length:24px_24px] py-28 text-fg md:py-32"
+    class="flex items-center bg-bg bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[length:24px_24px] py-12 text-fg md:py-16"
     aria-label="Introduction"
   >
-    <div class="container grid grid-cols-1 items-center gap-12 md:grid-cols-[1.1fr_1fr] lg:gap-16">
+    <div class="container grid grid-cols-1 items-center gap-12 md:grid-cols-[1.1fr_minmax(0,1fr)] lg:gap-16">
       <div class="hero-in text-left">
         <span
           class="hero-item mb-6 inline-block rounded-full border border-border px-3 py-1 font-mono text-[0.6875rem] font-medium uppercase tracking-[0.2em] text-muted"
@@ -54,7 +54,7 @@ const description = 'A fully client-side Node.js runtime. Run Node.js applicatio
       </div>
 
       <section class="hero-item w-full" style="animation-delay: 180ms" aria-label="Live demo">
-        <div class="h-[460px]">
+        <div class="h-[min(460px,55vh)]">
           <Demo client:only="solid-js" />
         </div>
       </section>
