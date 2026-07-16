@@ -19,10 +19,11 @@
   },
   "devDependencies": {
     "@docmd/core": "^0.8.12",
+    "@playwright/cli": "^0.1.17",
     "@types/node": "^25.6.0",
     "oxfmt": "^0.16.0",
     "oxlint": "^1.0.0",
-    "playwright-core": "^1.59.1",
+    "playwright-core": "^1.61.1",
     "turbo": "^2.4.0",
     "typescript": "^5.8.0",
     "vitest": "^3.0.0"

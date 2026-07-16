@@ -9,9 +9,9 @@
     "install:gauge": "npm install -g @getgauge/cli"
   },
   "dependencies": {
-    "agent-browser": "^0.25.5",
     "@getgauge/cli": "^1.6.30",
-    "gauge-ts": "^0.3.6"
+    "gauge-ts": "^0.3.6",
+    "playwright": "^1.61.1"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
