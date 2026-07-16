@@ -27,7 +27,7 @@
     "threads.js": "^0.6.1",
     "typescript": "^5.8.0",
     "vite": "^8.0.0",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "pathe": "^2.0.0",

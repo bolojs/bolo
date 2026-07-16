@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.0",
-    "vitest": "^2.1.0"
+    "vitest": "^4.1.10"
   },
   "license": "Apache-2.0"
 }

@@ -51,7 +51,7 @@ describe("RuntimeWorker", () => {
     // Override global Worker constructor
     vi.stubGlobal(
       "Worker",
-      vi.fn(() => mockWorker.instance),
+      vi.fn(function() { return mockWorker.instance; }),
     );
 
     const stdoutData: string[] = [];
@@ -77,7 +77,7 @@ describe("RuntimeWorker", () => {
     const mockWorker = createMockWorker();
     vi.stubGlobal(
       "Worker",
-      vi.fn(() => mockWorker.instance),
+      vi.fn(function() { return mockWorker.instance; }),
     );
 
     const stderrData: string[] = [];
@@ -102,7 +102,7 @@ describe("RuntimeWorker", () => {
     const mockWorker = createMockWorker();
     vi.stubGlobal(
       "Worker",
-      vi.fn(() => mockWorker.instance),
+      vi.fn(function() { return mockWorker.instance; }),
     );
 
     const exitCode: number[] = [];
@@ -125,7 +125,7 @@ describe("RuntimeWorker", () => {
     const mockWorker = createMockWorker();
     vi.stubGlobal(
       "Worker",
-      vi.fn(() => mockWorker.instance),
+      vi.fn(function() { return mockWorker.instance; }),
     );
 
     const runPromise = worker.runScript('console.log("hello")');
@@ -149,7 +149,7 @@ describe("RuntimeWorker", () => {
     const mockWorker = createMockWorker();
     vi.stubGlobal(
       "Worker",
-      vi.fn(() => mockWorker.instance),
+      vi.fn(function() { return mockWorker.instance; }),
     );
 
     worker.dispose();
