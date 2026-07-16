@@ -265,6 +265,123 @@ export class WebSocketTransport implements ByteTransport {
   }
 }
 
+export class WebTransportTransport implements ByteTransport {
+  private url: string;
+
+  constructor(url: string) {
+    this.url = url;
+  }
+
+  async connect(
+    options: NetConnectOptions,
+    _onControl: (msg: object) => void,
+  ): Promise<{
+    readable: ReadableStream<Uint8Array>;
+    writable: WritableStream<Uint8Array>;
+  }> {
+    const wt = new WebTransport(this.url);
+    await wt.ready;
+
+    const bidi = await wt.createBidirectionalStream();
+    const writer = bidi.writable.getWriter();
+    const encoder = new TextEncoder();
+
+    const msg = JSON.stringify({
+      type: "connect",
+      host: options.host ?? "localhost",
+      port: options.port,
+      tls: options.tls,
+    });
+    await writer.write(encoder.encode(msg));
+
+    const reader = bidi.readable.getReader();
+    const { value: firstChunk } = await reader.read();
+    if (!firstChunk) throw new Error("WebTransport: empty connected response");
+    const response = JSON.parse(new TextDecoder().decode(firstChunk));
+    if (response.type !== "connected") {
+      throw new Error(`WebTransport: expected connected, got ${response.type}`);
+    }
+    reader.releaseLock();
+
+    const writable = new WritableStream<Uint8Array>({
+      write: (chunk) => writer.write(chunk),
+      close: () => writer.close(),
+      abort: () => writer.abort(),
+    });
+
+    return { readable: bidi.readable, writable };
+  }
+
+  async listen(
+    port: number,
+    host: string,
+    onConnection: (conn: AcceptedConnection) => void,
+    _onControl: (msg: object) => void,
+  ): Promise<{ port: number; host: string; close: () => Promise<void> }> {
+    const wt = new WebTransport(this.url);
+    await wt.ready;
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const datagramWriter = wt.datagrams.writable.getWriter();
+    await datagramWriter.write(encoder.encode(JSON.stringify({ type: "listen", port, host })));
+
+    const datagramReader = wt.datagrams.readable.getReader();
+    const { value: listeningData } = await datagramReader.read();
+    if (!listeningData) throw new Error("WebTransport: empty listening response");
+    const listeningMsg = JSON.parse(decoder.decode(listeningData));
+    if (listeningMsg.type !== "listening") {
+      throw new Error(`WebTransport: expected listening, got ${listeningMsg.type}`);
+    }
+
+    const streamReader = wt.incomingBidirectionalStreams.getReader();
+    const acceptLoop = (async () => {
+      while (true) {
+        const { done, value: bidi } = await streamReader.read();
+        if (done) break;
+        const connReader = bidi.readable.getReader();
+        const { value: metaChunk } = await connReader.read();
+        if (!metaChunk) continue;
+        const meta = JSON.parse(decoder.decode(metaChunk));
+        connReader.releaseLock();
+        onConnection({
+          connectionId:
+            globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 10),
+          readable: bidi.readable,
+          writable: bidi.writable,
+          remoteAddress: meta.remoteAddress ?? "unknown",
+          remotePort: meta.remotePort ?? 0,
+        });
+      }
+    })();
+    acceptLoop.catch(() => {});
+
+    return {
+      port: listeningMsg.port,
+      host: listeningMsg.host,
+      close: async () => {
+        try {
+          await datagramWriter.write(encoder.encode(JSON.stringify({ type: "unlisten" })));
+          const timeout = new Promise<void>((resolve) => setTimeout(resolve, 1000));
+          const ack = datagramReader.read().then(({ value }) => {
+            if (value) {
+              const msg = JSON.parse(decoder.decode(value));
+              if (msg.type === "unlistened") return;
+            }
+          });
+          await Promise.race([ack, timeout]);
+        } catch {
+          // best-effort
+        }
+        datagramWriter.releaseLock();
+        datagramReader.releaseLock();
+        wt.close();
+      },
+    };
+  }
+}
+
 export class Socket implements StreamSocket {
   private transport: ByteTransport;
   private options: NetConnectOptions;
@@ -503,12 +620,12 @@ export const createNetShim = (
 ) => {
   let transport: ByteTransport;
   if (options?.tcpRelay?.transport === "webtransport") {
-    throw new Error("WebTransport transport is not implemented yet");
+    transport = new WebTransportTransport(options.tcpRelay.url);
+  } else {
+    transport = options?.tcpRelay?.url
+      ? new WebSocketTransport(options.tcpRelay.url)
+      : new NoopTransport();
   }
-  transport = options?.tcpRelay?.url
-    ? new WebSocketTransport(options.tcpRelay.url)
-    : new NoopTransport();
-
   return {
     createServer: (connectionListener?: (socket: Socket) => void) =>
       new Server(transport, connectionListener),
