@@ -1,7 +1,8 @@
 /** @jsxImportSource solid-js */
 import { onCleanup, onMount } from "solid-js";
 import { Compartment, EditorState } from "@codemirror/state";
-import { EditorView, highlightActiveLineGutter, lineNumbers } from "@codemirror/view";
+import { EditorView, highlightActiveLineGutter, keymap, lineNumbers } from "@codemirror/view";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { javascript } from "@codemirror/lang-javascript";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
@@ -51,6 +52,8 @@ export default function Editor(props: Props) {
         javascript({ typescript: true }),
         lineNumbers(),
         highlightActiveLineGutter(),
+        history(),
+        keymap.of([...defaultKeymap, ...historyKeymap]),
         syntaxHighlighting(lightHighlightStyle),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {

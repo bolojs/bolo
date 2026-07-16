@@ -20,6 +20,7 @@
     "@bolojs/sw-sandbox": "workspace:*",
     "@bolojs/vfs-bus": "workspace:*",
     "@bolojs/vite-server": "workspace:*",
+    "@codemirror/commands": "^6.10.4",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/language": "^6.11.3",
     "@codemirror/state": "^6.5.0",
