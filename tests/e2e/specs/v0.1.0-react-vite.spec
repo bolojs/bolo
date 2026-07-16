@@ -5,10 +5,11 @@ Tags: wip
 ## Service worker boots correctly
 
 * The service worker registers successfully
-* The demo page title is "browsercontainers demo"
+* The demo page title is "bolo"
 
 ## npm install populates VFS
 
+* The runtime is ready
 * I install packages "react, react-dom, vite"
 * The file "/node_modules/react/index.js" exists in VFS
 * The file "/importmap.json" exists in VFS
@@ -17,7 +18,7 @@ Tags: wip
 
 * I write file "/src/App.tsx" with content "export default function App() { return <h1>Hello from React!</h1>; }"
 * I write file "/src/main.tsx" with content "import React from 'react'; import { createRoot } from 'react-dom/client'; import App from './App'; createRoot(document.getElementById('root')!).render(<App/>);"
-* The transform of "/src/App.tsx" contains no raw JSX
+* The transformed "/src/App.tsx" contains no raw JSX syntax
 
 ## Dev server serves the app
 

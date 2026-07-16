@@ -9,14 +9,15 @@ Tags: wip
 
 ## npm install populates VFS
 
-* I run "npm install react react-dom vite"
+* The runtime is ready
+* I install packages "react, react-dom, vite"
 * The file "/node_modules/react/index.js" exists in VFS
 * The file "/importmap.json" exists in VFS
 
 ## Vite serves static files correctly
 
 * I write file "/index.html" with content "<h1>Hello from bolo!</h1>"
-* I run "npm run dev (using vite-server)"
+* I run "npm run dev"
 * The preview iframe shows "Hello from bolo!"
 
 ## HMR updates preview

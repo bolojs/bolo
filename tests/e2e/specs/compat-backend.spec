@@ -4,6 +4,7 @@ Tags: wip
 
 ## Hono serves a route
 
+* The runtime is ready
 * I install packages "hono"
 * I write a Hono server at "/src/server.ts" with route "GET /hello"
 * I run "runtime run /src/server.ts"
@@ -12,6 +13,7 @@ Tags: wip
 
 ## Express serves a route
 
+* The runtime is ready
 * I install packages "express @types/express"
 * I write an Express server at "/src/server.ts" with route "GET /hello"
 * I run "runtime run /src/server.ts"
