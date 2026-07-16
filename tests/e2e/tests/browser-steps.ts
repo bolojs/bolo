@@ -184,6 +184,10 @@ app.listen(3000);`;
   @Step('I run <command>')
   async runCommand(command: string) {
     await currentPage.evaluate(cmd => (window as any).__browserbox.shell.exec(cmd), command);
+    await currentPage.waitForFunction(
+      () => (window as any).__browserbox_spawn_exit !== undefined,
+      { timeout: 30000 },
+    );
   }
 
   /**

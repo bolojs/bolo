@@ -1,4 +1,5 @@
 import { boot as runtimeBoot, type BootOptions, type BrowserContainer, type Process } from "@bolojs/runtime";
+import { BrowserViteServer } from "@bolojs/vite-server";
 
 type SpawnOptions = Parameters<BrowserContainer["spawn"]>[2];
 
@@ -28,6 +29,17 @@ export interface BrowserBoxBridge {
     exec(command: string): void;
   };
   install(packages: string[]): void;
+  vite: {
+    transform(path: string): Promise<string>;
+  };
+}
+
+/** Resolve a spec-supplied path against the container's workdir so that
+ *  `/src/App.tsx` maps to `/home/web/src/App.tsx` — matching how the shell
+ *  service's resolvePath and the vite server's root behave. */
+function resolveWorkdir(workdir: string, path: string): string {
+  if (path.startsWith(workdir)) return path;
+  return path.startsWith("/") ? `${workdir}${path}` : `${workdir}/${path}`;
 }
 
 async function drainSpawnExit(proc: Process): Promise<void> {
@@ -69,6 +81,7 @@ export function createE2eBridge(): BrowserBoxBridge {
   // `rawContainer` is used internally so shell.exec/install drain the
   // process stream exactly once instead of racing the wrapper's own drain.
   let rawContainer: BrowserContainer | undefined;
+  let viteServer: BrowserViteServer | undefined;
 
   const bridge: BrowserBoxBridge = {
     setContainer(container: BrowserContainer) {
@@ -80,6 +93,7 @@ export function createE2eBridge(): BrowserBoxBridge {
       if (rawContainer) {
         await rawContainer.teardown();
       }
+      viteServer = undefined;
       const container = await runtimeBoot(opts);
       bridge.setContainer(container);
       return container;
@@ -88,15 +102,15 @@ export function createE2eBridge(): BrowserBoxBridge {
     vfs: {
       async writeFile(path: string, contents: string) {
         if (!rawContainer) throw new Error("No container booted");
-        await rawContainer.fs.writeFile(path, contents);
+        await rawContainer.fs.writeFile(resolveWorkdir(rawContainer.workdir, path), contents);
       },
       async readFile(path: string) {
         if (!rawContainer) throw new Error("No container booted");
-        return rawContainer.fs.readFile(path);
+        return rawContainer.fs.readFile(resolveWorkdir(rawContainer.workdir, path));
       },
       async exists(path: string) {
         if (!rawContainer) throw new Error("No container booted");
-        return rawContainer.fs.exists(path);
+        return rawContainer.fs.exists(resolveWorkdir(rawContainer.workdir, path));
       },
     },
 
@@ -117,6 +131,24 @@ export function createE2eBridge(): BrowserBoxBridge {
         await drainSpawnExit(proc);
         window.__browserbox_npm_done = true;
       })();
+    },
+
+    vite: {
+      async transform(path: string): Promise<string> {
+        if (!rawContainer) throw new Error("No container booted");
+        if (!viteServer) {
+          const vfs = (globalThis).__vfsBus;
+          if (!vfs) throw new Error("No VFS available");
+          viteServer = new BrowserViteServer({
+            vfs,
+            root: rawContainer.workdir,
+            base: "",
+          });
+          await viteServer.start();
+        }
+        const resp = await viteServer.transformRequest(`http://localhost${path}`);
+        return resp.text();
+      },
     },
   };
 
