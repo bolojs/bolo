@@ -24,7 +24,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "happy-dom": "^20.0.0",
-    "typescript": "^5.8.0",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0"

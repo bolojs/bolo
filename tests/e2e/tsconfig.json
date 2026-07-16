@@ -3,14 +3,15 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
     "target": "ES2022",
-    "module": "CommonJS"
+    "module": "NodeNext",
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "tests/**/*.ts",

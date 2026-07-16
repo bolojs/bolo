@@ -19,7 +19,7 @@
     "@bolojs/vfs-bus": "workspace:*",
     "@types/semver": "^7.5.8",
     "memfs": "~4.56.11",
-    "typescript": "^5.8.0",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0"

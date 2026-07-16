@@ -16,10 +16,10 @@
     "@bolojs/wasm-registry": "workspace:*",
     "@sebastianwessel/quickjs": "^2.2.0",
     "oxc-transform": "^0.139.0",
-    "typescript": "^5.8.0"
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "typescript": "^5.8.0",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0"

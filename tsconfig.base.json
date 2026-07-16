@@ -6,6 +6,8 @@
     "skipLibCheck": true,
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "ignoreDeprecations": "6.0"
   }
 }
