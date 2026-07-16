@@ -22,6 +22,7 @@
 
 .compat-page {
   padding-block: 2rem;
+  overflow-x: hidden;
 }
 
 .eyebrow {
@@ -65,7 +66,13 @@
 
 .bento-cell {
   background: var(--bg);
-  padding: 1.5rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .bento-cell {
+    padding: 1.5rem;
+  }
 }
 
 .bento-cell--stat {
@@ -145,6 +152,7 @@
   padding: 0.375rem;
   border-radius: 0.75rem;
   background: linear-gradient(160deg, var(--border), transparent 60%);
+  min-width: 0;
 }
 
 .section-heading {
@@ -254,6 +262,8 @@
   padding: 0.75rem;
   background: var(--bg);
   border-radius: 0.625rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .heat-calendar-category {
@@ -275,17 +285,32 @@
 
 .heat-calendar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 14px);
-  gap: 3px;
+  grid-template-columns: repeat(auto-fill, 10px);
+  gap: 2px;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .heat-calendar-grid {
+    grid-template-columns: repeat(auto-fill, 14px);
+    gap: 3px;
+  }
 }
 
 .heat-calendar-package {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   cursor: pointer;
   border-radius: 2px;
   overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .heat-calendar-package {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .heat-calendar-package[hidden] {
@@ -294,10 +319,17 @@
 
 .heat-calendar-cell {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   transition: filter 0.1s ease;
+}
+
+@media (min-width: 640px) {
+  .heat-calendar-cell {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .heat-calendar-package:hover .heat-calendar-cell {
@@ -312,6 +344,7 @@
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: 0.5rem;
+  min-width: 0;
 }
 
 .heat-grid {
@@ -807,6 +840,13 @@
 @media (max-width: 640px) {
   .search-command {
     margin: 2.5rem 0;
+    width: 100%;
+    position: static;
+    left: auto;
+    right: auto;
+    margin-left: 0;
+    margin-right: 0;
+    padding-inline: 0;
   }
 
   .search-command-link {
