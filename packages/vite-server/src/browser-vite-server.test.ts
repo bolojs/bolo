@@ -16,7 +16,7 @@ vi.mock("@sebastianwessel/quickjs", () => ({
 const mockBroadcastChannel = () => {
   const channels = new Map<string, Set<{ postMessage: (msg: unknown) => void }>>();
   return {
-    Channel: vi.fn().mockImplementation(function(name: string) {
+    Channel: vi.fn().mockImplementation(function (name: string) {
       if (!channels.has(name)) channels.set(name, new Set());
       const listeners = channels.get(name)!;
       return {
