@@ -1,0 +1,87 @@
+---
+// Static server-rendered fallback skeleton for the Demo island.
+// Mirrors the Demo.tsx shell layout so users see a skeleton from first paint
+// while the SolidJS bundle downloads, parses, and mounts.
+---
+
+<div class="demo-shell flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+  {/* Top bar: scenario picker */}
+  <div class="flex shrink-0 items-center rounded-xl border border-border bg-[var(--surface-2)] px-3 py-1.5">
+    <div class="flex items-center gap-2">
+      <span class="skeleton h-3.5 w-14 rounded"></span>
+      <span class="skeleton h-5 w-40 rounded"></span>
+    </div>
+  </div>
+
+  {/* Editor section */}
+  <section
+    class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm"
+    style="flex: 1.6 1 0%; min-height: 160px;"
+  >
+    <div class="flex shrink-0 items-center gap-1 border-b border-border bg-[color-mix(in_srgb,var(--fg)_4%,transparent)] p-1.5">
+      <span class="skeleton h-7 w-24 rounded-lg"></span>
+      <span class="skeleton h-7 w-28 rounded-lg"></span>
+    </div>
+    <div class="min-h-0 flex-1 overflow-hidden p-3">
+      <div class="skeleton h-full w-full rounded-lg"></div>
+    </div>
+  </section>
+
+  {/* Chip marquee */}
+  <div class="shrink-0 overflow-hidden py-0.5">
+    <div class="flex w-max gap-2">
+      <span class="skeleton h-8 w-20 rounded-xl"></span>
+      <span class="skeleton h-8 w-24 rounded-xl"></span>
+      <span class="skeleton h-8 w-28 rounded-xl"></span>
+      <span class="skeleton h-8 w-32 rounded-xl"></span>
+      <span class="skeleton h-8 w-20 rounded-xl"></span>
+      <span class="skeleton h-8 w-24 rounded-xl"></span>
+      <span class="skeleton h-8 w-28 rounded-xl"></span>
+      <span class="skeleton h-8 w-32 rounded-xl"></span>
+    </div>
+  </div>
+
+  {/* Terminal section */}
+  <section
+    class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm"
+    style="flex: 1 1 0%; min-height: 100px;"
+  >
+    <div class="min-h-0 flex-1 p-3">
+      <div class="skeleton h-full w-full rounded-lg"></div>
+    </div>
+  </section>
+
+  {/* Status bar */}
+  <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted">
+    <span class="skeleton size-2 rounded-full"></span>
+    <span class="skeleton h-3 w-12 rounded"></span>
+  </div>
+</div>
+
+<style>
+  /* Match @shimmer-from-structure/solid defaults so the transition to the
+     real SolidJS shimmer is seamless. */
+  .skeleton {
+    background-color: rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+</style>
