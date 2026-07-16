@@ -5,11 +5,17 @@ import {
   AfterSpec,
   CustomScreenshotWriter,
 } from 'gauge-ts';
-import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+import { chromium, type BrowserContext, type Page } from 'playwright';
 import { join } from 'node:path';
 import { mkdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 
-let browser: Browser;
+// Dedicated, isolated browser profile. Other agents/concurrent Playwright runs
+// share the default Chrome singleton lock; a fixed userDataDir here sidesteps
+// that contention. It also persists the service worker registration across
+// specs, making swRegisters reliable.
+const PROFILE_DIR = join(tmpdir(), 'gauge-bolo-chrome');
+
 let context: BrowserContext;
 export let currentPage: Page;
 
@@ -17,7 +23,7 @@ export default class Hooks {
   @BeforeSuite()
   async beforeSuite() {
     const headless = process.env.headless !== 'false';
-    browser = await chromium.launch({
+    context = await chromium.launchPersistentContext(PROFILE_DIR, {
       headless,
       args: [
         '--disable-gpu',
@@ -35,29 +41,30 @@ export default class Hooks {
 
   @BeforeSpec()
   async beforeSpec() {
-    context = await browser.newContext();
     currentPage = await context.newPage();
     await currentPage.goto(process.env.DEMO_URL ?? 'http://localhost:4321/e2e/');
   }
 
+  // gauge-ts runtime awaits Promises (Screenshot.capture checks
+  // out.constructor.name === Promise.name, then `return await out`), so an
+  // async writer works — but the decorator type is `CommonFunction<string>`.
+  // @ts-expect-error gauge-ts type doesn't reflect its own async runtime support
   @CustomScreenshotWriter()
-  public takeScreenshot(): string {
-    // gauge-ts 0.5.1 types this as a sync string return. Screenshot.capture()
-    // records the returned path; the file write is fire-and-forget. The failure-
-    // screenshot path writes here, so the PNG exists by report-generation time.
+  public async takeScreenshot(): Promise<string> {
     const dir = process.env.gauge_screenshots_dir ?? 'screenshots';
-    const filename = join(dir, `failure-${Date.now()}.png`);
-    currentPage?.screenshot({ path: filename, fullPage: true }).catch(() => {});
-    return filename;
+    const name = `failure-${Date.now()}.png`;
+    const fullPath = join(dir, name);
+    await currentPage?.screenshot({ path: fullPath, fullPage: true }).catch(() => {});
+    return name;
   }
 
   @AfterSpec()
   async afterSpec() {
-    await context?.close();
+    await currentPage?.close();
   }
 
   @AfterSuite()
   async afterSuite() {
-    await browser?.close();
+    await context?.close();
   }
 }
