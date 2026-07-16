@@ -80,6 +80,33 @@ export default class BrowserSteps {
   }
 
   /**
+   * Step: Click a suggestion chip in the ChipMarquee. The chip auto-pastes its
+   * command into the terminal and submits it. The marquee auto-scrolls
+   * continuously, so we pause it first (ChipMarquee pauses on wheel/pointer
+   * events for 2500ms) or Playwright's click can't settle on a moving chip.
+   */
+  @Step('I click the suggestion chip <label>')
+  async clickSuggestionChip(label: string) {
+    const marquee = currentPage.locator('.overflow-x-auto');
+    await marquee.hover();
+    await currentPage.mouse.wheel(0, 10);
+    await currentPage
+      .getByRole('button', { name: label, exact: true })
+      .click({ timeout: 10000 });
+  }
+
+  /**
+   * Step: Assert a suggestion chip for an unsupported command is disabled.
+   */
+  @Step('The suggestion chip <label> is disabled')
+  async suggestionChipIsDisabled(label: string) {
+    const chip = currentPage.getByRole('button', { name: label, exact: true });
+    if ((await chip.getAttribute('disabled')) === null) {
+      throw new Error(`Suggestion chip "${label}" is not disabled`);
+    }
+  }
+
+  /**
    * Step: Install npm packages via the bridge
    */
   @Step('I install packages <packages>')
