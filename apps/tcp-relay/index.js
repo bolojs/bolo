@@ -1,9 +1,10 @@
 import { WebSocketServer } from "ws";
-import { createConnection } from "net";
+import { createConnection, createServer } from "net";
 
 const PORT = parseInt(process.env.RELAY_PORT ?? "9000");
 
-const connections = new Map(); // connectionId → { ws, tcp, host, port }
+const connections = new Map(); // connectionId → { ws, tcp, direction, host, port }
+const listeners = new Map(); // ws → { server, port, host }
 const ipConnections = new Map(); // ip → count
 
 setInterval(() => ipConnections.clear(), 60_000).unref?.();
@@ -36,6 +37,11 @@ wss.on("connection", (ws) => {
         connections.delete(id);
       }
     }
+    const listener = listeners.get(ws);
+    if (listener) {
+      listener.server.close();
+      listeners.delete(ws);
+    }
   });
 });
 
@@ -44,28 +50,69 @@ function handleMessage(ws, msg) {
     case "connect": {
       const connectionId = generateId();
       const tcp = createConnection(msg.port, msg.host, () => {
-        connections.set(connectionId, { ws, tcp, host: msg.host, port: msg.port });
+        connections.set(connectionId, {
+          ws,
+          tcp,
+          direction: "out",
+          host: msg.host,
+          port: msg.port,
+        });
         ws.send(JSON.stringify({ type: "connected", connectionId }));
       });
 
-      tcp.on("data", (chunk) => {
-        if (!connections.has(connectionId)) return;
+      attachTcp(ws, tcp, connectionId);
+      break;
+    }
+    case "listen": {
+      const server = createServer((tcpConn) => {
+        const connectionId = generateId();
+        connections.set(connectionId, {
+          ws,
+          tcp: tcpConn,
+          direction: "in",
+          host: tcpConn.remoteAddress,
+          port: tcpConn.remotePort,
+        });
         ws.send(JSON.stringify({
-          type: "data",
+          type: "connection",
           connectionId,
-          bytes: chunk.toString("base64"),
+          remoteAddress: tcpConn.remoteAddress,
+          remotePort: tcpConn.remotePort,
         }));
+        attachTcp(ws, tcpConn, connectionId);
       });
 
-      tcp.on("close", () => {
-        if (!connections.has(connectionId)) return;
-        ws.send(JSON.stringify({ type: "close", connectionId }));
-        connections.delete(connectionId);
+      const listenPort = msg.port ?? 0;
+      const listenHost = msg.host || "0.0.0.0";
+
+      server.listen(listenPort, listenHost, () => {
+        const addr = server.address();
+        const assignedPort = typeof addr === "object" ? addr.port : listenPort;
+        listeners.set(ws, { server, port: assignedPort, host: listenHost });
+        ws.send(JSON.stringify({ type: "listening", port: assignedPort, host: listenHost }));
       });
 
-      tcp.on("error", (e) => {
-        console.error(`TCP error for ${connectionId}:`, e.message);
-        connections.delete(connectionId);
+      server.on("error", (e) => {
+        console.error("Listener error:", e.message);
+        ws.send(JSON.stringify({ type: "error", message: `Listen failed: ${e.message}` }));
+      });
+      break;
+    }
+    case "unlisten": {
+      const listener = listeners.get(ws);
+      if (!listener) {
+        console.warn("unlisten requested with no active listener");
+        return;
+      }
+      for (const [id, conn] of connections) {
+        if (conn.ws === ws && conn.direction === "in") {
+          conn.tcp?.destroy();
+          connections.delete(id);
+        }
+      }
+      listener.server.close(() => {
+        ws.send(JSON.stringify({ type: "unlistened" }));
+        listeners.delete(ws);
       });
       break;
     }
@@ -89,9 +136,31 @@ function handleMessage(ws, msg) {
   }
 }
 
+function attachTcp(ws, tcp, connectionId) {
+  tcp.on("data", (chunk) => {
+    if (!connections.has(connectionId)) return;
+    ws.send(JSON.stringify({
+      type: "data",
+      connectionId,
+      bytes: chunk.toString("base64"),
+    }));
+  });
+
+  tcp.on("close", () => {
+    if (!connections.has(connectionId)) return;
+    ws.send(JSON.stringify({ type: "close", connectionId }));
+    connections.delete(connectionId);
+  });
+
+  tcp.on("error", (e) => {
+    console.error(`TCP error for ${connectionId}:`, e.message);
+    connections.delete(connectionId);
+  });
+}
+
 function generateId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
 console.log(`TCP relay listening on ws://localhost:${PORT}`);
-console.log(`Outbound target example: node ${process.argv[1]} --port 9000`);
+console.log(`Supports: outbound connect, inbound listen`);

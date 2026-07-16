@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { Socket, WebSocketTransport, createNetShim } from "./net-shim.js";
+import { Socket, Server, WebSocketTransport, NoopTransport, createNetShim } from "./net-shim.js";
 
 const EXPECTED_CONNECT_ERROR =
   "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage";
@@ -26,8 +26,9 @@ class MockWebSocket {
     mockInstances.push(this);
   }
 
-  send(data: string) {
-    this.sent.push(data);
+  send(data: string | Uint8Array) {
+    const text = typeof data === "string" ? data : new TextDecoder().decode(data);
+    this.sent.push(text);
   }
 
   close() {
@@ -204,5 +205,131 @@ describe("net-shim", () => {
     ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: "abc" }));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(socket).toBeInstanceOf(netShim.Socket);
+  });
+
+  it("NoopTransport.listen throws", () => {
+    const transport = new NoopTransport();
+    expect(() =>
+      transport.listen(
+        0,
+        "localhost",
+        () => {},
+        () => {},
+      ),
+    ).toThrow(
+      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+    );
+  });
+
+  it("Server with no transport throws on listen", async () => {
+    const server = new Server();
+    await expect(server.listen(0, "localhost")).rejects.toThrow(
+      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+    );
+  });
+
+  it("Server.listen emits listening and address returns relay-assigned port", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const server = new Server(transport);
+    let listening = false;
+    server.on("listening", () => {
+      listening = true;
+    });
+    const listenPromise = server.listen(0, "localhost");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    expect(JSON.parse(ws.sent[0])).toEqual({ type: "listen", port: 0, host: "localhost" });
+    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    await listenPromise;
+    expect(listening).toBe(true);
+    expect(server.address()).toEqual({ port: 9001, host: "127.0.0.1", family: "IPv4" });
+  });
+
+  it("Server emits connection when relay sends connection", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const server = new Server(transport);
+    const sockets: Socket[] = [];
+    server.on("connection", (socket: Socket) => sockets.push(socket));
+    const listenPromise = server.listen(0, "localhost");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    await listenPromise;
+
+    ws.simulateMessage(
+      JSON.stringify({
+        type: "connection",
+        connectionId: "inbound-1",
+        remoteAddress: "192.168.1.100",
+        remotePort: 54321,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(sockets.length).toBe(1);
+    expect(sockets[0].remoteAddress).toBe("192.168.1.100");
+    expect(sockets[0].remotePort).toBe(54321);
+  });
+
+  it("inbound Socket data round-trips through the relay", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const server = new Server(transport);
+    const sockets: Socket[] = [];
+    server.on("connection", (socket: Socket) => sockets.push(socket));
+    const listenPromise = server.listen(0, "localhost");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    await listenPromise;
+
+    ws.simulateMessage(
+      JSON.stringify({
+        type: "connection",
+        connectionId: "inbound-1",
+        remoteAddress: "192.168.1.100",
+        remotePort: 54321,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const socket = sockets[0];
+    const chunks: Uint8Array[] = [];
+    socket.on("data", (chunk: Uint8Array) => chunks.push(chunk));
+
+    const bytes = btoa("hello from relay");
+    ws.simulateMessage(JSON.stringify({ type: "data", connectionId: "inbound-1", bytes }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(chunks.length).toBe(1);
+    expect(new TextDecoder().decode(chunks[0])).toBe("hello from relay");
+
+    socket.write("hello from socket");
+    const sent = ws.sent.find((s) => {
+      try {
+        return JSON.parse(s).type === "data" && JSON.parse(s).connectionId === "inbound-1";
+      } catch {
+        return false;
+      }
+    });
+    expect(sent).toBeDefined();
+    const msg = JSON.parse(sent!);
+    expect(atob(msg.bytes)).toBe("hello from socket");
+  });
+
+  it("Server.close sends unlisten and emits close when relay unlistened", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const server = new Server(transport);
+    let closed = false;
+    server.on("close", () => {
+      closed = true;
+    });
+    const listenPromise = server.listen(0, "localhost");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    await listenPromise;
+
+    const closePromise = server.close();
+    expect(ws.sent.some((s) => JSON.parse(s).type === "unlisten")).toBe(true);
+    ws.simulateMessage(JSON.stringify({ type: "unlistened" }));
+    await closePromise;
+    expect(closed).toBe(true);
   });
 });

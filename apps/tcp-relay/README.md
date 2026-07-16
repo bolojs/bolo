@@ -2,7 +2,7 @@
 
 Reference WebSocket-to-TCP relay for bolojs.
 
-This is a standalone Node.js script that lets the browser open outbound TCP connections through a WebSocket bridge. It is intentionally minimal: one outbound connection per WebSocket message, no build step, no TypeScript.
+This is a standalone Node.js script that lets the browser open outbound and inbound TCP connections through a WebSocket bridge. It is intentionally minimal: one outbound connection per WebSocket message, no build step, no TypeScript.
 
 ## Run
 
@@ -20,8 +20,8 @@ PORT=9001 node apps/tcp-relay/index.js
 
 All messages are JSON objects sent as WebSocket binary frames:
 
-Browser → Relay: `connect`, `data`, `close`  
-Relay → Browser: `connected`, `data`, `close`
+Browser → Relay: `connect`, `listen`, `unlisten`, `data`, `close`  
+Relay → Browser: `connected`, `listening`, `connection`, `unlistened`, `data`, `close`
 
 See `index.js` for the exact message shape.
 

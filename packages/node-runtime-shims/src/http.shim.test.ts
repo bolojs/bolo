@@ -45,16 +45,18 @@ describe("http shim", () => {
     expect(await resp.text()).toBe('{"ok":true}');
   });
 
-  it("createNetShim delegates createServer to createHttpShim and throws on connect", () => {
+  it("createNetShim with no tcpRelay throws on connect and Server.listen", async () => {
     const sandbox = makeMockSandbox();
     const netShim = createNetShim(sandbox as any);
-    netShim.createServer((_req, res) => res.end("net")).listen(0);
-    expect(sandbox.handlers.length).toBe(1);
     expect(() => netShim.connect({ port: 80 })).toThrow(
       "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
     );
     expect(() => new netShim.Socket().connect("localhost:80")).toThrow(
       "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+    );
+    const server = netShim.createServer();
+    await expect(server.listen(0)).rejects.toThrow(
+      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
     );
     expect(netShim.isIP("127.0.0.1")).toBe(4);
     expect(netShim.isIP("2001:0db8:85a3:0000:0000:8a2e:0370:7334")).toBe(6);

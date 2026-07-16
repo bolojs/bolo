@@ -14,19 +14,16 @@ describe("net seam", () => {
     expect(() => net.connect({ port: 80 })).toThrow(EXPECTED_CONNECT_ERROR);
   });
 
-  it("preserves net.createServer() via the http shim path with no custom backend", () => {
+  it("throws the documented error when Server.listen() is called with no custom backend", async () => {
     const vfs = new VfsBus();
-    const sandbox = { onFetch: () => {} } as unknown as Parameters<
-      typeof createLiveShimRegistry
-    >[0]["sandbox"];
-    const registry = createLiveShimRegistry({ vfs, sandbox });
+    const registry = createLiveShimRegistry({ vfs });
     const net = registry.net as {
-      createServer: (handler: unknown) => { listen: (port: number) => unknown };
+      createServer: () => { listen: (port: number) => Promise<unknown> };
     };
 
-    const server = net.createServer((_req: unknown, res: { end: (chunk: string) => void }) =>
-      res.end("net"),
+    const server = net.createServer();
+    await expect(server.listen(0)).rejects.toThrow(
+      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
     );
-    expect(() => server.listen(0)).not.toThrow();
   });
 });

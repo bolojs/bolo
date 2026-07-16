@@ -1,6 +1,12 @@
-import type { SWSandbox } from "@bolojs/sw-sandbox";
-import { createHttpShim } from "./http-shim.js";
 import type { NetConnectOptions, StreamSocket } from "./live.js";
+
+export interface AcceptedConnection {
+  connectionId: string;
+  readable: ReadableStream<Uint8Array>;
+  writable: WritableStream<Uint8Array>;
+  remoteAddress: string;
+  remotePort: number;
+}
 
 export interface ByteTransport {
   connect(
@@ -10,12 +16,29 @@ export interface ByteTransport {
     readable: ReadableStream<Uint8Array>;
     writable: WritableStream<Uint8Array>;
   }>;
+  listen(
+    port: number,
+    host: string,
+    onConnection: (conn: AcceptedConnection) => void,
+    onControl: (msg: object) => void,
+  ): Promise<{ port: number; host: string; close: () => Promise<void> }>;
 }
 
 export class NoopTransport implements ByteTransport {
   connect(): Promise<never> {
     throw new Error(
       "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+    );
+  }
+
+  listen(
+    _port: number,
+    _host: string,
+    _onConnection: (conn: AcceptedConnection) => void,
+    _onControl: (msg: object) => void,
+  ): Promise<never> {
+    throw new Error(
+      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
     );
   }
 }
@@ -48,12 +71,14 @@ export class WebSocketTransport implements ByteTransport {
 
       ws.onopen = () => {
         ws.send(
-          JSON.stringify({
-            type: "connect",
-            host: options.host ?? "localhost",
-            port: options.port,
-            tls: options.tls,
-          }),
+          new TextEncoder().encode(
+            JSON.stringify({
+              type: "connect",
+              host: options.host ?? "localhost",
+              port: options.port,
+              tls: options.tls,
+            }),
+          ),
         );
       };
 
@@ -70,7 +95,9 @@ export class WebSocketTransport implements ByteTransport {
       };
 
       ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
+        const data =
+          typeof event.data === "string" ? event.data : new TextDecoder().decode(event.data);
+        const msg = JSON.parse(data);
         if (msg.type === "connected") {
           resolved = true;
           connectionId = msg.connectionId;
@@ -86,11 +113,13 @@ export class WebSocketTransport implements ByteTransport {
             write(chunk) {
               if (!connectionId || ws.readyState !== WebSocket.OPEN) return;
               const bytes = btoa(String.fromCharCode(...chunk));
-              ws.send(JSON.stringify({ type: "data", connectionId, bytes }));
+              ws.send(
+                new TextEncoder().encode(JSON.stringify({ type: "data", connectionId, bytes })),
+              );
             },
             close() {
               if (connectionId && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: "close", connectionId }));
+                ws.send(new TextEncoder().encode(JSON.stringify({ type: "close", connectionId })));
               }
               ws.close();
             },
@@ -106,6 +135,128 @@ export class WebSocketTransport implements ByteTransport {
           }
         } else if (msg.type === "close") {
           cleanup();
+        } else {
+          onControl(msg);
+        }
+      };
+    });
+  }
+
+  listen(
+    port: number,
+    host: string,
+    onConnection: (conn: AcceptedConnection) => void,
+    onControl: (msg: object) => void,
+  ): Promise<{ port: number; host: string; close: () => Promise<void> }> {
+    return new Promise((resolve, reject) => {
+      const ws = new WebSocket(this.url);
+      ws.binaryType = "arraybuffer";
+      let listening = false;
+      let closeResolve: (() => void) | undefined;
+      const connections = new Map<
+        string,
+        {
+          readableController: ReadableStreamDefaultController<Uint8Array>;
+          writable: WritableStream<Uint8Array>;
+        }
+      >();
+
+      const cleanup = () => {
+        for (const { readableController } of connections.values()) {
+          readableController.close();
+        }
+        connections.clear();
+      };
+
+      ws.onopen = () => {
+        ws.send(new TextEncoder().encode(JSON.stringify({ type: "listen", port, host })));
+      };
+
+      ws.onerror = (event) => {
+        if (!listening) {
+          reject(new Error(`WebSocket error: ${event.type}`));
+        }
+        cleanup();
+        ws.close();
+      };
+
+      ws.onclose = () => {
+        cleanup();
+        if (closeResolve) {
+          closeResolve();
+          closeResolve = undefined;
+        }
+      };
+
+      ws.onmessage = (event) => {
+        const data =
+          typeof event.data === "string" ? event.data : new TextDecoder().decode(event.data);
+        const msg = JSON.parse(data);
+        if (msg.type === "listening") {
+          listening = true;
+          resolve({
+            port: msg.port,
+            host: msg.host,
+            close: () =>
+              new Promise((res) => {
+                closeResolve = res;
+                ws.send(new TextEncoder().encode(JSON.stringify({ type: "unlisten" })));
+              }),
+          });
+        } else if (msg.type === "connection") {
+          const connectionId = msg.connectionId;
+          let readableController!: ReadableStreamDefaultController<Uint8Array>;
+          const readable = new ReadableStream<Uint8Array>({
+            start(controller) {
+              readableController = controller;
+            },
+            cancel() {
+              readableController =
+                undefined as unknown as ReadableStreamDefaultController<Uint8Array>;
+            },
+          });
+          const writable = new WritableStream<Uint8Array>({
+            write(chunk) {
+              if (ws.readyState !== WebSocket.OPEN) return;
+              const bytes = btoa(String.fromCharCode(...chunk));
+              ws.send(
+                new TextEncoder().encode(JSON.stringify({ type: "data", connectionId, bytes })),
+              );
+            },
+            close() {
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(new TextEncoder().encode(JSON.stringify({ type: "close", connectionId })));
+              }
+            },
+            abort() {},
+          });
+          connections.set(connectionId, { readableController, writable });
+          onConnection({
+            connectionId,
+            readable,
+            writable,
+            remoteAddress: msg.remoteAddress,
+            remotePort: msg.remotePort,
+          });
+        } else if (msg.type === "data") {
+          const conn = connections.get(msg.connectionId);
+          if (conn?.readableController && msg.bytes) {
+            const bytes = Uint8Array.from(atob(msg.bytes), (c) => c.charCodeAt(0));
+            conn.readableController.enqueue(bytes);
+          }
+        } else if (msg.type === "close") {
+          const conn = connections.get(msg.connectionId);
+          if (conn?.readableController) {
+            conn.readableController.close();
+          }
+          connections.delete(msg.connectionId);
+        } else if (msg.type === "unlistened") {
+          cleanup();
+          if (closeResolve) {
+            closeResolve();
+            closeResolve = undefined;
+          }
+          ws.close();
         } else {
           onControl(msg);
         }
@@ -136,6 +287,14 @@ export class Socket implements StreamSocket {
     this.options = options ?? { port: 0 };
     this.remoteAddress = this.options.host;
     this.remotePort = this.options.port;
+  }
+
+  static fromAcceptedConnection(conn: AcceptedConnection): Socket {
+    const socket = new Socket(undefined, { port: conn.remotePort, host: conn.remoteAddress });
+    socket.readable = conn.readable;
+    socket.writable = conn.writable;
+    socket.startReading();
+    return socket;
   }
 
   connect(target?: string): void {
@@ -262,15 +421,86 @@ export class Socket implements StreamSocket {
   }
 }
 
+export class Server {
+  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
+  private transport: ByteTransport;
+  private listenerHandle?: { port: number; host: string; close: () => Promise<void> };
+  private addressInfo?: { port: number; host: string; family: string };
+  private _listening = false;
+  private _closed = false;
+
+  constructor(transport?: ByteTransport, connectionListener?: (socket: Socket) => void) {
+    this.transport = transport ?? new NoopTransport();
+    if (connectionListener) this.on("connection", connectionListener);
+  }
+
+  async listen(port: number, host?: string, callback?: () => void): Promise<this> {
+    this.listenerHandle = await this.transport.listen(
+      port,
+      host ?? "0.0.0.0",
+      (conn) => {
+        const socket = Socket.fromAcceptedConnection(conn);
+        this.emit("connection", socket);
+      },
+      (msg) => this.emit("control", msg),
+    );
+    this.addressInfo = {
+      port: this.listenerHandle.port,
+      host: this.listenerHandle.host,
+      family: "IPv4",
+    };
+    this._listening = true;
+    callback?.();
+    this.emit("listening");
+    return this;
+  }
+
+  address(): { port: number; host: string; family: string } | null {
+    return this._listening ? this.addressInfo! : null;
+  }
+
+  async close(callback?: () => void): Promise<this> {
+    if (this.listenerHandle) {
+      await this.listenerHandle.close();
+      this.listenerHandle = undefined;
+    }
+    this._closed = true;
+    this._listening = false;
+    callback?.();
+    this.emit("close");
+    return this;
+  }
+
+  on(event: string, listener: (...args: any[]) => void): this {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
+    }
+    this.listeners.get(event)!.add(listener);
+    return this;
+  }
+
+  private emit(event: string, ...args: any[]): void {
+    for (const listener of this.listeners.get(event) ?? []) {
+      listener(...args);
+    }
+  }
+
+  ref(): this {
+    return this;
+  }
+
+  unref(): this {
+    return this;
+  }
+}
+
 export const createNetShim = (
-  sandbox?: SWSandbox,
+  _sandbox?: unknown,
   options?: {
     tcpRelay?: { url: string; transport?: "ws" | "webtransport" };
     onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
   },
 ) => {
-  const http = createHttpShim(sandbox, options);
-
   let transport: ByteTransport;
   if (options?.tcpRelay?.transport === "webtransport") {
     throw new Error("WebTransport transport is not implemented yet");
@@ -280,7 +510,8 @@ export const createNetShim = (
     : new NoopTransport();
 
   return {
-    createServer: http.createServer,
+    createServer: (connectionListener?: (socket: Socket) => void) =>
+      new Server(transport, connectionListener),
     connect: (opts: NetConnectOptions, onConnect?: () => void): Socket => {
       const socket = new Socket(transport, opts);
       socket.on("connect", onConnect ?? (() => {}));
@@ -292,6 +523,7 @@ export const createNetShim = (
       socket.connect(target);
       return socket;
     },
+    Server,
     Socket,
     isIP: (input: string): number => {
       if (!input || typeof input !== "string") return 0;
