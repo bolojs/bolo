@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { Button } from '../../../shared/components/ui/button.tsx';
 import Demo from '../demo/Demo.tsx';
+import DemoSkeleton from '../demo/DemoSkeleton.astro';
 
 const title = 'bolo — Node.js in the browser';
 const description = 'A fully client-side Node.js runtime. Run Node.js applications in the browser with zero server dependency.';
@@ -54,8 +55,10 @@ const description = 'A fully client-side Node.js runtime. Run Node.js applicatio
       </div>
 
       <section class="hero-item w-full" style="animation-delay: 180ms" aria-label="Live demo">
-        <div class="h-[min(460px,55vh)]">
-          <Demo client:only="solid-js" />
+        <div class="h-[min(600px,68vh)]">
+          <Demo client:only="solid-js">
+            <DemoSkeleton slot="fallback" />
+          </Demo>
         </div>
       </section>
     </div>
