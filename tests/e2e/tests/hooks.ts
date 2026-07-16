@@ -41,10 +41,13 @@ export default class Hooks {
   }
 
   @CustomScreenshotWriter()
-  async takeScreenshot(): Promise<string> {
+  public takeScreenshot(): string {
+    // gauge-ts 0.5.1 types this as a sync string return. Screenshot.capture()
+    // records the returned path; the file write is fire-and-forget. The failure-
+    // screenshot path writes here, so the PNG exists by report-generation time.
     const dir = process.env.gauge_screenshots_dir ?? 'screenshots';
     const filename = join(dir, `failure-${Date.now()}.png`);
-    await currentPage.screenshot({ path: filename, fullPage: true });
+    currentPage?.screenshot({ path: filename, fullPage: true }).catch(() => {});
     return filename;
   }
 

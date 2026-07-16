@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@getgauge/cli": "^1.6.30",
-    "gauge-ts": "^0.3.6",
+    "gauge-ts": "^0.5.1",
     "playwright": "^1.61.1"
   },
   "devDependencies": {

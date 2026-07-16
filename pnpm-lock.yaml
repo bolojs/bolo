@@ -513,8 +513,8 @@ importers:
         specifier: ^1.6.30
         version: 1.6.30
       gauge-ts:
-        specifier: ^0.3.6
-        version: 0.3.6(@types/node@25.6.0)
+        specifier: ^0.5.1
+        version: 0.5.1(@types/node@25.6.0)
       playwright:
         specifier: ^1.61.1
         version: 1.61.1
@@ -1562,8 +1562,8 @@ packages:
     resolution: {integrity: sha512-zipyAAbOkhyboj3L+fjt84t8tw9dCJFqKTjLnsiuuFk4s2AXIa9Zx/PZ1i++uRpjq4lJrOBwT2qZaiJPCvvKxQ==}
     hasBin: true
 
-  '@grpc/grpc-js@1.14.3':
-    resolution: {integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==}
+  '@grpc/grpc-js@1.14.4':
+    resolution: {integrity: sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ==}
     engines: {node: '>=12.10.0'}
 
   '@grpc/proto-loader@0.8.0':
@@ -4126,8 +4126,8 @@ packages:
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
 
-  gauge-ts@0.3.6:
-    resolution: {integrity: sha512-IUWZj7q2Ta82l5BWvoCAEzzVLIZetcSqrGnBdvwgG7FVeyIQV8LlOzyHztv2zrpnaBtuYz2dSZEYc1qTmhYXhw==}
+  gauge-ts@0.5.1:
+    resolution: {integrity: sha512-wk7RV1w47aEonx6N/7/sA9hOhk21LKll0kam8SSezbz+Rm2At4UlQQ4TNM/K8uvKdYd6negO88RUsnB+BxlkwA==}
 
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
@@ -6032,11 +6032,6 @@ packages:
   util@0.12.5:
     resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==}
 
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
-    hasBin: true
-
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
@@ -7400,7 +7395,7 @@ snapshots:
     dependencies:
       adm-zip: 0.5.17
 
-  '@grpc/grpc-js@1.14.3':
+  '@grpc/grpc-js@1.14.4':
     dependencies:
       '@grpc/proto-loader': 0.8.0
       '@js-sdsl/ordered-map': 4.4.2
@@ -9962,13 +9957,12 @@ snapshots:
 
   function-bind@1.1.2: {}
 
-  gauge-ts@0.3.6(@types/node@25.6.0):
+  gauge-ts@0.5.1(@types/node@25.6.0):
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       google-protobuf: 3.21.4
       ts-node: 10.9.2(@types/node@25.6.0)(typescript@5.9.3)
       typescript: 5.9.3
-      uuid: 8.3.2
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -12502,8 +12496,6 @@ snapshots:
       is-generator-function: 1.1.2
       is-typed-array: 1.1.15
       which-typed-array: 1.1.20
-
-  uuid@8.3.2: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
