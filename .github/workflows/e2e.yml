@@ -41,15 +41,15 @@ jobs:
       - name: Install Gauge CLI
         run: npm install -g @getgauge/cli
 
-      - name: Install agent-browser
-        run: npm install -g agent-browser
-
+      # The demo app must exist at apps/site/demo for the full E2E suite to run.
+      # The smoke spec only validates the harness and does not need the demo app.
       - name: Install demo app dependencies
-        run: cd apps/demo && pnpm install
+        run: cd apps/site/demo && pnpm install
 
       - name: Start demo app
+        continue-on-error: true
         run: |
-          cd apps/demo
+          cd apps/site/demo
           pnpm run dev &
           echo $! > /tmp/demo.pid
           # Wait for demo app to be ready
@@ -62,8 +62,9 @@ jobs:
             sleep 2
           done
 
-      - name: Install E2E dependencies
-        run: cd tests/e2e && npm install
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: tests/e2e
 
       - name: Run E2E tests
         run: |
@@ -85,4 +86,5 @@ jobs:
           path: |
             tests/e2e/reports/
             tests/e2e/logs/
+            tests/e2e/screenshots/
           retention-days: 7
