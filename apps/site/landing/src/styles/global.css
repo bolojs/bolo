@@ -37,29 +37,6 @@
   height: 100%;
 }
 
-.marquee-track {
-  animation: marquee 22s linear infinite;
-}
-
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
-}
-
 /* Tailwind v4 puts its utilities in `@layer utilities`. Unlayered CSS always
    wins over layered CSS regardless of specificity, so this reset must live
    in `@layer base` too — otherwise plain resets like `a { color: inherit }`
