@@ -16,7 +16,7 @@
     "@bolojs/npm": "workspace:*",
     "@bolojs/vfs-bus": "workspace:*",
     "@rolldown/browser": "^1.1.5",
-    "oxc-transform": "^0.139.0"
+    "oxc-transform": "^0.140.0"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

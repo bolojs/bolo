@@ -14,9 +14,8 @@
   "dependencies": {
     "@bolojs/vfs-bus": "workspace:*",
     "@bolojs/wasm-registry": "workspace:*",
-    "@sebastianwessel/quickjs": "^2.2.0",
-    "oxc-transform": "^0.139.0",
-    "typescript": "^6.0.3"
+    "@sebastianwessel/quickjs": "^3.1.0",
+    "oxc-transform": "^0.140.0"
   },
   "devDependencies": {
     "typescript": "^6.0.3",
