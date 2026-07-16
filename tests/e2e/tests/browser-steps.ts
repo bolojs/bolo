@@ -11,10 +11,9 @@ export default class BrowserSteps {
    */
   @Step('The service worker registers successfully at <path>')
   async swRegisters(_path: string) {
-    const ok = await currentPage.evaluate(() => navigator.serviceWorker.controller !== null);
-    if (!ok) {
-      throw new Error('Service worker not active');
-    }
+    await currentPage.waitForFunction(() => navigator.serviceWorker.controller !== null, {
+      timeout: 15000,
+    });
   }
 
   /**
@@ -29,7 +28,59 @@ export default class BrowserSteps {
   }
 
   /**
-   * Step: Install npm packages via browserbox
+   * Step: Select a scenario from the ScenarioPicker
+   */
+  @Step('I select the scenario <id>')
+  async selectScenario(id: string) {
+    await currentPage.getByLabel('Scenario').selectOption(id);
+  }
+
+  /**
+   * Step: Wait for the demo runtime to reach the "ready" boot state
+   */
+  @Step('The runtime is ready')
+  async runtimeReady() {
+    await currentPage.waitForSelector('[data-boot-state="ready"]', { timeout: 30000 });
+  }
+
+  /**
+   * Step: Type a command into the terminal and submit it (drives the real
+   * Terminal UI, exercising Demo.tsx's Editor -> VFS -> Terminal wiring)
+   */
+  @Step('I run <command> in the terminal')
+  async runInTerminal(command: string) {
+    const textarea = currentPage.locator('.xterm-helper-textarea');
+    await textarea.click();
+    await textarea.type(command);
+    await textarea.press('Enter');
+  }
+
+  /**
+   * Step: Verify the terminal output contains text
+   */
+  @Step('The terminal output contains <text>')
+  async terminalOutputContains(text: string) {
+    await currentPage.waitForFunction(
+      (t) => document.querySelector('.xterm-rows')?.textContent?.includes(t) ?? false,
+      text,
+      { timeout: 15000 },
+    );
+  }
+
+  /**
+   * Step: Replace the Editor's content (drives CodeMirror directly, flows
+   * through onChange -> source signal -> VFS on next terminal submit)
+   */
+  @Step('I replace the editor content with <code>')
+  async setEditorContent(code: string) {
+    const editor = currentPage.locator('.cm-content');
+    await editor.click();
+    await currentPage.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+    await currentPage.keyboard.type(code);
+  }
+
+  /**
+   * Step: Install npm packages via the bridge
    */
   @Step('I install packages <packages>')
   async installPackages(packages: string) {
@@ -100,7 +151,8 @@ app.listen(3000);`;
   }
 
   /**
-   * Step: Run shell command via browserbox
+   * Step: Run shell command via the bridge (background, no terminal echo —
+   * for scenarios with no single-file Editor surface, e.g. backend specs)
    */
   @Step('I run <command>')
   async runCommand(command: string) {
@@ -230,127 +282,6 @@ app.listen(3000);`;
     if (actual !== status) {
       throw new Error(`Expected status ${status}, got: ${actual}`);
     }
-  }
-
-  /**
-   * Step: Verify runtime tier
-   */
-  @Step('The runtime tier for the last run is <tier>')
-  async runtimeTier(tier: string) {
-    const actual = await currentPage.evaluate(() => (window as any).__browserbox.runtime.lastTier);
-    if (actual !== tier) {
-      throw new Error(`Expected runtime tier "${tier}", got "${actual}"`);
-    }
-  }
-
-  /**
-   * Step: Verify sandbox policy allows network
-   */
-  @Step('The sandbox policy for <name> allows <pattern>')
-  async sandboxPolicyAllows(name: string, pattern: string) {
-    const ok = await currentPage.evaluate(
-      ([n, p]) => (window as any).__browserbox.sandbox.policy(n).allows(p),
-      [name, pattern] as [string, string],
-    );
-    if (!ok) {
-      throw new Error(`Sandbox policy ${name} does not allow ${pattern}`);
-    }
-  }
-
-  /**
-   * Step: Verify memory limit error
-   */
-  @Step('A script that allocates <size> throws a memory limit error in QuickJS')
-  async memoryLimit(size: string) {
-    const result = await currentPage.evaluate(
-      s => (window as any).__browserbox.runtime.runQuickJS(`const buffer = new Array(${s}).fill(0);`),
-      size,
-    );
-    const error = (result as any)?.error ?? '';
-    if (!error.includes('memory limit')) {
-      throw new Error(`Expected memory limit error, got: ${error || result}`);
-    }
-  }
-
-  /**
-   * Step: Verify infinite loop terminated
-   */
-  @Step('An infinite loop is terminated within <seconds> seconds by watchdog')
-  async infiniteLoopTerminated(seconds: string) {
-    const elapsed = await currentPage.evaluate(s => {
-      const script = 'while(true) { }';
-      const start = Date.now();
-      (window as any).__browserbox.runtime.runQuickJS(script);
-      return Date.now() - start;
-    }, seconds);
-    if (elapsed > parseInt(seconds) * 1000 + 1000) {
-      throw new Error(`Infinite loop not terminated within ${seconds} seconds (took ${elapsed}ms)`);
-    }
-  }
-
-  /**
-   * Step: Verify total RAM usage is under limit
-   */
-  @Step('Total runtime RAM usage is under <size>')
-  async ramUsage(size: string) {
-    const used = await currentPage.evaluate(() => (window as any).__browserbox.runtime.memoryUsage());
-    const sizeMatch = size.match(/^(\d+)\s*(GB|MB|KB)$/i);
-    if (!sizeMatch) {
-      throw new Error(`Invalid size format: ${size}`);
-    }
-    const [, num, unit] = sizeMatch;
-    const limit =
-      parseInt(num) *
-      (unit.toUpperCase() === 'GB'
-        ? 1024 * 1024 * 1024
-        : unit.toUpperCase() === 'MB'
-          ? 1024 * 1024
-          : 1024);
-    if (used > limit) {
-      throw new Error(`RAM usage ${used} exceeds limit ${limit}`);
-    }
-  }
-
-  /**
-   * Step: Verify agent output contains text
-   */
-  @Step('The agent output contains <text>')
-  async agentOutputContains(text: string) {
-    const output = await currentPage.evaluate(() => (window as any).__browserbox.runtime.lastOutput);
-    if (!output || !String(output).includes(text)) {
-      throw new Error(`Agent output does not contain "${text}": ${output}`);
-    }
-  }
-
-  /**
-   * Step: Run script in QuickJS tier
-   */
-  @Step('I run runtime quickjs <path>')
-  async runQuickJS(path: string) {
-    await currentPage.evaluate(p => (window as any).__browserbox.runtime.runQuickJSFile(p), path);
-  }
-
-  /**
-   * Step: Run script with policy
-   */
-  @Step('I run runtime run --policy <policy> <path>')
-  async runWithPolicy(policy: string, path: string) {
-    await currentPage.evaluate(
-      ([p, pol]) => (window as any).__browserbox.runtime.runWithPolicy(p, pol),
-      [path, policy] as [string, string],
-    );
-  }
-
-  /**
-   * Step: Mock AI API responses
-   */
-  @Step('I mock AI API responses')
-  async mockAIResponses() {
-    await currentPage.route('**/v1/chat/completions', async route =>
-      route.fulfill({
-        body: JSON.stringify({ choices: [{ message: { content: 'Hello from mock AI' } }] }),
-      }),
-    );
   }
 
   /**

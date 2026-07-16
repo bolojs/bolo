@@ -8,28 +8,20 @@ export default class BootApiSteps {
 
   @Step('I boot a container')
   async bootContainer() {
-    await currentPage.evaluate(() => {
-      (window as any).__browserbox_boot_promise = (window as any).__browserbox.boot({
-        workdirName: '/home/web',
-      });
+    // Wait out the page's own ambient auto-boot first: it also calls
+    // window.__browserbox.setContainer() on completion, and racing it would
+    // let whichever boot finishes last clobber the other's container.
+    await currentPage.waitForSelector('[data-boot-state="ready"]', { timeout: 30000 });
+    await currentPage.evaluate(async () => {
+      await (window as any).__browserbox.boot({ workdirName: '/home/web' });
     });
-    await currentPage.waitForFunction(
-      () => (window as any).__browserbox.container !== undefined,
-      { timeout: 5000 },
-    );
   }
 
   @Step('I boot a container again')
   async bootContainerAgain() {
-    await currentPage.evaluate(() => {
-      (window as any).__browserbox_boot_promise = (window as any).__browserbox.boot({
-        workdirName: '/home/web',
-      });
+    await currentPage.evaluate(async () => {
+      await (window as any).__browserbox.boot({ workdirName: '/home/web' });
     });
-    await currentPage.waitForFunction(
-      () => (window as any).__browserbox.container !== undefined,
-      { timeout: 5000 },
-    );
   }
 
   @Step('I mount files <tree>')
