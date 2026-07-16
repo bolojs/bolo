@@ -4,14 +4,14 @@
 
 * I boot a container
 * I mount files "{ \"index.js\": { \"file\": { \"contents\": \"console.log('hello')\" } } }"
-* The boot file "/index.js" exists
+* The boot file "/home/web/index.js" exists
 
 ## Spawn npm install inside container
 
 * I boot a container
 * I mount files "{ \"package.json\": { \"file\": { \"contents\": \"{\\\"name\\\":\\\"test\\\"}\" } } }"
 * I spawn "npm install" in the container
-* The spawn exit code is 0
+* The spawn exit code is "0"
 
 ## Dev server emits port discovery event
 
@@ -19,7 +19,7 @@
 * I mount files "{ \"server.js\": { \"file\": { \"contents\": \"import http from 'http'; const s = http.createServer((req,res)=>res.end('ok')); s.listen(3000);\" } } }"
 * I listen for server-ready on the container
 * I spawn "runtime run /server.js" in the container
-* A server-ready event is received on port 3000
+* A server-ready event is received on port "3000"
 
 ## Export filesystem returns FileSystemTree
 

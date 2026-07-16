@@ -1,5 +1,7 @@
 # React + Vite Preview (v0.1.0 gate)
 
+Tags: wip
+
 ## Service worker boots correctly
 
 * The service worker registers successfully
