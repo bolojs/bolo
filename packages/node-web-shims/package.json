@@ -30,7 +30,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "pathe": "^1.1.2",
+    "pathe": "^2.0.0",
     "unenv": "2.0.0-rc.24"
   },
   "license": "Apache-2.0"
