@@ -2,6 +2,7 @@
 import { createSignal, onMount } from "solid-js";
 import { Shimmer } from "@shimmer-from-structure/solid";
 import { boot, type BrowserContainer } from "@bolojs/runtime";
+import { createE2eBridge } from "./e2e-bridge";
 import Terminal from "./Terminal";
 import Editor from "./Editor";
 import Preview from "./Preview";
@@ -43,7 +44,13 @@ const statusLabels: Record<BootState, string> = {
   error: "error",
 };
 
-export default function Demo() {
+interface Props {
+  /** Opt-in E2E mode: exposes window.__browserbox for the Playwright suite. Never set on the marketing "/" route. */
+  e2e?: boolean;
+}
+
+export default function Demo(props: Props = {}) {
+  const e2eMode = props.e2e ?? (typeof location !== "undefined" && new URLSearchParams(location.search).has("e2e"));
   const [bootState, setBootState] = createSignal<BootState>("booting");
   const [lines, setLines] = createSignal<string[]>([]);
   const [activeScenario, setActiveScenario] = createSignal<Scenario>(defaultScenario);
@@ -110,6 +117,10 @@ export default function Demo() {
       await runToCompletion(container.spawn("npm", ["install", "--ignore-scripts"]));
 
       setBootState("ready");
+
+      if (e2eMode && container) {
+        window.__browserbox?.setContainer(container);
+      }
     } catch (e) {
       console.error("[demo] Boot failed:", e);
       setBootState("error");
@@ -117,6 +128,9 @@ export default function Demo() {
   };
 
   onMount(() => {
+    if (e2eMode) {
+      window.__browserbox ??= createE2eBridge();
+    }
     bootScenario(defaultScenario);
   });
 
@@ -181,7 +195,7 @@ export default function Demo() {
         </Shimmer>
       </section>
 
-      <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted">
+      <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted" data-boot-state={bootState()}>
         <span class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`} />
         <span>{statusLabels[bootState()]}</span>
       </div>
