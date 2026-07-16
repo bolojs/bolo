@@ -1,49 +1,53 @@
-import { Step, BeforeSpec, AfterSpec } from 'gauge-ts';
-import { ab } from '../lib/ab';
-import { DEMO_URL } from '../lib/config';
-import { setupBrowser, teardownBrowser } from '../lib/setup';
+import { Step } from 'gauge-ts';
+import { currentPage } from './hooks';
 
 export default class BootApiSteps {
   private lastSpawnExitCode: number | null = null;
   private serverReadyPort: number | null = null;
   private exportedTree: Record<string, unknown> | null = null;
 
-  @BeforeSpec()
-  async setup() {
-    await setupBrowser();
-  }
-
-  @AfterSpec()
-  async teardown() {
-    await teardownBrowser(() => {
-      ab('eval "window.__browserbox.container?.teardown()" --json');
-    });
-  }
-
   @Step('I boot a container')
   async bootContainer() {
-    ab('eval "window.__browserbox_boot_promise = window.__browserbox.boot({ workdirName: \'/home/web\' })" --json');
-    ab('wait --fn "window.__browserbox.container !== undefined" 5000');
+    await currentPage.evaluate(() => {
+      (window as any).__browserbox_boot_promise = (window as any).__browserbox.boot({
+        workdirName: '/home/web',
+      });
+    });
+    await currentPage.waitForFunction(
+      () => (window as any).__browserbox.container !== undefined,
+      { timeout: 5000 },
+    );
   }
 
   @Step('I boot a container again')
   async bootContainerAgain() {
-    ab('eval "window.__browserbox_boot_promise = window.__browserbox.boot({ workdirName: \'/home/web\' })" --json');
-    ab('wait --fn "window.__browserbox.container !== undefined" 5000');
+    await currentPage.evaluate(() => {
+      (window as any).__browserbox_boot_promise = (window as any).__browserbox.boot({
+        workdirName: '/home/web',
+      });
+    });
+    await currentPage.waitForFunction(
+      () => (window as any).__browserbox.container !== undefined,
+      { timeout: 5000 },
+    );
   }
 
   @Step('I mount files <tree>')
   async mountFiles(tree: string) {
     const parsed = JSON.parse(tree);
-    const json = JSON.stringify(parsed).replace(/'/g, "\\'");
-    ab(`eval "window.__browserbox.container.mount(JSON.parse('${json}'))" --json`);
+    await currentPage.evaluate(
+      t => (window as any).__browserbox.container.mount(t),
+      parsed,
+    );
   }
 
   @Step('The boot file <path> exists')
   async bootFileExists(path: string) {
-    const result = ab(`eval "window.__browserbox.container.fs.exists('${path}')" --json`);
-    const data = JSON.parse(result);
-    if (!data.data.result) {
+    const exists = await currentPage.evaluate(
+      p => (window as any).__browserbox.container.fs.exists(p),
+      path,
+    );
+    if (!exists) {
       throw new Error(`File ${path} does not exist`);
     }
   }
@@ -52,16 +56,19 @@ export default class BootApiSteps {
   async spawnCommand(command: string) {
     const args = command.split(' ').slice(1);
     const cmd = command.split(' ')[0];
-    const argsJson = JSON.stringify(args);
-    const result = ab(`eval "window.__browserbox_spawn_promise = window.__browserbox.container.spawn('${cmd}', ${argsJson})" --json`);
-    const data = JSON.parse(result);
-    if (data.error) {
-      throw new Error(`Spawn failed: ${data.error}`);
+    const result = await currentPage.evaluate(
+      ([c, a]) => (window as any).__browserbox.container.spawn(c, a),
+      [cmd, args] as [string, string[]],
+    );
+    if ((result as any)?.error) {
+      throw new Error(`Spawn failed: ${(result as any).error}`);
     }
-    ab('wait --fn "window.__browserbox_spawn_exit !== undefined" 15000');
-    const exitResult = ab('eval "window.__browserbox_spawn_exit" --json');
-    const exitData = JSON.parse(exitResult);
-    this.lastSpawnExitCode = exitData.data;
+    await currentPage.waitForFunction(
+      () => (window as any).__browserbox_spawn_exit !== undefined,
+      { timeout: 15000 },
+    );
+    const exit = await currentPage.evaluate(() => (window as any).__browserbox_spawn_exit);
+    this.lastSpawnExitCode = exit as number;
   }
 
   @Step('The spawn exit code is <code>')
@@ -73,15 +80,22 @@ export default class BootApiSteps {
 
   @Step('I listen for server-ready on the container')
   async listenServerReady() {
-    ab(`eval "window.__browserbox_server_ready_port = null; window.__browserbox.container.on('server-ready', (port) => { window.__browserbox_server_ready_port = port; })" --json`);
+    await currentPage.evaluate(() => {
+      (window as any).__browserbox_server_ready_port = null;
+      (window as any).__browserbox.container.on('server-ready', (port: number) => {
+        (window as any).__browserbox_server_ready_port = port;
+      });
+    });
   }
 
   @Step('A server-ready event is received on port <port>')
   async serverReadyReceived(port: string) {
-    ab('wait --fn "window.__browserbox_server_ready_port !== null" 10000');
-    const result = ab('eval "window.__browserbox_server_ready_port" --json');
-    const data = JSON.parse(result);
-    this.serverReadyPort = data.data.result;
+    await currentPage.waitForFunction(
+      () => (window as any).__browserbox_server_ready_port !== null,
+      { timeout: 10000 },
+    );
+    const received = await currentPage.evaluate(() => (window as any).__browserbox_server_ready_port);
+    this.serverReadyPort = received as number;
     if (this.serverReadyPort !== parseInt(port)) {
       throw new Error(`Expected port ${port}, got ${this.serverReadyPort}`);
     }
@@ -89,11 +103,15 @@ export default class BootApiSteps {
 
   @Step('I export the container filesystem')
   async exportFilesystem() {
-    const result = ab('eval "window.__browserbox_export_promise = window.__browserbox.container.export()" --json');
-    ab('wait --fn "window.__browserbox_export_promise !== undefined" 5000');
-    const treeResult = ab('eval "window.__browserbox_export_promise" --json');
-    const data = JSON.parse(treeResult);
-    this.exportedTree = data.data.result;
+    await currentPage.evaluate(() => {
+      (window as any).__browserbox_export_promise = (window as any).__browserbox.container.export();
+    });
+    await currentPage.waitForFunction(
+      () => (window as any).__browserbox_export_promise !== undefined,
+      { timeout: 5000 },
+    );
+    const tree = await currentPage.evaluate(() => (window as any).__browserbox_export_promise);
+    this.exportedTree = tree as Record<string, unknown>;
   }
 
   @Step('The exported tree contains file <path> with contents <contents>')
@@ -133,15 +151,16 @@ export default class BootApiSteps {
 
   @Step('I teardown the container')
   async teardownContainer() {
-    ab('eval "window.__browserbox.container.teardown()" --json');
-    ab('eval "window.__browserbox.container = undefined" --json');
+    await currentPage.evaluate(() => {
+      (window as any).__browserbox.container.teardown();
+      (window as any).__browserbox.container = undefined;
+    });
   }
 
   @Step('The container is a new instance')
   async newInstance() {
-    const result = ab('eval "window.__browserbox.container !== undefined" --json');
-    const data = JSON.parse(result);
-    if (!data.data.result) {
+    const ok = await currentPage.evaluate(() => (window as any).__browserbox.container !== undefined);
+    if (!ok) {
       throw new Error('Container is not defined');
     }
   }
