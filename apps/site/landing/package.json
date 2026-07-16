@@ -55,5 +55,8 @@
     "vite-plugin-node-polyfills": "^0.28.0",
     "vite-plugin-solid": "^2.11.0",
     "@bolojs/vite-server": "workspace:*"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }
