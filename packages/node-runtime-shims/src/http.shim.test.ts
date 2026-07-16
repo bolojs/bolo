@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { SWSandbox } from "@bolojs/sw-sandbox";
-import { createHttpShim, createNetShim } from "./http-shim.js";
+import { createHttpShim } from "./http-shim.js";
+import { createNetShim } from "./net-shim.js";
 import type http from "node:http";
 
 describe("http shim", () => {
@@ -52,7 +53,7 @@ describe("http shim", () => {
     expect(() => netShim.connect({ port: 80 })).toThrow(
       "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
     );
-    expect(() => new netShim.Socket()).toThrow(
+    expect(() => new netShim.Socket().connect("localhost:80")).toThrow(
       "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
     );
     expect(netShim.isIP("127.0.0.1")).toBe(4);

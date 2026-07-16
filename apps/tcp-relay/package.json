@@ -1,0 +1,13 @@
+{
+  "name": "@bolojs/tcp-relay",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reference WebSocket-to-TCP relay for bolojs. NOT for production use without hardening.",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

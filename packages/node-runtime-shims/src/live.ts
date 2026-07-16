@@ -3,7 +3,8 @@ import type { SWSandbox } from "@bolojs/sw-sandbox";
 import * as nodeWebShims from "@bolojs/node-web-shims";
 import { installUnhandledRejectionHandler } from "@bolojs/node-web-shims";
 import { createFsShim } from "./fs-shim.js";
-import { createHttpShim, createNetShim } from "./http-shim.js";
+import { createHttpShim } from "./http-shim.js";
+import { createNetShim } from "./net-shim.js";
 import {
   createChildProcessShim,
   type WasmRegistry,
@@ -73,6 +74,7 @@ export interface LiveShimRegistryOptions {
   readonly argv?: string[];
   readonly onStdout?: (data: string) => void;
   readonly onStderr?: (data: string) => void;
+  readonly tcpRelay?: { url: string; transport?: "ws" | "webtransport" };
   // Extension points
   readonly netBackend?: (deps: BackendDeps) => StreamBackend;
   readonly dgramBackend?: DgramBackend;
@@ -151,7 +153,10 @@ export const createLiveShimRegistry = (
   registry.https = http; // https delegates to http in browser context
   registry.net = options.netBackend
     ? options.netBackend({ vfs: options.vfs, sandbox: options.sandbox })
-    : createNetShim(options.sandbox, { onPortEvent: options.onPortEvent });
+    : createNetShim(options.sandbox, {
+        tcpRelay: options.tcpRelay,
+        onPortEvent: options.onPortEvent,
+      });
 
   registry.module = createModuleShim({
     vfs: options.vfs,

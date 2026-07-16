@@ -32,8 +32,9 @@ export const { readFile, writeFile, mkdir, rm, readdir, exists, stat } = fs.prom
 export const { createServer, request, get, ClientRequest, IncomingMessage, ServerResponse, Agent, globalAgent, createAgent } = createHttpShim(globalThis.__sandbox, globalThis.__httpShimOptions);`;
       }
       if (id === "node:net") {
-        return `import { createNetShim } from '@bolojs/node-runtime-shims/dist/http-shim.js';
-const net = globalThis.__netBackend ?? createNetShim(globalThis.__sandbox, globalThis.__httpShimOptions);
+        return `import { createNetShim } from '@bolojs/node-runtime-shims/dist/net-shim.js';
+const netOptions = { tcpRelay: globalThis.__tcpRelay, onPortEvent: globalThis.__httpShimOptions?.onPortEvent };
+const net = globalThis.__netBackend ?? createNetShim(globalThis.__sandbox, netOptions);
 export const { createServer, connect, Socket, isIP } = net;`;
       }
       if (id === "node:child_process") {
