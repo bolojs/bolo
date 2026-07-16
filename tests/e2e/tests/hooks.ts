@@ -37,7 +37,7 @@ export default class Hooks {
   async beforeSpec() {
     context = await browser.newContext();
     currentPage = await context.newPage();
-    await currentPage.goto(process.env.DEMO_URL ?? 'http://localhost:5173');
+    await currentPage.goto(process.env.DEMO_URL ?? 'http://localhost:4321/e2e/');
   }
 
   @CustomScreenshotWriter()
