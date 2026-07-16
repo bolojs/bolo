@@ -21,6 +21,7 @@
     "@docmd/core": "^0.8.12",
     "@playwright/cli": "^0.1.17",
     "@types/node": "^25.6.0",
+    "@vitejs/plugin-react": "^6.0.3",
     "oxfmt": "^0.16.0",
     "oxlint": "^1.0.0",
     "playwright-core": "^1.61.1",

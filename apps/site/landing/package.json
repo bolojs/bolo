@@ -12,14 +12,13 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/react": "^4.2.0",
-    "@astrojs/solid-js": "^5.0.10",
+    "@astrojs/react": "^6.0.1",
+    "@astrojs/solid-js": "^7.0.1",
     "@bolojs/node-web-shims": "workspace:*",
     "@bolojs/npm": "workspace:*",
     "@bolojs/runtime": "workspace:*",
     "@bolojs/sw-sandbox": "workspace:*",
     "@bolojs/vfs-bus": "workspace:*",
-    "@bolojs/vite-server": "workspace:*",
     "@codemirror/commands": "^6.10.4",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/language": "^6.11.3",
@@ -32,17 +31,17 @@
     "@shimmer-from-structure/solid": "^2.4.5",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
-    "astro": "^5.7.0",
+    "astro": "^7.1.0",
     "motion": "^12.42.2",
     "phosphor-icons-astro": "^2.1.1-17042025",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sharp": "^0.35.3",
-    "solid-js": "^1.9.0",
+    "solid-js": "^1.9.13",
     "unenv": "^1.10.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.0",
+    "@astrojs/check": "^0.9.9",
     "@tailwindcss/vite": "^4.3.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
@@ -54,6 +53,7 @@
     "typescript": "^5.8.0",
     "vite": "^6.0.0",
     "vite-plugin-node-polyfills": "^0.28.0",
-    "vite-plugin-solid": "^2.11.0"
+    "vite-plugin-solid": "^2.11.0",
+    "@bolojs/vite-server": "workspace:*"
   }
 }
