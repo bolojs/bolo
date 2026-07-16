@@ -1,0 +1,18 @@
+---
+// Hidden harness route for the Playwright/Gauge E2E suite (tests/e2e). Not
+// linked from nav — drives the real Demo island in `e2e` mode so specs
+// exercise Editor <-> VFS <-> Terminal <-> Preview through the actual UI
+// instead of a parallel harness that bypasses it.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Demo from '../demo/Demo.tsx';
+
+const title = 'bolo';
+---
+
+<BaseLayout title={title}>
+  <Fragment slot="navbar"></Fragment>
+  <div class="h-screen w-screen p-4">
+    <Demo client:only="solid-js" e2e />
+  </div>
+  <Fragment slot="footer"></Fragment>
+</BaseLayout>
