@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { VfsBus } from "@bolojs/vfs-bus";
 import { createLiveShimRegistry } from "./live.js";
+import type { StreamBackend, StreamSocket } from "./live.js";
 
 describe("createLiveShimRegistry", () => {
   it("includes stateless node-web-shims builtins, a vfs-bound fs shim, and outbound http/net client surface", () => {
@@ -11,7 +12,8 @@ describe("createLiveShimRegistry", () => {
     expect(registry.buffer).toBeDefined();
     expect(typeof (registry.fs as { readFile: unknown }).readFile).toBe("function");
     expect(registry.http).toBeDefined();
-    expect(registry.net).toBe(registry.http);
+    expect(registry.net).toBeDefined();
+    expect(registry.net).not.toBe(registry.http);
 
     const http = registry.http as {
       request: unknown;
@@ -21,6 +23,10 @@ describe("createLiveShimRegistry", () => {
     expect(typeof http.request).toBe("function");
     expect(typeof http.get).toBe("function");
     expect(typeof http.createServer).toBe("function");
+
+    const net = registry.net as { createServer: unknown; connect: unknown };
+    expect(typeof net.createServer).toBe("function");
+    expect(typeof net.connect).toBe("function");
   });
 
   it("includes the expanded node:* builtin set (A2)", () => {
@@ -59,14 +65,22 @@ describe("createLiveShimRegistry", () => {
     const registry = createLiveShimRegistry({ vfs, sandbox });
 
     expect(registry.http).toBeDefined();
-    expect(registry.http).toBe(registry.net);
+    expect(registry.net).toBeDefined();
+    expect(registry.net).not.toBe(registry.http);
+    expect(typeof (registry.net as { createServer: unknown }).createServer).toBe("function");
   });
 
   it("aliases https to http and supports pluggable net/dgram/tls/worker_threads backends", () => {
     const vfs = new VfsBus();
-    const netShim = { tcp: vfs };
+    const netShim: StreamBackend = {
+      connect: () => ({ write: () => true, end: () => ({}) }) as unknown as StreamSocket,
+      isIP: () => 4,
+    };
     const dgramShim = { createSocket: () => {} };
-    const tlsShim = { connect: () => {} };
+    const tlsShim: StreamBackend = {
+      connect: () => ({ write: () => true, end: () => ({}) }) as unknown as StreamSocket,
+      isIP: () => 6,
+    };
     const workerThreadsShim = { Worker: class {} };
     const registry = createLiveShimRegistry({
       vfs,
@@ -79,7 +93,7 @@ describe("createLiveShimRegistry", () => {
     expect(registry.https).toBe(registry.http);
     expect(registry.net).toEqual(netShim);
     expect(registry.dgram).toBe(dgramShim);
-    expect(registry.tls).toBe(tlsShim);
+    expect(registry.tls).toEqual(tlsShim);
     expect(registry.worker_threads).toBe(workerThreadsShim);
   });
 });

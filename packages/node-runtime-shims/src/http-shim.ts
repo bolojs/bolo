@@ -1,3 +1,4 @@
+import type { NetConnectOptions } from "./live.js";
 import type { SWSandbox } from "@bolojs/sw-sandbox";
 import { createEventsShim, createStreamShim, createBufferShim } from "@bolojs/node-web-shims";
 
@@ -531,5 +532,37 @@ export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) =
 };
 
 export const createNetShim = (sandbox?: SWSandbox, options?: HttpShimOptions) => {
-  return createHttpShim(sandbox, options);
+  const http = createHttpShim(sandbox, options);
+
+  const connectError = (): never => {
+    throw new Error(
+      "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+    );
+  };
+
+  const connect = (_options: NetConnectOptions, _connectionListener?: () => void): never =>
+    connectError();
+
+  class Socket {
+    constructor() {
+      connectError();
+    }
+  }
+
+  const isIP = (input: string): number => {
+    if (!input || typeof input !== "string") return 0;
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(input)) {
+      const parts = input.split(".");
+      if (parts.every((part) => parseInt(part, 10) <= 255)) return 4;
+    }
+    if (/^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/.test(input)) return 6;
+    return 0;
+  };
+
+  return {
+    createServer: http.createServer,
+    connect,
+    Socket,
+    isIP,
+  };
 };

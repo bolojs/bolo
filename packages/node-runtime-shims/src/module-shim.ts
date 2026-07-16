@@ -17,7 +17,6 @@ const BUILTIN_MODULE_NAMES = [
   "fs/promises",
   "http",
   "https",
-  "net",
   "os",
   "path",
   "path/posix",
@@ -44,7 +43,7 @@ const BUILTIN_MODULE_NAMES = [
 // points. `isBuiltin` still recognizes them, and `require` routes them through
 // `getShim` first; if no backend is registered, the error message points to
 // `createLiveShimRegistry`.
-const PLUGGABLE_BUILTIN_NAMES = ["dgram", "tls", "cluster"];
+const PLUGGABLE_BUILTIN_NAMES = ["dgram", "net", "tls", "cluster"];
 
 const dirname = (path: string): string => {
   const idx = path.lastIndexOf("/");

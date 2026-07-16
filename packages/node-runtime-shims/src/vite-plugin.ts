@@ -27,9 +27,14 @@ export default createFsShim(globalThis.__vfsBus);`;
 const fs = createFsShim(globalThis.__vfsBus);
 export const { readFile, writeFile, mkdir, rm, readdir, exists, stat } = fs.promises;`;
       }
-      if (id === "node:http" || id === "node:net") {
+      if (id === "node:http") {
         return `import { createHttpShim } from '@bolojs/node-runtime-shims/dist/http-shim.js';
-export const { createServer } = createHttpShim(globalThis.__sandbox, globalThis.__httpShimOptions);`;
+export const { createServer, request, get, ClientRequest, IncomingMessage, ServerResponse, Agent, globalAgent, createAgent } = createHttpShim(globalThis.__sandbox, globalThis.__httpShimOptions);`;
+      }
+      if (id === "node:net") {
+        return `import { createNetShim } from '@bolojs/node-runtime-shims/dist/http-shim.js';
+const net = globalThis.__netBackend ?? createNetShim(globalThis.__sandbox, globalThis.__httpShimOptions);
+export const { createServer, connect, Socket, isIP } = net;`;
       }
       if (id === "node:child_process") {
         return `import { createChildProcessShim } from '@bolojs/node-runtime-shims/dist/child-process-shim.js';

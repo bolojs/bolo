@@ -16,7 +16,12 @@ export { createModuleShim } from "./module-shim.js";
 export type { ModuleShim, ModuleShimOptions } from "./module-shim.js";
 export { nodeRuntimeShims } from "./vite-plugin.js";
 export { createLiveShimRegistry } from "./live.js";
-export type { LiveShimRegistryOptions } from "./live.js";
+export type {
+  LiveShimRegistryOptions,
+  StreamBackend,
+  StreamSocket,
+  NetConnectOptions,
+} from "./live.js";
 export { createDnsShim } from "./dns-shim.js";
 export type { DnsShimOptions } from "./dns-shim.js";
 export { createVmShim } from "./vm-shim.js";
