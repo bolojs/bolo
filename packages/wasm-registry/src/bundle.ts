@@ -55,7 +55,7 @@ let _oxc: Promise<typeof import("oxc-transform")> | undefined;
 const getOxc = () => {
   if (!_oxc) {
     _oxc = preferLocalOxc()
-      ? import("oxc-transform")
+      ? import(/* @vite-ignore */ "oxc-transform")
       : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
         import(/* @vite-ignore */ "https://esm.sh/oxc-transform@latest");
   }

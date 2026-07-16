@@ -16,11 +16,15 @@
     "@bolojs/npm": "workspace:*",
     "@bolojs/vfs-bus": "workspace:*",
     "@rolldown/browser": "^1.1.5",
-    "oxc-transform": "^0.139.0"
+    "oxc-transform": "^0.140.0"
   },
   "devDependencies": {
-    "@types/node": "^25.0.0",
-    "vitest": "^2.1.0"
+    "@types/node": "^26.1.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24.0.0"
+  }
 }

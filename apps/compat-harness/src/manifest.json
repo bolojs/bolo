@@ -31,10 +31,7 @@
       ]
     },
     "querystring": {
-      "files": [
-        "test/parallel/test-querystring.js",
-        "test/parallel/test-querystring-escape.js"
-      ]
+      "files": ["test/parallel/test-querystring.js", "test/parallel/test-querystring-escape.js"]
     },
     "zlib": {
       "files": [
@@ -100,10 +97,7 @@
       ]
     },
     "timers": {
-      "files": [
-        "test/parallel/test-timers-args.js",
-        "test/parallel/test-timers-immediate.js"
-      ]
+      "files": ["test/parallel/test-timers-args.js", "test/parallel/test-timers-immediate.js"]
     },
     "console": {
       "files": [
@@ -126,14 +120,10 @@
       ]
     },
     "perf_hooks": {
-      "files": [
-        "test/parallel/test-performanceobserver.js"
-      ]
+      "files": ["test/parallel/test-performanceobserver.js"]
     },
     "net": {
-      "files": [
-        "test/parallel/test-net-connect-buffer.js"
-      ]
+      "files": ["test/parallel/test-net-connect-buffer.js"]
     },
     "dns": {
       "files": [
@@ -191,10 +181,7 @@
       ]
     },
     "tty": {
-      "files": [
-        "test/parallel/test-tty-stdin-end.js",
-        "test/parallel/test-tty-backwards-api.js"
-      ]
+      "files": ["test/parallel/test-tty-stdin-end.js", "test/parallel/test-tty-backwards-api.js"]
     },
     "inspector": {
       "files": [

@@ -58,15 +58,6 @@ export default function ChipMarquee(props: Props) {
     }
   };
 
-  // Only true user-driven scroll (while paused) re-syncs scrollPos from the
-  // DOM — our own writes below also fire 'scroll' events, and syncing there
-  // would reintroduce the rounding stall.
-  const handleScroll = () => {
-    if (!paused || !scroller) return;
-    scrollPos = scroller.scrollLeft;
-    normalizeLoop();
-  };
-
   const tick = (ts: number) => {
     if (scroller && !paused && !document.hidden) {
       const dt = lastTs === undefined ? 0 : ts - lastTs;

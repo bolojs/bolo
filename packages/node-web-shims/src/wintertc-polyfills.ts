@@ -10,8 +10,7 @@
 export const installNavigatorUserAgent = (): void => {
   if (typeof navigator !== "undefined") {
     Object.defineProperty(navigator, "userAgent", {
-      value:
-        "Mozilla/5.0 (bolo; V8) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+      value: "Mozilla/5.0 (bolo; V8) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
       writable: false,
       configurable: false,
     });

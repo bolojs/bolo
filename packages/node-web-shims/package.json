@@ -23,15 +23,18 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.1.1",
     "threads.js": "^0.6.1",
-    "typescript": "^5.8.0",
-    "vite": "^6.0.0",
-    "vitest": "^3.2.4"
+    "typescript": "^6.0.3",
+    "vite": "^8.0.0",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
-    "pathe": "^1.1.2",
+    "pathe": "^2.0.0",
     "unenv": "2.0.0-rc.24"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24.0.0"
+  }
 }

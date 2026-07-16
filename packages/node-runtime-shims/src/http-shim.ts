@@ -1,9 +1,5 @@
 import type { SWSandbox } from "@bolojs/sw-sandbox";
-import {
-  createEventsShim,
-  createStreamShim,
-  createBufferShim,
-} from "@bolojs/node-web-shims";
+import { createEventsShim, createStreamShim, createBufferShim } from "@bolojs/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
 const { Readable, Writable } = createStreamShim();

@@ -56,16 +56,32 @@ export default defineConfig({
         "Cross-Origin-Embedder-Policy": "credentialless",
       },
     },
-    build: {
-      target: "esnext",
-      rollupOptions: {
-        external: ["typescript", "oxc-transform", "sass", "@swc/wasm-web"],
-        output: {
-          manualChunks(id) {
-            if (id.includes("quickjs-emscripten") || id.includes("@jitl/")) return "quickjs";
-            if (id.includes("memfs")) return "memfs";
-            if (id.includes("@bolojs/npm") || id.includes("@unjs/lockfile")) return "npm";
+    environments: {
+      client: {
+        build: {
+          target: "esnext",
+          rollupOptions: {
+            external: [
+              "typescript",
+              "oxc-transform",
+              "@oxc-transform/binding-wasm32-wasi",
+              "@oxc-transform/binding",
+              "sass",
+              "@swc/wasm-web",
+            ],
+            output: {
+              manualChunks(id) {
+                if (id.includes("quickjs-emscripten") || id.includes("@jitl/")) return "quickjs";
+                if (id.includes("memfs")) return "memfs";
+                if (id.includes("@bolojs/npm") || id.includes("@unjs/lockfile")) return "npm";
+              },
+            },
           },
+        },
+      },
+      ssr: {
+        build: {
+          target: "esnext",
         },
       },
     },
