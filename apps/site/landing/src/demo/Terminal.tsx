@@ -80,18 +80,23 @@ export default function Terminal(props: Props) {
       for (let i = 0; i < n; i++) xterm?.write("\b \b");
     };
 
+    const submitLine = () => {
+      const line = lineBuffer.trim();
+      xterm?.write("\r\n");
+      if (line) {
+        props.onSubmit(line);
+        history.push(line);
+        historyIndex = null;
+      }
+      lineBuffer = "";
+      xterm?.write("\r\n> ");
+    };
+
     xterm.onData((data) => {
       if (props.disabled) return;
 
       if (data === "\r") {
-        const line = lineBuffer.trim();
-        if (!line) return;
-        xterm?.write("\r\n");
-        props.onSubmit(line);
-        history.push(line);
-        historyIndex = null;
-        lineBuffer = "";
-        xterm?.write("\r\n> ");
+        submitLine();
       } else if (data === "\x7f") {
         if (lineBuffer.length === 0) return;
         lineBuffer = lineBuffer.slice(0, -1);
@@ -152,19 +157,15 @@ export default function Terminal(props: Props) {
 
     createEffect(() => {
       const v = props.inputValue;
+      // Track focusTrigger too, so pasting the same command twice in a row
+      // still re-fires (inputValue alone wouldn't change).
+      props.focusTrigger;
       if (!v) return;
       eraseVisible(lineBuffer.length);
       lineBuffer = v;
       xterm?.write(v);
       xterm?.focus();
-    });
-
-    createEffect(() => {
-      // Trigger focus whenever the parent asks us to (e.g. chip click).
-      props.focusTrigger;
-      queueMicrotask(() => {
-        xterm?.focus();
-      });
+      submitLine();
     });
 
     const ro = new ResizeObserver(() => fitAddon?.fit());
@@ -179,7 +180,10 @@ export default function Terminal(props: Props) {
 
   return (
     <section class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
-      <div ref={container} aria-label="Terminal" class="min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2" />
+      <div class="min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2">
+        {/* Padding must live on this wrapper, not the ref target — FitAddon measures the ref's own clientHeight. */}
+        <div ref={container} aria-label="Terminal" class="h-full w-full overflow-hidden" />
+      </div>
     </section>
   );
 }
