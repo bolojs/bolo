@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DEMO_URL: http://localhost:5173/demo/
+      DEMO_URL: http://localhost:4321/e2e/
 
     steps:
       - name: Checkout code
@@ -41,24 +41,21 @@ jobs:
       - name: Install Gauge CLI
         run: npm install -g @getgauge/cli
 
-      # The demo app must exist at apps/site/demo for the full E2E suite to run.
-      # The smoke spec only validates the harness and does not need the demo app.
-      - name: Install demo app dependencies
-        run: cd apps/site/demo && pnpm install
-
-      - name: Start demo app
-        continue-on-error: true
+      # The demo lives as a Solid island inside apps/site/landing, served at the
+      # hidden /e2e harness route. Pin the port directly via astro rather
+      # than the portless-wrapped `pnpm dev` script, which assigns ports
+      # nondeterministically.
+      - name: Start landing app
         run: |
-          cd apps/site/demo
-          pnpm run dev &
+          cd apps/site/landing
+          pnpm exec astro dev --port 4321 &
           echo $! > /tmp/demo.pid
-          # Wait for demo app to be ready
           for i in {1..30}; do
             if curl -s "$DEMO_URL" > /dev/null; then
-              echo "Demo app is ready"
+              echo "Landing app is ready"
               break
             fi
-            echo "Waiting for demo app... ($i/30)"
+            echo "Waiting for landing app... ($i/30)"
             sleep 2
           done
 
@@ -69,9 +66,9 @@ jobs:
       - name: Run E2E tests
         run: |
           cd tests/e2e
-          pnpm run test
+          gauge run specs --tags='!wip'
 
-      - name: Stop demo app
+      - name: Stop landing app
         if: always()
         run: |
           if [ -f /tmp/demo.pid ]; then
