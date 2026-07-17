@@ -46,6 +46,11 @@ const createMockDeps = (): BrowserContainerDeps => ({
     },
   } as unknown as ProcessDeps,
   workdir: "/home/web",
+  replService: {
+    start: vi.fn().mockResolvedValue(undefined),
+    eval: vi.fn().mockResolvedValue({ ok: true, value: "" }),
+    dispose: vi.fn(),
+  } as unknown as BrowserContainerDeps["replService"],
 });
 
 describe("BrowserContainer", () => {

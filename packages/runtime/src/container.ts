@@ -11,6 +11,7 @@ import type { MountAPI } from "./mount.js";
 import type { ExportAPI } from "./export.js";
 import type { ProcessDeps } from "./process.js";
 import { createProcess } from "./process.js";
+import type { ReplService, ReplResult } from "./repl-service.js";
 
 export interface BrowserContainerDeps {
   vfs: VfsBus;
@@ -20,6 +21,7 @@ export interface BrowserContainerDeps {
   exportApi: ExportAPI;
   processDeps: ProcessDeps;
   workdir: string;
+  replService: ReplService;
 }
 
 export class BrowserContainer {
@@ -67,6 +69,18 @@ export class BrowserContainer {
       throw new Error("Container has been torn down");
     }
     return this.deps.exportApi.exportTree(this.workdir);
+  }
+
+  async startRepl(): Promise<void> {
+    await this.deps.replService.start();
+  }
+
+  evalRepl(code: string): Promise<ReplResult> {
+    return this.deps.replService.eval(code);
+  }
+
+  exitRepl(): void {
+    this.deps.replService.dispose();
   }
 
   async teardown(): Promise<void> {

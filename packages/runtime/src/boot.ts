@@ -4,6 +4,7 @@ import { VfsBus } from "@bolojs/vfs-bus";
 import { SWSandbox } from "@bolojs/sw-sandbox";
 import { PackageManager } from "@bolojs/npm";
 import { RuntimeWorker } from "./runtime-worker.js";
+import { ReplService } from "./repl-service.js";
 import { IframeSandbox } from "./iframe-sandbox.js";
 import type { SandboxBackend } from "./sandbox-backend.js";
 import { ShellService } from "./shell-service.js";
@@ -84,6 +85,7 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
     globalThis.__sandbox = sandbox;
 
     const runtimeWorker = new RuntimeWorker(vfs, sandbox);
+    const replService = new ReplService({ vfs, runtimeWorker });
     const packageManager = new PackageManager({ vfs, cwd: workdir });
     const events = createEventEmitter();
     const shellService = new ShellService({
@@ -127,6 +129,7 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
       exportApi: { exportTree },
       processDeps,
       workdir,
+      replService,
     };
 
     const container = new BrowserContainer(deps);

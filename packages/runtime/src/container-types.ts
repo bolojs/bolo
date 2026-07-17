@@ -1,4 +1,5 @@
 import type { SandboxBackend } from "./sandbox-backend.js";
+import type { ReplResult } from "./repl-service.js";
 
 /**
  * Public API types for the bolo `boot()` API.
@@ -48,6 +49,9 @@ export interface BrowserContainer {
   on(event: "server-ready", listener: ServerReadyListener): Unsubscribe;
   export(): Promise<FileSystemTree>;
   teardown(): Promise<void>;
+  startRepl(): Promise<void>;
+  evalRepl(code: string): Promise<ReplResult>;
+  exitRepl(): void;
 }
 
 // ── Filesystem API (fs.promises style) ────────────────────────────────

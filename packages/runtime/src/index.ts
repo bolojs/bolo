@@ -13,6 +13,7 @@ export {
   type ServerReadyListener,
   type Unsubscribe,
 } from "./container-types.js";
+export { ReplService, type ReplServiceOptions, type ReplResult } from "./repl-service.js";
 export { createFileSystem } from "./fs-adapter.js";
 export { createMount, type MountAPI } from "./mount.js";
 export { createExport, type ExportAPI } from "./export.js";
