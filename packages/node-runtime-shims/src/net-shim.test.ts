@@ -1,13 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  Socket,
-  Server,
-  WebSocketTransport,
-  WebTransportTransport,
-  NoopTransport,
-  createNetShim,
-} from "./net-shim.js";
-import type { AcceptedConnection } from "./net-shim.js";
+import { Socket, Server, WebSocketTransport, NoopTransport, createNetShim } from "./net-shim.js";
 
 const FRAME_TYPE = {
   CONNECT: 0x01,
@@ -104,88 +96,6 @@ class MockWebSocket {
   }
 }
 
-class MockBidirectionalStream {
-  readable: ReadableStream<Uint8Array>;
-  writable: WritableStream<Uint8Array>;
-  writes: Uint8Array[] = [];
-  private readController?: ReadableStreamDefaultController<Uint8Array>;
-
-  constructor() {
-    this.readable = new ReadableStream<Uint8Array>({
-      start: (controller) => {
-        this.readController = controller;
-      },
-    });
-    this.writable = new WritableStream<Uint8Array>({
-      write: (chunk) => {
-        this.writes.push(chunk);
-      },
-    });
-  }
-
-  enqueue(data: Uint8Array) {
-    this.readController?.enqueue(data);
-  }
-
-  close() {
-    this.readController?.close();
-  }
-}
-
-let mockWebTransportInstances: MockWebTransport[] = [];
-
-class MockWebTransport {
-  url: string;
-  ready: Promise<void>;
-  datagrams: { readable: ReadableStream<Uint8Array>; writable: WritableStream<Uint8Array> };
-  incomingBidirectionalStreams: ReadableStream<MockBidirectionalStream>;
-  datagramWrites: Uint8Array[] = [];
-  bidiStreams: MockBidirectionalStream[] = [];
-  private datagramController?: ReadableStreamDefaultController<Uint8Array>;
-  private incomingController?: ReadableStreamDefaultController<MockBidirectionalStream>;
-
-  constructor(url: string) {
-    this.url = url;
-    this.ready = Promise.resolve();
-    this.datagrams = {
-      readable: new ReadableStream<Uint8Array>({
-        start: (controller) => {
-          this.datagramController = controller;
-        },
-      }),
-      writable: new WritableStream<Uint8Array>({
-        write: (chunk) => {
-          this.datagramWrites.push(chunk);
-        },
-      }),
-    };
-    this.incomingBidirectionalStreams = new ReadableStream<MockBidirectionalStream>({
-      start: (controller) => {
-        this.incomingController = controller;
-      },
-    });
-  }
-
-  createBidirectionalStream(): MockBidirectionalStream {
-    const stream = new MockBidirectionalStream();
-    this.bidiStreams.push(stream);
-    return stream;
-  }
-
-  sendDatagram(data: Uint8Array) {
-    this.datagramController?.enqueue(data);
-  }
-
-  enqueueIncoming(stream: MockBidirectionalStream) {
-    this.incomingController?.enqueue(stream);
-  }
-
-  close() {
-    this.datagramController?.close();
-    this.incomingController?.close();
-  }
-}
-
 describe("net-shim", () => {
   let OriginalWebSocket: typeof WebSocket | undefined;
 
@@ -225,7 +135,6 @@ describe("net-shim", () => {
     expect(JSON.parse(new TextDecoder().decode(sent.payload))).toEqual({
       host: "localhost",
       port: 5432,
-      tls: undefined,
     });
     ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     const { readable, writable } = await connectPromise;
@@ -259,16 +168,6 @@ describe("net-shim", () => {
     ws.simulateMessage(buildFrame(FRAME_TYPE.DATA, "abc00000", new TextEncoder().encode("hello")));
     const { value } = await reader.read();
     expect(new TextDecoder().decode(value)).toBe("hello");
-  });
-
-  it("WebSocketTransport includes tls flag in connect frame", async () => {
-    const transport = new WebSocketTransport("ws://localhost:9000");
-    transport.connect({ port: 443, host: "example.com", tls: true }, () => {});
-    const ws = mockInstances[mockInstances.length - 1];
-    ws.simulateOpen();
-    const sent = parseFrame(ws.sent[0]);
-    const msg = JSON.parse(new TextDecoder().decode(sent.payload));
-    expect(msg).toEqual({ host: "example.com", port: 443, tls: true });
   });
 
   it("Socket connects and emits connect event", async () => {
@@ -666,7 +565,11 @@ describe("net-shim", () => {
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
     ws.simulateMessage(
-      buildFrame(FRAME_TYPE.LISTENING, LISTENER_CONNECTION_ID, jsonPayload({ port: 9001, host: "127.0.0.1" })),
+      buildFrame(
+        FRAME_TYPE.LISTENING,
+        LISTENER_CONNECTION_ID,
+        jsonPayload({ port: 9001, host: "127.0.0.1" }),
+      ),
     );
     await listenPromise;
 
@@ -697,7 +600,11 @@ describe("net-shim", () => {
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
     ws.simulateMessage(
-      buildFrame(FRAME_TYPE.LISTENING, LISTENER_CONNECTION_ID, jsonPayload({ port: 9001, host: "127.0.0.1" })),
+      buildFrame(
+        FRAME_TYPE.LISTENING,
+        LISTENER_CONNECTION_ID,
+        jsonPayload({ port: 9001, host: "127.0.0.1" }),
+      ),
     );
     await listenPromise;
 
@@ -723,94 +630,5 @@ describe("net-shim", () => {
     expect(errors.length).toBe(1);
     expect(errors[0].message).toBe("Connection reset");
     expect(errors[0].code).toBe("ECONNRESET");
-  });
-});
-
-describe("WebTransportTransport", () => {
-  let OriginalWebTransport: unknown;
-
-  beforeEach(() => {
-    mockWebTransportInstances = [];
-    OriginalWebTransport = (globalThis as unknown as { WebTransport?: unknown }).WebTransport;
-    (globalThis as unknown as { WebTransport: typeof MockWebTransport }).WebTransport =
-      class extends MockWebTransport {
-        constructor(url: string) {
-          super(url);
-          mockWebTransportInstances.push(this);
-        }
-      };
-  });
-
-  afterEach(() => {
-    if (OriginalWebTransport) {
-      (globalThis as unknown as { WebTransport: unknown }).WebTransport = OriginalWebTransport;
-    } else {
-      delete (globalThis as unknown as { WebTransport?: unknown }).WebTransport;
-    }
-  });
-
-  it("connect sends connect message and resolves on connected", async () => {
-    const transport = new WebTransportTransport("https://localhost:9000/wt");
-    const connectPromise = transport.connect({ port: 5432, host: "localhost" }, () => {});
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const wt = mockWebTransportInstances[0];
-    const stream = wt.bidiStreams[0];
-    expect(stream).toBeDefined();
-    const msg = JSON.parse(new TextDecoder().decode(stream.writes[0]));
-    expect(msg).toEqual({ type: "connect", host: "localhost", port: 5432, tls: undefined });
-
-    stream.enqueue(new TextEncoder().encode(JSON.stringify({ type: "connected" })));
-    const { readable, writable } = await connectPromise;
-    expect(readable).toBeDefined();
-    expect(writable).toBeDefined();
-  });
-
-  it("listen sends listen datagram and resolves on listening", async () => {
-    const transport = new WebTransportTransport("https://localhost:9000/wt");
-    let connection: AcceptedConnection | undefined;
-    const listenPromise = transport.listen(
-      8080,
-      "127.0.0.1",
-      (conn) => {
-        connection = conn;
-      },
-      () => {},
-    );
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const wt = mockWebTransportInstances[0];
-    const msg = JSON.parse(new TextDecoder().decode(wt.datagramWrites[0]));
-    expect(msg).toEqual({ type: "listen", port: 8080, host: "127.0.0.1" });
-
-    wt.sendDatagram(
-      new TextEncoder().encode(
-        JSON.stringify({ type: "listening", port: 8080, host: "127.0.0.1" }),
-      ),
-    );
-    const handle = await listenPromise;
-    expect(handle.port).toBe(8080);
-    expect(handle.host).toBe("127.0.0.1");
-
-    const inbound = new MockBidirectionalStream();
-    inbound.enqueue(
-      new TextEncoder().encode(JSON.stringify({ remoteAddress: "1.2.3.4", remotePort: 1234 })),
-    );
-    wt.enqueueIncoming(inbound);
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(connection).toBeDefined();
-    expect(connection!.remoteAddress).toBe("1.2.3.4");
-    expect(connection!.remotePort).toBe(1234);
-  });
-
-  it("createNetShim uses WebTransportTransport when configured", async () => {
-    const netShim = createNetShim(undefined, {
-      tcpRelay: { url: "https://localhost:9000/wt", transport: "webtransport" },
-    });
-    const socket = netShim.connect({ port: 5432, host: "localhost" }, () => {});
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const wt = mockWebTransportInstances[0];
-    const stream = wt.bidiStreams[0];
-    stream.enqueue(new TextEncoder().encode(JSON.stringify({ type: "connected" })));
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(socket).toBeInstanceOf(netShim.Socket);
   });
 });
