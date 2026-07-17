@@ -37,4 +37,20 @@ describe("createProcessShim", () => {
     expect(usage).toHaveProperty("arrayBuffers");
     expect(typeof process.memoryUsage.rss()).toBe("number");
   });
+
+  it("zeros external and arrayBuffers while preserving heap values", () => {
+    (performance as any).memory = { totalHeapSize: 1000, usedHeapSize: 500 };
+    try {
+      const process = createProcessShim();
+      const usage = process.memoryUsage();
+
+      expect(usage.heapTotal).toBe(1000);
+      expect(usage.heapUsed).toBe(500);
+      expect(usage.rss).toBe(1000);
+      expect(usage.external).toBe(0);
+      expect(usage.arrayBuffers).toBe(0);
+    } finally {
+      delete (performance as any).memory;
+    }
+  });
 });

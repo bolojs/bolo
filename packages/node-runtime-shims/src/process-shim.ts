@@ -42,8 +42,10 @@ const memoryUsage = (): MemUsage => {
     return {
       heapTotal: chromeMem.totalHeapSize,
       heapUsed: chromeMem.usedHeapSize,
-      external: chromeMem.expectedLatencyBytes ?? 0,
-      arrayBuffers: chromeMem.priorityJSHeapSize ?? 0,
+      // ponytail: no reliable source for these fields; keep them zero as best-effort values
+      external: 0,
+      // ponytail: ditto — no browser API exposes ArrayBuffer allocation accounting
+      arrayBuffers: 0,
       rss: chromeMem.totalHeapSize,
     };
   }
