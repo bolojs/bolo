@@ -3,6 +3,7 @@ import "./client-globals";
 import { createSignal, onMount } from "solid-js";
 import { Shimmer } from "@shimmer-from-structure/solid";
 import { boot, type BrowserContainer } from "@bolojs/runtime";
+import { getLogger } from "@bolojs/log/browser";
 import { createE2eBridge } from "./e2e-bridge";
 import Terminal from "./Terminal";
 import Editor from "./Editor";
@@ -16,6 +17,8 @@ declare global {
   // eslint-disable-next-line no-var
   var __preferLocalRolldown: boolean | undefined;
 }
+
+const logger = getLogger(["bolo", "site-landing", "demo"]);
 
 // @rolldown/browser is a same-origin bundled dependency of this app (unlike
 // oxc-transform, which stays on esm.sh). The esm.sh-hosted build panics in
@@ -123,7 +126,7 @@ export default function Demo(props: Props = {}) {
         window.__browserbox?.setContainer(container);
       }
     } catch (e) {
-      console.error("[demo] Boot failed:", e);
+      logger.error("boot failed", { error: e instanceof Error ? e.message : String(e) });
       setBootState("error");
     }
   };

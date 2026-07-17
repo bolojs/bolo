@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@bolojs/log": "workspace:*",
     "@unjs/lockfile": "workspace:*",
     "semver": "^7.6.0"
   },

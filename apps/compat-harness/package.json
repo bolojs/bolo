@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@bolojs/log": "workspace:*",
     "@bolojs/node-web-shims": "workspace:*",
     "@bolojs/runtime": "workspace:*"
   },

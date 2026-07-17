@@ -3,6 +3,9 @@ import { chromium } from "playwright-core";
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { configureBoloLogging, getLogger } from "@bolojs/log";
+
+const logger = getLogger(["bolo", "compat-harness", "cli"]);
 
 const defaultSourcePath = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -53,7 +56,7 @@ const parseArgs = () => {
       console.log(usage());
       process.exit(0);
     } else if (arg.startsWith("-")) {
-      console.error(`Unknown option: ${arg}`);
+      logger.error("unknown option", { arg });
       console.error(usage());
       process.exit(1);
     }
@@ -73,6 +76,7 @@ const parsePackages = (raw) => {
 };
 
 const main = async () => {
+  await configureBoloLogging();
   const options = parseArgs();
   const allowed = parsePackages(options.packages);
   const sourcePath = options.source || defaultSourcePath;
@@ -80,10 +84,10 @@ const main = async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
-  page.on("console", (msg) => console.error(`[browser:${msg.type()}]`, msg.text()));
-  page.on("pageerror", (err) => console.error("[browser:pageerror]", err.message));
+  page.on("console", (msg) => logger.info(`browser:${msg.type()}`, { text: msg.text() }));
+  page.on("pageerror", (err) => logger.error("browser pageerror", { error: err.message }));
   page.on("requestfailed", (req) =>
-    console.error("[browser:requestfailed]", req.url(), req.failure()?.errorText),
+    logger.error("browser requestfailed", { url: req.url(), error: req.failure()?.errorText }),
   );
 
   if (options.source || allowed || options.shardTotal > 1) {
@@ -113,9 +117,9 @@ const main = async () => {
   const RUN_TIMEOUT = 300000;
 
   try {
-    console.error("[cli] navigating to", options.url);
+    logger.info("navigating to", { url: options.url });
     await page.goto(options.url, { timeout: LOAD_TIMEOUT });
-    console.error("[cli] goto done, url:", page.url());
+    logger.info("goto done", { url: page.url() });
     await page.waitForFunction(() => typeof window.__compatHarness !== "undefined", undefined, {
       timeout: LOAD_TIMEOUT,
     });
@@ -130,6 +134,11 @@ const main = async () => {
       timeout: RUN_TIMEOUT,
     });
     const results = await page.evaluate(() => window.__packageResults);
+    for (const r of results) {
+      if (r.status === "fail") {
+        r.error = `${r.error ?? ""}\n(bolo diagnostics: .logs/latest.jsonl)`.trim();
+      }
+    }
     const output = { packages: results };
 
     if (options.output) {
@@ -151,6 +160,8 @@ const main = async () => {
 };
 
 main().catch((err) => {
-  console.error(err instanceof Error ? err.message : String(err));
+  logger.fatal("compat-harness cli failed", {
+    error: err instanceof Error ? err.message : String(err),
+  });
   process.exit(1);
 });

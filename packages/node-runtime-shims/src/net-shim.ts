@@ -1,4 +1,7 @@
+import { getLogger } from "@bolojs/log/browser";
 import type { NetConnectOptions, StreamSocket } from "./live.js";
+
+const logger = getLogger(["bolo", "node-runtime-shims", "net-shim"]);
 
 // Binary message types
 const MSG_DATA = 0x03;
@@ -699,8 +702,7 @@ export const createNetShim = (
       const socket = new Socket(transport, opts);
       socket.on("connect", onConnect ?? (() => {}));
       socket.on("error", (e: Error) => {
-        // eslint-disable-next-line no-console
-        console.error("net.connect error:", e);
+        logger.error("net.connect error", { error: e.message });
       });
       const target = `${opts.host ?? "localhost"}:${opts.port}`;
       socket.connect(target);

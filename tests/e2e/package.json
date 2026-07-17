@@ -9,6 +9,7 @@
     "install:gauge": "npm install -g @getgauge/cli"
   },
   "dependencies": {
+    "@bolojs/log": "workspace:*",
     "@getgauge/cli": "^1.6.30",
     "gauge-ts": "^0.5.1",
     "playwright": "^1.61.1"

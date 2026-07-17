@@ -1,6 +1,9 @@
 import type { VfsBus } from "@bolojs/vfs-bus";
 import { transformScript } from "@bolojs/wasm-registry";
+import { getLogger } from "@bolojs/log/browser";
 import type { SandboxBackend, SandboxRunResult } from "./sandbox-backend.js";
+
+const logger = getLogger(["bolo", "runtime", "iframe-sandbox"]);
 
 interface Dirent {
   name: string;
@@ -207,7 +210,7 @@ export class IframeSandbox implements SandboxBackend {
     }
 
     if (data.type === "console") {
-      console.log("[sandbox]", ...data.args);
+      logger.info("sandbox message", { args: data.args });
       return;
     }
   }

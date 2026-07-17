@@ -1,9 +1,19 @@
 {
-  "name": "@bolojs/node-runtime-shims",
-  "version": "0.2.0",
+  "name": "@bolojs/log",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -12,17 +22,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@bolojs/log": "workspace:*",
-    "@bolojs/vfs-bus": "workspace:*",
-    "@bolojs/sw-sandbox": "workspace:*",
-    "@bolojs/node-web-shims": "workspace:*",
-    "quickjs-emscripten-core": "^0.32.0",
-    "@jitl/quickjs-wasmfile-release-sync": "^0.32.0"
+    "@logtape/logtape": "^2.2.4",
+    "@logtape/file": "^2.2.4",
+    "@logtape/pretty": "^2.2.4"
   },
   "devDependencies": {
     "typescript": "^6.0.3",
-    "unenv": "^1.10.0",
-    "vite": "^8.0.0",
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
