@@ -47,7 +47,11 @@ export default defineConfig({
       nodeWebShims(),
       nodePolyfills({
         include: ["buffer"],
-        globals: { Buffer: true, global: true, process: true },
+        // Buffer/global injected per-module here collide across the Demo island's hydration
+        // graph ("Identifier '__buffer_polyfill' has already been declared"); Buffer is provided
+        // once instead via src/demo/client-globals.ts. process has no such collision and is
+        // needed bare by a transitive dep (@yarnpkg/lockfile via @unjs/lockfile).
+        globals: { Buffer: false, global: false, process: true },
       }),
     ],
     server: {

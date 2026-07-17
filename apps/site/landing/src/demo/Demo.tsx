@@ -1,4 +1,5 @@
 /** @jsxImportSource solid-js */
+import "./client-globals";
 import { createSignal, onMount } from "solid-js";
 import { Shimmer } from "@shimmer-from-structure/solid";
 import { boot, type BrowserContainer } from "@bolojs/runtime";
