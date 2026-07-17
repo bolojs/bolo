@@ -49,6 +49,9 @@ importers:
 
   apps/compat-harness:
     dependencies:
+      '@bolojs/log':
+        specifier: workspace:*
+        version: link:../../packages/log
       '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../../packages/node-web-shims

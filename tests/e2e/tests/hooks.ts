@@ -3,12 +3,15 @@ import {
   AfterSuite,
   BeforeSpec,
   AfterSpec,
+  AfterScenario,
   CustomScreenshotWriter,
+  type ExecutionContext,
 } from 'gauge-ts';
 import { chromium, type BrowserContext, type Page } from 'playwright';
 import { join } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { configureBoloLogging } from '@bolojs/log';
 
 // Dedicated, isolated browser profile. Other agents/concurrent Playwright runs
 // share the default Chrome singleton lock; a fixed userDataDir here sidesteps
@@ -22,6 +25,7 @@ export let currentPage: Page;
 export default class Hooks {
   @BeforeSuite()
   async beforeSuite() {
+    await configureBoloLogging();
     const headless = process.env.headless !== 'false';
     context = await chromium.launchPersistentContext(PROFILE_DIR, {
       headless,
@@ -61,6 +65,13 @@ export default class Hooks {
   @AfterSpec()
   async afterSpec() {
     await currentPage?.close();
+  }
+
+  @AfterScenario()
+  async afterScenario(context: ExecutionContext) {
+    if (context.getCurrentScenario()?.getIsFailing()) {
+      console.error('bolo diagnostics: .logs/latest.jsonl');
+    }
   }
 
   @AfterSuite()
