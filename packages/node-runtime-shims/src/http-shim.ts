@@ -434,10 +434,10 @@ export type IncomingMessage = IncomingMessageImpl;
 export type ServerResponse = ServerResponseImpl;
 export type ClientRequest = ClientRequestImpl;
 
-export interface Server {
-  listen(port?: number, host?: string, callback?: () => void): Server;
-  close(): Server;
-  on(event: string, listener: (...args: any[]) => void): Server;
+export interface HttpServer {
+  listen(port?: number, host?: string, callback?: () => void): HttpServer;
+  close(): HttpServer;
+  on(event: string, listener: (...args: any[]) => void): HttpServer;
 }
 
 export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) => {
@@ -449,7 +449,7 @@ export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) =
         "http.createServer requires an SWSandbox; client methods (request/get) are available without one",
       );
     }
-    const server = new EventEmitter() as unknown as Server;
+    const server = new EventEmitter() as unknown as HttpServer;
     let listening = false;
     let serverPort = 0;
 
@@ -528,8 +528,4 @@ export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) =
     globalAgent,
     createAgent,
   };
-};
-
-export const createNetShim = (sandbox?: SWSandbox, options?: HttpShimOptions) => {
-  return createHttpShim(sandbox, options);
 };

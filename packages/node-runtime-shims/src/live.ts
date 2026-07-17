@@ -4,6 +4,7 @@ import * as nodeWebShims from "@bolojs/node-web-shims";
 import { installUnhandledRejectionHandler } from "@bolojs/node-web-shims";
 import { createFsShim } from "./fs-shim.js";
 import { createHttpShim } from "./http-shim.js";
+import { createNetShim } from "./net-shim.js";
 import {
   createChildProcessShim,
   type WasmRegistry,
@@ -19,14 +20,47 @@ export interface BackendDeps {
   readonly sandbox?: SWSandbox;
 }
 
-export type NetBackend = (deps: BackendDeps) => unknown;
+// Socket is a Duplex from node-web-shims' createStreamShim() — same pattern as
+// http-shim.ts line 9. The shape the browser-side Socket will conform to
+// (implementation arrives in Phase 1).
+export interface StreamSocket {
+  write(chunk: Uint8Array | string): boolean;
+  end(): this;
+  destroy(error?: Error): this;
+  on(
+    event: "data" | "close" | "error" | "end" | "drain" | "finish",
+    listener: (...args: any[]) => void,
+  ): this;
+  setTimeout(msec: number, callback?: () => void): this;
+  setKeepAlive(enable?: boolean, initialDelay?: number): this;
+  ref(): this;
+  unref(): this;
+  readonly remoteAddress?: string;
+  readonly remotePort?: number;
+  readonly localAddress?: string;
+  readonly localPort?: number;
+}
+
+export interface NetConnectOptions {
+  port: number;
+  host?: string;
+  // tls is a config flag, NOT a separate backend (oracle decision).
+  tls?: boolean;
+}
+
+// Replaces both NetBackend and TlsBackend. tls.connect() becomes StreamBackend
+// with { tls: true }.
+export interface StreamBackend {
+  connect(options: NetConnectOptions, connectionListener?: () => void): StreamSocket;
+  isIP(input: string): number;
+}
+
 export type DgramBackend = (deps: BackendDeps) => {
   createSocket(
     type: "udp4" | "udp6",
     callback?: (msg: Uint8Array, rinfo: { address: string; port: number }) => void,
   ): unknown;
 };
-export type TlsBackend = (deps: BackendDeps) => unknown;
 export type WorkerThreadsBackend = (deps: BackendDeps) => unknown;
 export type NativeAddonLoader = (modulePath: string, vfs: VfsBus) => unknown;
 
@@ -40,10 +74,11 @@ export interface LiveShimRegistryOptions {
   readonly argv?: string[];
   readonly onStdout?: (data: string) => void;
   readonly onStderr?: (data: string) => void;
+  readonly tcpRelay?: { url: string; transport?: "ws" | "webtransport" };
   // Extension points
-  readonly netBackend?: NetBackend;
+  readonly netBackend?: (deps: BackendDeps) => StreamBackend;
   readonly dgramBackend?: DgramBackend;
-  readonly tlsBackend?: TlsBackend;
+  readonly tlsBackend?: (deps: BackendDeps) => StreamBackend;
   readonly workerThreadsBackend?: WorkerThreadsBackend;
   readonly nativeAddonLoader?: NativeAddonLoader;
 }
@@ -118,7 +153,10 @@ export const createLiveShimRegistry = (
   registry.https = http; // https delegates to http in browser context
   registry.net = options.netBackend
     ? options.netBackend({ vfs: options.vfs, sandbox: options.sandbox })
-    : http;
+    : createNetShim(options.sandbox, {
+        tcpRelay: options.tcpRelay,
+        onPortEvent: options.onPortEvent,
+      });
 
   registry.module = createModuleShim({
     vfs: options.vfs,
