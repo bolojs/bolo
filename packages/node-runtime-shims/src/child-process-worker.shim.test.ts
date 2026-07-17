@@ -29,6 +29,19 @@ describe("child_process Worker spawn", () => {
     vi.restoreAllMocks();
   });
 
+  it("Worker children get distinct monotonic pids", () => {
+    const createWorker = vi.fn(() => new FakeWorker());
+    const shim = createChildProcessShim(undefined, undefined, { createWorker });
+
+    const child1 = shim.fork("./one.js");
+    const child2 = shim.fork("./two.js");
+
+    expect(typeof child1.pid).toBe("number");
+    expect(typeof child2.pid).toBe("number");
+    expect(child1.pid).not.toBe(child2.pid);
+    expect(child2.pid!).toBeGreaterThan(child1.pid!);
+  });
+
   it("spawn node script uses injected Worker factory", async () => {
     const fake = new FakeWorker();
     const createWorker = vi.fn(() => fake);

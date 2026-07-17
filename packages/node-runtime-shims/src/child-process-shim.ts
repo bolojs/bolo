@@ -7,6 +7,9 @@ const { Readable, Writable } = createStreamShim();
 // runtime value instead of trusting the type.
 const { Buffer } = createBufferShim() as unknown as { Buffer: typeof globalThis.Buffer };
 
+// ponytail: module-level counter, good enough; real OS pids never collide either
+let nextPid = 1000;
+
 export interface WasmRegistry {
   dispatch(
     cmd: string,
@@ -135,7 +138,7 @@ class ChildProcessImpl extends EventEmitter implements ChildProcess {
 }
 
 class WorkerChildProcessImpl extends ChildProcessImpl {
-  readonly pid = Math.floor(Math.random() * 32768);
+  readonly pid = nextPid++;
   private readonly worker: WorkerLike;
 
   constructor(worker: WorkerLike) {
