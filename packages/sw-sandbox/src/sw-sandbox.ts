@@ -1,3 +1,7 @@
+import { getLogger } from "@bolojs/log/browser";
+
+const logger = getLogger(["bolo", "sw-sandbox"]);
+
 export type FetchHandler = (req: Request) => Promise<Response>;
 
 export class SWSandbox {
@@ -62,7 +66,7 @@ export class SWSandbox {
       if (type === "FETCH_REQUEST" && request) {
         this.handleFetchRequest(requestId, request).catch((err) => {
           const message = err instanceof Error ? err.message : String(err);
-          console.error("[sw-sandbox] handleFetchRequest failed:", message);
+          logger.error("handleFetchRequest failed", { error: message });
           this.messagePort?.postMessage({
             type: "FETCH_RESPONSE",
             requestId,

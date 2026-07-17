@@ -11,6 +11,9 @@
     "format": "oxfmt --check src",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@bolojs/log": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
