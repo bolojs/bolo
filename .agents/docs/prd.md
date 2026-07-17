@@ -38,7 +38,7 @@ These require capabilities a browser cannot provide safely or at all. All fail w
 | Capability | Why unsupported |
 |-----------|----------------|
 | `cluster` | No shared port binding between Workers |
-| `fork()` / real POSIX fork | No shared memory (CoW) between Workers |
+| `fork()` / real POSIX fork | V8 has no heap-snapshot/clone API, no MMU access, no resumable continuations across isolates (see ADR-0007) |
 | `tls.createServer()` / `https.createServer()` | No inbound TLS without raw sockets; the browser cannot terminate TLS for inbound without holding the private key locally |
 | `dgram` / raw UDP | Browser sandbox — no raw socket API (future: WebTransport datagrams) |
 | Native `.node` addons | No native binary execution |
@@ -48,14 +48,14 @@ These require capabilities a browser cannot provide safely or at all. All fail w
 | Hardlink-based CAS (`pnpm` store, `vltpkg` cache) | OPFS and Filesystem Access API have no `fs.linkSync` |
 
 **Emulable with reduced fidelity (T3-level):**
-- `child_process.spawn()` — emulated via Web Worker with message-passing IPC. Not true fork; covers "run script in subprocess and capture output."
+- `child_process.spawn()` — Tier 3 via Worker + message IPC; covers "run script in subprocess and capture output."
 - `vm` — shimmed via QuickJS `js.eval()` (the sandbox pool already has QuickJS)
 - `https` client — shimmed via `fetch` (TLS is built in)
 - `dns` — shimmed via DoH (Cloudflare `https://cloudflare-dns.com/dns-query`)
 - `net.connect()` (outbound TCP) — emulated via a self-hosted WebSocket relay (ws → TCP bridge). Byte-stream fidelity for database, Redis, mail, and custom-protocol clients. User operates the relay; OSS core ships a reference implementation, not a hosted service
 - `net.Server.listen()` (inbound TCP) — emulated via the same self-hosted relay. The relay holds the public listener; the browser handles connection logic. **Caveats (non-negotiable):** (1) tab-close ephemeral — listener dies when the browser tab closes or is evicted; (2) `server.address().port` returns the relay's port, not a browser-side port; (3) abuse is the user's responsibility — publicly-exposed relay listener will attract scanners and SYN floods within minutes; (4) no hosted relay — OSS ships a reference implementation, user self-hosts; (5) `server.close()` is cooperative (signals relay to tear down; does not forcibly reset in-flight connections on other paths)
 - `tls.connect()` (outbound TLS) — rides the same relay with relay-side TLS termination (planned; seam designed, not yet shipped)
-- `fs.watch` — coarse polling via `setInterval` + `stat` diffing (dev-tool quality, not production)
+- `fs.watch` — push-based via VfsBus observers; VFS-internal mutations only (cross-tab/real-disk changes not visible)
 - `process.memoryUsage()` — best-effort via `performance.memory` (Chrome-only) or ArrayBuffer enumeration
 
 ## Architecture
@@ -104,13 +104,12 @@ ServiceWorker intercepts all traffic on the virtual origin (`sandbox.localhost`)
 - `cluster` module (no shared port binding in browsers)
 - `fork()` / real POSIX fork (no shared memory between Workers)
 - `dgram` / raw UDP sockets (no browser API; future: WebTransport datagrams)
-- Inbound TCP servers (`net.Server.listen`) — no `connect` event in the ServiceWorker API; use `http.createServer` (SW-intercepted) for HTTP inbound
 - `tls.createServer()` / `https.createServer()` (no inbound TLS without raw sockets)
 - Native `.node` addons (no native binary execution)
 - ShadowRealm / sandboxed iframe as a third isolation tier (V8 + QuickJS dual-tier is sufficient)
 - `inspector` module (Chrome DevTools protocol server — requires TCP)
 - `test` runner (requires PTY + `child_process`)
-- `repl` (requires PTY)
+- `repl` (requires PTY) (v1 target)
 - SSR / Server Components
 - Hardlink-based content-addressable stores (browser filesystem has no `fs.linkSync`)
 
