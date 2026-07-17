@@ -415,6 +415,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@bolojs/log':
+        specifier: workspace:*
+        version: link:../log
       '@bolojs/node-runtime-shims':
         specifier: workspace:*
         version: link:../node-runtime-shims
