@@ -18,12 +18,27 @@ PORT=9001 node apps/tcp-relay/index.js
 
 ## Wire protocol
 
-All messages are JSON objects sent as WebSocket binary frames:
+All messages are binary WebSocket frames with the layout:
 
-Browser → Relay: `connect`, `listen`, `unlisten`, `data`, `close`  
-Relay → Browser: `connected`, `listening`, `connection`, `unlistened`, `data`, `close`
+```
+[1 byte type][8 bytes connectionId hex][payload...]
+```
 
-See `index.js` for the exact message shape.
+Frame types:
+
+- `0x01` connect — Browser→Relay, payload is JSON `{host, port}`
+- `0x02` connected — Relay→Browser, payload empty
+- `0x03` data — Both, payload is raw bytes
+- `0x04` close — Both, payload empty (half-close)
+- `0x05` error — Relay→Browser, payload is JSON `{code, syscall, address, port, message}`
+- `0x06` listen — Browser→Relay, payload is JSON `{port, host}`
+- `0x07` listening — Relay→Browser, payload empty
+- `0x08` accept — Relay→Browser, payload is JSON `{remoteAddress, remotePort}`
+- `0x09` unlisten — Browser→Relay, payload empty
+- `0x0a` unlistened — Relay→Browser, payload empty
+- `0x0b` destroy — Browser→Relay, payload empty (full teardown)
+
+See `index.js` for the exact encoding helpers.
 
 ## Security
 

@@ -23,7 +23,10 @@ describe("worker-script", () => {
 
     vi.stubGlobal("self", fakeSelf);
     vi.stubGlobal("postMessage", fakeSelf.postMessage);
-    vi.stubGlobal("setInterval", vi.fn(() => 0));
+    vi.stubGlobal(
+      "setInterval",
+      vi.fn(() => 0),
+    );
 
     vi.resetModules();
     await import("./worker-script.js?repl-test" as string);
@@ -72,7 +75,9 @@ describe("worker-script", () => {
     dispatch({ type: "REPL_EVAL", id: "c", code: "})" });
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(posted).toContainEqual(expect.objectContaining({ type: "REPL_RESULT", id: "c", ok: true }));
+    expect(posted).toContainEqual(
+      expect.objectContaining({ type: "REPL_RESULT", id: "c", ok: true }),
+    );
   });
 
   it("REPL reports errors", async () => {
@@ -82,6 +87,11 @@ describe("worker-script", () => {
     dispatch({ type: "REPL_EVAL", id: "err", code: "throw new Error('boom')" });
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(posted).toContainEqual({ type: "REPL_RESULT", id: "err", ok: false, error: "Error: boom" });
+    expect(posted).toContainEqual({
+      type: "REPL_RESULT",
+      id: "err",
+      ok: false,
+      error: "Error: boom",
+    });
   });
 });

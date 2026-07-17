@@ -7,7 +7,6 @@ import {
   resolve,
   resolve4,
   resolve6,
-  resolveCname,
   resolveTxt,
   resolveMx,
   resolveSrv,
@@ -114,26 +113,17 @@ describe("dns module-level functions", () => {
 
   it("resolveTxt returns TXT records as arrays of strings", async () => {
     dohResponse = {
-      Answer: [
-        { data: "v=spf1 include:_spf.example.com ~all" },
-        { data: ["part1", "part2"] },
-      ],
+      Answer: [{ data: "v=spf1 include:_spf.example.com ~all" }, { data: ["part1", "part2"] }],
     };
     const result = await resolveTxt("example.com");
 
-    expect(result).toEqual([
-      ["v=spf1 include:_spf.example.com ~all"],
-      ["part1", "part2"],
-    ]);
+    expect(result).toEqual([["v=spf1 include:_spf.example.com ~all"], ["part1", "part2"]]);
     expect(fetchCalls[0].url).toContain("type=TXT");
   });
 
   it("resolveMx returns MX records", async () => {
     dohResponse = {
-      Answer: [
-        { data: "10 mail1.example.com." },
-        { data: "20 mail2.example.com." },
-      ],
+      Answer: [{ data: "10 mail1.example.com." }, { data: "20 mail2.example.com." }],
     };
     const result = await resolveMx("example.com");
 
@@ -167,8 +157,7 @@ describe("dns module-level functions", () => {
     dohResponse = {
       Answer: [
         {
-          data:
-            '100 10 "u" "E2U+sip" "!^.*$!sip:customer@example.com!" .',
+          data: '100 10 "u" "E2U+sip" "!^.*$!sip:customer@example.com!" .',
         },
       ],
     };
@@ -191,8 +180,7 @@ describe("dns module-level functions", () => {
     dohResponse = {
       Answer: [
         {
-          data:
-            "ns.example.com. hostmaster.example.com. 2023010101 3600 600 86400 3600",
+          data: "ns.example.com. hostmaster.example.com. 2023010101 3600 600 86400 3600",
         },
       ],
     };

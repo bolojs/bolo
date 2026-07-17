@@ -44,12 +44,8 @@ export interface StreamSocket {
 export interface NetConnectOptions {
   port: number;
   host?: string;
-  // tls is a config flag, NOT a separate backend (oracle decision).
-  tls?: boolean;
 }
 
-// Replaces both NetBackend and TlsBackend. tls.connect() becomes StreamBackend
-// with { tls: true }.
 export interface StreamBackend {
   connect(options: NetConnectOptions, connectionListener?: () => void): StreamSocket;
   isIP(input: string): number;
@@ -74,7 +70,7 @@ export interface LiveShimRegistryOptions {
   readonly argv?: string[];
   readonly onStdout?: (data: string) => void;
   readonly onStderr?: (data: string) => void;
-  readonly tcpRelay?: { url: string; transport?: "ws" | "webtransport" };
+  readonly tcpRelay?: { url: string };
   readonly dohEndpoint?: string;
   // Extension points
   readonly netBackend?: (deps: BackendDeps) => StreamBackend;
