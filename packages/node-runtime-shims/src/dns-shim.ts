@@ -1,40 +1,53 @@
 export interface DnsShimOptions {
-  // no VFS needed for DoH; reserved for future TCP/UDP fallback
+  /**
+   * DNS-over-HTTPS endpoint used for all lookups. Defaults to Cloudflare's DoH.
+   */
+  readonly dohEndpoint?: string;
 }
 
-export const createDnsShim = (_options?: DnsShimOptions) => {
-  // Known registry IPs — bypass lookup for known registries
-  const KNOWN: Record<string, { address: string; family: 4 | 6 }> = {
-    "registry.npmjs.org": { address: "104.16.27.34", family: 4 },
-    "registry.npmmirror.com": { address: "180.184.191.58", family: 4 },
-    "registry.yarnpkg.com": { address: "104.16.131.35", family: 4 },
-  };
+const expandIPv6 = (ip: string): string => {
+  const parts = ip.split(":");
+  const emptyIndex = parts.indexOf("");
+  if (emptyIndex !== -1) {
+    const missing = 8 - (parts.length - 1);
+    parts.splice(emptyIndex, 1, ...Array(missing).fill("0"));
+  }
+  return (
+    parts
+      .map((p) => p.padStart(4, "0"))
+      .join("")
+      .split("")
+      .reverse()
+      .join(".") + ".ip6.arpa"
+  );
+};
 
-  const lookup = (hostname: string): Promise<{ address: string; family: number }> => {
-    if (KNOWN[hostname]) return Promise.resolve(KNOWN[hostname]);
-    return fetch(
-      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(hostname)}&type=A`,
-      { headers: { Accept: "application/dns-json" } },
-    )
-      .then((r) => r.json() as Promise<{ Answer?: Array<{ data: string }> }>)
-      .then((j) => ({ address: j.Answer?.[0]?.data ?? "0.0.0.0", family: 4 }));
-  };
+const ipToPtr = (ip: string): string => {
+  if (ip.includes(".")) {
+    return ip.split(".").reverse().join(".") + ".in-addr.arpa";
+  }
+  return expandIPv6(ip);
+};
+
+export const createDnsShim = (options?: DnsShimOptions) => {
+  const dohEndpoint = options?.dohEndpoint ?? "https://cloudflare-dns.com/dns-query";
+
+  const query = (name: string, type: string): Promise<{ Answer?: Array<{ data: string }> }> =>
+    fetch(`${dohEndpoint}?name=${encodeURIComponent(name)}&type=${type}`, {
+      headers: { Accept: "application/dns-json" },
+    }).then((r) => r.json() as Promise<{ Answer?: Array<{ data: string }> }>);
+
+  const lookup = (hostname: string): Promise<{ address: string; family: number }> =>
+    query(hostname, "A").then((j) => ({ address: j.Answer?.[0]?.data ?? "0.0.0.0", family: 4 }));
 
   const resolve4 = (hostname: string): Promise<string[]> =>
-    fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(hostname)}&type=A`, {
-      headers: { Accept: "application/dns-json" },
-    })
-      .then((r) => r.json() as Promise<{ Answer?: Array<{ data: string }> }>)
-      .then((j) => j.Answer?.map((a) => a.data) ?? []);
+    query(hostname, "A").then((j) => j.Answer?.map((a) => a.data) ?? []);
 
   const resolve6 = (hostname: string): Promise<string[]> =>
-    fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(hostname)}&type=AAAA`, {
-      headers: { Accept: "application/dns-json" },
-    })
-      .then((r) => r.json() as Promise<{ Answer?: Array<{ data: string }> }>)
-      .then((j) => j.Answer?.map((a) => a.data) ?? []);
+    query(hostname, "AAAA").then((j) => j.Answer?.map((a) => a.data) ?? []);
 
-  const reverse = (_ip: string): Promise<string[]> => Promise.resolve([]);
+  const reverse = (ip: string): Promise<string[]> =>
+    query(ipToPtr(ip), "PTR").then((j) => j.Answer?.map((a) => a.data.replace(/\.$/, "")) ?? []);
 
   return { lookup, resolve4, resolve6, reverse };
 };

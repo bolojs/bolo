@@ -75,6 +75,7 @@ export interface LiveShimRegistryOptions {
   readonly onStdout?: (data: string) => void;
   readonly onStderr?: (data: string) => void;
   readonly tcpRelay?: { url: string; transport?: "ws" | "webtransport" };
+  readonly dohEndpoint?: string;
   // Extension points
   readonly netBackend?: (deps: BackendDeps) => StreamBackend;
   readonly dgramBackend?: DgramBackend;
@@ -116,7 +117,7 @@ export const createLiveShimRegistry = (
     diagnostics_channel: nodeWebShims.diagnostics_channel,
     readline: nodeWebShims.readline,
     vm: createVmShim(),
-    dns: createDnsShim(),
+    dns: createDnsShim({ dohEndpoint: options.dohEndpoint }),
     fs: createFsShim(options.vfs),
     child_process: createChildProcessShim(options.wasmRegistry, options.shellService),
   };
