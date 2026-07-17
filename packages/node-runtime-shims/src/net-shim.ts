@@ -437,8 +437,8 @@ export class Socket implements StreamSocket {
           this.readable = readable;
           this.writable = writable;
           this._connecting = false;
-          this.emit("connect");
           this.startReading();
+          this.emit("connect");
         },
         (err) => {
           this._connecting = false;
