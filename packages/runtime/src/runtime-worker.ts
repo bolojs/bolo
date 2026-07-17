@@ -24,7 +24,14 @@ export type RuntimeMessage =
   | { type: "IPC_DISCONNECT" }
   | { type: "REPL_START" }
   | { type: "REPL_EVAL"; id: string; code: string }
-  | { type: "REPL_RESULT"; id: string; ok: boolean; value?: string; error?: string; continuation?: boolean }
+  | {
+      type: "REPL_RESULT";
+      id: string;
+      ok: boolean;
+      value?: string;
+      error?: string;
+      continuation?: boolean;
+    }
   | { type: "REPL_EXIT" };
 
 const generateId = (): string => {
@@ -45,7 +52,10 @@ export class RuntimeWorker {
   private replWorker: Worker | null = null;
   private replCallbacks: Map<
     string,
-    { resolve: (value: ReplResult | PromiseLike<ReplResult>) => void; reject: (reason: Error) => void }
+    {
+      resolve: (value: ReplResult | PromiseLike<ReplResult>) => void;
+      reject: (reason: Error) => void;
+    }
   > = new Map();
   onReplResult?: (result: ReplResult) => void;
 
@@ -84,7 +94,9 @@ export class RuntimeWorker {
 
   startRepl(): void {
     if (this.replWorker) return;
-    this.replWorker = new Worker(new URL("./worker-script.js", import.meta.url), { type: "module" });
+    this.replWorker = new Worker(new URL("./worker-script.js", import.meta.url), {
+      type: "module",
+    });
     this.replWorker.onmessage = ({ data }: MessageEvent<RuntimeMessage>) => {
       switch (data.type) {
         case "REPL_RESULT": {
