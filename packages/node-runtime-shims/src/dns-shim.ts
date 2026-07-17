@@ -86,8 +86,7 @@ const parseNaptr = (data: string): NaptrRecord => {
     tokens.push(match[0]);
   }
   const [order, preference, flags, services, regexp, replacement] = tokens;
-  const unquote = (value: string | undefined): string =>
-    value?.replace(/^"|"$/g, "") ?? "";
+  const unquote = (value: string | undefined): string => value?.replace(/^"|"$/g, "") ?? "";
   return {
     order: Number(order),
     preference: Number(preference),
@@ -176,9 +175,7 @@ export class Resolver {
   resolveTxt(hostname: string): Promise<string[][]> {
     return this.query(hostname, "TXT").then(
       (j) =>
-        j.Answer?.map((a) =>
-          Array.isArray(a.data) ? a.data.map(String) : [String(a.data)],
-        ) ?? [],
+        j.Answer?.map((a) => (Array.isArray(a.data) ? a.data.map(String) : [String(a.data)])) ?? [],
     );
   }
 
@@ -235,8 +232,7 @@ export class Resolver {
         throw new Error("SOA record not found");
       }
       const data = asString(answer.data);
-      const [nsname, hostmaster, serial, refresh, retry, expire, minimum] =
-        data.split(/\s+/);
+      const [nsname, hostmaster, serial, refresh, retry, expire, minimum] = data.split(/\s+/);
       return {
         nsname: nsname.replace(/\.$/, ""),
         hostmaster: hostmaster.replace(/\.$/, ""),
@@ -265,11 +261,9 @@ const defaultResolver = new Resolver();
 export const resolve = (hostname: string, rrtype?: string): Promise<string[]> =>
   defaultResolver.resolve(hostname, rrtype);
 
-export const resolve4 = (hostname: string): Promise<string[]> =>
-  defaultResolver.resolve4(hostname);
+export const resolve4 = (hostname: string): Promise<string[]> => defaultResolver.resolve4(hostname);
 
-export const resolve6 = (hostname: string): Promise<string[]> =>
-  defaultResolver.resolve6(hostname);
+export const resolve6 = (hostname: string): Promise<string[]> => defaultResolver.resolve6(hostname);
 
 export const resolveCname = (hostname: string): Promise<string[]> =>
   defaultResolver.resolveCname(hostname);
@@ -283,13 +277,10 @@ export const resolveMx = (hostname: string): Promise<MxRecord[]> =>
 export const resolveSrv = (hostname: string): Promise<SrvRecord[]> =>
   defaultResolver.resolveSrv(hostname);
 
-export const resolvePtr = (ip: string): Promise<string[]> =>
-  defaultResolver.resolvePtr(ip);
+export const resolvePtr = (ip: string): Promise<string[]> => defaultResolver.resolvePtr(ip);
 
-export const resolveNaptr = (
-  hostname: string,
-  flags?: string,
-): Promise<NaptrRecord[]> => defaultResolver.resolveNaptr(hostname, flags);
+export const resolveNaptr = (hostname: string, flags?: string): Promise<NaptrRecord[]> =>
+  defaultResolver.resolveNaptr(hostname, flags);
 
 export const resolveSoa = (hostname: string): Promise<SoaRecord> =>
   defaultResolver.resolveSoa(hostname);
