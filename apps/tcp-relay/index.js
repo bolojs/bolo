@@ -1,9 +1,13 @@
 import { WebSocketServer } from "ws";
 import { createConnection, createServer } from "net";
+import { randomBytes } from "crypto";
 
 const PORT = parseInt(process.env.RELAY_PORT ?? "9000");
 
-const connections = new Map(); // connectionId → { ws, tcp, direction, host, port }
+// Message types for binary data frames
+const MSG_DATA = 0x03;
+
+const connections = new Map(); // connectionId (Buffer, 8 bytes) → { ws, tcp, direction, host, port }
 const listeners = new Map(); // ws → { server, port, host }
 const ipConnections = new Map(); // ip → count
 
@@ -21,7 +25,19 @@ wss.on("connection", (ws) => {
   ipConnections.set(ip, count + 1);
 
   ws.on("message", (data, isBinary) => {
-    if (!isBinary) return;
+    if (isBinary) {
+      // Binary frame: [1-byte type][8-byte connId][payload...]
+      const type = data[0];
+      if (type === MSG_DATA) {
+        const connectionId = data.subarray(1, 9);
+        const payload = data.subarray(9);
+        const conn = connections.get(connectionId.toString("hex"));
+        if (conn?.tcp) {
+          conn.tcp.write(payload);
+        }
+      }
+      return;
+    }
     try {
       const msg = JSON.parse(data.toString());
       handleMessage(ws, msg);
@@ -48,16 +64,17 @@ wss.on("connection", (ws) => {
 function handleMessage(ws, msg) {
   switch (msg.type) {
     case "connect": {
-      const connectionId = generateId();
+      const connectionId = randomBytes(8);
+      const idHex = connectionId.toString("hex");
       const tcp = createConnection(msg.port, msg.host, () => {
-        connections.set(connectionId, {
+        connections.set(idHex, {
           ws,
           tcp,
           direction: "out",
           host: msg.host,
           port: msg.port,
         });
-        ws.send(JSON.stringify({ type: "connected", connectionId }));
+        ws.send(JSON.stringify({ type: "connected", connectionId: idHex }));
       });
 
       attachTcp(ws, tcp, connectionId);
@@ -65,8 +82,9 @@ function handleMessage(ws, msg) {
     }
     case "listen": {
       const server = createServer((tcpConn) => {
-        const connectionId = generateId();
-        connections.set(connectionId, {
+        const connectionId = randomBytes(8);
+        const idHex = connectionId.toString("hex");
+        connections.set(idHex, {
           ws,
           tcp: tcpConn,
           direction: "in",
@@ -75,7 +93,7 @@ function handleMessage(ws, msg) {
         });
         ws.send(JSON.stringify({
           type: "connection",
-          connectionId,
+          connectionId: idHex,
           remoteAddress: tcpConn.remoteAddress,
           remotePort: tcpConn.remotePort,
         }));
@@ -116,13 +134,6 @@ function handleMessage(ws, msg) {
       });
       break;
     }
-    case "data": {
-      const conn = connections.get(msg.connectionId);
-      if (conn?.tcp) {
-        conn.tcp.write(Buffer.from(msg.bytes, "base64"));
-      }
-      break;
-    }
     case "close": {
       const conn = connections.get(msg.connectionId);
       if (conn) {
@@ -140,29 +151,39 @@ function handleMessage(ws, msg) {
 }
 
 function attachTcp(ws, tcp, connectionId) {
+  const idHex = connectionId.toString("hex");
+
   tcp.on("data", (chunk) => {
-    if (!connections.has(connectionId)) return;
-    ws.send(JSON.stringify({
-      type: "data",
-      connectionId,
-      bytes: chunk.toString("base64"),
-    }));
+    if (!connections.has(idHex)) return;
+    // Binary frame: [0x03][8-byte connId][payload]
+    const frame = Buffer.alloc(9 + chunk.length);
+    frame[0] = MSG_DATA;
+    connectionId.copy(frame, 1);
+    chunk.copy(frame, 9);
+    ws.send(frame);
   });
 
   tcp.on("close", () => {
-    if (!connections.has(connectionId)) return;
-    ws.send(JSON.stringify({ type: "close", connectionId }));
-    connections.delete(connectionId);
+    if (!connections.has(idHex)) return;
+    ws.send(JSON.stringify({ type: "close", connectionId: idHex }));
+    connections.delete(idHex);
   });
 
   tcp.on("error", (e) => {
-    console.error(`TCP error for ${connectionId}:`, e.message);
-    connections.delete(connectionId);
+    console.error(`TCP error for ${idHex}:`, e.message);
+    // Send structured error to browser so the pending connect promise resolves.
+    // Browser will close the WS on receipt.
+    ws.send(JSON.stringify({
+      type: "error",
+      connectionId: idHex,
+      code: e.code ?? "ECONNREFUSED",
+      syscall: e.syscall ?? "connect",
+      address: e.address,
+      port: e.port,
+      message: e.message,
+    }));
+    connections.delete(idHex);
   });
-}
-
-function generateId() {
-  return Math.random().toString(36).slice(2, 10);
 }
 
 console.log(`TCP relay listening on ws://localhost:${PORT}`);
