@@ -1,4 +1,9 @@
 import type { VfsBus } from "@bolojs/vfs-bus";
+import { createEventsShim } from "@bolojs/node-web-shims";
+
+const { EventEmitter } = createEventsShim();
+
+type FSWatcher = InstanceType<typeof EventEmitter> & { close: () => void };
 
 export interface FsStat {
   isFile: () => boolean;
@@ -90,18 +95,15 @@ export const createFsShim = (vfs: VfsBus) => {
     path: string,
     optsOrHandler?: { persistent?: boolean } | ((...args: any[]) => void),
     handler?: (...args: any[]) => void,
-  ) => {
+  ): FSWatcher => {
     const h = typeof optsOrHandler === "function" ? optsOrHandler : handler;
+    const watcher = new EventEmitter() as FSWatcher;
     const w = vfs.watch(path, (filePath, event) => {
+      watcher.emit("change", event, filePath);
       if (h) h(event, filePath);
     });
-    return {
-      close: () => w.close(),
-      on: (event: string, _cb: (...args: any[]) => void) => {
-        void event;
-        return { close: () => w.close() } as unknown as ReturnType<typeof watch>;
-      },
-    };
+    watcher.close = () => w.close();
+    return watcher;
   };
 
   // `vfs.hot` is the synchronous memfs volume backing this container's VFS

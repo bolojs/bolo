@@ -99,4 +99,37 @@ describe("fs shim", () => {
     expect(await shim.promises.readFile("/p.txt", "utf8")).toBe("data");
     expect(await shim.promises.exists("/p.txt")).toBe(true);
   });
+
+  it("watch returns an EventEmitter that emits change on VFS mutation", async () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    const events: Array<{ eventType: string; filename: string }> = [];
+    const watcher = shim.watch("/watch.txt");
+    watcher.on("change", (eventType, filename) => {
+      events.push({ eventType, filename });
+    });
+
+    await shim.writeFile("/watch.txt", "first");
+    expect(events).toHaveLength(1);
+    expect(events[0].eventType).toBe("add");
+    expect(events[0].filename).toBe("/watch.txt");
+  });
+
+  it("watch stops emitting after close", async () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    const events: Array<{ eventType: string; filename: string }> = [];
+    const watcher = shim.watch("/watch.txt");
+    watcher.on("change", (eventType, filename) => {
+      events.push({ eventType, filename });
+    });
+
+    await shim.writeFile("/watch.txt", "first");
+    watcher.close();
+    await shim.writeFile("/watch.txt", "second");
+
+    expect(events).toHaveLength(1);
+  });
 });
