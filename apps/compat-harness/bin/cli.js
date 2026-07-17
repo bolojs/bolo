@@ -134,6 +134,11 @@ const main = async () => {
       timeout: RUN_TIMEOUT,
     });
     const results = await page.evaluate(() => window.__packageResults);
+    for (const r of results) {
+      if (r.status === "fail") {
+        r.error = `${r.error ?? ""}\n(bolo diagnostics: .logs/latest.jsonl)`.trim();
+      }
+    }
     const output = { packages: results };
 
     if (options.output) {
