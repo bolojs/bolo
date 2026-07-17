@@ -12,7 +12,9 @@ export type RuntimeMessage =
   | { type: "STDOUT"; data: string }
   | { type: "STDERR"; data: string }
   | { type: "EXIT"; code: number }
-  | { type: "HEARTBEAT" };
+  | { type: "HEARTBEAT" }
+  | { type: "IPC_MESSAGE"; data: unknown }
+  | { type: "IPC_DISCONNECT" };
 
 export class RuntimeWorker {
   private worker: Worker | null = null;

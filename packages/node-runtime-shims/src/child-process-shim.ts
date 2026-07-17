@@ -172,8 +172,10 @@ class WorkerChildProcessImpl extends ChildProcessImpl {
       this.emit("exit", code, null);
       this.emit("close", code, null);
       this.cleanup();
-    } else if (message.type === "message") {
+    } else if (message.type === "IPC_MESSAGE") {
       this.emit("message", message.data);
+    } else if (message.type === "IPC_DISCONNECT") {
+      this.emit("disconnect");
     }
   }
 
@@ -183,8 +185,12 @@ class WorkerChildProcessImpl extends ChildProcessImpl {
   }
 
   send(message: unknown): boolean {
-    this.worker.postMessage({ type: "message", data: message });
+    this.worker.postMessage({ type: "IPC_MESSAGE", data: message });
     return true;
+  }
+
+  disconnect(): void {
+    this.worker.postMessage({ type: "IPC_DISCONNECT" });
   }
 
   override kill(signal?: string | number): boolean {
@@ -343,6 +349,7 @@ export interface ChildProcess {
   killed: boolean;
   kill(signal?: string | number): boolean;
   send?(message: unknown): boolean;
+  disconnect?: () => void;
   on(event: string, handler: (...args: any[]) => void): this;
   emit(event: string, ...args: any[]): boolean;
 }

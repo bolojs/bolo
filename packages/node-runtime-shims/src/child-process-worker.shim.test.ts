@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createChildProcessShim } from "./child-process-shim.js";
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 class FakeWorker extends EventTarget {
   readonly messages: unknown[] = [];
   onmessage: ((event: MessageEvent) => void) | null = null;
@@ -147,7 +150,49 @@ describe("child_process Worker spawn", () => {
 
     const child = shim.fork("./script.js");
     child.send?.({ hello: "world" });
-    expect(fake.messages).toContainEqual({ type: "message", data: { hello: "world" } });
+    expect(fake.messages).toContainEqual({ type: "IPC_MESSAGE", data: { hello: "world" } });
+  });
+
+  class EchoWorker extends FakeWorker {
+    override postMessage(message: unknown): void {
+      super.postMessage(message);
+      if (isRecord(message) && message.type === "IPC_MESSAGE") {
+        queueMicrotask(() => this.simulateMessage({ type: "IPC_MESSAGE", data: message.data }));
+      }
+    }
+  }
+
+  it("fork round-trips IPC messages from host to child and back", async () => {
+    const createWorker = vi.fn(() => new EchoWorker());
+    const shim = createChildProcessShim(undefined, undefined, { createWorker });
+
+    const child = shim.fork("./echo.js");
+    const received: unknown[] = [];
+    child.on("message", (msg) => received.push(msg));
+
+    child.send?.({ hello: "world" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(received).toEqual([{ hello: "world" }]);
+  });
+
+  it("disconnect is wired in both directions", async () => {
+    const fake = new FakeWorker();
+    const createWorker = vi.fn(() => fake);
+    const shim = createChildProcessShim(undefined, undefined, { createWorker });
+
+    const child = shim.fork("./script.js");
+    let disconnected = false;
+    child.on("disconnect", () => {
+      disconnected = true;
+    });
+
+    fake.simulateMessage({ type: "IPC_DISCONNECT" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(disconnected).toBe(true);
+
+    child.disconnect?.();
+    expect(fake.messages).toContainEqual({ type: "IPC_DISCONNECT" });
   });
 
   it("worker error emits error event", async () => {
