@@ -1,10 +1,49 @@
-import { getLogger } from "@bolojs/log/browser";
 import type { NetConnectOptions, StreamSocket } from "./live.js";
 
-const logger = getLogger(["bolo", "node-runtime-shims", "net-shim"]);
+const FRAME_TYPE = {
+  CONNECT: 0x01,
+  CONNECTED: 0x02,
+  DATA: 0x03,
+  CLOSE: 0x04,
+  ERROR: 0x05,
+  LISTEN: 0x06,
+  LISTENING: 0x07,
+  ACCEPT: 0x08,
+  UNLISTEN: 0x09,
+  UNLISTENED: 0x0a,
+  DESTROY: 0x0b,
+} as const;
 
-// Binary message types
-const MSG_DATA = 0x03;
+const LISTENER_CONNECTION_ID = "00000000";
+const EMPTY_PAYLOAD = new Uint8Array(0);
+
+const jsonPayload = (obj: object): Uint8Array => new TextEncoder().encode(JSON.stringify(obj));
+
+const buildFrame = (type: number, connectionId: string, payload: Uint8Array): Uint8Array => {
+  const id = connectionId.padStart(8, "0");
+  const idBytes = new TextEncoder().encode(id);
+  const frame = new Uint8Array(1 + idBytes.length + payload.length);
+  frame[0] = type;
+  frame.set(idBytes, 1);
+  frame.set(payload, 1 + idBytes.length);
+  return frame;
+};
+
+const parseFrame = (
+  bytes: Uint8Array,
+): { type: number; connectionId: string; payload: Uint8Array } => {
+  if (bytes.length < 9) {
+    throw new Error(`Frame too short: ${bytes.length} bytes`);
+  }
+  const type = bytes[0] ?? 0;
+  const connectionId = new TextDecoder().decode(bytes.slice(1, 9));
+  const payload = bytes.slice(9);
+  return { type, connectionId, payload };
+};
+
+const wsSend = (ws: WebSocket, frame: Uint8Array): void => {
+  ws.send(frame as unknown as ArrayBufferView<ArrayBuffer>);
+};
 
 export interface AcceptedConnection {
   connectionId: string;
@@ -49,25 +88,6 @@ export class NoopTransport implements ByteTransport {
   }
 }
 
-/** Converts a hex string to an 8-byte Uint8Array. */
-function hexToConnId(hex: string): Uint8Array {
-  const bytes = new Uint8Array(8);
-  for (let i = 0; i < 8; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
-}
-
-/** Builds a binary data frame: [0x03][8-byte connId][payload]. */
-function buildDataFrame(connectionId: Uint8Array, payload: Uint8Array): ArrayBuffer {
-  const frame = new ArrayBuffer(9 + payload.byteLength);
-  const view = new Uint8Array(frame);
-  view[0] = MSG_DATA;
-  view.set(connectionId, 1);
-  view.set(payload, 9);
-  return frame;
-}
-
 export class WebSocketTransport implements ByteTransport {
   private url: string;
 
@@ -85,9 +105,7 @@ export class WebSocketTransport implements ByteTransport {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(this.url);
       ws.binaryType = "arraybuffer";
-      // Generate 8-byte connection ID for this stream
-      const connectionId = new Uint8Array(8);
-      globalThis.crypto?.getRandomValues(connectionId);
+      let connectionId: string | undefined;
       let readableController: ReadableStreamDefaultController<Uint8Array> | undefined;
       let resolved = false;
 
@@ -97,17 +115,17 @@ export class WebSocketTransport implements ByteTransport {
       };
 
       ws.onopen = () => {
-        // Send control message as raw string (text frame).
-        ws.send(
-          JSON.stringify({
-            type: "connect",
-            host: options.host ?? "localhost",
-            port: options.port,
-            tls: options.tls,
-            connectionId: Array.from(connectionId)
-              .map((b) => b.toString(16).padStart(2, "0"))
-              .join(""),
-          }),
+        wsSend(
+          ws,
+          buildFrame(
+            FRAME_TYPE.CONNECT,
+            LISTENER_CONNECTION_ID,
+            jsonPayload({
+              host: options.host ?? "localhost",
+              port: options.port,
+              tls: options.tls,
+            }),
+          ),
         );
       };
 
@@ -124,33 +142,14 @@ export class WebSocketTransport implements ByteTransport {
       };
 
       ws.onmessage = (event) => {
-        // Binary message = data frame from relay
-        // (Buffer in Node.js/test env, ArrayBuffer in browser)
-        if (typeof event.data !== "string") {
-          const bytes = event.data instanceof Uint8Array
-            ? event.data
-            : new Uint8Array(event.data as ArrayBuffer);
-          readableController?.enqueue(bytes);
-          return;
-        }
-        // Text message = JSON control message
-        const msg = JSON.parse(event.data);
-        if (msg.type === "error") {
-          // Relay sent a TCP error (ECONNREFUSED, ETIMEDOUT, etc.)
-          const err = new Error(msg.message) as Error & { code?: string };
-          err.code = msg.code;
-          if (!resolved) {
-            resolved = true;
-            reject(err);
-          } else {
-            onControl(msg);
-          }
-          cleanup();
-          ws.close();
-          return;
-        }
-        if (msg.type === "connected") {
+        const bytes =
+          typeof event.data === "string"
+            ? new TextEncoder().encode(event.data)
+            : new Uint8Array(event.data);
+        const { type, connectionId: id, payload } = parseFrame(bytes);
+        if (type === FRAME_TYPE.CONNECTED) {
           resolved = true;
+          connectionId = id;
           const readable = new ReadableStream<Uint8Array>({
             start(controller) {
               readableController = controller;
@@ -161,30 +160,30 @@ export class WebSocketTransport implements ByteTransport {
           });
           const writable = new WritableStream<Uint8Array>({
             write(chunk) {
-              if (ws.readyState !== WebSocket.OPEN) return;
-              ws.send(buildDataFrame(connectionId, chunk));
+              if (!connectionId || ws.readyState !== WebSocket.OPEN) return;
+              wsSend(ws, buildFrame(FRAME_TYPE.DATA, connectionId, chunk));
             },
             close() {
-              // Half-close: signal end-of-write to relay. Do NOT close
-              // the WS here — the readable side may still have in-flight
-              // response data. The relay's tcp.on("close") will send back
-              // {type:"close"}, which triggers cleanup() and closes the WS.
-              if (ws.readyState === WebSocket.OPEN) {
-                ws.send(
-                  JSON.stringify({ type: "close", connectionId: Array.from(connectionId).map((b) => b.toString(16).padStart(2, "0")).join("") }),
-                );
+              if (connectionId && ws.readyState === WebSocket.OPEN) {
+                wsSend(ws, buildFrame(FRAME_TYPE.CLOSE, connectionId, EMPTY_PAYLOAD));
               }
             },
             abort() {
+              if (connectionId && ws.readyState === WebSocket.OPEN) {
+                wsSend(ws, buildFrame(FRAME_TYPE.DESTROY, connectionId, EMPTY_PAYLOAD));
+              }
               ws.close();
             },
           });
           resolve({ readable, writable });
-        } else if (msg.type === "close") {
+        } else if (type === FRAME_TYPE.DATA) {
+          if (readableController && id === connectionId) {
+            readableController.enqueue(payload);
+          }
+        } else if (type === FRAME_TYPE.CLOSE) {
           cleanup();
-          ws.close();
         } else {
-          onControl(msg);
+          onControl({ type, connectionId: id, payload });
         }
       };
     });
@@ -204,7 +203,6 @@ export class WebSocketTransport implements ByteTransport {
       const connections = new Map<
         string,
         {
-          connectionId: Uint8Array;
           readableController: ReadableStreamDefaultController<Uint8Array>;
           writable: WritableStream<Uint8Array>;
         }
@@ -218,7 +216,10 @@ export class WebSocketTransport implements ByteTransport {
       };
 
       ws.onopen = () => {
-        ws.send(JSON.stringify({ type: "listen", port, host }));
+        wsSend(
+          ws,
+          buildFrame(FRAME_TYPE.LISTEN, LISTENER_CONNECTION_ID, jsonPayload({ port, host })),
+        );
       };
 
       ws.onerror = (event) => {
@@ -238,40 +239,26 @@ export class WebSocketTransport implements ByteTransport {
       };
 
       ws.onmessage = (event) => {
-        // Binary message = data frame from relay
-        if (typeof event.data !== "string") {
-          const frame = event.data instanceof Uint8Array
-            ? event.data
-            : new Uint8Array(event.data as ArrayBuffer);
-          // First 9 bytes: [type=0x03][8-byte connId]
-          const connIdHex = Array.from(frame.subarray(1, 9))
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("");
-          const payload = frame.subarray(9);
-          const conn = connections.get(connIdHex);
-          conn?.readableController.enqueue(payload);
-          return;
-        }
-        // Text message = JSON control message
-        const msg = JSON.parse(event.data);
-        if (msg.type === "error") {
-          // Relay emitted a listener-level error (e.g. port in use)
-          onControl(msg);
-          return;
-        }
-        if (msg.type === "listening") {
+        const bytes =
+          typeof event.data === "string"
+            ? new TextEncoder().encode(event.data)
+            : new Uint8Array(event.data);
+        const { type, connectionId, payload } = parseFrame(bytes);
+        if (type === FRAME_TYPE.LISTENING) {
           listening = true;
+          const meta = payload.length > 0 ? JSON.parse(new TextDecoder().decode(payload)) : {};
           resolve({
-            port: msg.port,
-            host: msg.host,
+            port: meta.port ?? port,
+            host: meta.host ?? host,
             close: () =>
               new Promise((res) => {
                 closeResolve = res;
-                ws.send(JSON.stringify({ type: "unlisten" }));
+                wsSend(ws, buildFrame(FRAME_TYPE.UNLISTEN, LISTENER_CONNECTION_ID, EMPTY_PAYLOAD));
               }),
           });
-        } else if (msg.type === "connection") {
-          const connIdBytes = hexToConnId(msg.connectionId);
+        } else if (type === FRAME_TYPE.ACCEPT) {
+          const meta = JSON.parse(new TextDecoder().decode(payload));
+          const id = connectionId;
           let readableController!: ReadableStreamDefaultController<Uint8Array>;
           const readable = new ReadableStream<Uint8Array>({
             start(controller) {
@@ -285,41 +272,39 @@ export class WebSocketTransport implements ByteTransport {
           const writable = new WritableStream<Uint8Array>({
             write(chunk) {
               if (ws.readyState !== WebSocket.OPEN) return;
-              ws.send(buildDataFrame(connIdBytes, chunk));
+              wsSend(ws, buildFrame(FRAME_TYPE.DATA, id, chunk));
             },
             close() {
               if (ws.readyState === WebSocket.OPEN) {
-                ws.send(
-                  JSON.stringify({ type: "close", connectionId: msg.connectionId }),
-                );
+                wsSend(ws, buildFrame(FRAME_TYPE.CLOSE, id, EMPTY_PAYLOAD));
               }
             },
-            abort() {},
+            abort() {
+              if (ws.readyState === WebSocket.OPEN) {
+                wsSend(ws, buildFrame(FRAME_TYPE.DESTROY, id, EMPTY_PAYLOAD));
+              }
+            },
           });
-          connections.set(msg.connectionId, {
-            connectionId: connIdBytes,
-            readableController,
-            writable,
-          });
+          connections.set(id, { readableController, writable });
           onConnection({
-            connectionId: msg.connectionId,
+            connectionId: id,
             readable,
             writable,
-            remoteAddress: msg.remoteAddress,
-            remotePort: msg.remotePort,
+            remoteAddress: meta.remoteAddress,
+            remotePort: meta.remotePort,
           });
-        } else if (msg.type === "close") {
-          const conn = connections.get(msg.connectionId);
+        } else if (type === FRAME_TYPE.DATA) {
+          const conn = connections.get(connectionId);
+          if (conn?.readableController) {
+            conn.readableController.enqueue(payload);
+          }
+        } else if (type === FRAME_TYPE.CLOSE) {
+          const conn = connections.get(connectionId);
           if (conn?.readableController) {
             conn.readableController.close();
           }
-          connections.delete(msg.connectionId);
-          // Check if this was the last connection; if so, close WS.
-          // ponytail: close-on-last is the multiplexed lifecycle policy.
-          if (connections.size === 0) {
-            ws.close();
-          }
-        } else if (msg.type === "unlistened") {
+          connections.delete(connectionId);
+        } else if (type === FRAME_TYPE.UNLISTENED) {
           cleanup();
           if (closeResolve) {
             closeResolve();
@@ -327,7 +312,7 @@ export class WebSocketTransport implements ByteTransport {
           }
           ws.close();
         } else {
-          onControl(msg);
+          onControl({ type, connectionId, payload });
         }
       };
     });
@@ -702,7 +687,8 @@ export const createNetShim = (
       const socket = new Socket(transport, opts);
       socket.on("connect", onConnect ?? (() => {}));
       socket.on("error", (e: Error) => {
-        logger.error("net.connect error", { error: e.message });
+        // eslint-disable-next-line no-console
+        console.error("net.connect error:", e);
       });
       const target = `${opts.host ?? "localhost"}:${opts.port}`;
       socket.connect(target);

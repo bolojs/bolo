@@ -9,6 +9,47 @@ import {
 } from "./net-shim.js";
 import type { AcceptedConnection } from "./net-shim.js";
 
+const FRAME_TYPE = {
+  CONNECT: 0x01,
+  CONNECTED: 0x02,
+  DATA: 0x03,
+  CLOSE: 0x04,
+  ERROR: 0x05,
+  LISTEN: 0x06,
+  LISTENING: 0x07,
+  ACCEPT: 0x08,
+  UNLISTEN: 0x09,
+  UNLISTENED: 0x0a,
+  DESTROY: 0x0b,
+} as const;
+
+const LISTENER_CONNECTION_ID = "00000000";
+const EMPTY_PAYLOAD = new Uint8Array(0);
+
+const jsonPayload = (obj: object): Uint8Array => new TextEncoder().encode(JSON.stringify(obj));
+
+const buildFrame = (type: number, connectionId: string, payload: Uint8Array): Uint8Array => {
+  const id = connectionId.padStart(8, "0");
+  const idBytes = new TextEncoder().encode(id);
+  const frame = new Uint8Array(1 + idBytes.length + payload.length);
+  frame[0] = type;
+  frame.set(idBytes, 1);
+  frame.set(payload, 1 + idBytes.length);
+  return frame;
+};
+
+const parseFrame = (
+  bytes: Uint8Array,
+): { type: number; connectionId: string; payload: Uint8Array } => {
+  if (bytes.length < 9) {
+    throw new Error(`Frame too short: ${bytes.length} bytes`);
+  }
+  const type = bytes[0] ?? 0;
+  const connectionId = new TextDecoder().decode(bytes.slice(1, 9));
+  const payload = bytes.slice(9);
+  return { type, connectionId, payload };
+};
+
 const EXPECTED_CONNECT_ERROR =
   "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage";
 
@@ -27,10 +68,7 @@ class MockWebSocket {
   onclose?: () => void;
   onmessage?: (event: { data: string | ArrayBuffer }) => void;
   readyState: number = MockWebSocket.CONNECTING;
-  /** Text frames sent (JSON control messages). */
-  sent: string[] = [];
-  /** Binary frames sent (data frames). */
-  sentBinary: ArrayBuffer[] = [];
+  sent: Uint8Array[] = [];
 
   constructor(url: string) {
     this.url = url;
@@ -38,15 +76,8 @@ class MockWebSocket {
   }
 
   send(data: string | Uint8Array | ArrayBuffer) {
-    if (typeof data === "string") {
-      this.sent.push(data);
-    } else {
-      // TypedArray (Uint8Array) vs raw ArrayBuffer
-      const buf = data instanceof ArrayBuffer
-        ? data
-        : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-      this.sentBinary.push(buf as ArrayBuffer);
-    }
+    const bytes = typeof data === "string" ? new TextEncoder().encode(data) : new Uint8Array(data);
+    this.sent.push(bytes);
   }
 
   close() {
@@ -58,20 +89,9 @@ class MockWebSocket {
     this.onopen?.();
   }
 
-  simulateMessage(data: string) {
-    this.onmessage?.({ data });
-  }
-
-  /** Simulate a binary data frame from the relay: [type(1)][connId(8)][payload]. */
-  simulateBinaryData(connectionIdHex: string, payload: string) {
-    const buf = Buffer.alloc(9 + payload.length);
-    buf[0] = 0x03;
-    // Store the 16-char hex string as 8 raw bytes (big-endian pairs)
-    for (let i = 0; i < 8; i++) {
-      buf[i + 1] = parseInt(connectionIdHex.slice(i * 2, i * 2 + 2), 16);
-    }
-    buf.write(payload, 9, "utf-8");
-    this.onmessage?.({ data: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length) as ArrayBuffer });
+  simulateMessage(data: string | Uint8Array | ArrayBuffer) {
+    const bytes = typeof data === "string" ? new TextEncoder().encode(data) : new Uint8Array(data);
+    this.onmessage?.({ data: bytes.buffer });
   }
 
   simulateError() {
@@ -194,71 +214,61 @@ describe("net-shim", () => {
     expect(() => netShim.connect({ port: 80 })).toThrow(EXPECTED_CONNECT_ERROR);
   });
 
-  it("WebSocketTransport sends connect message and resolves on connected", async () => {
+  it("WebSocketTransport sends connect frame and resolves on connected", async () => {
     const transport = new WebSocketTransport("ws://localhost:9000");
     const connectPromise = transport.connect({ port: 5432, host: "localhost" }, () => {});
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    // Wait for the connect message to be sent (async in onopen)
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const msg = JSON.parse(ws.sent[0]);
-    expect(msg.type).toBe("connect");
-    expect(msg.host).toBe("localhost");
-    expect(msg.port).toBe(5432);
-    expect(msg.tls).toBeUndefined();
-    expect(msg.connectionId).toHaveLength(16); // 8-byte hex
-    // Echo the connectionId back as the relay does
-    ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: msg.connectionId }));
+    const sent = parseFrame(ws.sent[0]);
+    expect(sent.type).toBe(FRAME_TYPE.CONNECT);
+    expect(sent.connectionId).toBe(LISTENER_CONNECTION_ID);
+    expect(JSON.parse(new TextDecoder().decode(sent.payload))).toEqual({
+      host: "localhost",
+      port: 5432,
+      tls: undefined,
+    });
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     const { readable, writable } = await connectPromise;
     expect(readable).toBeDefined();
     expect(writable).toBeDefined();
   });
 
-  it("WebSocketTransport sends data messages as binary frames", async () => {
+  it("WebSocketTransport sends data frames as raw bytes", async () => {
     const transport = new WebSocketTransport("ws://localhost:9000");
     const connectPromise = transport.connect({ port: 5432, host: "localhost" }, () => {});
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const connectMsg = JSON.parse(ws.sent[0]);
-    ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: connectMsg.connectionId }));
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     const { writable } = await connectPromise;
     const writer = writable.getWriter();
     await writer.write(new TextEncoder().encode("hello"));
-    // sent[0] = connect JSON, sentBinary[0] = data binary frame
-    const frame = new Uint8Array(ws.sentBinary[0]);
-    expect(frame[0]).toBe(0x03); // MSG_DATA
-    expect(new TextDecoder().decode(frame.subarray(9))).toBe("hello");
+    const sent = parseFrame(ws.sent[1]);
+    expect(sent.type).toBe(FRAME_TYPE.DATA);
+    expect(sent.connectionId).toBe("abc00000");
+    expect(new TextDecoder().decode(sent.payload)).toBe("hello");
   });
 
-  it("WebSocketTransport receives data messages and exposes them on readable", async () => {
+  it("WebSocketTransport receives data frames and exposes them on readable", async () => {
     const transport = new WebSocketTransport("ws://localhost:9000");
     const connectPromise = transport.connect({ port: 5432 }, () => {});
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const connectMsg = JSON.parse(ws.sent[0]);
-    ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: connectMsg.connectionId }));
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     const { readable } = await connectPromise;
     const reader = readable.getReader();
-    // Simulate a binary data frame from the relay
-    ws.simulateBinaryData(connectMsg.connectionId, "hello");
+    ws.simulateMessage(buildFrame(FRAME_TYPE.DATA, "abc00000", new TextEncoder().encode("hello")));
     const { value } = await reader.read();
     expect(new TextDecoder().decode(value)).toBe("hello");
   });
 
-  it("WebSocketTransport includes tls flag in connect message", async () => {
+  it("WebSocketTransport includes tls flag in connect frame", async () => {
     const transport = new WebSocketTransport("ws://localhost:9000");
     transport.connect({ port: 443, host: "example.com", tls: true }, () => {});
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const msg = JSON.parse(ws.sent[0]);
-    expect(msg.type).toBe("connect");
-    expect(msg.host).toBe("example.com");
-    expect(msg.port).toBe(443);
-    expect(msg.tls).toBe(true);
-    expect(msg.connectionId).toHaveLength(16);
+    const sent = parseFrame(ws.sent[0]);
+    const msg = JSON.parse(new TextDecoder().decode(sent.payload));
+    expect(msg).toEqual({ host: "example.com", port: 443, tls: true });
   });
 
   it("Socket connects and emits connect event", async () => {
@@ -271,9 +281,7 @@ describe("net-shim", () => {
     socket.connect("localhost:5432");
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const connectMsg = JSON.parse(ws.sent[0]);
-    ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: connectMsg.connectionId }));
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(connected).toBe(true);
   });
@@ -286,24 +294,22 @@ describe("net-shim", () => {
     socket.connect("localhost:5432");
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const connectMsg = JSON.parse(ws.sent[0]);
-    ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: connectMsg.connectionId }));
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     socket.write("hello");
-    // sent[0] = connect JSON, sentBinary[0] = data binary frame
-    const outFrame = new Uint8Array(ws.sentBinary[0]);
-    expect(outFrame[0]).toBe(0x03);
-    expect(new TextDecoder().decode(outFrame.subarray(9))).toBe("hello");
+    const sent = parseFrame(ws.sent[1]);
+    expect(sent.type).toBe(FRAME_TYPE.DATA);
+    expect(sent.connectionId).toBe("abc00000");
+    expect(new TextDecoder().decode(sent.payload)).toBe("hello");
 
-    ws.simulateBinaryData(connectMsg.connectionId, "world");
+    ws.simulateMessage(buildFrame(FRAME_TYPE.DATA, "abc00000", new TextEncoder().encode("world")));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(chunks.length).toBe(1);
     expect(new TextDecoder().decode(chunks[0])).toBe("world");
   });
 
-  it("Socket end sends close message and destroy emits close", async () => {
+  it("Socket end sends close frame and destroy emits close", async () => {
     const transport = new WebSocketTransport("ws://localhost:9000");
     const socket = new Socket(transport, { port: 5432 });
     let closed = false;
@@ -313,14 +319,14 @@ describe("net-shim", () => {
     socket.connect("localhost:5432");
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const connectMsg = JSON.parse(ws.sent[0]);
-    ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: connectMsg.connectionId }));
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     socket.end();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(ws.sent.some((s) => JSON.parse(s).type === "close")).toBe(true);
+    const endFrame = parseFrame(ws.sent[ws.sent.length - 1]);
+    expect(endFrame.type).toBe(FRAME_TYPE.CLOSE);
+    expect(endFrame.connectionId).toBe("abc00000");
 
     socket.destroy();
     expect(closed).toBe(true);
@@ -331,9 +337,7 @@ describe("net-shim", () => {
     const socket = netShim.connect({ port: 5432, host: "localhost" }, () => {});
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const connectMsg = JSON.parse(ws.sent[0]);
-    ws.simulateMessage(JSON.stringify({ type: "connected", connectionId: connectMsg.connectionId }));
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(socket).toBeInstanceOf(netShim.Socket);
   });
@@ -369,14 +373,26 @@ describe("net-shim", () => {
     const listenPromise = server.listen(0, "localhost");
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    expect(JSON.parse(ws.sent[0])).toEqual({ type: "listen", port: 0, host: "localhost" });
-    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    const listenFrame = parseFrame(ws.sent[0]);
+    expect(listenFrame.type).toBe(FRAME_TYPE.LISTEN);
+    expect(listenFrame.connectionId).toBe(LISTENER_CONNECTION_ID);
+    expect(JSON.parse(new TextDecoder().decode(listenFrame.payload))).toEqual({
+      port: 0,
+      host: "localhost",
+    });
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.LISTENING,
+        LISTENER_CONNECTION_ID,
+        jsonPayload({ port: 9001, host: "127.0.0.1" }),
+      ),
+    );
     await listenPromise;
     expect(listening).toBe(true);
     expect(server.address()).toEqual({ port: 9001, host: "127.0.0.1", family: "IPv4" });
   });
 
-  it("Server emits connection when relay sends connection", async () => {
+  it("Server emits connection when relay sends accept", async () => {
     const transport = new WebSocketTransport("ws://localhost:9000");
     const server = new Server(transport);
     const sockets: Socket[] = [];
@@ -384,16 +400,21 @@ describe("net-shim", () => {
     const listenPromise = server.listen(0, "localhost");
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.LISTENING,
+        LISTENER_CONNECTION_ID,
+        jsonPayload({ port: 9001, host: "127.0.0.1" }),
+      ),
+    );
     await listenPromise;
 
     ws.simulateMessage(
-      JSON.stringify({
-        type: "connection",
-        connectionId: "inbound-1",
-        remoteAddress: "192.168.1.100",
-        remotePort: 54321,
-      }),
+      buildFrame(
+        FRAME_TYPE.ACCEPT,
+        "inbound1",
+        jsonPayload({ remoteAddress: "192.168.1.100", remotePort: 54321 }),
+      ),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(sockets.length).toBe(1);
@@ -409,35 +430,40 @@ describe("net-shim", () => {
     const listenPromise = server.listen(0, "localhost");
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.LISTENING,
+        LISTENER_CONNECTION_ID,
+        jsonPayload({ port: 9001, host: "127.0.0.1" }),
+      ),
+    );
     await listenPromise;
 
     ws.simulateMessage(
-      JSON.stringify({
-        type: "connection",
-        connectionId: "inbound00000001", // 16-char hex, relay-generated
-        remoteAddress: "192.168.1.100",
-        remotePort: 54321,
-      }),
+      buildFrame(
+        FRAME_TYPE.ACCEPT,
+        "inbound1",
+        jsonPayload({ remoteAddress: "192.168.1.100", remotePort: 54321 }),
+      ),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     const socket = sockets[0];
     const chunks: Uint8Array[] = [];
     socket.on("data", (chunk: Uint8Array) => chunks.push(chunk));
 
-    // Simulate binary data frame from relay
-    ws.simulateBinaryData("inbound00000001", "hello from relay");
+    ws.simulateMessage(
+      buildFrame(FRAME_TYPE.DATA, "inbound1", new TextEncoder().encode("hello from relay")),
+    );
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(chunks.length).toBe(1);
     expect(new TextDecoder().decode(chunks[0])).toBe("hello from relay");
 
     socket.write("hello from socket");
-    // Find the data binary frame (sentBinary, not sent)
-    const outFrame = ws.sentBinary[0];
-    expect(outFrame).toBeDefined();
-    const frame = new Uint8Array(outFrame);
-    expect(frame[0]).toBe(0x03);
-    expect(new TextDecoder().decode(frame.subarray(9))).toBe("hello from socket");
+    const dataFrame = ws.sent
+      .map((bytes) => parseFrame(bytes))
+      .find((frame) => frame.type === FRAME_TYPE.DATA && frame.connectionId === "inbound1");
+    expect(dataFrame).toBeDefined();
+    expect(new TextDecoder().decode(dataFrame!.payload)).toBe("hello from socket");
   });
 
   it("Server.close sends unlisten and emits close when relay unlistened", async () => {
@@ -450,14 +476,61 @@ describe("net-shim", () => {
     const listenPromise = server.listen(0, "localhost");
     const ws = mockInstances[mockInstances.length - 1];
     ws.simulateOpen();
-    ws.simulateMessage(JSON.stringify({ type: "listening", port: 9001, host: "127.0.0.1" }));
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.LISTENING,
+        LISTENER_CONNECTION_ID,
+        jsonPayload({ port: 9001, host: "127.0.0.1" }),
+      ),
+    );
     await listenPromise;
 
     const closePromise = server.close();
-    expect(ws.sent.some((s) => JSON.parse(s).type === "unlisten")).toBe(true);
-    ws.simulateMessage(JSON.stringify({ type: "unlistened" }));
+    const unlistenFrame = parseFrame(ws.sent[ws.sent.length - 1]);
+    expect(unlistenFrame.type).toBe(FRAME_TYPE.UNLISTEN);
+    expect(unlistenFrame.connectionId).toBe(LISTENER_CONNECTION_ID);
+    ws.simulateMessage(buildFrame(FRAME_TYPE.UNLISTENED, LISTENER_CONNECTION_ID, EMPTY_PAYLOAD));
     await closePromise;
     expect(closed).toBe(true);
+  });
+
+  it("sends large data frames without base64 crash", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const connectPromise = transport.connect({ port: 5432, host: "localhost" }, () => {});
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
+    const { writable } = await connectPromise;
+    const writer = writable.getWriter();
+    const large = new Uint8Array(256 * 1024);
+    large.fill(0xab);
+    await writer.write(large);
+    const dataFrame = parseFrame(ws.sent[1]);
+    expect(dataFrame.type).toBe(FRAME_TYPE.DATA);
+    expect(dataFrame.connectionId).toBe("abc00000");
+    expect(dataFrame.payload.length).toBe(256 * 1024);
+    expect(dataFrame.payload.every((byte) => byte === 0xab)).toBe(true);
+  });
+
+  it("parses binary frames for various types", () => {
+    const connectFrame = buildFrame(
+      FRAME_TYPE.CONNECT,
+      LISTENER_CONNECTION_ID,
+      jsonPayload({ host: "example.com", port: 443 }),
+    );
+    const parsed = parseFrame(connectFrame);
+    expect(parsed.type).toBe(FRAME_TYPE.CONNECT);
+    expect(parsed.connectionId).toBe(LISTENER_CONNECTION_ID);
+    expect(JSON.parse(new TextDecoder().decode(parsed.payload))).toEqual({
+      host: "example.com",
+      port: 443,
+    });
+
+    const dataFrame = buildFrame(FRAME_TYPE.DATA, "abc12300", new TextEncoder().encode("hello"));
+    const parsedData = parseFrame(dataFrame);
+    expect(parsedData.type).toBe(FRAME_TYPE.DATA);
+    expect(parsedData.connectionId).toBe("abc12300");
+    expect(new TextDecoder().decode(parsedData.payload)).toBe("hello");
   });
 });
 
