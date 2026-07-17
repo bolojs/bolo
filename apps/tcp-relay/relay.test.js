@@ -208,4 +208,43 @@ describe("tcp relay", { concurrency: false }, () => {
       await new Promise((r) => relay.once("exit", r));
     }
   });
+
+  test("destroy frame tears down TCP connection", async () => {
+    let remoteClosed = false;
+    const target = net.createServer((socket) => {
+      socket.on("data", (data) => socket.write(data));
+      socket.on("close", () => {
+        remoteClosed = true;
+      });
+      socket.on("end", () => socket.end());
+    });
+    await new Promise((resolve, reject) => {
+      target.listen(0, "127.0.0.1", () => resolve(undefined));
+      target.on("error", reject);
+    });
+    const targetPort = target.address().port;
+
+    const relayPort = await getPort();
+    const relay = await startRelay(relayPort);
+    let ws;
+    try {
+      ws = await connectWs(relayPort);
+      const connectionId = generateId();
+      ws.send(buildFrame(FRAME_TYPE.CONNECT, connectionId, JSON.stringify({ host: "127.0.0.1", port: targetPort })));
+
+      const connected = await waitFrame(ws);
+      assert.strictEqual(connected.type, FRAME_TYPE.CONNECTED);
+
+      ws.send(buildFrame(FRAME_TYPE.DESTROY, connectionId, ""));
+      await waitFrame(ws); // close frame from relay
+
+      await new Promise((r) => setTimeout(r, 100));
+      assert.strictEqual(remoteClosed, true);
+    } finally {
+      ws?.close();
+      target.close();
+      relay.kill();
+      await new Promise((r) => relay.once("exit", r));
+    }
+  });
 });

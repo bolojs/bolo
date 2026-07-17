@@ -181,6 +181,7 @@ function handleMessage(ws, type, connectionId, payload) {
     case FRAME_TYPE.DESTROY: {
       const conn = connections.get(connectionId);
       if (conn?.tcp) {
+        // Full teardown: RST, do not wait for graceful shutdown.
         conn.tcp.destroy();
       }
       break;
