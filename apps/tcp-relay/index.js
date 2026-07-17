@@ -39,15 +39,24 @@ wss.on("connection", (ws) => {
 
   ws.on("message", (data, isBinary) => {
     if (isBinary) {
-      // Binary frame: [1-byte type][8-byte connId][payload...]
+      // Binary frame: [1-byte type][8-byte connId (ASCII hex)][payload...]
       const type = data[0];
       if (type === FRAME_TYPE.DATA) {
-        const connectionId = data.subarray(1, 9).toString("hex");
+        // Fast path for data frames — connectionId is ASCII hex text, not raw bytes
+        const connectionId = data.subarray(1, 9).toString("utf8");
         const payload = data.subarray(9);
         const conn = connections.get(connectionId);
         if (conn?.tcp) {
           conn.tcp.write(payload);
         }
+        return;
+      }
+      // All other binary frame types: parse and dispatch via handleMessage
+      try {
+        const { type, connectionId, payload } = parseFrame(data);
+        handleMessage(ws, type, connectionId, payload);
+      } catch (e) {
+        console.error("Invalid frame from browser:", e.message);
       }
       return;
     }
