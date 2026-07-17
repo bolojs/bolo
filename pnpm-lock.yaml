@@ -49,9 +49,6 @@ importers:
 
   apps/compat-harness:
     dependencies:
-      '@bolojs/log':
-        specifier: workspace:*
-        version: link:../../packages/log
       '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../../packages/node-web-shims
@@ -540,6 +537,9 @@ importers:
 
   tests:
     dependencies:
+      '@bolojs/log':
+        specifier: workspace:*
+        version: link:../packages/log
       '@bolojs/node-runtime-shims':
         specifier: workspace:*
         version: link:../packages/node-runtime-shims
@@ -562,6 +562,9 @@ importers:
 
   tests/e2e:
     dependencies:
+      '@bolojs/log':
+        specifier: workspace:*
+        version: link:../../packages/log
       '@getgauge/cli':
         specifier: ^1.6.30
         version: 1.6.30

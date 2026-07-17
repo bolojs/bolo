@@ -8,6 +8,7 @@
     "node": ">=24.0.0"
   },
   "dependencies": {
+    "@bolojs/log": "workspace:*",
     "@bolojs/node-runtime-shims": "workspace:*",
     "@bolojs/vfs-bus": "workspace:*"
   },
