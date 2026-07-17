@@ -328,6 +328,9 @@ importers:
 
   packages/node-runtime-shims:
     dependencies:
+      '@bolojs/log':
+        specifier: workspace:*
+        version: link:../log
       '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../node-web-shims
