@@ -494,6 +494,111 @@ describe("net-shim", () => {
     expect(closed).toBe(true);
   });
 
+  it("Socket.end half-close keeps WS open until relay sends close", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const socket = new Socket(transport, { port: 5432 });
+    socket.connect("localhost:5432");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    socket.end();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(ws.readyState).toBe(MockWebSocket.OPEN);
+
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CLOSE, "abc00000", EMPTY_PAYLOAD));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(ws.readyState).toBe(MockWebSocket.CLOSED);
+  });
+
+  it("Socket.destroy closes WS immediately", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const socket = new Socket(transport, { port: 5432 });
+    socket.connect("localhost:5432");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    socket.destroy();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(ws.readyState).toBe(MockWebSocket.CLOSED);
+  });
+
+  it("three concurrent connections each close their own WS when destroyed", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const sockets: Socket[] = [];
+    for (let i = 0; i < 3; i++) {
+      sockets.push(new Socket(transport, { port: 8000 + i }));
+      sockets[i].connect(`localhost:${8000 + i}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockInstances.length).toBe(3);
+    for (let i = 0; i < 3; i++) {
+      mockInstances[i].simulateOpen();
+      mockInstances[i].simulateMessage(
+        buildFrame(FRAME_TYPE.CONNECTED, `conn000${i + 1}`, EMPTY_PAYLOAD),
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    sockets[0].destroy();
+    sockets[1].destroy();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockInstances[0].readyState).toBe(MockWebSocket.CLOSED);
+    expect(mockInstances[1].readyState).toBe(MockWebSocket.CLOSED);
+    expect(mockInstances[2].readyState).toBe(MockWebSocket.OPEN);
+
+    sockets[2].destroy();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockInstances[2].readyState).toBe(MockWebSocket.CLOSED);
+  });
+
+  it("relay error frame before connected rejects with ECONNREFUSED", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const connectPromise = transport.connect({ port: 1, host: "localhost" }, () => {});
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.ERROR,
+        LISTENER_CONNECTION_ID,
+        jsonPayload({
+          code: "ECONNREFUSED",
+          syscall: "connect",
+          message: "Connection refused",
+        }),
+      ),
+    );
+    let caught: (Error & { code?: string }) | undefined;
+    try {
+      await connectPromise;
+    } catch (err) {
+      caught = err as Error & { code?: string };
+    }
+    expect(caught).toBeDefined();
+    expect(caught!.message).toBe("Connection refused");
+    expect(caught!.code).toBe("ECONNREFUSED");
+  });
+
+  it("emits error on Socket when WS errors post-connect", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const socket = new Socket(transport, { port: 5432 });
+    const errors: Error[] = [];
+    socket.on("error", (err: Error) => errors.push(err));
+    socket.connect("localhost:5432");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    ws.simulateError();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(errors.length).toBe(1);
+    expect(errors[0].message).toContain("WebSocket error");
+  });
+
   it("sends large data frames without base64 crash", async () => {
     const transport = new WebSocketTransport("ws://localhost:9000");
     const connectPromise = transport.connect({ port: 5432, host: "localhost" }, () => {});
@@ -531,6 +636,93 @@ describe("net-shim", () => {
     expect(parsedData.type).toBe(FRAME_TYPE.DATA);
     expect(parsedData.connectionId).toBe("abc12300");
     expect(new TextDecoder().decode(parsedData.payload)).toBe("hello");
+  });
+
+  it("Socket queues data until data listener is attached", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const socket = new Socket(transport, { port: 5432 });
+    socket.connect("localhost:5432");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(buildFrame(FRAME_TYPE.CONNECTED, "abc00000", EMPTY_PAYLOAD));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    ws.simulateMessage(buildFrame(FRAME_TYPE.DATA, "abc00000", new TextEncoder().encode("queued")));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const chunks: Uint8Array[] = [];
+    socket.on("data", (chunk: Uint8Array) => chunks.push(chunk));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(chunks.length).toBe(1);
+    expect(new TextDecoder().decode(chunks[0])).toBe("queued");
+  });
+
+  it("inbound Socket.destroy sends destroy frame without closing listener WS", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const server = new Server(transport);
+    const sockets: Socket[] = [];
+    server.on("connection", (socket: Socket) => sockets.push(socket));
+    const listenPromise = server.listen(0, "localhost");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(
+      buildFrame(FRAME_TYPE.LISTENING, LISTENER_CONNECTION_ID, jsonPayload({ port: 9001, host: "127.0.0.1" })),
+    );
+    await listenPromise;
+
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.ACCEPT,
+        "inbound1",
+        jsonPayload({ remoteAddress: "192.168.1.100", remotePort: 54321 }),
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const socket = sockets[0];
+    socket.destroy();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const destroyFrame = ws.sent
+      .map((bytes) => parseFrame(bytes))
+      .find((frame) => frame.type === FRAME_TYPE.DESTROY && frame.connectionId === "inbound1");
+    expect(destroyFrame).toBeDefined();
+    expect(ws.readyState).toBe(MockWebSocket.OPEN);
+  });
+
+  it("inbound Socket emits error when relay sends error frame", async () => {
+    const transport = new WebSocketTransport("ws://localhost:9000");
+    const server = new Server(transport);
+    const sockets: Socket[] = [];
+    server.on("connection", (socket: Socket) => sockets.push(socket));
+    const listenPromise = server.listen(0, "localhost");
+    const ws = mockInstances[mockInstances.length - 1];
+    ws.simulateOpen();
+    ws.simulateMessage(
+      buildFrame(FRAME_TYPE.LISTENING, LISTENER_CONNECTION_ID, jsonPayload({ port: 9001, host: "127.0.0.1" })),
+    );
+    await listenPromise;
+
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.ACCEPT,
+        "inbound1",
+        jsonPayload({ remoteAddress: "192.168.1.100", remotePort: 54321 }),
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const socket = sockets[0];
+    const errors: (Error & { code?: string })[] = [];
+    socket.on("error", (err: Error & { code?: string }) => errors.push(err));
+    ws.simulateMessage(
+      buildFrame(
+        FRAME_TYPE.ERROR,
+        "inbound1",
+        jsonPayload({ code: "ECONNRESET", message: "Connection reset" }),
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(errors.length).toBe(1);
+    expect(errors[0].message).toBe("Connection reset");
+    expect(errors[0].code).toBe("ECONNRESET");
   });
 });
 
