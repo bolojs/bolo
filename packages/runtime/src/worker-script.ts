@@ -18,6 +18,12 @@ let replCodeBuffer = "";
 const post = (msg: RuntimeMessage) => self.postMessage(msg);
 
 const isComplete = (buf: string): boolean => {
+  // ponytail: `new Function(buf)` wraps buf in its own `{ }`, so an unclosed
+  // brace in buf silently pairs with the wrapper's closing brace instead of
+  // surfacing as "unexpected end of input" — pre-check raw bracket balance.
+  const opens = (buf.match(/[{([]/g) || []).length;
+  const closes = (buf.match(/[)}\]]/g) || []).length;
+  if (opens > closes) return false;
   try {
     new Function(buf);
     return true;
