@@ -4,10 +4,12 @@ export const nodeRuntimeShims = (_options: { vfs: unknown; sandbox: unknown }): 
   return {
     name: "node-runtime-shims",
     resolveId(id: string): string | null {
+      // ponytail: https reuses the http shim verbatim; fetch handles TLS. No separate code path.
       if (
         id === "node:fs" ||
         id === "node:fs/promises" ||
         id === "node:http" ||
+        id === "node:https" ||
         id === "node:net" ||
         id === "node:child_process" ||
         id === "node:dns" ||
@@ -28,6 +30,10 @@ const fs = createFsShim(globalThis.__vfsBus);
 export const { readFile, writeFile, mkdir, rm, readdir, exists, stat } = fs.promises;`;
       }
       if (id === "node:http") {
+        return `import { createHttpShim } from '@bolojs/node-runtime-shims/dist/http-shim.js';
+export const { createServer, request, get, ClientRequest, IncomingMessage, ServerResponse, Agent, globalAgent, createAgent } = createHttpShim(globalThis.__sandbox, globalThis.__httpShimOptions);`;
+      }
+      if (id === "node:https") {
         return `import { createHttpShim } from '@bolojs/node-runtime-shims/dist/http-shim.js';
 export const { createServer, request, get, ClientRequest, IncomingMessage, ServerResponse, Agent, globalAgent, createAgent } = createHttpShim(globalThis.__sandbox, globalThis.__httpShimOptions);`;
       }
