@@ -8,7 +8,7 @@
     "build": "tsc",
     "test": "vitest run",
     "lint": "oxlint src",
-    "format": "oxfmt --check src",
+    "format": "oxfmt --check src '!**/fixtures/**'",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
