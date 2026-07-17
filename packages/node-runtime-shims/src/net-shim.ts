@@ -118,10 +118,13 @@ export class WebSocketTransport implements ByteTransport {
               );
             },
             close() {
+              // Half-close: signal end-of-write to relay. Do NOT close
+              // the WS here — the readable side may still have in-flight
+              // response data. The relay's tcp.on("close") will send back
+              // {type:"close"}, which triggers cleanup() and closes the WS.
               if (connectionId && ws.readyState === WebSocket.OPEN) {
                 ws.send(new TextEncoder().encode(JSON.stringify({ type: "close", connectionId })));
               }
-              ws.close();
             },
             abort() {
               ws.close();

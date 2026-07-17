@@ -126,8 +126,11 @@ function handleMessage(ws, msg) {
     case "close": {
       const conn = connections.get(msg.connectionId);
       if (conn) {
-        conn.tcp?.destroy();
-        connections.delete(msg.connectionId);
+        // Half-close: send FIN to target but keep socket readable so
+        // in-flight response data still flows back. The tcp "close"
+        // event handler above sends {type:"close"} back to the browser
+        // and cleans up when the target also closes.
+        conn.tcp?.end();
       }
       break;
     }
