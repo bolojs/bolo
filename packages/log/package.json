@@ -1,0 +1,37 @@
+{
+  "name": "@bolojs/log",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "oxlint src",
+    "format": "oxfmt --check src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@logtape/logtape": "^2.2.4",
+    "@logtape/file": "^2.2.4",
+    "@logtape/pretty": "^2.2.4"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
