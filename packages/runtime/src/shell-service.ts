@@ -108,8 +108,7 @@ export class ShellService {
     if (cmd === "node" || cmd === "bun") {
       const filePath = rest[0];
       if (!filePath) {
-        output.stderr(`Usage: ${cmd} <script>`);
-        return 1;
+        return this.routeRepl(output);
       }
       return this.runNodeApp(filePath, output);
     }
@@ -224,6 +223,13 @@ export class ShellService {
     }
 
     return this.runNodeApp(filePath, output);
+  }
+
+  private async routeRepl(output: OutputCallbacks): Promise<number> {
+    // ponytail: shell→REPL streaming integration post-v1; Terminal.tsx will wire ReplService directly
+    this.deps.runtimeWorker.startRepl();
+    output.stdout("REPL started. (streaming integration post-v1)\n");
+    return 0;
   }
 
   /**

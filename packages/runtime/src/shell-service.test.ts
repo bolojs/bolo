@@ -12,6 +12,7 @@ const createMockDeps = (): ShellServiceDeps => {
     } as unknown as ShellServiceDeps["packageManager"],
     runtimeWorker: {
       runScript: vi.fn().mockResolvedValue(undefined),
+      startRepl: vi.fn(),
       onStdout: null,
       onStderr: null,
     } as unknown as ShellServiceDeps["runtimeWorker"],
@@ -247,6 +248,12 @@ server.listen(3000);`,
     expect(resp.status).toBe(200);
     expect(resp.headers.get("Content-Type")).toBe("application/json");
     expect(await resp.text()).toBe('{"echo":"hello"}');
+  });
+
+  it("node with no args → starts REPL", async () => {
+    const result = await shell.execute("node");
+    expect(deps.runtimeWorker.startRepl).toHaveBeenCalled();
+    expect(result.exitCode).toBe(0);
   });
 
   it("runtime run → error when no file specified", async () => {
