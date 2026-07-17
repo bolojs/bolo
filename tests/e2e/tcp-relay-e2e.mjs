@@ -1,6 +1,7 @@
-// E2E validation for TCP relay: outbound nc/tcping + HTTP curl.
+// E2E validation for TCP relay: outbound nc/tcping + HTTP curl + inbound nc -l.
 // Run from tests/e2e/ so playwright resolves: `node tcp-relay-e2e.mjs`
 import { chromium } from "playwright";
+import net from "node:net";
 import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -121,6 +122,52 @@ async function main() {
         15000,
       ),
     );
+
+    // Test 4: inbound — browser listens via relay, driver connects over real TCP.
+    // `nc -l` prints accepted data to stdout; wait for it in the terminal.
+    const LISTEN_PORT = 18081;
+    const INBOUND_TOKEN = "inbound-hello";
+    const textarea = page.locator(".xterm-helper-textarea");
+    console.log(`\n[nc -l] typing: nc -l -w 30 ${LISTEN_PORT}`);
+    await textarea.click();
+    await textarea.type(`nc -l -w 30 ${LISTEN_PORT}`, { delay: 10 });
+    await textarea.press("Enter");
+
+    // Retry-connect until the relay's listener is bound (LISTEN round-trip is async).
+    let client;
+    const deadline = Date.now() + 20000;
+    for (;;) {
+      try {
+        client = await new Promise((resolve, reject) => {
+          const c = net.createConnection(LISTEN_PORT, "127.0.0.1", () => resolve(c));
+          c.on("error", reject);
+        });
+        break;
+      } catch (e) {
+        if (Date.now() > deadline) throw new Error(`relay listener never came up: ${e.message}`);
+        await sleep(500);
+      }
+    }
+    client.write(INBOUND_TOKEN);
+    await sleep(300);
+    client.end();
+
+    try {
+      await page.waitForFunction(
+        (exp) => (document.querySelector(".xterm-rows")?.textContent ?? "").includes(exp),
+        INBOUND_TOKEN,
+        { timeout: 15000 },
+      );
+      console.log(`[nc -l] PASS — found "${INBOUND_TOKEN}"`);
+      results.push({ label: "nc -l (inbound)", pass: true });
+    } catch {
+      const tail = await page.evaluate(
+        () => (document.querySelector(".xterm-rows")?.textContent ?? "").slice(-300),
+      );
+      console.log(`[nc -l] FAIL — expected "${INBOUND_TOKEN}"`);
+      console.log(`[nc -l] output tail: ${JSON.stringify(tail)}`);
+      results.push({ label: "nc -l (inbound)", pass: false, tail });
+    }
   } catch (e) {
     console.error("E2E error:", e.message ?? e);
     results.push({ label: "bootstrap", pass: false, error: String(e) });
