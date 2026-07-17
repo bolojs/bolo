@@ -49,7 +49,7 @@ These require capabilities a browser cannot provide safely or at all. All fail w
 
 **Emulable with reduced fidelity (T3-level):**
 - `child_process.spawn()` — Tier 3 via Worker + message IPC; covers "run script in subprocess and capture output."
-- `vm` — shimmed via QuickJS `js.eval()` (the sandbox pool already has QuickJS)
+- `vm` — shimmed via `quickjs-emscripten-core` in the `vm` builtin shim (separate from the runtime sandbox)
 - `https` client — shimmed via `fetch` (TLS is built in)
 - `dns` — shimmed via DoH (Cloudflare `https://cloudflare-dns.com/dns-query`)
 - `net.connect()` (outbound TCP) — emulated via a self-hosted WebSocket relay (ws → TCP bridge). Byte-stream fidelity for database, Redis, mail, and custom-protocol clients. User operates the relay; OSS core ships a reference implementation, not a hosted service
@@ -63,7 +63,7 @@ These require capabilities a browser cannot provide safely or at all. All fail w
 ### Two-tier runtime
 
 - **Trusted tier (V8, main realm):** User code runs here via `data:` import. Full Node compatibility surface via shims. Executes in the main browser context.
-- **Untrusted tier (QuickJS, sandbox pool):** AI agent code runs here. Sandboxed via QuickJS isolate + `sandbox-policy` ACLs (CPU, memory, filesystem, network limits). Route: `transformScript` (esbuild TS strip) → QuickJS `evalCode`. Strips types, enforces sandbox policy.
+- **Untrusted tier (IframeSandbox, sandbox pool):** AI agent code runs here. Sandboxed via `sandbox-policy` ACLs (CPU, memory, filesystem, network limits) + a sandboxed iframe with `eval()`. Route: `transformScript` (esbuild TS strip) → iframe `eval()`. Strips types, enforces sandbox policy.
 
 ### Virtual filesystem
 
@@ -91,7 +91,7 @@ ServiceWorker intercepts all traffic on the virtual origin (`sandbox.localhost`)
 - ServiceWorker-based network proxy for virtual localhost
 - WASM-based tool registry (esbuild, tsc, sass, swc)
 - Vite dev server running in the browser
-- Two-tier runtime: V8 (user code) + QuickJS (AI agents)
+- Two-tier runtime: V8 (user code) + IframeSandbox (AI agents)
 - Opt-in sandbox policy with network, memory, CPU, and filesystem restrictions
 - Backend framework compatibility: Hono, Express, Koa, Fastify, Elysia, Nitro, tRPC
 - Vendored Node.js test suite harness as the primary compatibility metric
