@@ -4,6 +4,9 @@ import type { SWSandbox } from "@bolojs/sw-sandbox";
 import { BrowserViteServer } from "@bolojs/vite-server";
 import { bundleEntry } from "@bolojs/wasm-registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
+import { curl } from "./commands/curl.js";
+import { nc } from "./commands/nc.js";
+import { tcping } from "./commands/tcping.js";
 import { Bash } from "just-bash/browser";
 import type { RuntimeWorker } from "./runtime-worker.js";
 import type { SandboxBackend } from "./sandbox-backend.js";
@@ -40,6 +43,8 @@ interface OutputCallbacks {
   stdout: (data: string) => void;
   stderr: (data: string) => void;
 }
+
+export type { OutputCallbacks };
 
 export class ShellService {
   private deps: ShellServiceDeps;
@@ -97,6 +102,9 @@ export class ShellService {
     if (cmd === "npm") return this.routeNpm(rest, output);
     if (cmd === "runtime") return this.routeRuntime(rest, output);
     if (cmd === "agent") return this.routeAgent(rest, output);
+    if (cmd === "curl") return curl(rest, output);
+    if (cmd === "nc") return nc(rest, output);
+    if (cmd === "tcping") return tcping(rest, output);
     if (cmd === "node" || cmd === "bun") {
       const filePath = rest[0];
       if (!filePath) {
