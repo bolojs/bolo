@@ -136,7 +136,8 @@ describe("child_process Worker spawn", () => {
 
   it("fork throws clear error without Worker factory", () => {
     const shim = createChildProcessShim();
-    expect(() => shim.fork("./script.js")).toThrow(/not available without a Worker factory/);
+    expect(() => shim.fork("./script.js")).toThrow(/POSIX fork/);
+    expect(() => shim.fork("./script.js")).toThrow(/ADR-0007/);
   });
 
   it("send posts IPC message to worker", () => {

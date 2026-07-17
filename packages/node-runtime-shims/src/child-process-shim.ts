@@ -232,8 +232,10 @@ const SYNC_NOT_SUPPORTED =
   "Promise. Use the async spawn()/exec() APIs instead.";
 
 const FORK_NOT_SUPPORTED =
-  "child_process.fork is not available without a Worker factory: a true V8 fork is impossible in a browser. " +
-  "Pass a createWorker factory to createChildProcessShim for a Worker-based substitute.";
+  "POSIX fork(2) is not supported in this environment: V8 has no heap-snapshot/clone API, no MMU page-table access, " +
+  "and no resumable continuations across isolates (see ADR-0007). " +
+  "Node's child_process.fork(modulePath) IS supported via Worker + IPC; " +
+  "pass a createWorker factory to createChildProcessShim to enable it.";
 
 const isNodeCommand = (command: string): boolean =>
   command === "node" || command.endsWith("/node") || command.endsWith("\\node");
