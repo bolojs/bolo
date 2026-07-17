@@ -38,12 +38,43 @@ const resolveOptions = (
   typeof options === "string" ? options : (options?.encoding ?? undefined);
 
 /**
- * Adapts VfsBus (memfs `hot` tier + OPFS `cold` tier) to just-bash's IFileSystem,
- * so the shell's virtual filesystem stays a single source of truth instead of a
- * second, diverging copy that has to be synced by hand.
+ * Adapter: just-bash IFileSystem → VfsBus.
+ *
+ * INVARIANT: probe methods (exists/stat/readdir/readdirWithFileTypes/lstat/
+ * chmod/symlink/link/readlink/realpath/utimes/getAllPaths) are HOT-ONLY.
+ * They use `vfs.hot.*Sync` and never reach the OPFS cold tier. This is
+ * mandatory: just-bash's command resolution PATH-searches /usr/bin/<cmd>
+ * and /bin/<cmd> before every command (until hashTable caches it), and a
+ * cold roundtrip there stalls the shell for up to 10s per miss.
+ *
+ * Content reads (readFile/readFileBuffer) DO use the async vfs.* path so
+ * `cat /old/file-from-prior-session` can hydrate from OPFS on demand. This
+ * asymmetry is intentional: cat is allowed to be slow; ls and command
+ * resolution are not.
+ *
+ * The sync methods mkdirSync/writeFileSync satisfy just-bash's isSyncInitFs()
+ * (fs/init.ts:27), which gates creation of /bin, /usr/bin, /dev, /proc and
+ * the command-stub files registerCommand() (Bash.ts:520) writes into /bin.
+ * Without them, every exists("/usr/bin/<cmd>") misses hot and stalls.
  */
 export class VfsBashFileSystem implements IFileSystem {
   constructor(private vfs: VfsBus) {}
+
+  // Satisfies just-bash's isSyncInitFs() (fs/init.ts:27) so init creates
+  // /bin, /usr/bin, /dev, /proc and registerCommand (Bash.ts:520) creates
+  // /bin/<cmd> stubs. Writes go to hot ONLY — persistence is VfsBus's job.
+  mkdirSync(path: string, options?: { recursive?: boolean }): void {
+    this.vfs.hot.mkdirSync(path, { recursive: options?.recursive ?? false });
+  }
+
+  writeFileSync(path: string, content: FileContent): void {
+    const bytes = typeof content === "string" ? new TextEncoder().encode(content) : content;
+    const dir = path.substring(0, path.lastIndexOf("/"));
+    if (dir && !this.vfs.hot.existsSync(dir)) {
+      this.vfs.hot.mkdirSync(dir, { recursive: true });
+    }
+    this.vfs.hot.writeFileSync(path, bytes);
+  }
 
   resolvePath(base: string, path: string): string {
     if (path.startsWith("/")) return path;
@@ -116,7 +147,7 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async exists(path: string): Promise<boolean> {
-    return this.vfs.exists(path);
+    return this.vfs.hot.existsSync(path);
   }
 
   async mkdir(path: string, options?: MkdirOptions): Promise<void> {
@@ -124,13 +155,11 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async readdir(path: string): Promise<string[]> {
-    await this.ensureHydrated(path);
-    const entries = await this.vfs.readdir(path);
-    return entries as string[];
+    const entries = this.vfs.hot.readdirSync(path, { withFileTypes: false }) as string[];
+    return entries;
   }
 
   async readdirWithFileTypes(path: string): Promise<DirentEntry[]> {
-    await this.ensureHydrated(path);
     const entries = this.vfs.hot.readdirSync(path, { withFileTypes: true }) as Array<{
       name: string;
       isFile(): boolean;
@@ -155,7 +184,6 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async cp(src: string, dest: string, options?: CpOptions): Promise<void> {
-    await this.ensureHydrated(src);
     const stat = this.vfs.hot.statSync(src);
     if (stat.isDirectory()) {
       if (!options?.recursive) {
@@ -186,7 +214,6 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async stat(path: string): Promise<FsStat> {
-    await this.ensureHydrated(path);
     const s = this.vfs.hot.statSync(path);
     return {
       isFile: s.isFile(),
@@ -199,7 +226,6 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async lstat(path: string): Promise<FsStat> {
-    await this.ensureHydrated(path);
     const s = this.vfs.hot.lstatSync(path);
     return {
       isFile: s.isFile(),
@@ -212,7 +238,6 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async chmod(path: string, mode: number): Promise<void> {
-    await this.ensureHydrated(path);
     this.vfs.hot.chmodSync(path, mode);
   }
 
@@ -221,7 +246,6 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async link(existingPath: string, newPath: string): Promise<void> {
-    await this.ensureHydrated(existingPath);
     this.vfs.hot.linkSync(existingPath, newPath);
   }
 
@@ -230,16 +254,14 @@ export class VfsBashFileSystem implements IFileSystem {
   }
 
   async realpath(path: string): Promise<string> {
-    await this.ensureHydrated(path);
     return this.vfs.hot.realpathSync(path) as string;
   }
 
   async utimes(path: string, atime: Date, mtime: Date): Promise<void> {
-    await this.ensureHydrated(path);
     this.vfs.hot.utimesSync(path, atime, mtime);
   }
 
   getAllPaths(): string[] {
-    return Object.keys(this.vfs.vol.toJSON());
+    return Object.keys(this.vfs.snapshot());
   }
 }

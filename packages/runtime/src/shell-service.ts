@@ -106,15 +106,6 @@ export class ShellService {
       return this.runNodeApp(filePath, output);
     }
 
-    // ponytail: just-bash/browser stalls in real browsers for simple FS
-    // commands. Handle ls/cat/pwd directly via VFS — covers 90% of demo
-    // terminal usage without the bash overhead. Fall through to bash for
-    // pipes, redirects, and complex shell syntax.
-    if (!/[|><;&`$()]/.test(command)) {
-      const simpleExit = await this.routeSimple(cmd, rest, output);
-      if (simpleExit !== undefined) return simpleExit;
-    }
-
     // just-bash restores cwd to its pre-call value after each exec(), so the
     // shell's persistent working directory is threaded through explicitly.
     const result = await this.bash.exec(command, { cwd: this.cwd });
@@ -122,43 +113,6 @@ export class ShellService {
     if (result.stderr) output.stderr(result.stderr);
     this.cwd = result.env.PWD ?? this.cwd;
     return result.exitCode;
-  }
-
-  /** Handle simple filesystem commands directly (ls, cat, pwd) without
-   * routing through just-bash/browser, which stalls in real browsers.
-   * Returns exit code if handled, undefined to fall through to bash. */
-  private async routeSimple(
-    cmd: string,
-    args: string[],
-    output: OutputCallbacks,
-  ): Promise<number | undefined> {
-    if (cmd === "pwd") {
-      output.stdout(`${this.cwd}\n`);
-      return 0;
-    }
-    if (cmd === "ls") {
-      const pathArg = args.find((a) => !a.startsWith("-"));
-      const target = pathArg ? this.resolvePath(pathArg) : this.cwd;
-      try {
-        const entries = await this.deps.vfs.readdir(target);
-        output.stdout(`${(entries as string[]).join("  ")}\n`);
-      } catch (err) {
-        output.stderr(err instanceof Error ? err.message : String(err));
-      }
-      return 0;
-    }
-    if (cmd === "cat") {
-      for (const f of args) {
-        try {
-          const content = await this.deps.vfs.readFile(this.resolvePath(f));
-          output.stdout(String(content));
-        } catch (err) {
-          output.stderr(err instanceof Error ? err.message : String(err));
-        }
-      }
-      return 0;
-    }
-    return undefined;
   }
 
   private async routeNpm(args: string[], output: OutputCallbacks): Promise<number> {
