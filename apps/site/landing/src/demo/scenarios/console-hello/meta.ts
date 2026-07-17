@@ -15,7 +15,7 @@ export const consoleHello: Scenario = {
     { label: "List files", command: "ls", args: ["-l"] },
     { label: "Install deps", command: "npm", args: ["install"] },
     { label: "View package.json", command: "cat", args: ["package.json"] },
-    { label: "Run REPL", command: "node", args: [], reason: "no stdin in v1.0" },
+    { label: "Run REPL", command: "node", args: [] },
     { label: "Git status", command: "git", args: ["status"], reason: "no git shim" },
     { label: "npm build", command: "npm", args: ["run", "build"], reason: "no build script" },
   ],

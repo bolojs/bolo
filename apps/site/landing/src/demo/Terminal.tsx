@@ -7,7 +7,7 @@ import "@xterm/xterm/css/xterm.css";
 interface Props {
   lines: string[];
   disabled: boolean;
-  onSubmit(commandLine: string): void;
+  onSubmit(commandLine: string): void | Promise<{ continuation?: boolean } | void>;
   inputValue?: string;
   focusTrigger?: number;
 }
@@ -80,16 +80,18 @@ export default function Terminal(props: Props) {
       for (let i = 0; i < n; i++) xterm?.write("\b \b");
     };
 
-    const submitLine = () => {
+    const submitLine = async () => {
       const line = lineBuffer.trim();
       xterm?.write("\r\n");
+      let continuation = false;
       if (line) {
-        props.onSubmit(line);
+        const result = await props.onSubmit(line);
+        continuation = result?.continuation ?? false;
         history.push(line);
         historyIndex = null;
       }
       lineBuffer = "";
-      xterm?.write("\r\n> ");
+      xterm?.write(continuation ? "\r\n... " : "\r\n> ");
     };
 
     xterm.onData((data) => {

@@ -2,7 +2,7 @@
 import "./client-globals";
 import { createSignal, onMount } from "solid-js";
 import { Shimmer } from "@shimmer-from-structure/solid";
-import { boot, type BrowserContainer } from "@bolojs/runtime";
+import { boot, type BrowserContainer, type ReplResult } from "@bolojs/runtime";
 import { getLogger } from "@bolojs/log/browser";
 import { createE2eBridge } from "./e2e-bridge";
 import Terminal from "./Terminal";
@@ -63,6 +63,7 @@ export default function Demo(props: Props = {}) {
   const [previewUrl, setPreviewUrl] = createSignal<string | null>(null);
   const [inputValue, setInputValue] = createSignal("");
   const [focusInput, setFocusInput] = createSignal(0);
+  const [replActive, setReplActive] = createSignal(false);
   let container: BrowserContainer | undefined;
 
   const appendLine = (s: string) => setLines((prev) => [...prev, s]);
@@ -100,6 +101,7 @@ export default function Demo(props: Props = {}) {
 
       setLines([]);
       setInputValue("");
+      setReplActive(false);
       setActiveScenario(scenario);
       setSource(scenario.files["index.ts"]);
       setActiveTab("code");
@@ -138,13 +140,45 @@ export default function Demo(props: Props = {}) {
     bootScenario(defaultScenario);
   });
 
-  const handleSubmit = async (line: string) => {
+  const enterRepl = async () => {
     if (!container) return;
+    await container.startRepl();
+    appendLine("\r\n\x1b[2mWelcome to Node.js REPL. Type \".exit\" to leave.\x1b[0m\r\n");
+    setReplActive(true);
+  };
+
+  const handleReplLine = async (line: string): Promise<{ continuation?: boolean } | void> => {
+    if (!container) return;
+    if (line.trim() === ".exit") {
+      container.exitRepl();
+      setReplActive(false);
+      appendLine("\r\n");
+      return;
+    }
+    const result: ReplResult = await container.evalRepl(line);
+    if (result.error) {
+      appendLine(`\x1b[2m${result.error}\x1b[0m\r\n`);
+    } else if (result.value !== undefined) {
+      appendLine(`${result.value}\r\n`);
+    }
+    return result.continuation ? { continuation: true } : {};
+  };
+
+  const handleSubmit = async (line: string): Promise<{ continuation?: boolean } | void> => {
+    setInputValue("");
+    if (!container) return;
+    if (replActive()) {
+      return handleReplLine(line);
+    }
     const trimmed = line.trim();
     if (!trimmed) return;
-    await container.fs.writeFile(`${container.workdir}/index.ts`, source());
     const [command, ...args] = trimmed.split(/\s+/);
     if (!command) return;
+    if (command === "node" && args.length === 0) {
+      await enterRepl();
+      return;
+    }
+    await container.fs.writeFile(`${container.workdir}/index.ts`, source());
     await runCommand(command, args);
   };
 
