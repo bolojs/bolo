@@ -387,6 +387,9 @@ importers:
 
   packages/npm:
     dependencies:
+      '@bolojs/log':
+        specifier: workspace:*
+        version: link:../log
       '@unjs/lockfile':
         specifier: workspace:*
         version: link:../@unjs/lockfile

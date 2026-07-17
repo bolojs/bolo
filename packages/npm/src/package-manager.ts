@@ -1,4 +1,5 @@
 import type { VfsBus } from "@bolojs/vfs-bus";
+import { getLogger } from "@bolojs/log/browser";
 import { createFsFromVolume } from "memfs";
 import { parse, resolve } from "@unjs/lockfile";
 import type { InstallablePackage, LockfileGraph } from "@unjs/lockfile";
@@ -6,6 +7,8 @@ import { buildEsmShUrl } from "./esm-sh.js";
 import { walkDependencies } from "./graph-walker.js";
 import { serializeNpmLockfile } from "./lockfile-writer.js";
 import type { NpmPackument, ResolveCache } from "./registry-resolver.js";
+
+const logger = getLogger(["bolo", "npm", "package-manager"]);
 
 export interface ImportMap {
   imports: Record<string, string>;
@@ -308,9 +311,8 @@ export class PackageManager {
   }
 
   private warn(message: string): void {
-    const line = `[package-manager] ${message}\n`;
-    if (this.stderr) this.stderr(line);
-    else console.warn(line);
+    if (this.stderr) this.stderr(`[package-manager] ${message}\n`);
+    else logger.warn(message);
   }
 
   private parsePackageSpecifier(spec: string): [string, string | undefined] {
@@ -372,7 +374,7 @@ export class PackageManager {
           return version ? `${name}@${version}` : name;
         });
     } catch (error) {
-      console.warn("Could not read package.json:", error);
+      logger.warn("Could not read package.json", { error });
       return [];
     }
   }
