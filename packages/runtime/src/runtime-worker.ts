@@ -7,6 +7,13 @@ export interface RunScriptOptions {
   httpShimOptions?: { onPortEvent?: (event: string, data: { port: number; url?: string }) => void };
 }
 
+export interface ReplResult {
+  ok: boolean;
+  value?: string;
+  error?: string;
+  continuation?: boolean;
+}
+
 export type RuntimeMessage =
   | { type: "RUN_SCRIPT"; code: string; opts: RunScriptOptions }
   | { type: "STDOUT"; data: string }
@@ -14,7 +21,18 @@ export type RuntimeMessage =
   | { type: "EXIT"; code: number }
   | { type: "HEARTBEAT" }
   | { type: "IPC_MESSAGE"; data: unknown }
-  | { type: "IPC_DISCONNECT" };
+  | { type: "IPC_DISCONNECT" }
+  | { type: "REPL_START" }
+  | { type: "REPL_EVAL"; id: string; code: string }
+  | { type: "REPL_RESULT"; id: string; ok: boolean; value?: string; error?: string; continuation?: boolean }
+  | { type: "REPL_EXIT" };
+
+const generateId = (): string => {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 
 export class RuntimeWorker {
   private worker: Worker | null = null;
@@ -23,6 +41,13 @@ export class RuntimeWorker {
   onStdout: ((data: string) => void) | null = null;
   onStderr: ((data: string) => void) | null = null;
   onExit: ((code: number) => void) | null = null;
+
+  private replWorker: Worker | null = null;
+  private replCallbacks: Map<
+    string,
+    { resolve: (value: ReplResult | PromiseLike<ReplResult>) => void; reject: (reason: Error) => void }
+  > = new Map();
+  onReplResult?: (result: ReplResult) => void;
 
   constructor(
     private vfs: VfsBus,
@@ -57,6 +82,69 @@ export class RuntimeWorker {
     });
   }
 
+  startRepl(): void {
+    if (this.replWorker) return;
+    this.replWorker = new Worker(new URL("./worker-script.js", import.meta.url), { type: "module" });
+    this.replWorker.onmessage = ({ data }: MessageEvent<RuntimeMessage>) => {
+      switch (data.type) {
+        case "REPL_RESULT": {
+          const { id: _id, type: _type, ...result } = data;
+          this.onReplResult?.(result as ReplResult);
+          const callbacks = this.replCallbacks.get(data.id);
+          if (callbacks) {
+            this.replCallbacks.delete(data.id);
+            callbacks.resolve(result as ReplResult);
+          }
+          return;
+        }
+        case "STDOUT":
+          return this.onStdout?.(data.data);
+        case "STDERR":
+          return this.onStderr?.(data.data);
+        case "HEARTBEAT":
+          // REPL worker heartbeats are ignored for now; watchdog can be added if needed
+          return;
+      }
+    };
+    this.replWorker.postMessage({ type: "REPL_START" } satisfies RuntimeMessage);
+  }
+
+  evalRepl(code: string): Promise<ReplResult> {
+    return new Promise<ReplResult>((resolve, reject) => {
+      if (!this.replWorker) {
+        reject(new Error("REPL worker not started"));
+        return;
+      }
+      const id = generateId();
+      this.replCallbacks.set(id, { resolve, reject });
+      const timer = setTimeout(() => {
+        this.replCallbacks.delete(id);
+        reject(new Error(`REPL eval timed out after 30s for id ${id}`));
+      }, 30000);
+      const originalResolve = resolve;
+      resolve = (value: ReplResult | PromiseLike<ReplResult>) => {
+        clearTimeout(timer);
+        originalResolve(value);
+      };
+      const originalReject = reject;
+      reject = (reason: Error) => {
+        clearTimeout(timer);
+        originalReject(reason);
+      };
+      this.replCallbacks.set(id, { resolve, reject });
+      this.replWorker.postMessage({ type: "REPL_EVAL", id, code } satisfies RuntimeMessage);
+    });
+  }
+
+  disposeRepl(): void {
+    this.replWorker?.terminate();
+    this.replWorker = null;
+    for (const { reject } of this.replCallbacks.values()) {
+      reject(new Error("REPL worker disposed"));
+    }
+    this.replCallbacks.clear();
+  }
+
   private rejectRun: ((reason?: Error) => void) | null = null;
 
   private startWatchdog = (): void => {
@@ -79,5 +167,6 @@ export class RuntimeWorker {
     this.worker?.terminate();
     this.worker = null;
     this.rejectRun = null;
+    this.disposeRepl();
   };
 }

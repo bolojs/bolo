@@ -12,8 +12,33 @@ type IPCProcessShim = ProcessShim & {
 };
 
 let activeProcess: IPCProcessShim | null = null;
+let replActive = false;
+let replCodeBuffer = "";
 
 const post = (msg: RuntimeMessage) => self.postMessage(msg);
+
+const isComplete = (buf: string): boolean => {
+  try {
+    new Function(buf);
+    return true;
+  } catch (e) {
+    return !/end of input|unexpected end|unterminated/i.test((e as SyntaxError).message);
+  }
+};
+
+const formatValue = (v: unknown): string => {
+  if (v === undefined) return "undefined";
+  if (v === null) return "null";
+  if (typeof v === "function") return v.toString();
+  if (typeof v === "object") {
+    try {
+      return JSON.stringify(v, null, 2);
+    } catch {
+      return String(v);
+    }
+  }
+  return String(v);
+};
 
 const runUserCode = (code: string, opts: RunScriptOptions) => {
   if (opts.httpShimOptions) {
@@ -61,6 +86,54 @@ setInterval(() => {
 
 self.onmessage = (ev: MessageEvent<RuntimeMessage>) => {
   const msg = ev.data;
+  if (msg.type === "REPL_START") {
+    replActive = true;
+    replCodeBuffer = "";
+    return;
+  }
+  if (msg.type === "REPL_EXIT") {
+    replActive = false;
+    replCodeBuffer = "";
+    return;
+  }
+  if (msg.type === "REPL_EVAL") {
+    const { id, code } = msg;
+    replCodeBuffer += code + "\n";
+    if (!isComplete(replCodeBuffer)) {
+      post({ type: "REPL_RESULT", id, ok: true, continuation: true });
+      return;
+    }
+    const fullCode = replCodeBuffer.trim();
+    replCodeBuffer = "";
+
+    let result: unknown;
+    let error: string | undefined;
+    const originalLog = console.log;
+    console.log = function (...args: unknown[]) {
+      post({ type: "STDOUT", data: args.map(String).join(" ") });
+      originalLog.apply(console, args);
+    };
+    try {
+      // ponytail: expression-first heuristic; matches node REPL UX without a parser dep
+      try {
+        result = (0, eval)(`(${fullCode})`);
+      } catch {
+        result = (0, eval)(fullCode);
+      }
+    } catch (e) {
+      error = String(e);
+    } finally {
+      console.log = originalLog;
+    }
+    post({
+      type: "REPL_RESULT",
+      id,
+      ok: !error,
+      value: error ? undefined : formatValue(result),
+      error,
+    });
+    return;
+  }
   if (msg.type === "RUN_SCRIPT") {
     runUserCode(msg.code, msg.opts);
   } else if (msg.type === "IPC_MESSAGE") {

@@ -153,7 +153,7 @@ describe("RuntimeWorker", () => {
     await runPromise;
   });
 
-  it("should dispose cleanly", () => {
+  it("should start a persistent REPL worker", () => {
     const mockWorker = createMockWorker();
     vi.stubGlobal(
       "Worker",
@@ -162,9 +162,65 @@ describe("RuntimeWorker", () => {
       }),
     );
 
-    worker.dispose();
+    worker.startRepl();
 
-    // Calling dispose again should be safe
-    worker.dispose();
+    expect(Worker).toHaveBeenCalled();
+    expect(mockWorker.instance.postMessage).toHaveBeenCalledWith({ type: "REPL_START" });
+    expect(mockWorker.instance.terminate).not.toHaveBeenCalled();
+  });
+
+  it("should eval REPL code and return the result", async () => {
+    const mockWorker = createMockWorker();
+    vi.stubGlobal(
+      "Worker",
+      vi.fn(function () {
+        return mockWorker.instance;
+      }),
+    );
+
+    worker.startRepl();
+    const evalPromise = worker.evalRepl("1 + 1");
+
+    const postCalls = vi.mocked(mockWorker.instance.postMessage).mock.calls;
+    expect(postCalls[1][0]).toMatchObject({ type: "REPL_EVAL", code: "1 + 1" });
+
+    const posted = postCalls[1][0] as { id: string };
+    mockWorker.simulateMessage({ type: "REPL_RESULT", id: posted.id, ok: true, value: "2" });
+
+    await expect(evalPromise).resolves.toEqual({ ok: true, value: "2" });
+  });
+
+  it("should timeout REPL eval after 30s", async () => {
+    const mockWorker = createMockWorker();
+    vi.stubGlobal(
+      "Worker",
+      vi.fn(function () {
+        return mockWorker.instance;
+      }),
+    );
+
+    worker.startRepl();
+    const evalPromise = worker.evalRepl("1 + 1");
+
+    vi.advanceTimersByTime(30000);
+
+    await expect(evalPromise).rejects.toThrow(/timed out/);
+  });
+
+  it("should dispose REPL worker and reject pending evals", async () => {
+    const mockWorker = createMockWorker();
+    vi.stubGlobal(
+      "Worker",
+      vi.fn(function () {
+        return mockWorker.instance;
+      }),
+    );
+
+    worker.startRepl();
+    const evalPromise = worker.evalRepl("1 + 1");
+    worker.disposeRepl();
+
+    await expect(evalPromise).rejects.toThrow(/disposed/);
+    expect(mockWorker.instance.terminate).toHaveBeenCalled();
   });
 });
