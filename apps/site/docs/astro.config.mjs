@@ -5,6 +5,9 @@ import starlightLlmsTxt from 'starlight-llms-txt';
 export default defineConfig({
   site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : 'https://bolojs.pages.dev',
   base: '/docs',
+  vite: {
+    server: { fs: { allow: ['../../../docs'] } },
+  },
   integrations: [
     starlight({
       title: 'bolo',
