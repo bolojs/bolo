@@ -1,12 +1,13 @@
 import type { VfsBus } from "@bolojs/vfs-bus";
 import { getLogger } from "@bolojs/log/browser";
 import { createFsFromVolume } from "memfs";
-import { parse, resolve } from "@unjs/lockfile";
-import type { InstallablePackage, LockfileGraph } from "@unjs/lockfile";
+import { parse, resolveGraph } from "@unjs/lockfile";
+import type { LockfileGraph, ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
 import { buildEsmShUrl } from "./esm-sh.js";
 import { walkDependencies } from "./graph-walker.js";
 import { serializeNpmLockfile } from "./lockfile-writer.js";
 import type { NpmPackument, ResolveCache } from "./registry-resolver.js";
+import { materializeVirtualStore } from "./virtual-store.js";
 
 const logger = getLogger(["bolo", "npm", "package-manager"]);
 
@@ -141,12 +142,15 @@ export class PackageManager {
     }
 
     try {
-      const graph = parse(lockfile.content);
-      const installables = resolve(graph, this.cwd);
-
-      for (const pkg of installables) {
-        await this.fetchAndExtract(pkg);
-      }
+      const lockfileGraph = parse(lockfile.content);
+      const graph = resolveGraph(lockfileGraph, this.cwd);
+      await materializeVirtualStore({
+        vfs: this.vfs,
+        cwd: this.cwd,
+        graph,
+        fetchAndExtract: (pkg, targetDir) => this.fetchAndExtract(pkg, targetDir),
+        onWarn: (msg) => this.warn(msg),
+      });
     } catch (error) {
       this.warn(
         `lockfile-only install failed: ${error instanceof Error ? error.message : String(error)}; falling back to browser-native`,
@@ -162,41 +166,40 @@ export class PackageManager {
    */
   private async installBrowserNative(packages?: string[]): Promise<void> {
     const lockfile = this.detectLockfile();
-    let installables: InstallablePackage[];
+    let graph: ResolvedGraph;
 
     if (lockfile) {
       try {
-        const graph = parse(lockfile.content);
-        installables = resolve(graph, this.cwd);
+        const lockfileGraph = parse(lockfile.content);
+        graph = resolveGraph(lockfileGraph, this.cwd);
       } catch (error) {
         this.warn(
           `Lockfile parse failed: ${error instanceof Error ? error.message : String(error)}; resolving from registry`,
         );
-        installables = await this.resolveFromRegistry(packages);
+        graph = await this.resolveFromRegistry(packages);
       }
     } else {
-      installables = await this.resolveFromRegistry(packages);
+      graph = await this.resolveFromRegistry(packages);
     }
 
-    for (const pkg of installables) {
-      await this.fetchAndExtract(pkg);
-    }
+    await materializeVirtualStore({
+      vfs: this.vfs,
+      cwd: this.cwd,
+      graph,
+      fetchAndExtract: (pkg, targetDir) => this.fetchAndExtract(pkg, targetDir),
+      onWarn: (msg) => this.warn(msg),
+    });
 
     const pkgJson = this.readPackageJson();
     const rootDeps =
       packages && packages.length > 0
         ? this.specifiersToDeps(packages)
         : { ...pkgJson?.dependencies, ...pkgJson?.devDependencies };
-    const lockfileContent = serializeNpmLockfile(
-      installables,
-      rootDeps,
-      pkgJson?.name,
-      pkgJson?.version,
-    );
+    const lockfileContent = serializeNpmLockfile(graph, rootDeps, pkgJson?.name, pkgJson?.version);
     await this.vfs.writeFile(`${this.cwd}/package-lock.json`, lockfileContent);
   }
 
-  private async resolveFromRegistry(packages?: string[]): Promise<InstallablePackage[]> {
+  private async resolveFromRegistry(packages?: string[]): Promise<ResolvedGraph> {
     const pkgJson = this.readPackageJson();
     const rootDeps =
       packages && packages.length > 0
@@ -286,10 +289,13 @@ export class PackageManager {
     return null;
   }
 
-  private async fetchAndExtract(pkg: InstallablePackage): Promise<void> {
-    const res = await fetch(pkg.url);
+  private async fetchAndExtract(pkg: ResolvedGraphPackage, targetDir: string): Promise<void> {
+    if (!pkg.resolvedUrl) {
+      throw new Error(`No resolved URL for ${pkg.name}@${pkg.version}`);
+    }
+    const res = await fetch(pkg.resolvedUrl);
     if (!res.ok) {
-      throw new Error(`Failed to fetch ${pkg.url}: ${res.status}`);
+      throw new Error(`Failed to fetch ${pkg.resolvedUrl}: ${res.status}`);
     }
     const buffer = new Uint8Array(await res.arrayBuffer());
 
@@ -300,7 +306,6 @@ export class PackageManager {
       }
     }
 
-    const targetDir = `${this.cwd}/node_modules/${pkg.name}`;
     if (this.vfs.hot.existsSync(targetDir)) {
       this.vfs.hot.rmSync(targetDir, { recursive: true });
     }

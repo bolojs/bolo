@@ -10,6 +10,7 @@ export interface ResolvedPackage {
   dependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
   optionalDependencies: Record<string, string>;
+  bin: Record<string, string>;
 }
 
 export interface NpmPackument {
@@ -23,6 +24,7 @@ interface NpmVersion {
   dependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
   optionalDependencies?: Record<string, string>;
+  bin?: Record<string, string> | string;
 }
 
 /** Optional packument cache — avoids repeated registry round-trips. */
@@ -65,10 +67,13 @@ export const resolvePackage = async (
   }
 
   const versions = Object.keys(packument.versions);
+  const distTag = packument["dist-tags"]?.[range];
   const matched =
     range === "*" || range === ""
       ? (packument["dist-tags"]?.latest ?? versions[versions.length - 1])
-      : maxSatisfying(versions, range);
+      : distTag !== undefined
+        ? distTag
+        : maxSatisfying(versions, range);
 
   if (!matched) {
     throw new Error(`No version of ${name} satisfies ${range}`);
@@ -83,5 +88,13 @@ export const resolvePackage = async (
     dependencies: entry.dependencies ?? {},
     peerDependencies: entry.peerDependencies ?? {},
     optionalDependencies: entry.optionalDependencies ?? {},
+    bin: normalizeBin(name, entry.bin),
   };
+};
+
+/** npm allows `bin` as a bare string (shorthand for `{ [name]: bin }`) or an object map. */
+const normalizeBin = (name: string, bin?: Record<string, string> | string): Record<string, string> => {
+  if (!bin) return {};
+  if (typeof bin === "string") return { [name.split("/").pop()!]: bin };
+  return bin;
 };

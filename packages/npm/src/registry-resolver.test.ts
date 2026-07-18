@@ -63,6 +63,23 @@ describe("resolvePackage", () => {
     expect(resolved.version).toBe("5.0.0");
   });
 
+  it("resolves a named dist-tag before falling back to semver matching", async () => {
+    globalThis.fetch = mockFetch({
+      lodash: {
+        name: "lodash",
+        "dist-tags": { latest: "4.17.21", next: "5.0.0-beta.1" },
+        versions: {
+          "4.17.21": mockVersion("https://reg/lodash/-/lodash-4.17.21.tgz"),
+          "5.0.0-beta.1": mockVersion("https://reg/lodash/-/lodash-5.0.0-beta.1.tgz"),
+        },
+      },
+    });
+
+    const resolved = await resolvePackage("lodash", "next");
+    expect(resolved.version).toBe("5.0.0-beta.1");
+    expect(resolved.tarballUrl).toBe("https://reg/lodash/-/lodash-5.0.0-beta.1.tgz");
+  });
+
   it("returns dependencies from the matched version", async () => {
     globalThis.fetch = mockFetch({
       express: mockPackument("express", {

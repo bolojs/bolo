@@ -1,5 +1,4 @@
-import { satisfies } from "semver";
-import type { InstallablePackage } from "@unjs/lockfile";
+import type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
 import { resolvePackage, type ResolveCache, type ResolvedPackage } from "./registry-resolver.js";
 
 const CONCURRENCY = 8;
@@ -7,99 +6,99 @@ const CONCURRENCY = 8;
 interface QueueItem {
   name: string;
   range: string;
+  optional: boolean;
+  /** depPath key of the package that requested this edge, or undefined for root deps. */
+  parentKey?: string;
 }
 
 /**
- * BFS dependency walk producing a flat `node_modules` install list.
- * First version of each package wins; later incompatible versions are
- * skipped with a warning (same model as Nodepod / almostnode).
+ * BFS dependency walk producing a full multi-version dependency graph, keyed
+ * by `<name>@<version>` (the pnpm-style virtual-store key). Unlike a flat
+ * resolver, every distinct version reached in the graph gets its own node —
+ * two packages requiring incompatible ranges of the same dependency both get
+ * installed side by side, and `resolvedDependencies` on each node records
+ * exactly which sibling version satisfies which edge (real diamond-dep
+ * support, see `.agents/plans/2026-07-17-virtual-store-resolver.md`).
  *
- * Cycle detection is implicit: once a package name enters `seen` it is
- * never re-queued, so `A → B → A` terminates naturally.
- *
- * All requested ranges are tracked and checked in a final pass so that
- * conflicts from parallel batches are not silently lost.
- *
- * Known limitation: no peer-dep resolution, no optional-dep failure
- * tolerance, no nested dedup. Documented in the migration plan.
+ * Optional dependencies that fail to resolve are dropped with a warning
+ * instead of failing the whole install. Cycles terminate naturally: once a
+ * `<name>@<version>` key is registered its own dependencies are not
+ * re-queued, though it can still be linked as an edge target from many
+ * parents (that's the intended sharing behavior, not a bug).
  */
 export const walkDependencies = async (
   rootDeps: Record<string, string>,
   fetchFn: typeof fetch = fetch,
   onProgress?: (message: string) => void,
   cache?: ResolveCache,
-): Promise<InstallablePackage[]> => {
-  const result: InstallablePackage[] = [];
-  const installed = new Map<string, ResolvedPackage>();
-  const seen = new Set<string>();
-  const requestedRanges = new Map<string, string[]>();
+): Promise<ResolvedGraph> => {
+  const packages = new Map<string, ResolvedGraphPackage>();
+  const rootDependencies: Record<string, string> = {};
+  const rangeResolutions = new Map<string, ResolvedPackage>();
 
-  const trackRange = (name: string, range: string) => {
-    if (!requestedRanges.has(name)) requestedRanges.set(name, []);
-    requestedRanges.get(name)!.push(range);
-  };
-
-  let queue: QueueItem[] = [];
-  for (const [name, range] of Object.entries(rootDeps)) {
-    trackRange(name, range);
-    if (!seen.has(name)) {
-      seen.add(name);
-      queue.push({ name, range });
-    }
-  }
+  let queue: QueueItem[] = Object.entries(rootDeps).map(([name, range]) => ({
+    name,
+    range,
+    optional: false,
+  }));
 
   while (queue.length > 0) {
     const batch = queue.splice(0, CONCURRENCY);
 
     await Promise.all(
-      batch.map(async ({ name, range }) => {
-        const existing = installed.get(name);
-        if (existing) {
-          // Conflict (if any) is reported in the final pass
-          return;
-        }
+      batch.map(async ({ name, range, optional, parentKey }) => {
+        const rangeCacheKey = `${name}@${range}`;
+        let resolved = rangeResolutions.get(rangeCacheKey);
 
-        const pkg = await resolvePackage(name, range, fetchFn, cache);
-
-        if (installed.has(name)) {
-          // Another batch item installed while we fetched — final pass reports
-          return;
-        }
-
-        installed.set(name, pkg);
-        result.push({
-          name: pkg.name,
-          version: pkg.version,
-          url: pkg.tarballUrl,
-          integrity: pkg.integrity,
-          dev: false,
-          optional: false,
-          peerDependencies: pkg.peerDependencies,
-        });
-
-        for (const [depName, depRange] of Object.entries(pkg.dependencies)) {
-          trackRange(depName, depRange);
-          if (!seen.has(depName)) {
-            seen.add(depName);
-            queue.push({ name: depName, range: depRange });
+        if (!resolved) {
+          try {
+            resolved = await resolvePackage(name, range, fetchFn, cache);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            if (optional) {
+              onProgress?.(`Optional dependency ${name}@${range} failed to resolve: ${message}; skipping.`);
+              return;
+            }
+            throw error;
           }
+          rangeResolutions.set(rangeCacheKey, resolved);
+        }
+
+        const key = `${resolved.name}@${resolved.version}`;
+
+        if (parentKey) {
+          const parent = packages.get(parentKey);
+          if (parent) parent.resolvedDependencies[name] = key;
+        } else {
+          rootDependencies[name] = key;
+        }
+
+        if (packages.has(key)) return;
+
+        const node: ResolvedGraphPackage = {
+          name: resolved.name,
+          version: resolved.version,
+          depPath: key,
+          resolvedUrl: resolved.tarballUrl,
+          integrity: resolved.integrity,
+          dev: false,
+          optional,
+          peerDependencies: resolved.peerDependencies,
+          dependencies: { ...resolved.dependencies, ...resolved.optionalDependencies },
+          bin: resolved.bin ?? {},
+          resolvedDependencies: {},
+        };
+        packages.set(key, node);
+
+        for (const [depName, depRange] of Object.entries(resolved.dependencies)) {
+          queue.push({ name: depName, range: depRange, optional: false, parentKey: key });
+        }
+        for (const [depName, depRange] of Object.entries(resolved.optionalDependencies)) {
+          queue.push({ name: depName, range: depRange, optional: true, parentKey: key });
         }
       }),
     );
   }
 
-  // Final pass: warn about ranges the installed version doesn't satisfy
-  for (const [name, ranges] of requestedRanges) {
-    const pkg = installed.get(name);
-    if (!pkg) continue;
-    for (const range of ranges) {
-      if (!satisfies(pkg.version, range)) {
-        onProgress?.(
-          `Version conflict for ${name}: installed ${pkg.version}, but ${range} was also requested.`,
-        );
-      }
-    }
-  }
-
-  return result;
+  return { packages, rootDependencies };
 };
