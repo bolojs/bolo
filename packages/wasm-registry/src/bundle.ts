@@ -162,15 +162,27 @@ const isFile = (vfs: VfsBus, path: string): boolean => {
   }
 };
 
+// Real Node module resolution follows symlinks before computing a module's
+// own `__dirname` (unless run with `--preserve-symlinks`), which is exactly
+// what lets pnpm-style virtual stores work: a package resolved through a
+// symlink still does its OWN further `node_modules` lookups from its real,
+// nested store directory rather than the symlink's flat location. Since our
+// own directory walk (`findPackageDir`) is plain string `dirname()`, it must
+// see the same real path or it walks back up the symlink's flat ancestry
+// instead of the store's nested one — so every resolved id is realpath'd here.
 const resolveFile = (vfs: VfsBus, base: string): string | undefined => {
   for (const ext of RESOLVE_EXTENSIONS) {
     const candidate = base + ext;
-    if (vfs.hot.existsSync(candidate) && isFile(vfs, candidate)) return candidate;
+    if (vfs.hot.existsSync(candidate) && isFile(vfs, candidate)) {
+      return vfs.hot.realpathSync(candidate) as string;
+    }
   }
   for (const ext of RESOLVE_EXTENSIONS) {
     if (ext === "") continue;
     const candidate = joinPath(base, "index" + ext);
-    if (vfs.hot.existsSync(candidate) && isFile(vfs, candidate)) return candidate;
+    if (vfs.hot.existsSync(candidate) && isFile(vfs, candidate)) {
+      return vfs.hot.realpathSync(candidate) as string;
+    }
   }
   return undefined;
 };
