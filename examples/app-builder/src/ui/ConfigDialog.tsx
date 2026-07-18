@@ -114,7 +114,7 @@ export default function ConfigDialog({ open, initial, onSave, onCancel, onForget
             className="font-mono"
             value={planModelId}
             onChange={(e) => setPlanModelId(e.target.value)}
-            placeholder="anthropic/claude-sonnet-4.5"
+            placeholder="tencent/hy3:free"
             spellCheck={false}
           />
         </div>
@@ -128,7 +128,7 @@ export default function ConfigDialog({ open, initial, onSave, onCancel, onForget
               className="font-mono"
               value={buildModelId}
               onChange={(e) => setBuildModelId(e.target.value)}
-              placeholder="anthropic/claude-sonnet-4.5"
+              placeholder="tencent/hy3:free"
               spellCheck={false}
             />
           </div>

@@ -1,7 +1,7 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
 
-export const DEFAULT_MODEL_ID = "anthropic/claude-sonnet-4.5";
+export const DEFAULT_MODEL_ID = "tencent/hy3:free";
 
 const API_KEY_STORAGE = "bolo-app-builder:openrouter-api-key";
 const PLAN_MODEL_STORAGE = "bolo-app-builder:plan-model-id";
@@ -38,7 +38,11 @@ export function clearStoredApiKey(): void {
 }
 
 export function getStoredPlanModelId(): string {
-  return localStorage.getItem(PLAN_MODEL_STORAGE) ?? DEFAULT_MODEL_ID;
+  return (
+    localStorage.getItem(PLAN_MODEL_STORAGE) ??
+    import.meta.env.VITE_OPENROUTER_MODEL_ID ??
+    DEFAULT_MODEL_ID
+  );
 }
 
 export function setStoredPlanModelId(id: string): void {
@@ -46,7 +50,11 @@ export function setStoredPlanModelId(id: string): void {
 }
 
 export function getStoredBuildModelId(): string {
-  return localStorage.getItem(BUILD_MODEL_STORAGE) ?? DEFAULT_MODEL_ID;
+  return (
+    localStorage.getItem(BUILD_MODEL_STORAGE) ??
+    import.meta.env.VITE_OPENROUTER_MODEL_ID ??
+    DEFAULT_MODEL_ID
+  );
 }
 
 export function setStoredBuildModelId(id: string): void {
