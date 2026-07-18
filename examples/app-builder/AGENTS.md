@@ -61,6 +61,26 @@ pick model(s) → Save → send a prompt → watch plan text stream, then
 tool-call receipts, then the preview iframe populate once the model runs
 `npm run dev`.
 
+### Observability before debugging
+
+Lead rule: before diagnosing any preview, container, worker, or service-worker failure in this package, install the observability harness first. Do not debug blind. The default `playwright-cli console` command only captures the page console; module worker (`worker-script.js`) and service worker (`sw.js`) consoles, async worker errors, and failed network requests are invisible without the harness.
+
+Logging: `src/main.tsx` calls `configureBrowserLogging()` from `@bolojs/log/browser` before render, and `packages/runtime/src/worker-script.ts` calls it inside the module worker with `self` error and unhandledrejection listeners that post STDERR. Browser logs are console-only (no file sink); everything surfaces in the page or worker console where the harness captures it. Category overrides: see `packages/log/AGENTS.md`.
+
+Harness workflow (copy the four commands from the script comment). Note: `run-code` invocations run in an isolated evaluation context, so a previous call's `globalThis` is not visible to the next. The harness instead exposes a window function via `page.exposeFunction`, so the drain runs in the browser window context with `eval`, which persists across `run-code` calls. Use the named persistent session `-s=appdbg --persistent` to keep IndexedDB/OPFS/service-worker state across sessions instead of paying a full boot and npm install every time.
+
+```bash
+playwright-cli -s=appdbg open --persistent
+playwright-cli -s=appdbg run-code --filename=examples/app-builder/scripts/pw-observe.js
+playwright-cli -s=appdbg goto http://127.0.0.1:4402/
+# ... reproduce the failure ...
+playwright-cli -s=appdbg eval "await window.__boloObsDrain()"
+```
+
+What each captured line means: `console.*` are page messages (including structured `@bolojs/log` JSON lines); `pageerror` is an uncaught page error with stack; `requestfailed` and `http-4xx/5xx` catch SW-served 503 timeouts and worker-import 404s; `workercreated`/`workerclosed` bracket module worker lifecycles; `sw-created` fires when the sw-sandbox service worker registers; `sw-state` snapshots registration states every 5s (look for `controller: false` to confirm the "Waiting for dev server..." gate).
+
+If `__boloObsDrain` is undefined, the harness was not installed or the page context was reset; re-run the install command.
+
 ### Dev-injected OpenRouter key
 
 The `devOpenRouterKey` plugin (`vite.config.ts`) reads

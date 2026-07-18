@@ -117,6 +117,8 @@ Dev servers use [portless](https://github.com/vercel-labs/portless) for stable `
 
 Interactive browser QA: `playwright-cli` skill. Details and known-gap workarounds: [tests/AGENTS.md](tests/AGENTS.md).
 
+Always install observability hooks (page console, pageerror, requestfailed, worker/SW lifecycle) before debugging preview, container, worker, or service-worker failures; see `tests/AGENTS.md` and `examples/app-builder/scripts/pw-observe.js`.
+
 ## Logging
 
 Internal diagnostics use `@bolojs/log` (logtape wrapper). Debug entrypoint: `.logs/latest.jsonl`. Full usage and query patterns: [packages/log/AGENTS.md](packages/log/AGENTS.md).
