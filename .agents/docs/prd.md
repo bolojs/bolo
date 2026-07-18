@@ -44,41 +44,33 @@ These require capabilities a browser cannot provide safely or at all. All fail w
 | Native `.node` addons | No native binary execution |
 | `inspector` (Chrome DevTools protocol) | No TCP server binding in browser |
 | `test` runner | Requires PTY + `child_process` + file watching |
-| `repl` | Requires PTY / TTY — no browser equivalent |
-| Hardlink-based CAS (`pnpm` store, `vltpkg` cache) | OPFS and Filesystem Access API have no `fs.linkSync` |
+| Hardlink-based CAS (`pnpm` store, `vltpkg` cache) | OPFS and Filesystem Access API have no `fs.linkSync`. Content-addressed cold storage (ADR-0008) achieves the same dedup outcome by hash instead of hardlink, but a real on-disk hardlink CAS is still impossible. |
 
 **Emulable with reduced fidelity (T3-level):**
-- `child_process.spawn()` — Tier 3 via Worker + message IPC; covers "run script in subprocess and capture output."
+- `child_process.spawn()` — Tier 3 via Worker + message IPC; covers run script in subprocess and capture output. Now has bidirectional IPC (`process.send`/`message` events between parent and child) and monotonic pid allocation.
+- `repl` - interactive REPL shipped as `ReplService` (persistent eval in RuntimeWorker + VFS-backed history + multi-line continuation); the `node:repl` builtin module itself remains unsupported.
 - `vm` — shimmed via `quickjs-emscripten-core` in the `vm` builtin shim (separate from the runtime sandbox)
 - `https` client — shimmed via `fetch` (TLS is built in)
-- `dns` — shimmed via DoH (Cloudflare `https://cloudflare-dns.com/dns-query`)
-- `net.connect()` (outbound TCP) — emulated via a self-hosted WebSocket relay (ws → TCP bridge). Byte-stream fidelity for database, Redis, mail, and custom-protocol clients. User operates the relay; OSS core ships a reference implementation, not a hosted service
-- `net.Server.listen()` (inbound TCP) — emulated via the same self-hosted relay. The relay holds the public listener; the browser handles connection logic. **Caveats (non-negotiable):** (1) tab-close ephemeral — listener dies when the browser tab closes or is evicted; (2) `server.address().port` returns the relay's port, not a browser-side port; (3) abuse is the user's responsibility — publicly-exposed relay listener will attract scanners and SYN floods within minutes; (4) no hosted relay — OSS ships a reference implementation, user self-hosts; (5) `server.close()` is cooperative (signals relay to tear down; does not forcibly reset in-flight connections on other paths)
+- `dns` — full resolve surface shipped: `Resolver` class, all `resolve*` variants, and real `dns.reverse` via DoH PTR queries. Still DoH-based (Cloudflare `https://cloudflare-dns.com/dns-query`).
+- `net.connect()` (outbound TCP) — emulated via a self-hosted WebSocket relay (ws → TCP bridge). TCP data frames use binary WebSocket framing (no base64); WebTransport is available as an alternative ByteTransport alongside WebSocket. Reference implementation at `apps/tcp-relay/`, self-hosted and user-operated. Known limitations tracked as follow-ups: relay rate limit (10/IP/60s, issue #33), no backpressure/pause/resume/`setNoDelay` yet (#34), no WS heartbeat/keepalive (#36).
+- `net.Server.listen()` (inbound TCP) — emulated via the same self-hosted relay. The relay holds the public listener; the browser handles connection logic. TCP data frames use binary WebSocket framing (no base64); WebTransport is available as an alternative ByteTransport alongside WebSocket. **Caveats (non-negotiable):** (1) tab-close ephemeral — listener dies when the browser tab closes or is evicted; (2) `server.address().port` returns the relay's port, not a browser-side port; (3) abuse is the user's responsibility — publicly-exposed relay listener will attract scanners and SYN floods within minutes; (4) no hosted relay — OSS ships a reference implementation at `apps/tcp-relay/`, self-hosted and user-operated; (5) `server.close()` is cooperative (signals relay to tear down; does not forcibly reset in-flight connections on other paths). Known limitations tracked as follow-ups: relay rate limit (10/IP/60s, issue #33), no backpressure/pause/resume/`setNoDelay` yet (#34), no WS heartbeat/keepalive (#36).
 - `tls.connect()` (outbound TLS) — rides the same relay with relay-side TLS termination (planned; seam designed, not yet shipped)
 - `fs.watch` — push-based via VfsBus observers; VFS-internal mutations only (cross-tab/real-disk changes not visible)
 - `process.memoryUsage()` — best-effort via `performance.memory` (Chrome-only) or ArrayBuffer enumeration
 
 ## Architecture
 
-### Two-tier runtime
-
-- **Trusted tier (V8, main realm):** User code runs here via `data:` import. Full Node compatibility surface via shims. Executes in the main browser context.
-- **Untrusted tier (IframeSandbox, sandbox pool):** AI agent code runs here. Sandboxed via `sandbox-policy` ACLs (CPU, memory, filesystem, network limits) + a sandboxed iframe with `eval()`. Route: `transformScript` (esbuild TS strip) → iframe `eval()`. Strips types, enforces sandbox policy.
-
-### Virtual filesystem
-
-Two-layer VFS: **memfs** (synchronous, hot, in-memory) + **OPFS** (asynchronous, persistent, cold). All writes go to both layers. Reads check hot first, fall back to cold.
-
-### ServiceWorker network proxy
-
-ServiceWorker intercepts all traffic on the virtual origin (`sandbox.localhost`). Outbound: `fetch()` calls reach real registries. Inbound: serves the virtual server on virtual localhost. No real server needed.
+The full architecture is documented in `.agents/docs/ARCHITECTURE.md`. In brief: a trusted V8 Web Worker runs user code against a live `node:*` shim registry, backed by a two-layer VFS and bridged through a ServiceWorker proxy on the virtual origin. An untrusted iframe sandbox tier runs AI agent code. Package management details are below.
 
 ### Package management
 
-- **npm:** `npm-in-browser` (the real `npm/cli` compiled to ESM with Node globals shimmed at build time). Reads and writes `package-lock.json`.
-- **yarn / pnpm / bun:** `@unjs/lockfile` reads the existing lockfile (`yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`) and produces a normalized dependency graph. The `PackageManager` with `'lockfile-only'` strategy fetches tarballs via `fetch()` and writes to the VFS. No real CLI needed.
-- **JSR:** `jsr:` specifiers resolve via `npm.jsr.io` (Deno's JSR npm-compatibility mirror). Bundler-level `jsr:` alias plugin rewrites imports.
-- **esm.sh:** CDN fallback for transitive dependencies not in `node_modules`.
+- **Install strategies:** `PackageManager` supports `browser-native` (resolve from the npm registry when no lockfile is present) and `lockfile-only` (parse the existing lockfile with `@unjs/lockfile` and fetch the resolved tarball URLs). Both read npm, yarn, pnpm, and bun lockfiles and install entirely in the browser with `fetch()`.
+- **Virtual store (ADR-0008):** installs materialize a pnpm-style symlinked virtual store rather than a flat `node_modules`, so diamond dependencies (two packages needing different versions of the same dependency) resolve correctly instead of silently collapsing to one version. Peer dependencies are linked on a best-effort graph-wide semver match; `.bin` entries are linked per-package and at the root; a failing optional dependency is skipped with a warning instead of failing the install.
+- **Decompression and integrity:** Tarballs are decompressed with the native `DecompressionStream` API and integrity is verified with `crypto.subtle`.
+- **Cache:** Packument responses are cached in `.npm-cache/` inside the VFS with a 7-day TTL.
+- **Cold-storage dedup (ADR-0008):** the OPFS/IndexedDB cold layer is content-addressed — files are stored once per unique `sha256` hash with per-hash refcounting, deduping byte-identical files across installed packages without needing hardlinks.
+- **JSR:** `jsr:` specifiers resolve via `npm.jsr.io` (Deno's JSR npm-compatibility mirror). A bundler `jsr:` alias plugin rewrites imports.
+- **Fallback:** esm.sh CDN URLs are generated for the import map so packages that are not installed locally still resolve.
 
 ## Scope (v1)
 
@@ -86,6 +78,8 @@ ServiceWorker intercepts all traffic on the virtual origin (`sandbox.localhost`)
 
 - Three-tier Node.js compatibility (T1 Web-Standard, T2 WinterTC/ECMA-429, T3 Node-API via shims)
 - `node:fs`, `node:crypto`, `node:stream`, `node:http`, `node:path`, `node:buffer`, `node:url`, `node:events`, `node:os`, `node:child_process`, `node:worker_threads`, `node:module`, `node:process`, `node:net`, plus 20+ more via `node-web-shims`
+- just-bash POSIX shell running against the VFS hot tier, with extra builtin commands `curl`, `nc`, `tcping`
+- Interactive REPL via `ReplService` (persistent eval context, VFS-backed history, multi-line continuation); the `node:repl` builtin module remains unsupported
 - Multi-format lockfile compatibility (npm, yarn, pnpm, bun) via `@unjs/lockfile`
 - Virtual filesystem backed by memfs (hot) + OPFS (cold)
 - ServiceWorker-based network proxy for virtual localhost
@@ -109,9 +103,8 @@ ServiceWorker intercepts all traffic on the virtual origin (`sandbox.localhost`)
 - ShadowRealm / sandboxed iframe as a third isolation tier (V8 + QuickJS dual-tier is sufficient)
 - `inspector` module (Chrome DevTools protocol server — requires TCP)
 - `test` runner (requires PTY + `child_process`)
-- `repl` (requires PTY) (v1 target)
 - SSR / Server Components
-- Hardlink-based content-addressable stores (browser filesystem has no `fs.linkSync`)
+- Hardlink-based content-addressable stores (browser filesystem has no `fs.linkSync`). ADR-0008's content-addressed cold storage achieves the dedup outcome by hash instead; a real hardlink CAS stays impossible.
 
 ## Target Users
 
@@ -124,7 +117,7 @@ ServiceWorker intercepts all traffic on the virtual origin (`sandbox.localhost`)
 
 | Package manager | Lockfile read | CLI runnable | Strategy |
 |----------------|---------------|--------------|----------|
-| **npm** | ✅ `package-lock.json` | ✅ (via npm-in-browser) | Native |
+| **npm** | ✅ `package-lock.json` | ✅ | browser-native |
 | **yarn v1** | ✅ `yarn.lock` | ❌ | `@unjs/lockfile` → fetch tarballs |
 | **pnpm** | ✅ `pnpm-lock.yaml` | ❌ | `@unjs/lockfile` → fetch tarballs |
 | **bun** | ✅ `bun.lock` / `bun.lockb` | ❌ | `@unjs/lockfile` → fetch tarballs |

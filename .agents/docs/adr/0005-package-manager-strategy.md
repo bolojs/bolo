@@ -106,7 +106,9 @@ memfs `Volume` implements `symlinkSync`/`readlinkSync`/`lstatSync` internally bu
 
 This unblocks yarn v1 lockfile translation (which writes symlinks into `node_modules`), the vlt engine `reify()` step, and `@yarnpkg/fslib` integration.
 
-**Hardlinks remain unsupported.** pnpm's CAS dedup and vltpkg's `@vltpkg/cache` require `fs.linkSync`, which OPFS and Filesystem Access API cannot provide. This is a permanent architectural constraint. pnpm lockfile translation will always produce a copy-based layout.
+**Hardlinks remain unsupported.** pnpm's on-disk CAS and vltpkg's `@vltpkg/cache` require `fs.linkSync`, which OPFS and the Filesystem Access API cannot provide. This is a permanent architectural constraint.
+
+**Update (ADR-0008):** the sentence below this note originally read "pnpm lockfile translation will always produce a copy-based layout" and the Consequences section below originally said hardlink-dependent dedup was "permanently unsupported." Both are now outdated. [ADR-0008](0008-virtual-store-resolver-and-cas.md) ships a symlink-based virtual store (true multi-version, pnpm-style installs, no copies) and a content-addressed cold-storage layer (dedups identical file content across packages by hash, no hardlinks needed). The `fs.linkSync` gap itself is still real; the dedup and layout outcomes it was assumed to block are not.
 
 ### 5. Bun lockfile feasibility (new in this ADR)
 
@@ -140,6 +142,6 @@ Once the WPT subset test suite is published (ongoing as of late 2025 per WinterT
 - Users with `bun.lock`, `pnpm-lock.yaml`, or `yarn.lock` projects can drop them into bolo without converting to npm — `@unjs/lockfile` reads the existing lockfile and `PackageManager` with `'lockfile-only'` strategy installs from the resolved tarball URLs.
 - `@unjs/lockfile` is a reusable, framework-agnostic unjs package. It can be published independently, cited in the unjs ecosystem, and consumed by Deno, Bun, Node, or any runtime that needs lockfile-to-graph translation.
 - The symlink table (memfs forwarding) is the single dependency that unlocks several downstream capabilities and should be prioritized immediately.
-- Hardlink-dependent features (pnpm CAS dedup, vltpkg `@vltpkg/cache`) remain permanently unsupported due to browser filesystem constraints.
-- Install performance and disk usage in the VFS will be worse than a native hardlinking PM. This is a documented architectural trade-off.
+- Hardlink-dependent features specifically (an on-disk CAS built on `fs.linkSync`, vltpkg's `@vltpkg/cache`) remain permanently unsupported due to browser filesystem constraints. The *dedup outcome* those features chase is not permanently unsupported: [ADR-0008](0008-virtual-store-resolver-and-cas.md) achieves it via content-addressed cold storage instead of hardlinks.
+- Install performance and disk usage in the VFS will be worse than a native hardlinking PM, though ADR-0008's content-addressed cold storage narrows the disk-usage gap by deduping identical file content across packages.
 - WebContainers (StackBlitz) runs real CLIs via WASM Node.js but requires a commercial license for production use and is architecturally incompatible with the fetch-only/memfs-only constraints of bolo. The lockfile-translation approach is the correct architectural choice for a browser-native FOSS project.

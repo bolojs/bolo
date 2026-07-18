@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded (package manager section) by [ADR-0005](0005-package-manager-strategy.md). The WinterTC/ECMA-429 positioning and symlink table decisions remain valid.
 
 ## Context
 
