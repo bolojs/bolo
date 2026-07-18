@@ -160,9 +160,6 @@ importers:
       '@bolojs/log':
         specifier: workspace:*
         version: link:../../../packages/log
-      '@bolojs/node-web-shims':
-        specifier: workspace:*
-        version: link:../../../packages/node-web-shims
       '@bolojs/npm':
         specifier: workspace:*
         version: link:../../../packages/npm
@@ -175,6 +172,9 @@ importers:
       '@bolojs/vfs-bus':
         specifier: workspace:*
         version: link:../../../packages/vfs-bus
+      '@bolojs/vite-preset':
+        specifier: workspace:*
+        version: link:../../../packages/vite-preset
       '@codemirror/commands':
         specifier: ^6.10.4
         version: 6.10.4
@@ -272,9 +272,6 @@ importers:
       vite:
         specifier: ^8.0.0
         version: 8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
-      vite-plugin-node-polyfills:
-        specifier: ^0.28.0
-        version: 0.28.0(rollup@4.60.1)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
       vite-plugin-solid:
         specifier: ^2.11.0
         version: 2.11.12(solid-js@1.9.14)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
@@ -314,6 +311,9 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: ^5.2.8
         version: 5.2.8
+      '@lezer/highlight':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@openrouter/ai-sdk-provider':
         specifier: ^3.0.0
         version: 3.0.0(ai@7.0.31(zod@4.4.3))(zod@4.4.3)
