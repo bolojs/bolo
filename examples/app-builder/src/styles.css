@@ -1,0 +1,333 @@
+/* Monochrome Logic — tokens from tmp/design.md.
+ * Only the variables the current app actually needs are wired; extend on
+ * demand rather than carrying dead tokens.
+ *
+ * Theme switch is driven by `data-theme` on <html>. Default = dark (matches
+ * design.md's dark foundation). Light theme is the inverted monochrome
+ * counterpart, derived from the same roles so the rules stay intact. */
+
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-status-ok: var(--status-ok);
+  --color-status-pending: var(--status-pending);
+  --color-status-error: var(--status-error);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+:root,
+:root[data-theme="dark"] {
+  /* surfaces */
+  --surface: #131313;
+  --surface-container-lowest: #0e0e0e;
+  --surface-container-low: #1b1b1b;
+  --surface-container: #1f1f1f;
+  --surface-container-high: #2a2a2a;
+  --surface-container-highest: #353535;
+
+  /* text */
+  --on-surface: #e2e2e2;
+  --on-surface-variant: #c4c7c8;
+
+  /* lines */
+  --outline: #8e9192;
+  --outline-variant: #444748;
+
+  /* primary (inverted — see design.md "Buttons: Primary") */
+  --primary: #ffffff;
+  --on-primary: #131313;
+
+  /* status */
+  --error: #ffb4ab;
+  --status-ok: #3fb950;
+  --status-pending: #e3b341;
+  --status-error: #e03131;
+  /* overlay tint — match design.md's "Pure black (#000) for the background" */
+  --backdrop: rgba(0, 0, 0, 0.6);
+
+  /* type */
+  --font-sans: "Geist Variable", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+
+  /* shape */
+  --radius: 4px;
+
+  /* shadcn bridge */
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+  --card: var(--surface-container-lowest);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface-container-lowest);
+  --popover-foreground: var(--on-surface);
+  --primary-foreground: var(--on-primary);
+  --secondary: var(--surface-container-high);
+  --secondary-foreground: var(--on-surface);
+  --muted: var(--surface-container-low);
+  --muted-foreground: var(--on-surface-variant);
+  --accent: var(--surface-container-high);
+  --accent-foreground: var(--on-surface);
+  --destructive: var(--error);
+  --destructive-foreground: var(--on-primary);
+  --border: var(--outline-variant);
+  --input: var(--outline-variant);
+  --ring: var(--primary);
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  /* surfaces — pure white foundation, stepped up via tonal layers */
+  --surface: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f5f5f5;
+  --surface-container: #ececec;
+  --surface-container-high: #e2e2e2;
+  --surface-container-highest: #d6d6d6;
+
+  /* text */
+  --on-surface: #1a1c1c;
+  --on-surface-variant: #454747;
+
+  /* lines */
+  --outline: #6e7172;
+  --outline-variant: #c4c7c8;
+
+  /* primary — design.md inverted: black surface, white text */
+  --primary: #1a1c1c;
+  --on-primary: #fafafa;
+
+  /* status */
+  --error: #ba1a1a;
+  --status-ok: #2f9e44;
+  --status-pending: #c78b1a;
+  --status-error: #c0392b;
+  --backdrop: rgba(255, 255, 255, 0.6);
+
+  /* shadcn bridge */
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+  --card: var(--surface-container-lowest);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface-container-lowest);
+  --popover-foreground: var(--on-surface);
+  --primary-foreground: var(--on-primary);
+  --secondary: var(--surface-container-high);
+  --secondary-foreground: var(--on-surface);
+  --muted: var(--surface-container-low);
+  --muted-foreground: var(--on-surface-variant);
+  --accent: var(--surface-container-high);
+  --accent-foreground: var(--on-surface);
+  --destructive: var(--error);
+  --destructive-foreground: var(--on-primary);
+  --border: var(--outline-variant);
+  --input: var(--outline-variant);
+  --ring: var(--primary);
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: var(--on-surface);
+}
+
+/* Phase badge — surfaces the plan/build split that's already wired in
+ * useBuilderChat. Mono label per design.md "mono-label". */
+.phase-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 6px;
+  margin: 4px 0;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-sm);
+  background: var(--surface-container-lowest);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  color: var(--on-surface-variant);
+  text-transform: lowercase;
+}
+
+.phase-badge__label {
+  color: var(--on-surface);
+}
+
+.phase-badge__sep {
+  color: var(--outline);
+}
+
+.phase-badge__model {
+  color: var(--on-surface-variant);
+}
+
+/* Empty chat state — CTA + clickable prompt suggestions shown before the
+ * first turn. Suggestions fill the input rather than sending, so users can
+ * review/edit before committing. */
+@keyframes chat-empty-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-empty {
+  padding: 16px 6px 8px;
+  animation: chat-empty-rise 420ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.chat-empty__title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--on-surface);
+  margin-bottom: 6px;
+}
+
+.chat-empty__subtitle {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--on-surface-variant);
+  margin-bottom: 16px;
+}
+
+.chat-empty__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  padding: 10px 10px 10px 12px;
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 0;
+  animation: chat-empty-rise 420ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  transition:
+    border-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    background 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.chat-suggestion__text {
+  flex: 1;
+}
+
+.chat-suggestion__icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface-container-high);
+  color: var(--on-surface-variant);
+  font-size: 11px;
+  line-height: 1;
+  transition:
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    background 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    color 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.chat-suggestion:hover:not(:disabled) {
+  border-color: var(--on-surface);
+  background: var(--surface-container-low);
+  transform: translateX(2px);
+}
+
+.chat-suggestion:hover:not(:disabled) .chat-suggestion__icon {
+  background: var(--primary);
+  color: var(--on-primary);
+  transform: translate(1px, -1px);
+}
+
+.chat-suggestion:active:not(:disabled) {
+  transform: translateX(2px) scale(0.98);
+}
+
+.chat-suggestion:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.chat-suggestion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-empty,
+  .chat-suggestion {
+    animation: none;
+    opacity: 1;
+  }
+}
