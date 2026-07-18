@@ -19,6 +19,7 @@ packages/
   wasm-registry/     Bundler (rolldown + oxc-transform, wired in-house) + registerWasmTool() extension seam
   runtime/           Core container API — RuntimeWorker (V8) + IframeSandbox; pluggable SandboxBackend
   npm/               Browser-native package installer (registry resolve + tarball extract)
+  log/               @bolojs/log - internal diagnostics (logtape wrapper), Node + browser entrypoints
   vite-server/       BrowserViteServer — Vite dev server on main thread
 apps/
   site/              bolojs.pages.dev, one static Pages deploy (build outputs merged, no router)
@@ -27,6 +28,7 @@ apps/
     demo/            @bolojs/site-demo       Vite/Solid,                 served at "/demo"
     docs/            @bolojs/site-docs       Astro Starlight,            served at "/docs"
   compat-harness/    Nightly npm-package matrix harness (data source for /compat)
+  tcp-relay/         Reference self-hosted WS/WebTransport → TCP relay for node:net (user-operated)
 tests/
   unit/              Vitest, no browser
   integration/       Vitest + happy-dom
@@ -36,9 +38,10 @@ tests/
 ## Documentation Map
 
 - **This file** — project overview and conventions
-- **PRD, ADRs, contributing guide (internal)** — [`.agents/docs/`](.agents/docs/). Browse locally with `pnpm docs:internal`. PRD: `.agents/docs/prd.md`. ADRs: `.agents/docs/adr/0001-...md`, ...0006. Shim contributing: `.agents/docs/contributing-shims.md`.
-- **End-user docs (public)** — Astro Starlight app, source [`apps/site/docs/src/content/docs/`](apps/site/docs/src/content/docs/). Live URL pattern `https://bolojs.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
+- **PRD, ADRs, contributing guide (internal)** — [`.agents/docs/`](.agents/docs/). Browse locally with `pnpm docs:internal`. PRD: `.agents/docs/PRD.md`. Architecture: `.agents/docs/ARCHITECTURE.md`. ADRs: `.agents/docs/adr/0001-...md`, ...0006. Shim contributing: `.agents/docs/contributing-shims.md`.
+- **End-user docs (public)** — Astro Starlight app, source [`docs/`](docs/) (symlinked into Starlight at `apps/site/docs/src/content/docs`). Live URL pattern `https://bolojs.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
 - **Implementation plan** — `.agents/plans/<date>-<purpose>.md` (ephemeral working plans)
+- **Nested AGENTS.md** — package/area-specific agent docs live next to their code (e.g. `packages/log/AGENTS.md`, `tests/AGENTS.md`); they load only when you work in that area.
 
 ## WHERE TO LOOK
 
@@ -110,56 +113,13 @@ Dev servers use [portless](https://github.com/vercel-labs/portless) for stable `
 - **NO code from `legacy` branch** — reference only for API shapes
 - **NO singleton shim imports** — use factory functions with injected deps
 
-## Agent QA tooling (playwright-cli)
+## Agent QA tooling
 
-Interactive browser QA uses `playwright-cli` (project-local devDependency, invoked via `pnpm exec playwright-cli`). Same engine as the E2E suite under `tests/e2e/`.
+Interactive browser QA: `playwright-cli` skill. Details and known-gap workarounds: [tests/AGENTS.md](tests/AGENTS.md).
 
-Known gaps vs the previous agent-browser tool, with workarounds:
+## Logging
 
-| Gap | Workaround |
-|-----|-----------|
-| No `wait-for-element` / `wait --fn` | `eval` + `waitForTimeout` polling, or `eval "await page.waitForSelector(...)"` |
-| Snapshot is file-based (2 calls vs 1) | Read the returned YAML path in the next call; acceptable cost |
-| No annotated screenshots | Use `show --annotate` for interactive sessions; for CI artifacts rely on the E2E suite's `@CustomScreenshotWriter` |
-| No visual diff | Out of scope for QA tool; visual regression belongs in E2E |
-
-Revisit upstream in 2-3 months; if `wait-for-element` lands, drop the documented workarounds.
-
-## Logging (@bolojs/log)
-
-bolo's own internal diagnostics (runtime/sandbox/network/installer/CLI code
-describing what *bolo itself* is doing) go through `@bolojs/log`, a thin
-wrapper around [logtape](https://logtape.org). This is separate from **guest
-passthrough** — the sandboxed user/agent code's own stdout relay
-(`worker-script.ts`'s console monkey-patch, `package-runner.ts`'s probe
-output) — which stays on plain `console.*` since it's product behavior, not
-a bolo diagnostic.
-
-- `getLogger(["bolo", <package>, <module?>])` — Node and browser/worker/SW
-  contexts alike (import from `@bolojs/log` in Node, `@bolojs/log/browser`
-  elsewhere).
-- `configureBoloLogging()` (Node only — CLI, compat-harness, Vitest, the
-  Gauge+Playwright driver process) opens `.logs/<run>.jsonl` capturing
-  **every** level, symlinked from `.logs/latest.jsonl`, plus a
-  `warning`+ pretty console sink. `.logs/` is gitignored.
-- Override console verbosity per category: `BOLO_LOG=sandbox=debug,net-shim=trace`.
-
-**Debugging entrypoint for agents**: read `.logs/latest.jsonl` instead of
-re-running commands hoping for more console output. It's already full
-fidelity.
-
-```bash
-# Only errors and fatals
-rg '"level":"(error|fatal)"' .logs/latest.jsonl
-
-# Everything from one category branch (e.g. the iframe sandbox)
-jq 'select(.category[1]=="runtime" and .category[2]=="iframe-sandbox")' .logs/latest.jsonl
-```
-
-A failed Vitest test (`onTestFailed`), Gauge scenario (`AfterScenario`), or
-compat-harness `PackageResult` (fail status) all just print/attach this
-path — pull the relevant lines in with `rg`/`jq` above rather than re-running
-the test for more console output.
+Internal diagnostics use `@bolojs/log` (logtape wrapper). Debug entrypoint: `.logs/latest.jsonl`. Full usage and query patterns: [packages/log/AGENTS.md](packages/log/AGENTS.md).
 
 ## COMMANDS
 
