@@ -8,10 +8,12 @@ globalThis.Buffer ??= Buffer;
 
 declare global {
   // eslint-disable-next-line no-var
-  var __preferLocalRolldown: boolean | undefined;
+  var __preferLocalBundler: boolean | undefined;
 }
 
-// @rolldown/browser is not a dependency of this example (no in-browser bundling
-// scenario like the landing demo's editor), so this flag is a no-op here — kept
-// for parity in case a future scenario pulls it in transitively via @bolojs/runtime.
-globalThis.__preferLocalRolldown = true;
+// Serve @rolldown/browser + oxc-transform from this dev server's node_modules
+// (same-origin) instead of the esm.sh CDN. Required: under the page's COEP
+// `credentialless` header, oxc-transform's WASM binding spawns workers from
+// esm.sh cross-origin, which Worker construction blocks. The aggregate flag
+// drives both packages (per packages/wasm-registry/src/bundle.ts).
+globalThis.__preferLocalBundler = true;
