@@ -6,6 +6,9 @@ import unenvCrypto from "unenv/node/crypto";
 const crypto = {
   ...unenvCrypto,
   getHashes: () => ["sha1", "sha256", "sha384", "sha512", "md5", "ripemd160"],
+  // Override unenv's "not implemented" stub with WebCrypto's native impl.
+  // Workers and modern browsers expose `globalThis.crypto.randomUUID`.
+  randomUUID: () => globalThis.crypto.randomUUID(),
 };
 
 /**
@@ -26,5 +29,10 @@ export const createCryptoShim = (): typeof crypto => {
 // Named export so @yarnpkg/lockfile gets it as crypto_exports.getHashes
 // (pre-bundled require() returns crypto_exports, not crypto_default2)
 export const getHashes = crypto.getHashes;
+
+// Static `import { randomUUID } from "crypto"` (which the vite-preset aliases
+// to this file) needs a named export, not just a property on the default.
+// ponytail: add more named exports here as new consumers surface them.
+export const randomUUID = crypto.randomUUID;
 
 export default crypto;
