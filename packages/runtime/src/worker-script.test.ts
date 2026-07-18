@@ -19,6 +19,8 @@ describe("worker-script", () => {
         handler = fn as unknown as ((ev: { data: unknown }) => void) | null;
       },
       postMessage: (msg: RuntimeMessage) => posted.push(msg),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
     };
 
     vi.stubGlobal("self", fakeSelf);

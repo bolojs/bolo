@@ -1,5 +1,8 @@
 import type { VfsBus } from "@bolojs/vfs-bus";
 import type { SWSandbox } from "@bolojs/sw-sandbox";
+import { getLogger } from "@bolojs/log/browser";
+
+const logger = getLogger(["bolo", "runtime", "runtime-worker"]);
 
 export interface RunScriptOptions {
   filename?: string;
@@ -68,7 +71,13 @@ export class RuntimeWorker {
     await new Promise<void>((resolve, reject) => {
       this.rejectRun = reject;
       this.worker = new Worker(new URL("./worker-script.js", import.meta.url), { type: "module" });
+      logger.debug("Worker spawned for runScript");
       this.worker.onerror = (e) => {
+        logger.error("Worker error", {
+          message: e.message,
+          filename: e.filename,
+          lineno: e.lineno,
+        });
         reject(new Error(e.message));
         this.dispose();
       };
@@ -97,6 +106,7 @@ export class RuntimeWorker {
     this.replWorker = new Worker(new URL("./worker-script.js", import.meta.url), {
       type: "module",
     });
+    logger.debug("Worker spawned for REPL");
     this.replWorker.onmessage = ({ data }: MessageEvent<RuntimeMessage>) => {
       switch (data.type) {
         case "REPL_RESULT": {
@@ -131,6 +141,7 @@ export class RuntimeWorker {
       this.replCallbacks.set(id, { resolve, reject });
       const timer = setTimeout(() => {
         this.replCallbacks.delete(id);
+        logger.error("REPL eval timed out", { id });
         reject(new Error(`REPL eval timed out after 30s for id ${id}`));
       }, 30000);
       const originalResolve = resolve;
@@ -163,6 +174,7 @@ export class RuntimeWorker {
     const check = () => {
       this.missedHeartbeats++;
       if (this.missedHeartbeats > 1) {
+        logger.error("Worker missed heartbeats; terminating");
         this.worker?.terminate();
         this.onExit?.(1);
         this.rejectRun?.(new Error("Worker missed heartbeats"));

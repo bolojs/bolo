@@ -1,6 +1,10 @@
+import { configureBrowserLogging, getLogger } from "@bolojs/log/browser";
 import { createProcessShim } from "@bolojs/node-runtime-shims";
 import type { ProcessShim } from "@bolojs/node-runtime-shims";
 import type { RuntimeMessage, RunScriptOptions } from "./runtime-worker.js";
+
+await configureBrowserLogging();
+const logger = getLogger(["bolo", "runtime", "worker"]);
 
 declare global {
   var __httpShimOptions: unknown | undefined;
@@ -47,6 +51,8 @@ const formatValue = (v: unknown): string => {
 };
 
 const runUserCode = (code: string, opts: RunScriptOptions) => {
+  logger.debug("RUN_SCRIPT received", { filename: opts.filename, args: opts.args });
+
   if (opts.httpShimOptions) {
     __httpShimOptions = opts.httpShimOptions;
   }
@@ -79,9 +85,13 @@ const runUserCode = (code: string, opts: RunScriptOptions) => {
   try {
     // eslint-disable-next-line no-eval
     (0, eval)(wrapped);
+    logger.info("EXIT", { code: 0 });
     post({ type: "EXIT", code: 0 });
   } catch (err) {
+    const message = err instanceof Error ? (err.stack ?? String(err)) : String(err);
+    logger.error("Uncaught error in user code", { error: message });
     post({ type: "STDERR", data: String(err) });
+    logger.info("EXIT", { code: 1 });
     post({ type: "EXIT", code: 1 });
   }
 };
@@ -89,6 +99,25 @@ const runUserCode = (code: string, opts: RunScriptOptions) => {
 setInterval(() => {
   post({ type: "HEARTBEAT" });
 }, 5000);
+
+self.addEventListener("error", (ev: ErrorEvent) => {
+  const error =
+    ev.error instanceof Error ? (ev.error.stack ?? String(ev.error)) : String(ev.message);
+  logger.error("Uncaught worker error", {
+    message: ev.message,
+    filename: ev.filename,
+    lineno: ev.lineno,
+    error,
+  });
+  post({ type: "STDERR", data: error });
+});
+
+self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
+  const reason =
+    ev.reason instanceof Error ? (ev.reason.stack ?? String(ev.reason)) : String(ev.reason);
+  logger.error("Unhandled worker rejection", { reason });
+  post({ type: "STDERR", data: reason });
+});
 
 self.onmessage = (ev: MessageEvent<RuntimeMessage>) => {
   const msg = ev.data;
