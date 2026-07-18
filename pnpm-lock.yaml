@@ -302,10 +302,16 @@ importers:
       lockparse:
         specifier: ^0.2.2
         version: 0.2.2
+      semver:
+        specifier: ^7.6.0
+        version: 7.8.5
     devDependencies:
       '@types/node':
         specifier: ^26.1.1
         version: 26.1.1
+      '@types/semver':
+        specifier: ^7.5.8
+        version: 7.7.1
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

@@ -59,6 +59,7 @@ export function parsePnpm(content: string): LockfileGraph {
         dev: pkg.dev ?? false,
         optional: pkg.optional ?? false,
         peerDependencies: pkg.peerDependencies ?? {},
+        dependencies: {},
         bin: pkg.bin ?? {},
       };
       packages.set(depPath, locked);

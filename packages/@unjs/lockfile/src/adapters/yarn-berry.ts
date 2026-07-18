@@ -42,6 +42,7 @@ export function parseYarnBerry(content: string): LockfileGraph {
       dev: false,
       optional: false,
       peerDependencies: entry.peerDependencies ?? {},
+      dependencies: entry.dependencies ?? {},
       bin: entry.bin ?? {},
     };
     packages.set(depPath, locked);

@@ -39,6 +39,7 @@ export function parseNpm(content: string): LockfileGraph {
         dev: pkg.dev ?? false,
         optional: pkg.optional ?? false,
         peerDependencies: pkg.peerDependencies ?? {},
+        dependencies: pkg.dependencies ?? {},
         bin: pkg.bin ?? {},
       };
       packages.set(depPath, locked);
@@ -67,6 +68,7 @@ export function parseNpm(content: string): LockfileGraph {
         dev: pkg.dev ?? false,
         optional: pkg.optional ?? false,
         peerDependencies: {},
+        dependencies: pkg.requires ?? {},
         bin: pkg.bin ?? {},
       };
       packages.set(depPath, locked);

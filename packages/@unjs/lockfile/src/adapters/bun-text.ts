@@ -43,7 +43,8 @@ export function parseBunText(content: string): LockfileGraph {
       resolvedUrl: resolvedUrl || buildTarballUrl(name, version),
       dev: false,
       optional: false,
-      peerDependencies: deps ?? {},
+      peerDependencies: {},
+      dependencies: deps ?? {},
       bin: {},
     };
     packages.set(depPath, locked);

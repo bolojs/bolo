@@ -15,6 +15,8 @@ export interface LockedPackage {
   dev: boolean;
   optional: boolean;
   peerDependencies: Record<string, string>;
+  /** Declared runtime deps (name -> range), as recorded by the lockfile for this exact package. */
+  dependencies: Record<string, string>;
   bin: Record<string, string>;
 }
 

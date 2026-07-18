@@ -7,7 +7,8 @@ import { parseYarn } from "./adapters/yarn.js";
 import { parseYarnBerry } from "./adapters/yarn-berry.js";
 import type { Format, LockfileGraph } from "./graph.js";
 export type * from "./graph.js";
-export { resolve } from "./resolve.js";
+export { resolve, resolveGraph } from "./resolve.js";
+export type { ResolvedGraph, ResolvedGraphPackage } from "./resolve.js";
 
 export function parse(content: string | ArrayBuffer | Uint8Array, format?: Format): LockfileGraph {
   const detected = format ?? detectFormat(content);
