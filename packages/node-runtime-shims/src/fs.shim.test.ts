@@ -91,6 +91,21 @@ describe("fs shim", () => {
     expect(shim.statSync("/link-sync.txt").isFile()).toBe(true);
   });
 
+  it("stat on a symlink to a directory reports isDirectory (virtual-store resolution)", async () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    await shim.mkdir("/real-dir", { recursive: true });
+    await shim.writeFile("/real-dir/index.js", "module.exports = 1;");
+    await shim.mkdir("/node_modules", { recursive: true });
+    await shim.symlink("/real-dir", "/node_modules/pkg");
+
+    const s = await shim.stat("/node_modules/pkg");
+    expect(s.isDirectory()).toBe(true);
+    expect(s.isFile()).toBe(false);
+    expect((await shim.lstat("/node_modules/pkg")).isSymbolicLink()).toBe(true);
+  });
+
   it("promises namespace has all async methods", async () => {
     const vfs = new VfsBus();
     const shim = createFsShim(vfs);

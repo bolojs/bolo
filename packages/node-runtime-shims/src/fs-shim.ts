@@ -59,6 +59,15 @@ export const createFsShim = (vfs: VfsBus) => {
   };
 
   const stat = async (path: string): Promise<FsStat> => {
+    // memfs (`vfs.hot`) resolves symlinks the same way Node's real fs does —
+    // needed for the virtual-store layout (`node_modules/.bolo/<pkg>/...`),
+    // which lives entirely in the hot layer. Only fall back to the
+    // synthesized-flags path (which can't see symlinks) for cold-layer-only
+    // paths, so eviction-miss reads into OPFS keep working.
+    if (vfs.hot.existsSync(path)) {
+      return vfs.hot.statSync(path) as unknown as FsStat;
+    }
+
     const content = await vfs.readFile(path).catch(() => null);
     const isFile = content !== null;
     const isDirectory = Array.isArray(await vfs.readdir(path).catch(() => null));
