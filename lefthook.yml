@@ -1,0 +1,12 @@
+# Git hooks powered by lefthook. Installed automatically by the root
+# package.json `prepare` script (`lefthook install`) on `pnpm install`.
+#
+# pre-push runs the full local validate gate (typecheck + lint + format + test
+# across packages/, apps/, examples/, tests/). Same gate CI runs, so catching
+# failures here saves a round-trip.
+# Bypass with `git push --no-verify` when you really need to.
+
+pre-push:
+  commands:
+    validate:
+      run: pnpm validate

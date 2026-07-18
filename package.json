@@ -6,7 +6,7 @@
   "scripts": {
     "build": "turbo run build",
     "test": "vitest run",
-    "validate": "bash -c 'echo -n \"Format: \"; (oxfmt --check packages/*/src 2>/dev/null && echo \"✅\") || echo \"❌\"; echo -n \"Lint: \"; (oxlint packages/*/src 2>/dev/null && echo \"✅\") || echo \"❌\"; echo -n \"Typecheck: \"; (tsc --noEmit 2>/dev/null && echo \"✅\") || echo \"❌\"'",
+    "validate": "tsx scripts/validate.ts",
     "clean": "rm -rf dist packages/*/dist node_modules/.cache .turbo",
     "lint": "turbo run lint",
     "format": "turbo run format",
@@ -15,13 +15,15 @@
     "test:e2e:verbose": "pnpm --filter @bolojs/e2e test:verbose",
     "docs:internal": "docmd dev --cwd .agents",
     "docs:internal:build": "docmd build --cwd .agents",
-    "compat:refresh": "bash apps/compat-harness/bin/run-local.sh"
+    "compat:refresh": "bash apps/compat-harness/bin/run-local.sh",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@docmd/core": "^0.8.12",
     "@playwright/cli": "^0.1.17",
     "@types/node": "^26.1.1",
     "@vitejs/plugin-react": "^6.0.3",
+    "lefthook": "^1.11.14",
     "oxfmt": "^0.59.0",
     "oxlint": "^1.0.0",
     "playwright-core": "^1.61.1",
