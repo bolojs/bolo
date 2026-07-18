@@ -61,6 +61,9 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
     // IframeSandbox.init() snapshots the workdir via readdirSync before any
     // file is ever written to it — the dir must exist in the VFS up front.
     await vfs.mkdir(workdir, { recursive: true });
+    // Agents commonly write one-off scripts to /tmp; create it up front so
+    // `ls /` lists it and writes don't require a prior `mkdir -p`.
+    await vfs.mkdir("/tmp", { recursive: true });
 
     let sandbox: SWSandbox;
     try {

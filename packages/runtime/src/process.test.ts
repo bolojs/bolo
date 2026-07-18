@@ -84,7 +84,31 @@ describe("createProcess", () => {
     const proc = createProcess("sleep", ["10"], {}, { vfs, shell, runtimeWorker });
     proc.kill();
     expect(await proc.exit).toBe(1);
-    expect(runtimeWorker.dispose).toHaveBeenCalled();
+    // runtimeWorker is shared across every process in the container; killing
+    // one process must not tear it down and take unrelated processes with it.
+    expect(runtimeWorker.dispose).not.toHaveBeenCalled();
+  });
+
+  it("should not affect a second in-flight process sharing the same runtimeWorker when one is killed", async () => {
+    const vfs = new VfsBus();
+    const shell = {
+      execute: vi.fn().mockReturnValue(new Promise(() => {})),
+    } as unknown as ShellService;
+    const runtimeWorker = { dispose: vi.fn() } as unknown as RuntimeWorker;
+    const devServer = createProcess("npm", ["run", "dev"], {}, { vfs, shell, runtimeWorker });
+    const install = createProcess("npm", ["install"], {}, { vfs, shell, runtimeWorker });
+
+    install.kill();
+
+    expect(await install.exit).toBe(1);
+    expect(runtimeWorker.dispose).not.toHaveBeenCalled();
+    // The dev server process's exit promise must remain unresolved — killing
+    // `install` must not have terminated the shared worker it depends on.
+    const raced = await Promise.race([
+      devServer.exit.then(() => "resolved"),
+      new Promise((resolve) => setTimeout(() => resolve("pending"), 10)),
+    ]);
+    expect(raced).toBe("pending");
   });
 
   it("should handle shell command errors", async () => {

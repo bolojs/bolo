@@ -63,11 +63,15 @@ export function createProcess(
   });
 
   const kill = (): void => {
+    // deps.runtimeWorker is shared across every process in the container
+    // (created once in boot.ts); disposing it here would tear down unrelated
+    // in-flight processes (e.g. a live dev server) and the active REPL
+    // session. Killing a process only needs to stop listening to *this*
+    // process's output and resolve its own exit.
     aborted = true;
     if (!closed) {
       resolveExit(1);
     }
-    deps.runtimeWorker.dispose();
   };
 
   return { exit, output: stream, kill };
