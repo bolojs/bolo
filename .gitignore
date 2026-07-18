@@ -1,6 +1,9 @@
 node_modules/
 dist/
-.sisyphus/
+.env
+.env.*
+.ux-audit/
+!.env.example
 coverage/
 .oxlint/
 .oxfmt/

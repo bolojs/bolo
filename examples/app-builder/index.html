@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bolo app builder example</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // No-flash theme bootstrap. Must run before main.tsx so the initial
+      // paint matches the saved/system preference instead of falling back
+      // to the dark default. Mirrors App.getInitialTheme().
+      (function () {
+        try {
+          var stored = localStorage.getItem("bolo-app-builder:theme");
+          var theme =
+            stored === "dark" || stored === "light"
+              ? stored
+              : window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark";
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

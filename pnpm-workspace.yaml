@@ -3,6 +3,7 @@ packages:
   - packages/@unjs/*
   - apps/*
   - apps/site/*
+  - examples/*
   - tests
   - tests/e2e
 
