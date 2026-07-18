@@ -2,6 +2,8 @@ import type { VfsBus } from "@bolojs/vfs-bus";
 import { transformScript } from "@bolojs/wasm-registry";
 
 const TRANSFORMABLE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
+// ponytail: Vite's default extension try-order for extensionless imports.
+const RESOLVE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", ".mjs", ".json"];
 
 export interface BrowserViteServerOptions {
   readonly vfs: VfsBus;
@@ -61,12 +63,12 @@ export class BrowserViteServer {
   }
 
   async transformRequest(url: string): Promise<Response> {
-    const filePath = this.resolveUrl(url);
+    const literalPath = this.resolveUrl(url);
+    const filePath = await this.resolveExtension(literalPath);
 
     try {
-      const exists = await this.vfs.exists(filePath);
-      if (!exists) {
-        return new Response(`Not found: ${filePath}`, { status: 404 });
+      if (filePath === null) {
+        return new Response(`Not found: ${literalPath}`, { status: 404 });
       }
 
       const raw = await this.vfs.readFile(filePath);
@@ -76,6 +78,20 @@ export class BrowserViteServer {
       if (TRANSFORMABLE_EXTENSIONS.has(ext) && ext !== ".js") {
         const transformed = await this._transformModule(filePath, code);
         return new Response(transformed, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/javascript",
+            "Cache-Control": "no-cache",
+          },
+        });
+      }
+
+      if (ext === ".css") {
+        // Vite semantics: `import './styles.css'` returns a JS module that
+        // injects a <style> tag. ponytail: full-reload HMR (broadcastHmr)
+        // already covers hot updates; no import.meta.hot plumbing here yet.
+        const module = `const css = ${JSON.stringify(code)};\nconst style = document.createElement('style');\nstyle.textContent = css;\ndocument.head.appendChild(style);\nexport default css;`;
+        return new Response(module, {
           status: 200,
           headers: {
             "Content-Type": "application/javascript",
@@ -164,6 +180,16 @@ export class BrowserViteServer {
     }
 
     return `${this.root}/${pathname}`;
+  }
+
+  private async resolveExtension(literalPath: string): Promise<string | null> {
+    if (await this.vfs.exists(literalPath)) return literalPath;
+    // Skip extension try-loop when path already has one; saves exists() round-trips.
+    if (this.getExtension(literalPath) !== "") return null;
+    for (const ext of RESOLVE_EXTENSIONS) {
+      if (await this.vfs.exists(literalPath + ext)) return literalPath + ext;
+    }
+    return null;
   }
 
   private getExtension(filePath: string): string {
