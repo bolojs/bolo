@@ -275,3 +275,11 @@ export class VfsBus {
 }
 
 export const vfsRegistry = new VfsBus();
+
+export function snapshot(bus: VfsBus = vfsRegistry): Record<string, any> {
+  return bus.snapshot();
+}
+
+export function restore(snap: Record<string, any>, bus: VfsBus = vfsRegistry) {
+  bus.restore(snap);
+}
