@@ -99,4 +99,18 @@ describe("git", () => {
     const output = deps.stdout.mock.calls.map((c) => c[0]).join("").trim();
     expect(output).toMatch(/^[0-9a-f]{7} alpha$/);
   });
+
+  it("clone with no URL fails with a clear error", async () => {
+    const deps = createDeps(vfs, cwd);
+    const code = await git(["clone"], deps);
+    expect(code).toBe(1);
+    expect(deps.stdout).toHaveBeenCalledWith(expect.stringContaining("clone requires a URL"));
+  });
+
+  it("clone with malformed URL fails before any network call", async () => {
+    const deps = createDeps(vfs, cwd);
+    const code = await git(["clone", "not-a-url"], deps);
+    expect(code).toBe(1);
+    expect(deps.stdout).toHaveBeenCalledWith(expect.stringContaining("invalid URL: not-a-url"));
+  });
 });

@@ -133,8 +133,23 @@ export class GitService {
   }
 
   async clone(args: string[]): Promise<number> {
-    const url = args.find((a) => !a.startsWith("-"));
+    const positional = args.filter((a) => !a.startsWith("-"));
+    const url = positional[0];
     if (!url) return this.error("clone requires a URL");
+
+    // Derive target dir from URL (last path segment, strip .git) or use an
+    // explicit second positional arg — mirrors `git clone URL [PATH]`.
+    let target = positional[1];
+    if (!target) {
+      try {
+        const path = new URL(url).pathname;
+        target = path.slice(path.lastIndexOf("/") + 1).replace(/\.git$/, "");
+      } catch {
+        return this.error(`invalid URL: ${url}`);
+      }
+    }
+    if (!target) return this.error(`could not derive directory name from ${url}`);
+    const dir = `${this.cwd}/${target}`.replace(/\/+/g, "/");
 
     let depth = 1;
     let singleBranch = true;
@@ -146,10 +161,11 @@ export class GitService {
 
     try {
       const [git, http] = await Promise.all([this.gitModule(), this.httpModule()]);
+      this.stdout(`Cloning into '${target}'...`);
       await git.clone({
         fs: this.fs,
         http,
-        dir: this.cwd,
+        dir,
         url,
         corsProxy: this.corsProxy,
         depth,
