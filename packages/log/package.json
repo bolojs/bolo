@@ -12,6 +12,10 @@
     "./browser": {
       "types": "./dist/browser.d.ts",
       "default": "./dist/browser.js"
+    },
+    "./error-hints": {
+      "types": "./dist/error-hints.d.ts",
+      "default": "./dist/error-hints.js"
     }
   },
   "scripts": {

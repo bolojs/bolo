@@ -1,5 +1,6 @@
 import type { VfsBus } from "@bolojs/vfs-bus";
 import { transformScript } from "@bolojs/wasm-registry";
+import { enrichMessage } from "@bolojs/log/error-hints";
 
 const TRANSFORMABLE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 // ponytail: Vite's default extension try-order for extensionless imports.
@@ -115,7 +116,7 @@ export class BrowserViteServer {
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return new Response(`Transform error: ${message}`, { status: 500 });
+      return new Response(enrichMessage(`Transform error: ${message}`), { status: 500 });
     }
   }
 
