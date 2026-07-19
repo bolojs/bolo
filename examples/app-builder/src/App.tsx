@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
+import { useIsMobile } from "./hooks/use-mobile";
 import { useContainer } from "./container/useContainer";
 import { listFilesRecursive } from "./container/tools";
 import { exportProjectZip } from "./container/exportZip";
@@ -41,6 +42,7 @@ const applyTheme = (theme: Theme) => {
 };
 
 export default function App() {
+  const isMobile = useIsMobile();
   const { container, status, previewUrl, lines, runCommand, appendLine, saveSnapshot } = useContainer();
   const [apiKey, setApiKey] = useState<string | null>(() => getStoredApiKey());
   const [planModelId, setPlanModelId] = useState(() => getStoredPlanModelId());
@@ -174,6 +176,56 @@ export default function App() {
       onExport={handleExport}
       exportDisabled={!container || status !== "ready"}
     />
+    {isMobile ? (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-3">
+          <Tabs active={tab} onSelect={setTab} mobile />
+          {tab === "code" && activePath && (
+            <span className="flex items-center gap-1 text-[11px] opacity-60">
+              <span
+                className={cn(
+                  "inline-block size-1.5 rounded-full",
+                  saveState === "saved" && "bg-status-ok",
+                  saveState === "saving" && "bg-status-pending",
+                  saveState === "dirty" && "bg-muted-foreground",
+                )}
+              />
+              {saveState === "saved" ? "Saved" : saveState === "saving" ? "Saving…" : "Unsaved"}
+            </span>
+          )}
+        </div>
+        {tab === "chat" &&
+          (apiKey ? (
+            <Chat turns={turns} busy={busy} disabled={status !== "ready"} onSend={send} />
+          ) : (
+            <div className="p-3 text-[13px]">Configure OpenRouter to start building.</div>
+          ))}
+        {tab === "preview" && (
+          <div className="min-h-0 flex-1">
+            <Preview url={previewUrl} />
+          </div>
+        )}
+        {tab === "code" && (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="max-h-[35vh] shrink-0 overflow-auto border-b border-border">
+              <FileTree files={files} activePath={activePath} onSelect={setActivePath} />
+            </div>
+            <div className="min-h-0 flex-1">
+              {activePath ? (
+                <Editor path={activePath} value={activeContents} theme={theme} onChange={handleEditorChange} />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[13px] text-muted-foreground">
+                  Select a file
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {tab === "terminal" && (
+          <Terminal lines={lines} disabled={status !== "ready"} theme={theme} onSubmit={handleTerminalSubmit} />
+        )}
+      </div>
+    ) : (
     <Group orientation="horizontal" className="min-h-0 flex-1">
       <Panel defaultSize="22%" minSize="15%" maxSize="40%">
       <aside className="flex h-full min-h-0 flex-col border-r border-border">
@@ -233,6 +285,7 @@ export default function App() {
       </Group>
       </Panel>
     </Group>
+    )}
     </div>
 
     <ConfigDialog

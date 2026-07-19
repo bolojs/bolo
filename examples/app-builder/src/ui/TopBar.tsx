@@ -33,15 +33,15 @@ const STATUS_DOT_CLASS: Record<ContainerStatus, string> = {
 export default function TopBar({ status, theme, onToggleTheme, onOpenConfig, onExport, exportDisabled }: Props) {
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-border px-3">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3">
         <div className="flex items-center gap-1.5 text-sm font-semibold">
           <Diamond className="size-3.5 fill-foreground text-foreground" aria-hidden="true" />
           bolo
-          <span className="font-normal text-muted-foreground">app builder</span>
+          <span className="hidden font-normal text-muted-foreground sm:inline">app builder</span>
         </div>
         <Badge variant="outline" className="gap-1.5 font-normal text-muted-foreground">
           <span className={`size-1.5 rounded-full ${STATUS_DOT_CLASS[status]}`} aria-hidden="true" />
-          {STATUS_LABEL[status]}
+          <span className="hidden sm:inline">{STATUS_LABEL[status]}</span>
         </Badge>
       </div>
       <div className="flex items-center gap-1">
