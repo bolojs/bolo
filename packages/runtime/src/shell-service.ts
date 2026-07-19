@@ -5,6 +5,7 @@ import { BrowserViteServer } from "@bolojs/vite-server";
 import { bundleEntry } from "@bolojs/wasm-registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
+import { git } from "./commands/git.js";
 import { nc } from "./commands/nc.js";
 import { tcping } from "./commands/tcping.js";
 import { Bash } from "just-bash/browser";
@@ -40,6 +41,13 @@ export interface ShellResult {
 }
 
 interface OutputCallbacks {
+  stdout: (data: string) => void;
+  stderr: (data: string) => void;
+}
+
+export interface ShellDeps {
+  vfs: VfsBus;
+  cwd: string;
   stdout: (data: string) => void;
   stderr: (data: string) => void;
 }
@@ -103,6 +111,7 @@ export class ShellService {
     if (cmd === "runtime") return this.routeRuntime(rest, output);
     if (cmd === "agent") return this.routeAgent(rest, output);
     if (cmd === "curl") return curl(rest, output);
+    if (cmd === "git") return git(rest, { vfs: this.deps.vfs, cwd: this.cwd, ...output });
     if (cmd === "nc") return nc(rest, output);
     if (cmd === "tcping") return tcping(rest, output);
     if (cmd === "node" || cmd === "bun") {

@@ -20,6 +20,7 @@
     "@bolojs/node-web-shims": "workspace:*",
     "@bolojs/node-runtime-shims": "workspace:*",
     "@bolojs/wasm-registry": "workspace:*",
+    "isomorphic-git": "^1.38.7",
     "just-bash": "^3.1.0"
   },
   "devDependencies": {
