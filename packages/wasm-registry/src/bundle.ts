@@ -648,7 +648,10 @@ export const transformScript = async (
 ): Promise<TransformScriptResult> => {
   const oxc = await getOxc();
   const lang = options?.loader ?? "ts";
-  const result = await oxc.transform(`input.${lang}`, code, { sourceType: "module" });
+  // ponytail: use transformSync to bypass the napi async-work queue entirely.
+  // Even with asyncWorkPoolSize: 0, sync avoids any chance of queue starvation;
+  // cost is main-thread block for tens of ms per file, irrelevant for preview.
+  const result = oxc.transformSync(`input.${lang}`, code, { sourceType: "module" });
   if (result.errors?.length) {
     throw new Error(result.errors.map((e: any) => e.message).join("\n"));
   }
