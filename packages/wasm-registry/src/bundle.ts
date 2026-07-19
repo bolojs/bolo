@@ -50,14 +50,49 @@ const getRolldown = () => {
   return _rolldown;
 };
 
-// oxc-transform: lazy CDN load with Node.js/local-bundler fallback
+// oxc-transform: lazy CDN load with Node.js/local-bundler fallback.
+//
+// ponytail: oxc-transform's package.json has no `exports` field — only old-
+// style `main` + `browser`. Vite/rollup need `exports` to rewrite a dynamic
+// `import("oxc-transform")` into a chunk URL; without it the bare specifier
+// survives the build and the runtime tries to fetch `/oxc-transform`, which
+// fails on real origins (no dev-server resolver, no `/oxc-transform` route).
+// Static import side-steps the entire class: bundle.ts is a leaf dep and
+// oxc-transform/browser.js is a 51-byte re-export of the binding — the heavy
+// WASM only loads lazily when `.transform()` is actually called.
+import * as _oxcLocal from "oxc-transform";
+
 let _oxc: Promise<typeof import("oxc-transform")> | undefined;
-const getOxc = () => {
+// ponytail: warning is one-shot at first import, no logger dep needed —
+// console.warn is greppable and the obs buffer picks it up via main-thread
+// window onerror. Promote to logtape when this becomes a hot path.
+let _oxcCdnWarned = false;
+const warnOxcCdn = (): void => {
+  if (_oxcCdnWarned) return;
+  _oxcCdnWarned = true;
+  if (
+    typeof console !== "undefined" &&
+    typeof location !== "undefined" &&
+    location.hostname !== "localhost" &&
+    location.hostname !== "127.0.0.1"
+  ) {
+    console.warn(
+      "[wasm-registry] oxc-transform: using esm.sh CDN. " +
+        "Cross-origin Worker construction may fail on deployed origins. " +
+        "Set __preferLocalBundler (or __preferLocalOxc) and add noExternal for oxc-transform " +
+        "in the consumer's vite.config — see examples/app-builder/vite.config.ts.",
+    );
+  }
+};
+const getOxc = (): Promise<typeof import("oxc-transform")> => {
   if (!_oxc) {
-    _oxc = preferLocalOxc()
-      ? import(/* @vite-ignore */ "oxc-transform")
-      : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
-        import(/* @vite-ignore */ "https://esm.sh/oxc-transform@latest");
+    if (preferLocalOxc()) {
+      _oxc = Promise.resolve(_oxcLocal);
+    } else {
+      warnOxcCdn();
+      // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
+      _oxc = import(/* @vite-ignore */ "https://esm.sh/oxc-transform@latest");
+    }
   }
   return _oxc;
 };

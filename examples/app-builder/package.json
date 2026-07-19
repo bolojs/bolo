@@ -43,6 +43,7 @@
   "devDependencies": {
     "@bolojs/vite-preset": "workspace:*",
     "@oxc-transform/binding-wasm32-wasi": "0.140.0",
+    "oxc-transform": "^0.140.0",
     "@tailwindcss/vite": "^4.3.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

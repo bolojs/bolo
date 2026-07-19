@@ -37,6 +37,33 @@ function devOpenRouterKey(): Plugin {
   };
 }
 
+// app-builder deploys to a real origin (demo.bolojs.dev). The preset's
+// external list keeps oxc-transform + its WASI binding out of the bundle,
+// so at runtime the dynamic `import("oxc-transform")` resolves to esm.sh
+// and its worker fails to construct cross-origin (browser blocks it).
+//
+// ponytail: oxc-transform's package.json has no `exports` field, only
+// old-style `main` + `browser`. Vite's resolver + rollup both need `exports`
+// to rewrite a dynamic bare specifier into a chunk URL — without it, the
+// literal survives the build and the runtime tries to fetch `/oxc-transform`
+// which fails. `resolve.alias` and `noExternal` alone don't help here. The
+// `enforce: "pre"` resolveId hook runs before rollup's external check, so
+// we hand it the explicit path to oxc-transform/browser.js (which re-exports
+// the binding-wasm32-wasi module — that's the actual worker-bearing piece).
+function inlineOxcTransform(): Plugin {
+  const oxcBrowserPath = fileURLToPath(
+    new URL("./node_modules/oxc-transform/browser.js", import.meta.url),
+  );
+  return {
+    name: "bolo:inline-oxc-transform",
+    enforce: "pre",
+    async resolveId(source) {
+      if (source === "oxc-transform") return oxcBrowserPath;
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   // Vite only auto-exposes `VITE_*` env vars to client code. To bridge a
   // unprefixed dev-only var from `.env` to a server-side plugin without
@@ -50,9 +77,22 @@ export default defineConfig(({ mode }) => {
   }
 
   return mergeConfig(bolojsPreset(), {
-    plugins: [react(), tailwindcss(), devOpenRouterKey()],
+    plugins: [react(), tailwindcss(), devOpenRouterKey(), inlineOxcTransform()],
     resolve: {
       alias: [{ find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) }],
+    },
+    build: {
+      rollupOptions: {
+        // typescript / sass / @swc stay external (preset default). oxc +
+        // its binding re-included via inlineOxcTransform above so they
+        // ship same-origin as chunks — the worker constructs fine when
+        // the worker script URL is same-origin (demo.bolojs.dev).
+        noExternal: [
+          "oxc-transform",
+          "@oxc-transform/binding-wasm32-wasi",
+          "@oxc-transform/binding",
+        ],
+      },
     },
   });
 });
