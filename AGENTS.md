@@ -22,10 +22,9 @@ packages/
   log/               @bolojs/log - internal diagnostics (logtape wrapper), Node + browser entrypoints
   vite-server/       BrowserViteServer — Vite dev server on main thread
 apps/
-  site/              bolojs.pages.dev, one static Pages deploy (build outputs merged, no router)
+  site/              bolojs.dev, one static Pages deploy (build outputs merged, no router)
     landing/         @bolojs/site-landing    Astro/React marketing site, served at "/"
     compat/          @bolojs/site-compat     Astro heat-grid,            served at "/compat"
-    demo/            @bolojs/site-demo       Vite/Solid,                 served at "/demo"
     docs/            @bolojs/site-docs       Astro Starlight,            served at "/docs"
   compat-harness/    Nightly npm-package matrix harness (data source for /compat)
   tcp-relay/         Reference self-hosted WS/WebTransport → TCP relay for node:net (user-operated)
@@ -39,7 +38,7 @@ tests/
 
 - **This file** — project overview and conventions
 - **PRD, ADRs, contributing guide (internal)** — [`.agents/docs/`](.agents/docs/). Browse locally with `pnpm docs:internal`. PRD: `.agents/docs/PRD.md`. Architecture: `.agents/docs/ARCHITECTURE.md`. ADRs: `.agents/docs/adr/0001-...md`, ...0006. Shim contributing: `.agents/docs/contributing-shims.md`.
-- **End-user docs (public)** — Astro Starlight app, source [`docs/`](docs/) (symlinked into Starlight at `apps/site/docs/src/content/docs`). Live URL pattern `https://bolojs.pages.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
+- **End-user docs (public)** — Astro Starlight app, source [`docs/`](docs/) (symlinked into Starlight at `apps/site/docs/src/content/docs`). Live URL pattern `https://bolojs.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
 - **Implementation plan** — `.agents/plans/<date>-<purpose>.md` (ephemeral working plans)
 - **Nested AGENTS.md** — package/area-specific agent docs live next to their code (e.g. `packages/log/AGENTS.md`, `tests/AGENTS.md`); they load only when you work in that area.
 
@@ -56,7 +55,6 @@ tests/
 | QuickJS agent sandbox | [bolojs/quickjs-sandbox](https://github.com/bolojs/quickjs-sandbox) | Separate repo; optional SandboxBackend + policy library |
 | Package install | `packages/npm` | Browser-native installer + esm.sh fallback |
 | Vite dev server | `packages/vite-server` | Main thread, HMR via BroadcastChannel |
-| Demo app | `apps/site/demo` | IDE-like UI wiring all packages together, mounted at `/demo` |
 
 ## CONVENTIONS
 

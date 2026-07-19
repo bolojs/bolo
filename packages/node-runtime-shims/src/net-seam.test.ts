@@ -3,7 +3,7 @@ import { VfsBus } from "@bolojs/vfs-bus";
 import { createLiveShimRegistry } from "./live.js";
 
 const EXPECTED_CONNECT_ERROR =
-  "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage";
+  "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage";
 
 describe("net seam", () => {
   it("throws the documented error when connect() is called with no custom net backend", () => {
@@ -23,7 +23,7 @@ describe("net seam", () => {
 
     const server = net.createServer();
     await expect(server.listen(0)).rejects.toThrow(
-      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
     );
   });
 });

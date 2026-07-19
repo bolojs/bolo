@@ -46,5 +46,5 @@ This relay provides only basic per-IP rate limiting (10 connections per IP per m
 
 ## Links
 
-- bolojs docs: https://bolojs.pages.dev/docs/
+- bolojs docs: https://bolojs.dev/docs/
 - Project home: https://github.com/bolojs/bolo

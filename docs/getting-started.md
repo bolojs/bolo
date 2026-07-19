@@ -16,10 +16,10 @@ git clone https://github.com/bolojs/bolo
 cd bolo
 pnpm install
 pnpm build
-pnpm --filter @bolojs/site-demo dev
+pnpm --filter @bolojs/example-app-builder dev
 ```
 
-Open `http://localhost:5173`. The demo shows a split terminal + preview pane. Try:
+Open the URL Vite prints. The demo shows a split terminal + preview pane. Try:
 
 ```
 npm install lodash

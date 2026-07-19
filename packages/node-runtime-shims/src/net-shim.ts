@@ -78,7 +78,7 @@ export class NoopTransport implements ByteTransport {
     _onError?: (err: Error) => void,
   ): Promise<never> {
     throw new Error(
-      "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+      "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
     );
   }
 
@@ -89,7 +89,7 @@ export class NoopTransport implements ByteTransport {
     _onControl: (msg: object) => void,
   ): Promise<never> {
     throw new Error(
-      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.pages.dev/docs/shim-coverage",
+      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
     );
   }
 }

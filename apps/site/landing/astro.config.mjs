@@ -10,7 +10,7 @@ import {
 } from "@bolojs/vite-preset";
 
 export default defineConfig({
-  site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : "https://bolojs.pages.dev",
+  site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : "https://bolojs.dev",
   integrations: [
     react({ include: ["**/shared/components/**/*"], exclude: ["**/demo/**/*"] }),
     solid({ include: ["**/demo/**/*"] }),
