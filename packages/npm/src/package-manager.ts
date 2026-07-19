@@ -165,21 +165,25 @@ export class PackageManager {
    * install so subsequent installs are deterministic.
    */
   private async installBrowserNative(packages?: string[]): Promise<void> {
-    const lockfile = this.detectLockfile();
     let graph: ResolvedGraph;
 
-    if (lockfile) {
-      try {
-        const lockfileGraph = parse(lockfile.content);
-        graph = resolveGraph(lockfileGraph, this.cwd);
-      } catch (error) {
-        this.warn(
-          `Lockfile parse failed: ${error instanceof Error ? error.message : String(error)}; resolving from registry`,
-        );
+    if (packages && packages.length > 0) {
+      graph = await this.resolveFromRegistry(packages);
+    } else {
+      const lockfile = this.detectLockfile();
+      if (lockfile) {
+        try {
+          const lockfileGraph = parse(lockfile.content);
+          graph = resolveGraph(lockfileGraph, this.cwd);
+        } catch (error) {
+          this.warn(
+            `Lockfile parse failed: ${error instanceof Error ? error.message : String(error)}; resolving from registry`,
+          );
+          graph = await this.resolveFromRegistry(packages);
+        }
+      } else {
         graph = await this.resolveFromRegistry(packages);
       }
-    } else {
-      graph = await this.resolveFromRegistry(packages);
     }
 
     await materializeVirtualStore({
