@@ -16,7 +16,7 @@ export const consoleHello: Scenario = {
     { label: "Install deps", command: "npm", args: ["install"] },
     { label: "View package.json", command: "cat", args: ["package.json"] },
     { label: "Run REPL", command: "node", args: [] },
-    { label: "Git status", command: "git", args: ["status"], reason: "no git shim" },
+    { label: "Git status", command: "git", args: ["status"] },
     { label: "npm build", command: "npm", args: ["run", "build"], reason: "no build script" },
   ],
   servesHttp: false,
