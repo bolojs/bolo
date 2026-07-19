@@ -6,9 +6,7 @@
 
 Run Node.js, Bun, and Deno apps entirely in the browser, zero server. Runs real npm packages — `npm install` then `npm run dev`, no VM, no rewrite. AI agent code runs sandboxed by default (cross-origin iframe; optional QuickJS backend for hard memory/CPU caps).
 
-**Developer Preview.** [Live demo](https://bolojs-demo.pages.dev) · [Docs](https://bolojs.dev/docs/)
-
-Live demo (app-builder): https://demo.bolojs.dev
+**Developer Preview.** [Live demo](https://demo.bolojs.dev) · [Docs](https://bolojs.dev/docs/)
 
 ## Quick start
 
@@ -16,7 +14,7 @@ Live demo (app-builder): https://demo.bolojs.dev
 git clone https://github.com/bolojs/bolo
 cd bolo
 pnpm install && pnpm build
-pnpm --filter @bolojs/site-demo dev
+pnpm --filter @bolojs/example-app-builder dev
 ```
 
 ## Packages
