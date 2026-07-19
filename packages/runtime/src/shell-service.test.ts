@@ -58,43 +58,14 @@ describe("ShellService", () => {
     expect(result.exitCode).toBe(0);
   });
 
-  it("npm run dev → starts BrowserViteServer and wires sandbox.onFetch", async () => {
-    deps.swSandbox = {
-      onFetch: vi.fn(),
-      setPolicyRegistry: vi.fn(),
-    } as unknown as ShellServiceDeps["swSandbox"];
-
+  // BrowserViteServer + sandbox.onFetch wiring moved to boot() in 2ac6bb9b.
+  // `npm run dev` is now a status print; the preview is live from page load.
+  it("npm run dev → prints preview status (wired at boot, not here)", async () => {
     const result = await shell.execute("npm run dev");
-    expect(deps.swSandbox?.onFetch).toHaveBeenCalledOnce();
-    expect(deps.events?.emit).toHaveBeenCalledWith("port", 3000, "open", "/__preview/");
-    expect(deps.events?.emit).toHaveBeenCalledWith("server-ready", 3000, "/__preview/");
     expect(result.exitCode).toBe(0);
-  });
-
-  it("npm run dev → VFS writes trigger HMR, except under node_modules or importmap.json", async () => {
-    const watchSpy = vi.spyOn(deps.vfs, "watch");
-    await shell.execute("npm run dev");
-
-    expect(watchSpy).toHaveBeenCalledWith("**", expect.any(Function));
-    const messages: unknown[] = [];
-    const channel = new BroadcastChannel("vite-hmr");
-    channel.addEventListener("message", (e) => messages.push((e as MessageEvent).data));
-
-    const handler = watchSpy.mock.calls[0][1];
-    handler("/node_modules/react/index.js", "change");
-    handler("/importmap.json", "change");
-    handler("/src/App.tsx", "change");
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    channel.close();
-    expect(messages).toEqual([{ type: "full-reload", path: "/src/App.tsx" }]);
-  });
-
-  it("npm run dev → error when no sandbox configured", async () => {
-    deps.swSandbox = undefined;
-    const result = await shell.execute("npm run dev");
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain("No sandbox configured");
+    expect(result.stdout).toContain("/__preview/");
+    // shell-service must not touch the sandbox from this path anymore.
+    expect(deps.swSandbox?.onFetch).not.toHaveBeenCalled();
   });
 
   it("npm run <other> → reads package.json and routes the script command", async () => {

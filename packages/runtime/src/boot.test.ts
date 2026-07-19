@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { boot } from "./boot.js";
 import { BrowserContainer } from "./container.js";
+import { SWSandbox } from "@bolojs/sw-sandbox";
 
 vi.mock("@bolojs/sw-sandbox", () => ({
   SWSandbox: {
@@ -44,6 +45,15 @@ describe("boot()", () => {
     const c2 = await boot({ dangerouslyAllowSameOrigin: true });
     expect(c2).toBeInstanceOf(BrowserContainer);
     await c2.teardown();
+  });
+
+  it("wires BrowserViteServer + sandbox.onFetch at boot for /__preview/", async () => {
+    // 2ac6bb9b moved vite wiring out of `npm run dev` and into boot(); this
+    // pins the new contract so the move can't silently regress.
+    const container = await boot({ dangerouslyAllowSameOrigin: true });
+    const sandbox = await vi.mocked(SWSandbox.create).mock.results[0].value;
+    expect(sandbox.onFetch).toHaveBeenCalledWith(expect.any(Function));
+    await container.teardown();
   });
 
   it("mount and export round-trip", async () => {
