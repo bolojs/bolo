@@ -139,3 +139,11 @@ pickers.
   `` `${container.workdir}/${path}`.replace(/\/+/g, "/") `` — follow that
   pattern for new container-fs paths rather than plain string concatenation,
   to avoid double slashes when `path` is empty or already-prefixed.
+- `git` (`packages/runtime/src/commands/git.ts`, backed by isomorphic-git)
+  runs in the VFS hot layer (memfs), so `.git/` and any cloned repo evaporate
+  on page reload or worker teardown. Remote operations (clone/fetch/pull/push)
+  route through the public CORS proxy `https://cors.isomorphic-git.org`,
+  which is rate-limited — for repeated QA either self-host a relay or
+  shallow-clone (`--depth=1` is the default). Supported subset: init, clone,
+  status, add, commit, log, branch, checkout, fetch, pull, push, remote, diff.
+  No merge, rebase, stash, reset --hard, or GPG signing.

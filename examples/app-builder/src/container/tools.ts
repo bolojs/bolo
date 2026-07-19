@@ -67,10 +67,12 @@ export function createContainerTools(container: BrowserContainer, onOutput?: (li
     runCommand: tool({
       description:
         "Run a shell command in the project root. Available runtimes: node, bun, npm " +
-        "(e.g. npm install, npm run dev), plus runtime, agent, curl, nc, tcping — everything else " +
+        "(e.g. npm install, npm run dev), plus runtime, agent, curl, nc, tcping, git — everything else " +
         "runs through a JS-only bash clone (no real OS), so python, pip, cargo, and go are not " +
-        "available. Waits up to 5s for the command to exit; long-lived commands (e.g. a dev server) " +
-        "are left running in the background and reported as still-running rather than blocking.",
+        "available. git supports init, clone, status, add, commit, log, branch, checkout, fetch, " +
+        "pull, push, remote, diff (no merge/rebase/stash). Waits up to 5s for the command to exit; " +
+        "long-lived commands (e.g. a dev server) are left running in the background and reported as " +
+        "still-running rather than blocking.",
       inputSchema: z.object({
         command: z.string(),
         args: z.array(z.string()).default([]),
