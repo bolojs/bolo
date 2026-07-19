@@ -141,8 +141,9 @@ export class ShellService {
     }
 
     try {
-      if (rest.length > 0) {
-        await this.deps.packageManager.install(rest);
+      const packageNames = rest.filter((arg) => !arg.startsWith("-"));
+      if (packageNames.length > 0) {
+        await this.deps.packageManager.install(packageNames);
       } else {
         await this.deps.packageManager.install();
       }
