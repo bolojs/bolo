@@ -8,6 +8,8 @@ Run Node.js, Bun, and Deno apps entirely in the browser, zero server. Runs real 
 
 **Developer Preview.** [Live demo](https://bolojs-demo.pages.dev) · [Docs](https://bolojs.dev/docs/)
 
+Live demo (app-builder): https://demo.bolojs.dev
+
 ## Quick start
 
 ```bash
