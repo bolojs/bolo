@@ -3,7 +3,10 @@ import { createProcessShim } from "@bolojs/node-runtime-shims";
 import type { ProcessShim } from "@bolojs/node-runtime-shims";
 import type { RuntimeMessage, RunScriptOptions } from "./runtime-worker.js";
 
-await configureBrowserLogging();
+// ponytail: fire-and-forget so the worker module stays TLA-free. Vite bundles
+// this as IIFE for site-landing, which rejects top-level await. Early logs
+// (before this resolves) may use default config — acceptable for diagnostics.
+configureBrowserLogging().catch(() => {});
 const logger = getLogger(["bolo", "runtime", "worker"]);
 
 declare global {
