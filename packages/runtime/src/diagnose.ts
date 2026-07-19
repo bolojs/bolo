@@ -17,8 +17,7 @@ export interface Diagnosis {
 
 const hasWorker = (): boolean => typeof Worker !== "undefined";
 const hasWasm = (): boolean => typeof WebAssembly !== "undefined";
-const hasSW = (): boolean =>
-  typeof navigator !== "undefined" && "serviceWorker" in navigator;
+const hasSW = (): boolean => typeof navigator !== "undefined" && "serviceWorker" in navigator;
 const hasMessageChannel = (): boolean => typeof MessageChannel !== "undefined";
 const hasBroadcast = (): boolean => typeof BroadcastChannel !== "undefined";
 

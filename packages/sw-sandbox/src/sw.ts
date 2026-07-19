@@ -9,6 +9,7 @@ let mainPort: MessagePort | null = null;
 let requestIdCounter = 0;
 let isReady = false;
 const requestQueue: Array<() => void> = [];
+const SW_ERROR_MESSAGE_TYPE = "BOLO_SW_ERROR";
 
 interface SWGlobal {
   addEventListener(type: "install", listener: () => void): void;
@@ -26,6 +27,14 @@ interface SWGlobal {
   addEventListener(
     type: "message",
     listener: (event: { data?: { type: string }; ports?: MessagePort[] }) => void,
+  ): void;
+  addEventListener(
+    type: "error",
+    listener: (event: { message?: string; error?: unknown }) => void,
+  ): void;
+  addEventListener(
+    type: "unhandledrejection",
+    listener: (event: { reason?: unknown }) => void,
   ): void;
   skipWaiting(): void;
   clients: {
@@ -110,6 +119,28 @@ export function initSW(swGlobal: SWGlobal): void {
         fn?.();
       }
     }
+  });
+
+  // Forward SW-global errors to the main thread so they show up in
+  // window.__boloObsDrain() — without this, SW errors are invisible
+  // from the page (the DevTools SW console is the only way to see them).
+  const postSWError = (kind: "error" | "unhandledrejection", payload: unknown): void => {
+    mainPort?.postMessage({
+      type: SW_ERROR_MESSAGE_TYPE,
+      error: {
+        kind: "sw",
+        source: "sw",
+        message: `${kind}: ${payload instanceof Error ? payload.message : String(payload)}`,
+        stack: payload instanceof Error ? payload.stack : undefined,
+        ts: Date.now(),
+      },
+    });
+  };
+  swGlobal.addEventListener("error", (event) => {
+    postSWError("error", event.error ?? event.message ?? "unknown");
+  });
+  swGlobal.addEventListener("unhandledrejection", (event) => {
+    postSWError("unhandledrejection", event.reason);
   });
 }
 

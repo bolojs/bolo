@@ -62,7 +62,28 @@ export class SWSandbox {
           headers: Record<string, string>;
           body?: ArrayBuffer;
         };
+        // SW_ERROR shape: { type: "BOLO_SW_ERROR", error: BoloError }.
+        swError?: {
+          kind: string;
+          source: string;
+          message: string;
+          stack?: string;
+          ts: number;
+        };
       };
+      if (type === "BOLO_SW_ERROR" && event.data && (event.data as { swError?: unknown }).swError) {
+        const err = (
+          event.data as {
+            swError: { kind: string; source: string; message: string; stack?: string; ts: number };
+          }
+        ).swError;
+        // Push into the main-thread obs buffer installed by @bolojs/runtime's
+        // installMainRelay(). Cross-package bridge via globalThis avoids a
+        // runtime -> sw-sandbox dep inversion.
+        const push = (globalThis as { __boloObsPush?: (r: unknown) => void }).__boloObsPush;
+        push?.(err);
+        return;
+      }
       if (type === "FETCH_REQUEST" && request) {
         this.handleFetchRequest(requestId, request).catch((err) => {
           const message = err instanceof Error ? err.message : String(err);

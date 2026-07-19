@@ -26,3 +26,25 @@ export { RuntimeBuilder } from "./runtime-builder.js";
 export { type SandboxBackend, type SandboxRunResult } from "./sandbox-backend.js";
 export { IframeSandbox } from "./iframe-sandbox.js";
 export { GitService, type GitServiceDeps } from "./git/git-service.js";
+export {
+  type BoloError,
+  type BoloErrorKind,
+  type BoloErrorSource,
+  hintFor,
+  attachHint,
+  enrichMessage,
+} from "@bolojs/log/error-hints";
+export {
+  installObsBuffer,
+  installMainRelay,
+  getObsBuffer,
+  formatSWError,
+  SW_ERROR_MESSAGE_TYPE,
+  type ObsBuffer,
+} from "./error-relay.js";
+export {
+  diagnoseRuntime,
+  diagnoseRuntimeAsync,
+  type Diagnosis,
+  type CheckResult,
+} from "./diagnose.js";
