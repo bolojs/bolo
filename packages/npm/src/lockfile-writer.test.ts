@@ -38,7 +38,12 @@ describe("serializeNpmLockfile", () => {
 
   it("writes each root dependency under node_modules/<name>", () => {
     const graph = makeGraph([
-      makePkg({ name: "react", version: "18.2.0", depPath: "react@18.2.0", resolvedUrl: "https://reg/react.tgz" }),
+      makePkg({
+        name: "react",
+        version: "18.2.0",
+        depPath: "react@18.2.0",
+        resolvedUrl: "https://reg/react.tgz",
+      }),
       makePkg({
         name: "react-dom",
         version: "18.2.0",

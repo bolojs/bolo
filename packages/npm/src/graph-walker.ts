@@ -56,7 +56,9 @@ export const walkDependencies = async (
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             if (optional) {
-              onProgress?.(`Optional dependency ${name}@${range} failed to resolve: ${message}; skipping.`);
+              onProgress?.(
+                `Optional dependency ${name}@${range} failed to resolve: ${message}; skipping.`,
+              );
               return;
             }
             throw error;

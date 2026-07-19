@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { resolveGraph } from "./resolve.js";
 import type { LockedPackage, LockfileGraph } from "./graph.js";
 
-const pkg = (overrides: Partial<LockedPackage> & Pick<LockedPackage, "name" | "version" | "depPath">): LockedPackage => ({
+const pkg = (
+  overrides: Partial<LockedPackage> & Pick<LockedPackage, "name" | "version" | "depPath">,
+): LockedPackage => ({
   dev: false,
   optional: false,
   peerDependencies: {},
@@ -47,11 +49,19 @@ describe("resolveGraph", () => {
         ],
         [
           "node_modules/pkgA/node_modules/lodash",
-          pkg({ name: "lodash", version: "3.10.1", depPath: "node_modules/pkgA/node_modules/lodash" }),
+          pkg({
+            name: "lodash",
+            version: "3.10.1",
+            depPath: "node_modules/pkgA/node_modules/lodash",
+          }),
         ],
         [
           "node_modules/pkgB/node_modules/lodash",
-          pkg({ name: "lodash", version: "4.17.21", depPath: "node_modules/pkgB/node_modules/lodash" }),
+          pkg({
+            name: "lodash",
+            version: "4.17.21",
+            depPath: "node_modules/pkgB/node_modules/lodash",
+          }),
         ],
       ]),
     };

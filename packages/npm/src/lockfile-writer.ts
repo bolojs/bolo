@@ -24,8 +24,7 @@ const entryFor = (pkg: ResolvedGraphPackage): NpmLockEntry => ({
   dependencies: Object.keys(pkg.dependencies).length > 0 ? pkg.dependencies : undefined,
   dev: pkg.dev || undefined,
   optional: pkg.optional || undefined,
-  peerDependencies:
-    Object.keys(pkg.peerDependencies).length > 0 ? pkg.peerDependencies : undefined,
+  peerDependencies: Object.keys(pkg.peerDependencies).length > 0 ? pkg.peerDependencies : undefined,
 });
 
 /**

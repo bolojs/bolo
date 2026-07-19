@@ -111,7 +111,9 @@ export const materializeVirtualStore = async (options: MaterializeOptions): Prom
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (pkg.optional) {
-        warn(`Optional dependency ${pkg.name}@${pkg.version} failed to install: ${message}; skipping.`);
+        warn(
+          `Optional dependency ${pkg.name}@${pkg.version} failed to install: ${message}; skipping.`,
+        );
       } else {
         throw error;
       }
@@ -124,7 +126,9 @@ export const materializeVirtualStore = async (options: MaterializeOptions): Prom
 
     for (const [depName, childKey] of Object.entries(pkg.resolvedDependencies)) {
       if (!materialized.has(childKey)) {
-        warn(`${pkg.name}@${pkg.version} depends on ${depName}, which failed to install; skipping link.`);
+        warn(
+          `${pkg.name}@${pkg.version} depends on ${depName}, which failed to install; skipping link.`,
+        );
         continue;
       }
       const child = graph.packages.get(childKey)!;

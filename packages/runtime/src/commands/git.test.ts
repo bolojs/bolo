@@ -96,7 +96,10 @@ describe("git", () => {
 
     const deps = createDeps(vfs, cwd);
     expect(await git(["log", "--oneline"], deps)).toBe(0);
-    const output = deps.stdout.mock.calls.map((c) => c[0]).join("").trim();
+    const output = deps.stdout.mock.calls
+      .map((c) => c[0])
+      .join("")
+      .trim();
     expect(output).toMatch(/^[0-9a-f]{7} alpha$/);
   });
 

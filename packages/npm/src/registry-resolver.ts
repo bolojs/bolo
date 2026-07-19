@@ -93,7 +93,10 @@ export const resolvePackage = async (
 };
 
 /** npm allows `bin` as a bare string (shorthand for `{ [name]: bin }`) or an object map. */
-const normalizeBin = (name: string, bin?: Record<string, string> | string): Record<string, string> => {
+const normalizeBin = (
+  name: string,
+  bin?: Record<string, string> | string,
+): Record<string, string> => {
   if (!bin) return {};
   if (typeof bin === "string") return { [name.split("/").pop()!]: bin };
   return bin;

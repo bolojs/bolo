@@ -131,7 +131,9 @@ describe("walkDependencies", () => {
 
     expect(graph.packages.get("app@1.0.0")).toBeDefined();
     expect(graph.packages.has("missingOptional@^1.0.0")).toBe(false);
-    expect(warnings.some((w) => w.includes("missingOptional") && w.includes("skipping"))).toBe(true);
+    expect(warnings.some((w) => w.includes("missingOptional") && w.includes("skipping"))).toBe(
+      true,
+    );
   });
 
   it("produces a node with correct url, integrity, and bin", async () => {

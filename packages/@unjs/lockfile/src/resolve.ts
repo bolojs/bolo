@@ -49,7 +49,11 @@ export function resolveGraph(graph: LockfileGraph, cwd = "."): ResolvedGraph {
   };
 
   /** Node-style nearest-`node_modules`-wins search, for lockfiles that nest depPaths. */
-  const resolveDepPath = (fromDepPath: string, depName: string, range: string): string | undefined => {
+  const resolveDepPath = (
+    fromDepPath: string,
+    depName: string,
+    range: string,
+  ): string | undefined => {
     const chain =
       fromDepPath === "." || fromDepPath === ""
         ? []
@@ -57,7 +61,9 @@ export function resolveGraph(graph: LockfileGraph, cwd = "."): ResolvedGraph {
 
     for (let depth = chain.length; depth >= 0; depth--) {
       const prefix = chain.slice(0, depth).join("/node_modules/");
-      const candidateKey = prefix ? `node_modules/${prefix}/node_modules/${depName}` : `node_modules/${depName}`;
+      const candidateKey = prefix
+        ? `node_modules/${prefix}/node_modules/${depName}`
+        : `node_modules/${depName}`;
       const candidate = graph.packages.get(candidateKey);
       if (candidate) return candidateKey;
     }

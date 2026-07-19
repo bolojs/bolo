@@ -42,20 +42,49 @@ describe("materializeVirtualStore", () => {
     const graph: ResolvedGraph = {
       rootDependencies: { pkgA: "pkgA@1.0.0", pkgB: "pkgB@1.0.0" },
       packages: new Map([
-        ["pkgA@1.0.0", pkg({ name: "pkgA", depPath: "pkgA@1.0.0", resolvedDependencies: { lodash: "lodash@3.0.0" } })],
-        ["pkgB@1.0.0", pkg({ name: "pkgB", depPath: "pkgB@1.0.0", resolvedDependencies: { lodash: "lodash@4.0.0" } })],
+        [
+          "pkgA@1.0.0",
+          pkg({
+            name: "pkgA",
+            depPath: "pkgA@1.0.0",
+            resolvedDependencies: { lodash: "lodash@3.0.0" },
+          }),
+        ],
+        [
+          "pkgB@1.0.0",
+          pkg({
+            name: "pkgB",
+            depPath: "pkgB@1.0.0",
+            resolvedDependencies: { lodash: "lodash@4.0.0" },
+          }),
+        ],
         ["lodash@3.0.0", pkg({ name: "lodash", version: "3.0.0", depPath: "lodash@3.0.0" })],
         ["lodash@4.0.0", pkg({ name: "lodash", version: "4.0.0", depPath: "lodash@4.0.0" })],
       ]),
     };
 
-    await materializeVirtualStore({ vfs, cwd: "/app", graph, fetchAndExtract: fakeFetchAndExtract(vfs) });
+    await materializeVirtualStore({
+      vfs,
+      cwd: "/app",
+      graph,
+      fetchAndExtract: fakeFetchAndExtract(vfs),
+    });
 
-    expect(vfs.hot.existsSync("/app/node_modules/.bolo/lodash@3.0.0/node_modules/lodash")).toBe(true);
-    expect(vfs.hot.existsSync("/app/node_modules/.bolo/lodash@4.0.0/node_modules/lodash")).toBe(true);
+    expect(vfs.hot.existsSync("/app/node_modules/.bolo/lodash@3.0.0/node_modules/lodash")).toBe(
+      true,
+    );
+    expect(vfs.hot.existsSync("/app/node_modules/.bolo/lodash@4.0.0/node_modules/lodash")).toBe(
+      true,
+    );
 
-    const aLodash = readJson(vfs, "/app/node_modules/.bolo/pkgA@1.0.0/node_modules/lodash/package.json");
-    const bLodash = readJson(vfs, "/app/node_modules/.bolo/pkgB@1.0.0/node_modules/lodash/package.json");
+    const aLodash = readJson(
+      vfs,
+      "/app/node_modules/.bolo/pkgA@1.0.0/node_modules/lodash/package.json",
+    );
+    const bLodash = readJson(
+      vfs,
+      "/app/node_modules/.bolo/pkgB@1.0.0/node_modules/lodash/package.json",
+    );
     expect(aLodash.version).toBe("3.0.0");
     expect(bLodash.version).toBe("4.0.0");
 
@@ -105,7 +134,14 @@ describe("materializeVirtualStore", () => {
     const graph: ResolvedGraph = {
       rootDependencies: { app: "app@1.0.0" },
       packages: new Map([
-        ["app@1.0.0", pkg({ name: "app", depPath: "app@1.0.0", resolvedDependencies: { flaky: "flaky@1.0.0" } })],
+        [
+          "app@1.0.0",
+          pkg({
+            name: "app",
+            depPath: "app@1.0.0",
+            resolvedDependencies: { flaky: "flaky@1.0.0" },
+          }),
+        ],
         ["flaky@1.0.0", pkg({ name: "flaky", depPath: "flaky@1.0.0", optional: true })],
       ]),
     };
@@ -152,10 +188,17 @@ describe("materializeVirtualStore", () => {
       ]),
     };
 
-    await materializeVirtualStore({ vfs, cwd: "/app", graph, fetchAndExtract: fakeFetchAndExtract(vfs) });
+    await materializeVirtualStore({
+      vfs,
+      cwd: "/app",
+      graph,
+      fetchAndExtract: fakeFetchAndExtract(vfs),
+    });
 
     expect(vfs.hot.lstatSync("/app/node_modules/.bin/cli").isSymbolicLink()).toBe(true);
-    expect(vfs.hot.readlinkSync("/app/node_modules/.bin/cli")).toBe("/app/node_modules/cli/bin/cli.js");
+    expect(vfs.hot.readlinkSync("/app/node_modules/.bin/cli")).toBe(
+      "/app/node_modules/cli/bin/cli.js",
+    );
   });
 
   it("re-materializes without throwing when a package/root symlink from a prior install already exists", async () => {
@@ -174,13 +217,25 @@ describe("materializeVirtualStore", () => {
       ]),
     };
 
-    await materializeVirtualStore({ vfs, cwd: "/app", graph, fetchAndExtract: fakeFetchAndExtract(vfs) });
+    await materializeVirtualStore({
+      vfs,
+      cwd: "/app",
+      graph,
+      fetchAndExtract: fakeFetchAndExtract(vfs),
+    });
     await expect(
-      materializeVirtualStore({ vfs, cwd: "/app", graph, fetchAndExtract: fakeFetchAndExtract(vfs) }),
+      materializeVirtualStore({
+        vfs,
+        cwd: "/app",
+        graph,
+        fetchAndExtract: fakeFetchAndExtract(vfs),
+      }),
     ).resolves.not.toThrow();
 
     expect(vfs.hot.lstatSync("/app/node_modules/cli").isSymbolicLink()).toBe(true);
     expect(readJson(vfs, "/app/node_modules/cli/package.json").name).toBe("cli");
-    expect(vfs.hot.readlinkSync("/app/node_modules/.bin/cli")).toBe("/app/node_modules/cli/bin/cli.js");
+    expect(vfs.hot.readlinkSync("/app/node_modules/.bin/cli")).toBe(
+      "/app/node_modules/cli/bin/cli.js",
+    );
   });
 });

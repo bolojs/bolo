@@ -42,7 +42,8 @@ export const sha256Hex: HashFn = async (content) => {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 };
 
-const normalize = (path: string): string => (path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path);
+const normalize = (path: string): string =>
+  path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
 
 export class CasStore {
   private state: CasManifestState | undefined;
