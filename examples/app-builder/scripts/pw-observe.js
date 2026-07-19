@@ -49,9 +49,8 @@ async (page) => {
     }
   };
   rec("sw-state", JSON.stringify(await swState()));
-  setInterval(() => {
-    swState().then((s) => rec("sw-state", JSON.stringify(s)));
-  }, 5000);
+  // ponytail: playwright-cli run-code context lacks setInterval; one-shot snapshot above.
+  // Re-run `swState()` from eval() to poll if you need it mid-investigation.
 
   await page.exposeFunction("__boloObsDrain", () => buffer.splice(0).join("\n"));
 
