@@ -76,23 +76,28 @@ export default defineConfig(({ mode }) => {
     }
   }
 
-  return mergeConfig(bolojsPreset(), {
+  // ponytail: mutate the preset before merging so `oxc-transform` and its
+  // WASI binding are dropped from `rollupOptions.external`. They MUST ship
+  // same-origin for the worker-bearing binding to construct on a deployed
+  // origin (esm.sh cross-origin classic worker = SecurityError). `noExternal`
+  // only affects the dev optimizer; the rollup build honors `external`, so
+  // filtering the preset's array is the only thing that actually inlines it.
+  // Keep typescript / sass / @swc external (preset default, never imported
+  // at runtime by app-builder).
+  const preset = bolojsPreset();
+  const rollupExternal = preset.build?.rollupOptions?.external;
+  if (Array.isArray(rollupExternal)) {
+    const drop = ["oxc-transform", "@oxc-transform/binding-wasm32-wasi", "@oxc-transform/binding"];
+    // We know build.rollupOptions exists because we just read external from it.
+    preset.build!.rollupOptions!.external = rollupExternal.filter(
+      (e): e is string => typeof e === "string" && !drop.includes(e),
+    );
+  }
+
+  return mergeConfig(preset, {
     plugins: [react(), tailwindcss(), devOpenRouterKey(), inlineOxcTransform()],
     resolve: {
       alias: [{ find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) }],
-    },
-    build: {
-      rollupOptions: {
-        // typescript / sass / @swc stay external (preset default). oxc +
-        // its binding re-included via inlineOxcTransform above so they
-        // ship same-origin as chunks — the worker constructs fine when
-        // the worker script URL is same-origin (demo.bolojs.dev).
-        noExternal: [
-          "oxc-transform",
-          "@oxc-transform/binding-wasm32-wasi",
-          "@oxc-transform/binding",
-        ],
-      },
     },
   });
 });
