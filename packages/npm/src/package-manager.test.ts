@@ -415,6 +415,129 @@ describe("browser-native install", () => {
   });
 });
 
+describe("lifecycle warnings", () => {
+  const makePackument = (name: string) => ({
+    name,
+    "dist-tags": { latest: "1.0.0" },
+    versions: {
+      "1.0.0": {
+        version: "1.0.0",
+        dist: { tarball: `https://registry.npmjs.org/${name}/-/${name}-1.0.0.tgz` },
+      },
+    },
+  });
+
+  const makeTarball = async (scripts: Record<string, string>) =>
+    createTarball([
+      {
+        name: "package/package.json",
+        content: JSON.stringify({ name: "lifecycle-pkg", version: "1.0.0", scripts }),
+      },
+      { name: "package/index.js", content: "module.exports = 1;" },
+    ]);
+
+  it("warns on preinstall lifecycle script", async () => {
+    const vfs = new VfsBus();
+    const warnings: string[] = [];
+    const pm = new PackageManager({ vfs, cwd: "/", stderr: (m) => warnings.push(m) });
+    const packument = makePackument("lifecycle-pkg");
+    const tarball = await makeTarball({ preinstall: "node build.js" });
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL | Request) => {
+      const str = String(url);
+      if (str === "https://registry.npmjs.org/lifecycle-pkg") {
+        return { ok: true, status: 200, json: async () => packument } as Response;
+      }
+      if (str.includes("lifecycle-pkg-1.0.0.tgz")) {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => tarball.slice().buffer,
+        } as Response;
+      }
+      return { ok: false, status: 404 } as Response;
+    }) as typeof fetch;
+
+    try {
+      await pm.install(["lifecycle-pkg"]);
+      expect(warnings.some((w) => w.includes("preinstall"))).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("warns once for each supported lifecycle script", async () => {
+    const vfs = new VfsBus();
+    const warnings: string[] = [];
+    const pm = new PackageManager({ vfs, cwd: "/", stderr: (m) => warnings.push(m) });
+    const packument = makePackument("lifecycle-pkg");
+    const tarball = await makeTarball({
+      preinstall: "a",
+      install: "b",
+      postinstall: "c",
+      prepare: "d",
+    });
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL | Request) => {
+      const str = String(url);
+      if (str === "https://registry.npmjs.org/lifecycle-pkg") {
+        return { ok: true, status: 200, json: async () => packument } as Response;
+      }
+      if (str.includes("lifecycle-pkg-1.0.0.tgz")) {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => tarball.slice().buffer,
+        } as Response;
+      }
+      return { ok: false, status: 404 } as Response;
+    }) as typeof fetch;
+
+    try {
+      await pm.install(["lifecycle-pkg"]);
+      const lifecycleWarnings = warnings.filter((w) =>
+        ["preinstall", "install", "postinstall", "prepare"].some((s) => w.includes(s)),
+      );
+      expect(lifecycleWarnings.length).toBe(4);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("is silent when package has no lifecycle scripts", async () => {
+    const vfs = new VfsBus();
+    const warnings: string[] = [];
+    const pm = new PackageManager({ vfs, cwd: "/", stderr: (m) => warnings.push(m) });
+    const packument = makePackument("lifecycle-pkg");
+    const tarball = await makeTarball({ test: "echo ok" });
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL | Request) => {
+      const str = String(url);
+      if (str === "https://registry.npmjs.org/lifecycle-pkg") {
+        return { ok: true, status: 200, json: async () => packument } as Response;
+      }
+      if (str.includes("lifecycle-pkg-1.0.0.tgz")) {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => tarball.slice().buffer,
+        } as Response;
+      }
+      return { ok: false, status: 404 } as Response;
+    }) as typeof fetch;
+
+    try {
+      await pm.install(["lifecycle-pkg"]);
+      expect(warnings.filter((w) => w.includes("lifecycle")).length).toBe(0);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
 const digestToBase64 = async (subtle: string, data: Uint8Array): Promise<string> => {
   const hashBuffer = await crypto.subtle.digest(subtle, data as unknown as ArrayBuffer);
   const bytes = new Uint8Array(hashBuffer);

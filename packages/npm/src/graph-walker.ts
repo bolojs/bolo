@@ -1,5 +1,10 @@
 import type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
-import { resolvePackage, type ResolveCache, type ResolvedPackage } from "./registry-resolver.js";
+import {
+  resolvePackage,
+  type NpmPackument,
+  type ResolveCache,
+  type ResolvedPackage,
+} from "./registry-resolver.js";
 
 const CONCURRENCY = 8;
 
@@ -32,6 +37,7 @@ export const walkDependencies = async (
   onProgress?: (message: string) => void,
   cache?: ResolveCache,
   registryBase?: string,
+  packumentSource?: (name: string) => Promise<NpmPackument | undefined>,
 ): Promise<ResolvedGraph> => {
   const packages = new Map<string, ResolvedGraphPackage>();
   const rootDependencies: Record<string, string> = {};
@@ -53,7 +59,12 @@ export const walkDependencies = async (
 
         if (!resolved) {
           try {
-            resolved = await resolvePackage(name, range, { registryBase, fetchFn }, cache);
+            resolved = await resolvePackage(
+              name,
+              range,
+              { registryBase, fetchFn, packumentSource },
+              cache,
+            );
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             if (optional) {

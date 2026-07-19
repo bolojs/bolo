@@ -1,6 +1,6 @@
 import type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
 
-interface NpmLockEntry {
+export interface NpmLockEntry {
   version?: string;
   resolved?: string;
   integrity?: string;
@@ -10,7 +10,7 @@ interface NpmLockEntry {
   peerDependencies?: Record<string, string>;
 }
 
-interface NpmLockfileV3 {
+export interface NpmLockfileV3 {
   name: string;
   version: string;
   lockfileVersion: number;
@@ -27,21 +27,11 @@ const entryFor = (pkg: ResolvedGraphPackage): NpmLockEntry => ({
   peerDependencies: Object.keys(pkg.peerDependencies).length > 0 ? pkg.peerDependencies : undefined,
 });
 
-/**
- * Serialize a resolved dependency graph to `package-lock.json` v3 format.
- * Root dependencies always land flat at `node_modules/<name>`; a transitive
- * dependency is hoisted to that same flat slot when it doesn't conflict with
- * what's already there, and nested under its requiring parent
- * (`node_modules/<parent>/node_modules/<name>`) otherwise — the standard npm
- * v3 shape for representing diamond dependencies that resolve to different
- * versions (see `.agents/plans/2026-07-17-virtual-store-resolver.md`).
- */
-export const serializeNpmLockfile = (
+const buildPackagesFromGraph = (
   graph: ResolvedGraph,
   rootDeps: Record<string, string>,
-  rootName = "app",
-  rootVersion = "1.0.0",
-): string => {
+  rootVersion: string,
+): Record<string, NpmLockEntry> => {
   const packages: Record<string, NpmLockEntry> = {
     "": { version: rootVersion, dependencies: rootDeps },
   };
@@ -91,6 +81,104 @@ export const serializeNpmLockfile = (
     expand(depKey, `node_modules/${name}`, new Set([depKey]));
   }
 
+  return packages;
+};
+
+export const pathToPackageName = (path: string): string | null => {
+  if (path === "") return null;
+  const parts = path.split("/");
+  // Scoped packages are represented as two final segments: @scope/pkg
+  if (parts.length >= 2 && parts[parts.length - 2].startsWith("@")) {
+    return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
+  }
+  return parts[parts.length - 1];
+};
+
+const computeReachablePaths = (
+  packages: Record<string, NpmLockEntry>,
+  rootNames: string[],
+  graph: ResolvedGraph,
+): Set<string> => {
+  const nameToPaths = new Map<string, string[]>();
+  for (const path of Object.keys(packages)) {
+    const name = pathToPackageName(path);
+    if (!name) continue;
+    const paths = nameToPaths.get(name) ?? [];
+    paths.push(path);
+    nameToPaths.set(name, paths);
+  }
+
+  const graphDepsByName = new Map<string, string[]>();
+  for (const pkg of graph.packages.values()) {
+    graphDepsByName.set(pkg.name, Object.keys(pkg.resolvedDependencies));
+  }
+
+  const reachable = new Set<string>();
+  const queue = [...rootNames];
+  for (let i = 0; i < queue.length; i++) {
+    const name = queue[i];
+    const paths = nameToPaths.get(name);
+    if (!paths) continue;
+    for (const path of paths) {
+      if (reachable.has(path)) continue;
+      reachable.add(path);
+      const entry = packages[path];
+      const depNames = new Set<string>([
+        ...(graphDepsByName.get(name) ?? []),
+        ...(entry.dependencies ? Object.keys(entry.dependencies) : []),
+      ]);
+      for (const depName of depNames) {
+        if (!queue.includes(depName)) queue.push(depName);
+      }
+    }
+  }
+  return reachable;
+};
+
+export const mergeLockfiles = (
+  previous: Record<string, NpmLockEntry> | undefined,
+  current: Record<string, NpmLockEntry>,
+  rootDeps: Record<string, string>,
+  rootNames: string[],
+  graph: ResolvedGraph,
+): Record<string, NpmLockEntry> => {
+  const merged: Record<string, NpmLockEntry> = { ...previous };
+  for (const [path, entry] of Object.entries(current)) {
+    merged[path] = entry;
+  }
+  merged[""] = { ...merged[""], dependencies: rootDeps };
+
+  const reachable = computeReachablePaths(merged, rootNames, graph);
+  const pruned: Record<string, NpmLockEntry> = {};
+  for (const path of reachable) {
+    pruned[path] = merged[path];
+  }
+  // ponytail: always keep the root entry even if it has no deps
+  pruned[""] = merged[""];
+  return pruned;
+};
+
+/**
+ * Serialize a resolved dependency graph to `package-lock.json` v3 format.
+ * Root dependencies always land flat at `node_modules/<name>`; a transitive
+ * dependency is hoisted to that same flat slot when it doesn't conflict with
+ * what's already there, and nested under its requiring parent
+ * (`node_modules/<parent>/node_modules/<name>`) otherwise — the standard npm
+ * v3 shape for representing diamond dependencies that resolve to different
+ * versions (see `.agents/plans/2026-07-17-virtual-store-resolver.md`).
+ */
+export const serializeNpmLockfile = (
+  graph: ResolvedGraph,
+  rootDeps: Record<string, string>,
+  rootName = "app",
+  rootVersion = "1.0.0",
+  previous?: NpmLockfileV3,
+): string => {
+  const currentPackages = buildPackagesFromGraph(graph, rootDeps, rootVersion);
+  const rootNames = [
+    ...new Set([...Object.keys(rootDeps), ...Object.keys(graph.rootDependencies)]),
+  ];
+  const packages = mergeLockfiles(previous?.packages, currentPackages, rootDeps, rootNames, graph);
   const lockfile: NpmLockfileV3 = {
     name: rootName,
     version: rootVersion,

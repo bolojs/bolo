@@ -4,8 +4,12 @@ import { createFsFromVolume } from "memfs";
 import { parse, resolveGraph } from "@unjs/lockfile";
 import type { LockfileGraph, ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
 import { buildEsmShUrl } from "./esm-sh.js";
+import { readPackageJsonWithMeta, writePackageJsonWithMeta } from "./json-edit.js";
+import type { PackageJson } from "./json-edit.js";
 import { walkDependencies } from "./graph-walker.js";
 import { serializeNpmLockfile } from "./lockfile-writer.js";
+import type { NpmLockfileV3 } from "./lockfile-writer.js";
+import { syntheticPackuments } from "./lockfile-replay.js";
 import type { NpmPackument, ResolveCache } from "./registry-resolver.js";
 import { materializeVirtualStore } from "./virtual-store.js";
 
@@ -56,6 +60,9 @@ const EXTERNALIZED_PEER_DEPS: Record<string, string[]> = {
 
 // Build-only tooling that must be installed but has no browser-runtime import.
 const BUILD_TOOLING_PACKAGES = new Set(["vite", "typescript", "esbuild"]);
+
+// ponytail: warn-only stub; real lifecycle execution out of scope until WASM shell can run node scripts
+const LIFECYCLE_SCRIPTS = ["preinstall", "install", "postinstall", "prepare"] as const;
 
 const LOCKFILE_CANDIDATES = [
   "package-lock.json",
@@ -182,24 +189,27 @@ export class PackageManager {
    */
   private async installBrowserNative(packages?: string[]): Promise<void> {
     let graph: ResolvedGraph;
+    const detectedLockfile = this.detectLockfile();
+    let previousLockfile: NpmLockfileV3 | undefined;
+    if (detectedLockfile?.filename === "package-lock.json") {
+      try {
+        previousLockfile = JSON.parse(String(detectedLockfile.content));
+      } catch {
+        // ponytail: ignore malformed previous lockfile and write a fresh one
+      }
+    }
 
-    if (packages && packages.length > 0) {
-      graph = await this.resolveFromRegistry(packages);
-    } else {
-      const lockfile = this.detectLockfile();
-      if (lockfile) {
-        try {
-          const lockfileGraph = parse(lockfile.content);
-          graph = resolveGraph(lockfileGraph, this.cwd);
-        } catch (error) {
-          this.warn(
-            `Lockfile parse failed: ${error instanceof Error ? error.message : String(error)}; resolving from registry`,
-          );
-          graph = await this.resolveFromRegistry(packages);
-        }
-      } else {
+    if (previousLockfile) {
+      try {
+        graph = await this.installLockAware(packages, previousLockfile);
+      } catch (error) {
+        this.warn(
+          `lock-aware install failed: ${error instanceof Error ? error.message : String(error)}; resolving from registry`,
+        );
         graph = await this.resolveFromRegistry(packages);
       }
+    } else {
+      graph = await this.resolveFromRegistry(packages);
     }
 
     await materializeVirtualStore({
@@ -216,11 +226,59 @@ export class PackageManager {
       packages && packages.length > 0
         ? this.specifiersToDeps(packages)
         : { ...pkgJson?.dependencies, ...pkgJson?.devDependencies };
-    const lockfileContent = serializeNpmLockfile(graph, rootDeps, pkgJson?.name, pkgJson?.version);
+    const lockfileContent = serializeNpmLockfile(
+      graph,
+      rootDeps,
+      pkgJson?.name,
+      pkgJson?.version,
+      previousLockfile,
+    );
     await this.vfs.writeFile(`${this.cwd}/package-lock.json`, lockfileContent);
   }
 
-  private async resolveFromRegistry(packages?: string[]): Promise<ResolvedGraph> {
+  /**
+   * Lock-aware install: replay locked resolutions from a `package-lock.json`
+   * via synthetic packuments. Locked names skip the network; names not in the
+   * lockfile (or whose locked version no longer satisfies the requested
+   * range) fall back to the registry for just that name.
+   */
+  private async installLockAware(
+    packages: string[] | undefined,
+    lockfile: NpmLockfileV3,
+  ): Promise<ResolvedGraph> {
+    const synthetic = syntheticPackuments(lockfile);
+    const released = new Set<string>();
+    const source = async (name: string): Promise<NpmPackument | undefined> => {
+      if (released.has(name)) return undefined;
+      return synthetic.get(name);
+    };
+
+    const maxAttempts = 32;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await this.resolveFromRegistry(packages, source);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const staleMatch = message.match(/^No version of (\S+) satisfies /);
+        if (!staleMatch) throw error;
+        const staleName = staleMatch[1]!;
+        if (released.has(staleName)) {
+          throw new Error(`Stale lock entry for ${staleName} could not be resolved from registry`);
+        }
+        this.warn(
+          `Lock entry for ${staleName} does not satisfy requested range; resolving from registry`,
+        );
+        released.add(staleName);
+      }
+    }
+
+    throw new Error("Lock-aware install exceeded maximum retry attempts");
+  }
+
+  private async resolveFromRegistry(
+    packages?: string[],
+    packumentSource?: (name: string) => Promise<NpmPackument | undefined>,
+  ): Promise<ResolvedGraph> {
     const pkgJson = this.readPackageJson();
     const rootDeps =
       packages && packages.length > 0
@@ -251,7 +309,14 @@ export class PackageManager {
       },
     };
 
-    return walkDependencies(rootDeps, fetch, (msg) => this.warn(msg), cache, this.registryBase);
+    return walkDependencies(
+      rootDeps,
+      fetch,
+      (msg) => this.warn(msg),
+      cache,
+      this.registryBase,
+      packumentSource,
+    );
   }
 
   private readPackageJson(): {
@@ -262,7 +327,7 @@ export class PackageManager {
   } | null {
     try {
       const content = this.fs.readFileSync(`${this.cwd}/package.json`, "utf8") as string;
-      const pkg = JSON.parse(content);
+      const { data: pkg } = readPackageJsonWithMeta(content);
       return {
         name: pkg.name ?? "app",
         version: pkg.version ?? "1.0.0",
@@ -272,6 +337,20 @@ export class PackageManager {
     } catch {
       return null;
     }
+  }
+
+  private async writePackageJson(data: PackageJson): Promise<void> {
+    const path = `${this.cwd}/package.json`;
+    let content: string;
+    try {
+      const existing = this.fs.readFileSync(path, "utf8") as string;
+      const { indent, trailingNewline } = readPackageJsonWithMeta(existing);
+      content = writePackageJsonWithMeta(data, indent, trailingNewline);
+    } catch {
+      // ponytail: default to 2-space + trailing newline when package.json is missing
+      content = writePackageJsonWithMeta(data, "  ", true);
+    }
+    await this.vfs.writeFile(path, content);
   }
 
   private specifiersToDeps(specifiers: string[]): Record<string, string> {
@@ -335,6 +414,23 @@ export class PackageManager {
 
     const decompressed = await decompressGzip(buffer);
     extractTarball(decompressed, targetDir, this.vfs, this.execBits);
+
+    try {
+      const pkgJsonContent = this.fs.readFileSync(`${targetDir}/package.json`, "utf8") as string;
+      const { data: pkgJson } = readPackageJsonWithMeta(pkgJsonContent);
+      const scripts = pkgJson.scripts;
+      if (scripts) {
+        for (const script of LIFECYCLE_SCRIPTS) {
+          if (script in scripts) {
+            this.warn(
+              `${pkg.name}: skipping "${script}" lifecycle script (execution not supported in browser)`,
+            );
+          }
+        }
+      }
+    } catch {
+      // ponytail: ignore missing/unreadable package.json after extraction
+    }
   }
 
   private warn(message: string): void {
@@ -398,7 +494,7 @@ export class PackageManager {
     try {
       const packageJsonPath = `${this.cwd}/package.json`;
       const content = this.fs.readFileSync(packageJsonPath, "utf8") as string;
-      const pkg = JSON.parse(content);
+      const { data: pkg } = readPackageJsonWithMeta(content);
       const declared: Record<string, string> = { ...pkg.dependencies, ...pkg.devDependencies };
 
       if (Object.keys(declared).length === 0) {

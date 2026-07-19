@@ -109,4 +109,100 @@ describe("serializeNpmLockfile", () => {
     expect(lock.packages["node_modules/shared"].version).toBe("1.5.0");
     expect(lock.packages["node_modules/b/node_modules/shared"].version).toBe("2.0.0");
   });
+
+  it("add operation preserves pins for unrelated packages", () => {
+    const previous = {
+      name: "app",
+      version: "1.0.0",
+      lockfileVersion: 3,
+      packages: {
+        "": { version: "1.0.0", dependencies: { "pkg-a": "^1.0.0", "pkg-b": "^1.0.0" } },
+        "node_modules/pkg-a": {
+          version: "1.0.0",
+          resolved: "https://reg/pkg-a/-/pkg-a-1.0.0.tgz",
+        },
+        "node_modules/pkg-b": {
+          version: "1.5.0",
+          resolved: "https://reg/pkg-b/-/pkg-b-1.5.0.tgz",
+        },
+      },
+    };
+
+    const graph = makeGraph([
+      makePkg({
+        name: "pkg-c",
+        version: "2.0.0",
+        depPath: "pkg-c@2.0.0",
+        resolvedUrl: "https://reg/pkg-c/-/pkg-c-2.0.0.tgz",
+      }),
+    ]);
+    const lock = JSON.parse(
+      serializeNpmLockfile(
+        graph,
+        { "pkg-a": "^1.0.0", "pkg-b": "^1.0.0", "pkg-c": "^2.0.0" },
+        "app",
+        "1.0.0",
+        previous,
+      ),
+    );
+
+    expect(lock.packages["node_modules/pkg-a"]).toEqual(previous.packages["node_modules/pkg-a"]);
+    expect(lock.packages["node_modules/pkg-b"]).toEqual(previous.packages["node_modules/pkg-b"]);
+    expect(lock.packages["node_modules/pkg-c"].version).toBe("2.0.0");
+  });
+
+  it("remove operation prunes orphaned entries", () => {
+    const previous = {
+      name: "app",
+      version: "1.0.0",
+      lockfileVersion: 3,
+      packages: {
+        "": { version: "1.0.0", dependencies: { "pkg-a": "^1.0.0", "pkg-b": "^1.0.0" } },
+        "node_modules/pkg-a": { version: "1.0.0" },
+        "node_modules/pkg-b": { version: "1.5.0" },
+      },
+    };
+
+    const graph = makeGraph([makePkg({ name: "pkg-b", version: "1.5.0", depPath: "pkg-b@1.5.0" })]);
+    const lock = JSON.parse(
+      serializeNpmLockfile(graph, { "pkg-b": "^1.0.0" }, "app", "1.0.0", previous),
+    );
+
+    expect(lock.packages["node_modules/pkg-b"]).toBeDefined();
+    expect(lock.packages["node_modules/pkg-a"]).toBeUndefined();
+  });
+
+  it("bump operation updates only the bumped entry", () => {
+    const previous = {
+      name: "app",
+      version: "1.0.0",
+      lockfileVersion: 3,
+      packages: {
+        "": { version: "1.0.0", dependencies: { "pkg-a": "^1.0.0", "pkg-b": "^1.0.0" } },
+        "node_modules/pkg-a": { version: "1.0.0" },
+        "node_modules/pkg-b": { version: "1.5.0" },
+      },
+    };
+
+    const graph = makeGraph([
+      makePkg({
+        name: "pkg-a",
+        version: "2.0.0",
+        depPath: "pkg-a@2.0.0",
+        resolvedUrl: "https://reg/pkg-a/-/pkg-a-2.0.0.tgz",
+      }),
+    ]);
+    const lock = JSON.parse(
+      serializeNpmLockfile(
+        graph,
+        { "pkg-a": "^2.0.0", "pkg-b": "^1.0.0" },
+        "app",
+        "1.0.0",
+        previous,
+      ),
+    );
+
+    expect(lock.packages["node_modules/pkg-a"].version).toBe("2.0.0");
+    expect(lock.packages["node_modules/pkg-b"]).toEqual(previous.packages["node_modules/pkg-b"]);
+  });
 });

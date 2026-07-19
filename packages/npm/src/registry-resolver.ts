@@ -14,6 +14,7 @@ export interface ResolvedPackage {
 }
 
 export interface NpmPackument {
+  name?: string;
   "dist-tags"?: Record<string, string>;
   versions: Record<string, NpmVersion>;
 }
@@ -41,7 +42,11 @@ export interface ResolveCache {
 export const resolvePackage = async (
   name: string,
   range: string,
-  options: { registryBase?: string; fetchFn?: typeof fetch } = {},
+  options: {
+    registryBase?: string;
+    fetchFn?: typeof fetch;
+    packumentSource?: (name: string) => Promise<NpmPackument | undefined>;
+  } = {},
   cache?: ResolveCache,
 ): Promise<ResolvedPackage> => {
   const envRegistry = globalThis.process?.env?.npm_config_registry;
@@ -58,7 +63,13 @@ export const resolvePackage = async (
   }
 
   const key = `${registry}/${name}`;
-  let packument = cache?.get ? await cache.get(key) : null;
+  let packument: NpmPackument | null = null;
+
+  if (options.packumentSource) {
+    packument = (await options.packumentSource(name)) ?? null;
+  } else if (cache?.get) {
+    packument = await cache.get(key);
+  }
 
   if (!packument) {
     const res = await fetchFn(`${registry}/${name}`, {
