@@ -7,6 +7,10 @@
  * saves a round-trip. Bypass with `git push --no-verify`.
  */
 import { spawn } from "node:child_process";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
+const LOG_DIR = process.env.LOG_DIR ?? "/tmp/brioso";
 
 interface Step {
   title: string;
@@ -42,8 +46,9 @@ for (const step of steps) {
   } else {
     failed = true;
     console.log(`\x1b[31m✗\x1b[0m ${step.title}`);
-    console.log(`\n--- ${step.title} output ---`);
-    console.log(output.trim());
+
+    await mkdir(LOG_DIR, { recursive: true });
+    await writeFile(join(LOG_DIR, `${step.title}.log`), output.trim());
   }
 }
 
