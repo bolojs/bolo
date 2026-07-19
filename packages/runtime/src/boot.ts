@@ -13,6 +13,7 @@ import { createEventEmitter } from "./events.js";
 import { createMount } from "./mount.js";
 import { createExport } from "./export.js";
 import { installNavigatorUserAgent } from "@bolojs/node-web-shims";
+import { BrowserViteServer } from "@bolojs/vite-server";
 
 declare global {
   var __vfsBus: VfsBus | undefined;
@@ -139,7 +140,52 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
 
     installNavigatorUserAgent();
 
+    // ponytail: BrowserViteServer wired at boot so the preview iframe shows
+    // agent work as files land in VFS, without needing `npm run dev` to fire
+    // server-ready. Preview.tsx defaults iframe src to /__preview/ when SW
+    // controls the page; this node + SW.onFetch for /__preview/* is the same
+    // path the original `npm run dev` interception was setting up per-run.
+    const previewBase = "/__preview/";
+    const previewServer = new BrowserViteServer({
+      vfs,
+      root: workdir,
+      base: previewBase,
+    });
+    await previewServer.start();
+    vfs.watch("**", (path) => {
+      if (!path.includes("node_modules") && !path.endsWith("importmap.json")) {
+        previewServer.broadcastHmr({ type: "full-reload", path });
+        new BroadcastChannel("bolo-preview").postMessage({ type: "reload" });
+      }
+    });
+    sandbox.onFetch(async (req) => {
+      const url = new URL(req.url);
+      if (!url.pathname.startsWith(previewBase)) {
+        throw new Error("not handled");
+      }
+      const serverUrl = new URL(req.url);
+      serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, "") || "/";
+      const response = await previewServer.onFetch(serverUrl.toString(), req);
+      const headers = new Headers(response.headers);
+      headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+      headers.set("Cross-Origin-Opener-Policy", "same-origin");
+      headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    });
+    events.emit("server-ready", 3000, previewBase);
+
     const originalTeardown = container.teardown.bind(container);
+    container.teardown = async () => {
+      await previewServer.stop().catch(() => {});
+      await originalTeardown();
+      agentSandbox?.dispose();
+      activeInstance = null;
+      bootPromise = null;
+    };
     container.teardown = async () => {
       await originalTeardown();
       agentSandbox?.dispose();

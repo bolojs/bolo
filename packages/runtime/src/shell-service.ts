@@ -148,45 +148,13 @@ export class ShellService {
     const scriptName = args[0];
 
     if (scriptName === "dev") {
-      if (!this.deps.swSandbox) {
-        output.stderr("No sandbox configured for dev server");
-        return 1;
-      }
-      try {
-        const root = this.deps.workdir ?? "/";
-        const previewPrefix = "/__preview/";
-        const server = new BrowserViteServer({ vfs: this.deps.vfs, root, base: previewPrefix });
-        await server.start();
-        this.viteWatcher = this.deps.vfs.watch("**", (path) => {
-          if (!path.includes("node_modules") && !path.endsWith("importmap.json")) {
-            server.broadcastHmr({ type: "full-reload", path });
-          }
-        });
-        this.deps.swSandbox.onFetch(async (req) => {
-          const url = new URL(req.url);
-          if (!url.pathname.startsWith(previewPrefix)) {
-            throw new Error("not handled");
-          }
-          const serverUrl = new URL(req.url);
-          serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, "") || "/";
-          const response = await server.onFetch(serverUrl.toString(), req);
-          const headers = new Headers(response.headers);
-          headers.set("Cross-Origin-Embedder-Policy", "credentialless");
-          headers.set("Cross-Origin-Opener-Policy", "same-origin");
-          headers.set("Cross-Origin-Resource-Policy", "cross-origin");
-          return new Response(response.body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers,
-          });
-        });
-        this.deps.events?.emit("port", 3000, "open", previewPrefix);
-        this.deps.events?.emit("server-ready", 3000, previewPrefix);
-        return 0;
-      } catch (err) {
-        output.stderr(err instanceof Error ? err.message : String(err));
-        return 1;
-      }
+      // BrowserViteServer is wired at boot, so the in-browser preview is
+      // already live at /__preview/. Vite itself never spawns — running a real
+      // vite inside the in-browser sandbox would just thrash on missing
+      // node_modules + native APIs. Print a status so the model's mental
+      // model of "npm run dev started a dev server" stays satisfied.
+      output.stdout("Vite dev server: in-browser preview is live at /__preview/\n");
+      return 0;
     }
 
     try {
