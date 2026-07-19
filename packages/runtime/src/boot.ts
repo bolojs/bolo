@@ -152,11 +152,22 @@ async function doBoot(options?: BootOptions): Promise<BrowserContainer> {
       base: previewBase,
     });
     await previewServer.start();
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const previewChannel = new BroadcastChannel("bolo-preview");
     vfs.watch("**", (path) => {
-      if (!path.includes("node_modules") && !path.endsWith("importmap.json")) {
-        previewServer.broadcastHmr({ type: "full-reload", path });
-        new BroadcastChannel("bolo-preview").postMessage({ type: "reload" });
+      if (
+        path.includes("node_modules") ||
+        path.endsWith("importmap.json") ||
+        path.includes("/.bolo/") ||
+        path.includes("/.npm-cache/")
+      ) {
+        return;
       }
+      previewServer.broadcastHmr({ type: "full-reload", path });
+      if (reloadTimer) clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(() => {
+        previewChannel.postMessage({ type: "reload" });
+      }, 250);
     });
     sandbox.onFetch(async (req) => {
       const url = new URL(req.url);
