@@ -1,0 +1,13 @@
+diff --git a/transform.wasi-browser.js b/transform.wasi-browser.js
+index 67e44360946fcb1eade557a832ac19fdec5409b6..80db41bc1b18e6764fb6f8d0cf1269cc55e2e787 100644
+--- a/transform.wasi-browser.js
++++ b/transform.wasi-browser.js
+@@ -29,7 +29,7 @@ const {
+   napiModule: __napiModule,
+ } = __emnapiInstantiateNapiModuleSync(__wasmFile, {
+   context: __emnapiContext,
+-  asyncWorkPoolSize: 4,
++  asyncWorkPoolSize: 0, // ponytail: disable napi async-work pool. Pool workers die opaquely in cross-origin module-worker context (emnapi 1.11.x doesn't relay child errors), so async napi calls hang on a dead queue. Single-thread path is supported by emnapi when pool size <= 0.
+   wasi: __wasi,
+   onCreateWorker() {
+     const worker = new Worker(new URL('@oxc-transform/binding-wasm32-wasi/wasi-worker-browser.mjs', import.meta.url), {

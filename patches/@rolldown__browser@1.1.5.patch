@@ -1,0 +1,13 @@
+diff --git a/dist/rolldown-binding.wasi-browser.js b/dist/rolldown-binding.wasi-browser.js
+index 423342bc998ea927e9ccfded3edc259fea89629a..949a4ef0d8928768fe58af40a60cdd250731746c 100644
+--- a/dist/rolldown-binding.wasi-browser.js
++++ b/dist/rolldown-binding.wasi-browser.js
+@@ -35,7 +35,7 @@ const {
+   napiModule: __napiModule,
+ } = await __emnapiInstantiateNapiModule(__wasmFile, {
+   context: __emnapiContext,
+-  asyncWorkPoolSize: 4,
++  asyncWorkPoolSize: 0, // ponytail: disable napi async-work pool. Pool workers die opaquely in cross-origin module-worker context (emnapi 1.11.x doesn't relay child errors), so async napi calls hang on a dead queue. Single-thread path is supported by emnapi when pool size <= 0.
+   wasi: __wasi,
+   onCreateWorker() {
+     const worker = new Worker(new URL('./wasi-worker-browser.mjs', import.meta.url), {

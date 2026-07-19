@@ -11,4 +11,6 @@ onlyBuiltDependencies:
   - esbuild
 
 patchedDependencies:
+  '@oxc-transform/binding-wasm32-wasi@0.140.0': patches/@oxc-transform__binding-wasm32-wasi@0.140.0.patch
+  '@rolldown/browser@1.1.5': patches/@rolldown__browser@1.1.5.patch
   unenv@2.0.0-rc.24: patches/unenv@2.0.0-rc.24.patch

@@ -5,6 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@oxc-transform/binding-wasm32-wasi@0.140.0':
+    hash: a76f23cc866334efd4e8f8cc9bc06b3f72ab60be2d338fd72dc252b18ba93790
+    path: patches/@oxc-transform__binding-wasm32-wasi@0.140.0.patch
+  '@rolldown/browser@1.1.5':
+    hash: fa3f227c24a20aa2b37790c84292796f251cc54589135ab96232931680d9abf6
+    path: patches/@rolldown__browser@1.1.5.patch
   unenv@2.0.0-rc.24:
     hash: 32bbf32bd7977f9060c55a25feae797d012e9f054a0330f1d0f4f33638ea489b
     path: patches/unenv@2.0.0-rc.24.patch
@@ -204,7 +210,7 @@ importers:
         version: 1.2.3
       '@rolldown/browser':
         specifier: ^1.1.5
-        version: 1.1.5
+        version: 1.1.5(patch_hash=fa3f227c24a20aa2b37790c84292796f251cc54589135ab96232931680d9abf6)
       '@shimmer-from-structure/solid':
         specifier: ^2.4.5
         version: 2.4.5(solid-js@1.9.14)
@@ -377,7 +383,7 @@ importers:
         version: link:../../packages/vite-preset
       '@oxc-transform/binding-wasm32-wasi':
         specifier: 0.140.0
-        version: 0.140.0
+        version: 0.140.0(patch_hash=a76f23cc866334efd4e8f8cc9bc06b3f72ab60be2d338fd72dc252b18ba93790)
       '@tailwindcss/vite':
         specifier: ^4.3.2
         version: 4.3.2(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
@@ -678,7 +684,7 @@ importers:
         version: link:../vfs-bus
       '@rolldown/browser':
         specifier: ^1.1.5
-        version: 1.1.5
+        version: 1.1.5(patch_hash=fa3f227c24a20aa2b37790c84292796f251cc54589135ab96232931680d9abf6)
       oxc-transform:
         specifier: ^0.140.0
         version: 0.140.0
@@ -8710,7 +8716,7 @@ snapshots:
   '@oxc-transform/binding-openharmony-arm64@0.140.0':
     optional: true
 
-  '@oxc-transform/binding-wasm32-wasi@0.140.0':
+  '@oxc-transform/binding-wasm32-wasi@0.140.0(patch_hash=a76f23cc866334efd4e8f8cc9bc06b3f72ab60be2d338fd72dc252b18ba93790)':
     dependencies:
       '@emnapi/core': 1.11.2
       '@emnapi/runtime': 1.11.2
@@ -9746,7 +9752,7 @@ snapshots:
   '@rolldown/binding-win32-x64-msvc@1.1.5':
     optional: true
 
-  '@rolldown/browser@1.1.5':
+  '@rolldown/browser@1.1.5(patch_hash=fa3f227c24a20aa2b37790c84292796f251cc54589135ab96232931680d9abf6)':
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
@@ -13099,7 +13105,7 @@ snapshots:
       '@oxc-transform/binding-linux-x64-gnu': 0.140.0
       '@oxc-transform/binding-linux-x64-musl': 0.140.0
       '@oxc-transform/binding-openharmony-arm64': 0.140.0
-      '@oxc-transform/binding-wasm32-wasi': 0.140.0
+      '@oxc-transform/binding-wasm32-wasi': 0.140.0(patch_hash=a76f23cc866334efd4e8f8cc9bc06b3f72ab60be2d338fd72dc252b18ba93790)
       '@oxc-transform/binding-win32-arm64-msvc': 0.140.0
       '@oxc-transform/binding-win32-ia32-msvc': 0.140.0
       '@oxc-transform/binding-win32-x64-msvc': 0.140.0
