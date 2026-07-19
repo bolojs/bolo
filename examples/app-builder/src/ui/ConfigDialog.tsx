@@ -1,3 +1,4 @@
+import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { listOpenRouterModels, type OpenRouterModel } from "../ai/providers";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface BuilderConfig {
   apiKey: string;
@@ -33,6 +35,7 @@ export default function ConfigDialog({ open, initial, onSave, onCancel, onForget
   const [planModelId, setPlanModelId] = useState(initial.planModelId);
   const [buildModelId, setBuildModelId] = useState(initial.buildModelId);
   const [useSameModel, setUseSameModel] = useState(initial.useSameModel);
+  const [showApiKey, setShowApiKey] = useState(false);
   const [models, setModels] = useState<OpenRouterModel[] | null>(null);
   const [modelsError, setModelsError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -89,16 +92,33 @@ export default function ConfigDialog({ open, initial, onSave, onCancel, onForget
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="cfg-api-key">API key</Label>
-          <Input
-            id="cfg-api-key"
-            type="password"
-            className="font-mono"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-or-..."
-            autoComplete="off"
-            spellCheck={false}
-          />
+          <div className="relative">
+            <Input
+              id="cfg-api-key"
+              type={showApiKey ? "text" : "password"}
+              className="pr-8 font-mono"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-or-..."
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  className="absolute right-1 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowApiKey((prev) => !prev)}
+                  aria-label={showApiKey ? "Hide API key" : "Show API key"}
+                >
+                  {showApiKey ? <EyeOff /> : <Eye />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{showApiKey ? "Hide API key" : "Show API key"}</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         <Label className="flex items-center gap-2 font-normal">
