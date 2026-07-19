@@ -143,6 +143,7 @@ flowchart LR
 | [0006](.agents/docs/adr/0006-sandbox-pivot-iframe.md) | Replace the default QuickJS sandbox with a cross-origin iframe; QuickJS becomes an opt-in community package. |
 | [0007](.agents/docs/adr/0007-posix-fork-vs-node-fork.md) | POSIX `fork` is unsupported; Node `child_process.fork()` is emulated via Worker + IPC. |
 | [0008](.agents/docs/adr/0008-virtual-store-resolver-and-cas.md) | pnpm-style symlinked virtual store for correct multi-version/diamond-dependency installs, plus content-addressed cold storage for cross-package dedup without hardlinks. |
+| [0009](.agents/docs/adr/0009-service-locator-considered.md) | Service-locator pattern considered and rejected; `RuntimeBuilder` extraction (B1) is the chosen alternative for composition flexibility. |
 
 ## 9. Cross-references
 
