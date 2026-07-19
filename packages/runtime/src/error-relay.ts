@@ -15,10 +15,8 @@
  * demo fix.
  */
 
-import { getLogger } from "@bolojs/log/browser";
 import type { BoloError } from "@bolojs/log/error-hints";
 
-const logger = getLogger(["bolo", "runtime", "error-relay"]);
 const BUFFER_SIZE = 200;
 const CHANNEL_NAME = "bolo-errors";
 
@@ -37,7 +35,10 @@ const createObsBuffer = (): ObsBuffer => {
       buffer.push(record);
       if (buffer.length > BUFFER_SIZE) buffer.shift();
       channel?.postMessage(record);
-      logger.error("obs", { ...record });
+      // ponytail: do NOT logtape-log from inside push() — logtape's customSink
+      // in main.tsx routes back into __boloObsPush, creating an infinite loop.
+      // The drain (window.__boloObsDrain) is the visibility mechanism; native
+      // browser error console covers uncaught exceptions.
     },
     drain() {
       return buffer.splice(0, buffer.length);
