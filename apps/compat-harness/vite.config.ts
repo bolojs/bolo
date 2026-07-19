@@ -45,6 +45,11 @@ export default defineConfig({
       globals: { Buffer: true, global: true, process: true },
     }),
   ],
+  // packages/runtime's worker-script.ts uses top-level await
+  // (`await configureBrowserLogging()`). Vite's default worker format is
+  // IIFE which can't host TLA — emit ES workers instead so Rollup keeps it.
+  // ponytail: top-level Vite config in v8, not nested under `build`.
+  worker: { format: 'es' },
   // rolldown/browser's WASI+threads binary needs SharedArrayBuffer, which
   // requires cross-origin isolation — without these headers it traps with
   // a bare "unreachable" WASM RuntimeError on every bundleEntry() call.
