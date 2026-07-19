@@ -1,4 +1,6 @@
 import type { SandboxBackend } from "./sandbox-backend.js";
+import type { ShellService } from "./shell-service.js";
+import type { VfsBus } from "@bolojs/vfs-bus";
 import type { ReplResult } from "./repl-service.js";
 
 /**
@@ -18,6 +20,10 @@ export interface BootOptions {
   sandbox?: SandboxBackend;
   /** Skip sandboxing entirely. Only for trusted code. */
   dangerouslyAllowSameOrigin?: boolean;
+  /** Inject a pre-configured shell service (e.g. custom net backend). */
+  shellService?: ShellService;
+  /** Override VfsBus construction (e.g. seed from a pre-warmed OPFS snapshot). */
+  vfsFactory?: () => VfsBus;
   /**
    * Absolute URL path to the ServiceWorker script (e.g. "/sw.js" for root
    * deploys, "/demo/sw.js" when mounted under a sub-path). Default: "/sw.js".

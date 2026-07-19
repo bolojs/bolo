@@ -22,6 +22,7 @@ export { createEventEmitter, type ContainerEvents } from "./events.js";
 export { createProcess, type ProcessDeps } from "./process.js";
 export { BrowserContainer, type BrowserContainerDeps } from "./container.js";
 export { boot } from "./boot.js";
+export { RuntimeBuilder } from "./runtime-builder.js";
 export { type SandboxBackend, type SandboxRunResult } from "./sandbox-backend.js";
 export { IframeSandbox } from "./iframe-sandbox.js";
 export { GitService, type GitServiceDeps } from "./git/git-service.js";
