@@ -63,10 +63,32 @@ async function startRelay(port) {
     env: { ...process.env, RELAY_PORT: String(port) },
     stdio: "pipe",
   });
+  let stderr = "";
   await new Promise((resolve, reject) => {
-    proc.on("error", reject);
-    proc.stdout.once("data", () => resolve(undefined));
-    setTimeout(() => reject(new Error("Relay failed to start")), 2000);
+    const onError = (err) => reject(err);
+    proc.on("error", onError);
+    const collectStderr = (chunk) => {
+      stderr += chunk.toString("utf8");
+    };
+    proc.stderr.on("data", collectStderr);
+    const onData = (data) => {
+      const line = data.toString("utf8");
+      if (line.includes("TCP relay listening")) {
+        cleanup();
+        resolve(undefined);
+      }
+    };
+    proc.stdout.on("data", onData);
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`Relay failed to start. stderr: ${stderr}`));
+    }, 2000);
+    const cleanup = () => {
+      proc.off("error", onError);
+      proc.stdout.off("data", onData);
+      proc.stderr.off("data", collectStderr);
+      clearTimeout(timer);
+    };
   });
   return proc;
 }

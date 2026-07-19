@@ -26,7 +26,10 @@ const ipConnections = new Map(); // ip → count
 
 setInterval(() => ipConnections.clear(), 60_000).unref?.();
 
-const wss = new WebSocketServer({ port: PORT });
+const wss = new WebSocketServer({ port: PORT }, () => {
+  console.log(`TCP relay listening on ws://localhost:${PORT}`);
+  console.log(`Supports: outbound connect, inbound listen`);
+});
 
 wss.on("connection", (ws) => {
   const ip = ws._socket?.remoteAddress;
@@ -255,6 +258,3 @@ function parseFrame(buf) {
 function generateId() {
   return randomBytes(4).toString("hex");
 }
-
-console.log(`TCP relay listening on ws://localhost:${PORT}`);
-console.log(`Supports: outbound connect, inbound listen`);
