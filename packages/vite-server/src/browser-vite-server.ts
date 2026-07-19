@@ -87,17 +87,22 @@ export class BrowserViteServer {
       }
 
       if (ext === ".css") {
-        // Vite semantics: `import './styles.css'` returns a JS module that
-        // injects a <style> tag. ponytail: full-reload HMR (broadcastHmr)
-        // already covers hot updates; no import.meta.hot plumbing here yet.
-        const module = `const css = ${JSON.stringify(code)};\nconst style = document.createElement('style');\nstyle.textContent = css;\ndocument.head.appendChild(style);\nexport default css;`;
-        return new Response(module, {
-          status: 200,
-          headers: {
-            "Content-Type": "application/javascript",
-            "Cache-Control": "no-cache",
-          },
-        });
+        // Vite semantics: `import './styles.css'` (browser appends `?import`
+        // to mark the JS-side fetch) returns a JS module that injects a
+        // <style> tag. Direct `<link rel="stylesheet">` fetches still want
+        // raw CSS so the stylesheet pipeline can parse it.
+        // ponytail: full-reload HMR (broadcastHmr) already covers hot
+        // updates; no import.meta.hot plumbing here yet.
+        if (url.includes("?import")) {
+          const module = `const css = ${JSON.stringify(code)};\nconst style = document.createElement('style');\nstyle.textContent = css;\ndocument.head.appendChild(style);\nexport default css;`;
+          return new Response(module, {
+            status: 200,
+            headers: {
+              "Content-Type": "application/javascript",
+              "Cache-Control": "no-cache",
+            },
+          });
+        }
       }
 
       const contentType = this.getContentType(filePath);
