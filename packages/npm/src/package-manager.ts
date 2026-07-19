@@ -80,6 +80,7 @@ export class PackageManager {
   private stderr?: (chunk: string) => void;
   private fs: ReturnType<typeof createFsFromVolume>;
   private installStrategy: InstallStrategy;
+  private lastImportMapSpecifiers: string[] | null = null;
 
   constructor(options: PackageManagerOptions) {
     this.vfs = options.vfs;
@@ -359,7 +360,13 @@ export class PackageManager {
   private async writeImportMap(): Promise<void> {
     const importMapPath = `${this.cwd}/importmap.json`;
     const packages = this.getImportMapPackageSpecifiers();
+    if (packages.length === 0 && this.lastImportMapSpecifiers) {
+      // ponytail: package.json can be transiently missing during install; keep
+      // the previous importmap rather than writing an empty one.
+      return;
+    }
     const importMap = this.generateImportMap(packages);
+    this.lastImportMapSpecifiers = packages;
 
     await this.vfs.writeFile(importMapPath, JSON.stringify(importMap, null, 2));
   }
@@ -368,6 +375,7 @@ export class PackageManager {
    * Top-level deps declared in package.json (dependencies + devDependencies),
    * excluding build-only tooling, resolved to their actually-installed version
    * where available (falls back to the declared range, else unversioned).
+   * If package.json is missing or empty, returns the last-known-good specifiers.
    */
   private getImportMapPackageSpecifiers(): string[] {
     try {
@@ -376,15 +384,18 @@ export class PackageManager {
       const pkg = JSON.parse(content);
       const declared: Record<string, string> = { ...pkg.dependencies, ...pkg.devDependencies };
 
+      if (Object.keys(declared).length === 0) {
+        return this.lastImportMapSpecifiers ?? [];
+      }
+
       return Object.keys(declared)
         .filter((name) => !BUILD_TOOLING_PACKAGES.has(name))
         .map((name) => {
           const version = this.readInstalledVersion(name) ?? declared[name];
           return version ? `${name}@${version}` : name;
         });
-    } catch (error) {
-      logger.warn("Could not read package.json", { error });
-      return [];
+    } catch {
+      return this.lastImportMapSpecifiers ?? [];
     }
   }
 
