@@ -33,6 +33,7 @@ export interface PackageManagerOptions {
   stdout?: (chunk: string) => void;
   stderr?: (chunk: string) => void;
   installStrategy?: InstallStrategy;
+  registryBase?: string;
 }
 
 const DEFAULT_CWD = "/home/web/app";
@@ -81,6 +82,9 @@ export class PackageManager {
   private fs: ReturnType<typeof createFsFromVolume>;
   private installStrategy: InstallStrategy;
   private lastImportMapSpecifiers: string[] | null = null;
+  // ponytail: sidecar exec-bit map; lift into VfsBus metadata when more than two consumers need it
+  private readonly execBits = new Map<string, number>();
+  private registryBase?: string;
 
   constructor(options: PackageManagerOptions) {
     this.vfs = options.vfs;
@@ -89,6 +93,7 @@ export class PackageManager {
     this.stderr = options.stderr;
     this.fs = createFsFromVolume(this.vfs["vol"]) as ReturnType<typeof createFsFromVolume>;
     this.installStrategy = options.installStrategy ?? "browser-native";
+    this.registryBase = options.registryBase;
   }
 
   /**
@@ -97,6 +102,7 @@ export class PackageManager {
    * resolves from the registry.
    */
   async install(packages?: string[]): Promise<void> {
+    this.execBits.clear();
     const strategy = this.installStrategy;
 
     if (typeof strategy === "function") {
@@ -108,6 +114,14 @@ export class PackageManager {
     }
 
     await this.writeImportMap();
+  }
+
+  /**
+   * Return the executable-bit mask (mode & 0o111) recorded for a file during
+   * tarball extraction. Returns 0 when no exec bit was recorded.
+   */
+  getExecBit(path: string): number {
+    return this.execBits.get(path) ?? 0;
   }
 
   /**
@@ -151,6 +165,7 @@ export class PackageManager {
         graph,
         fetchAndExtract: (pkg, targetDir) => this.fetchAndExtract(pkg, targetDir),
         onWarn: (msg) => this.warn(msg),
+        execBits: this.execBits,
       });
     } catch (error) {
       this.warn(
@@ -193,6 +208,7 @@ export class PackageManager {
       graph,
       fetchAndExtract: (pkg, targetDir) => this.fetchAndExtract(pkg, targetDir),
       onWarn: (msg) => this.warn(msg),
+      execBits: this.execBits,
     });
 
     const pkgJson = this.readPackageJson();
@@ -235,7 +251,7 @@ export class PackageManager {
       },
     };
 
-    return walkDependencies(rootDeps, fetch, (msg) => this.warn(msg), cache);
+    return walkDependencies(rootDeps, fetch, (msg) => this.warn(msg), cache, this.registryBase);
   }
 
   private readPackageJson(): {
@@ -305,9 +321,10 @@ export class PackageManager {
     const buffer = new Uint8Array(await res.arrayBuffer());
 
     if (pkg.integrity) {
-      const valid = await verifyIntegrity(buffer, pkg.integrity);
-      if (!valid) {
-        throw new Error(`Integrity check failed for ${pkg.name}@${pkg.version}`);
+      const warnings: string[] = [];
+      await verifyIntegrity(buffer, pkg.integrity, pkg.resolvedUrl, warnings);
+      for (const warning of warnings) {
+        this.warn(warning);
       }
     }
 
@@ -317,7 +334,7 @@ export class PackageManager {
     this.vfs.hot.mkdirSync(targetDir, { recursive: true });
 
     const decompressed = await decompressGzip(buffer);
-    extractTarball(decompressed, targetDir, this.vfs);
+    extractTarball(decompressed, targetDir, this.vfs, this.execBits);
   }
 
   private warn(message: string): void {
@@ -448,30 +465,57 @@ const decompressGzip = async (compressed: Uint8Array): Promise<Uint8Array> => {
   return result;
 };
 
-const INTEGRITY_ALGOS: Record<string, string> = {
-  sha512: "SHA-512",
-  sha256: "SHA-256",
-  sha1: "SHA-1",
+const SRI_ALGORITHMS: ReadonlyArray<{ prefix: string; subtle: string }> = [
+  { prefix: "sha512", subtle: "SHA-512" },
+  { prefix: "sha384", subtle: "SHA-384" },
+  { prefix: "sha256", subtle: "SHA-256" },
+  { prefix: "sha1", subtle: "SHA-1" },
+];
+
+const bytesToBase64 = (bytes: Uint8Array): string => {
+  // ponytail: chunk to avoid String.fromCharCode stack overflow on large buffers
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.slice(i, i + 0x8000));
+  }
+  return btoa(binary);
 };
 
 /**
- * Verify tarball integrity against an npm-style `sha512-<base64>` string.
- * Uses the native `crypto.subtle` Web API.
+ * Verify tarball integrity against an npm-style SRI string. Tries algorithms
+ * from strongest to weakest. Unsupported algorithms warn and degrade gracefully.
  */
-const verifyIntegrity = async (buffer: Uint8Array, integrity: string): Promise<boolean> => {
-  const dashIdx = integrity.indexOf("-");
-  if (dashIdx < 0) return false;
-  const algo = integrity.slice(0, dashIdx);
-  const expected = integrity.slice(dashIdx + 1);
-  const subtleAlgo = INTEGRITY_ALGOS[algo];
-  if (!subtleAlgo) return false;
-  // ponytail: buffer is always ArrayBuffer-backed (from fetch.arrayBuffer),
-  // but TS's Uint8Array<ArrayBufferLike> type widens to include SharedArrayBuffer.
-  const hashBuffer = await crypto.subtle.digest(subtleAlgo, buffer as unknown as ArrayBuffer);
-  const bytes = new Uint8Array(hashBuffer);
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary) === expected;
+export const verifyIntegrity = async (
+  buffer: Uint8Array,
+  integrity: string,
+  key: string,
+  warnings: string[],
+): Promise<boolean> => {
+  const entries = integrity.trim().split(/\s+/);
+  for (const { prefix, subtle } of SRI_ALGORITHMS) {
+    const entry = entries.find((c) => c.startsWith(`${prefix}-`));
+    if (!entry) continue;
+    const expected = entry.slice(prefix.length + 1).split("?")[0];
+    // ponytail: buffer is always ArrayBuffer-backed (from fetch.arrayBuffer),
+    // but TS's Uint8Array<ArrayBufferLike> type widens to include SharedArrayBuffer.
+    const hashBuffer = await crypto.subtle.digest(subtle, buffer as unknown as ArrayBuffer);
+    const actual = bytesToBase64(new Uint8Array(hashBuffer));
+    if (actual !== expected) {
+      throw new Error(`integrity mismatch for ${key}: expected ${expected}, got ${actual}`);
+    }
+    return true;
+  }
+  warnings.push(
+    `integrity: ${key} uses unsupported algorithm (${integrity}) — verification skipped`,
+  );
+  return true;
+};
+
+const ensureParentDir = (vfs: VfsBus, path: string): void => {
+  const dir = path.substring(0, path.lastIndexOf("/"));
+  if (dir && !vfs.hot.existsSync(dir)) {
+    vfs.hot.mkdirSync(dir, { recursive: true });
+  }
 };
 
 /**
@@ -479,7 +523,23 @@ const verifyIntegrity = async (buffer: Uint8Array, integrity: string): Promise<b
  * directory that is stripped so files land directly under the target package
  * directory (e.g. `node_modules/foo/package.json`).
  */
-const extractTarball = (buffer: Uint8Array, targetDir: string, vfs: VfsBus): void => {
+function sanitizeEntryPath(rawPath: string): string | null {
+  const trimmed = rawPath.replace(/\/+$/, "");
+  if (trimmed.startsWith("/")) return null;
+  const segments = trimmed.split("/").filter((s) => s !== "" && s !== ".");
+  if (segments.includes("..")) return null; // path traversal — never valid in a package
+  segments.shift(); // strip the wrapper dir (package/ or whatever name)
+  if (segments.length === 0) return null;
+  return segments.join("/");
+}
+
+export const extractTarball = (
+  buffer: Uint8Array,
+  targetDir: string,
+  vfs: VfsBus,
+  execBits?: Map<string, number>,
+): void => {
+  const hardLinkContent = new Map<string, Uint8Array>();
   let offset = 0;
   while (offset < buffer.length) {
     const header = buffer.slice(offset, offset + 512);
@@ -492,19 +552,21 @@ const extractTarball = (buffer: Uint8Array, targetDir: string, vfs: VfsBus): voi
     }
 
     const name = decodeTarField(header, 0, 100);
+    const mode = parseInt(decodeTarField(header, 100, 8).trim(), 8) || 0;
     const size = parseInt(decodeTarField(header, 124, 12).trim(), 8) || 0;
     const type = decodeTarField(header, 156, 1);
+    const linkname = decodeTarField(header, 157, 100);
     const prefix = decodeTarField(header, 345, 155);
     const fullName = prefix ? `${prefix}/${name}` : name;
-    const relative = fullName.replace(/^package\//, "");
+    const relative = sanitizeEntryPath(fullName);
+    const dataOffset = 512 + Math.ceil(size / 512) * 512;
 
-    if (type !== "0" && type !== "5") {
-      offset += 512 + Math.ceil(size / 512) * 512;
+    if (relative === null) {
+      offset += dataOffset; // ponytail: silent skip matches burrow; could log at debug if helpful
       continue;
     }
-
-    if (!relative) {
-      offset += 512 + Math.ceil(size / 512) * 512;
+    if (type !== "0" && type !== "1" && type !== "2" && type !== "5") {
+      offset += dataOffset;
       continue;
     }
 
@@ -515,14 +577,36 @@ const extractTarball = (buffer: Uint8Array, targetDir: string, vfs: VfsBus): voi
       if (!vfs.hot.existsSync(targetPath)) {
         vfs.hot.mkdirSync(targetPath, { recursive: true });
       }
-    } else {
-      const dir = targetPath.substring(0, targetPath.lastIndexOf("/"));
-      if (dir && !vfs.hot.existsSync(dir)) {
-        vfs.hot.mkdirSync(dir, { recursive: true });
+    } else if (type === "2") {
+      const linkParent = relative.substring(0, relative.lastIndexOf("/"));
+      const linkTarget = linkParent ? `${linkParent}/${linkname}` : linkname;
+      if (typeof vfs.hot.symlinkSync === "function") {
+        ensureParentDir(vfs, targetPath);
+        vfs.hot.symlinkSync(linkTarget, targetPath, "file");
+      } else {
+        // ponytail: VfsBus lacks a symlink method; in-tarball symlinks are skipped
       }
+    } else if (type === "1") {
+      const sourceContent = hardLinkContent.get(linkname);
+      if (sourceContent) {
+        ensureParentDir(vfs, targetPath);
+        vfs.hot.writeFileSync(targetPath, sourceContent);
+        hardLinkContent.set(fullName, sourceContent);
+        if (execBits && (mode & 0o111) !== 0) {
+          execBits.set(targetPath, mode & 0o111);
+        }
+      } else {
+        // ponytail: forward hard-link references are skipped
+      }
+    } else {
+      ensureParentDir(vfs, targetPath);
       vfs.hot.writeFileSync(targetPath, content);
+      hardLinkContent.set(fullName, content);
+      if (execBits && (mode & 0o111) !== 0) {
+        execBits.set(targetPath, mode & 0o111);
+      }
     }
 
-    offset += 512 + Math.ceil(size / 512) * 512;
+    offset += dataOffset;
   }
 };

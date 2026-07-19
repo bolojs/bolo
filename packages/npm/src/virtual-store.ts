@@ -9,6 +9,8 @@ export interface MaterializeOptions {
   /** Fetch the tarball for `pkg` and extract it into `targetDir` (package.json lands at `targetDir/package.json`). */
   fetchAndExtract: (pkg: ResolvedGraphPackage, targetDir: string) => Promise<void>;
   onWarn?: (message: string) => void;
+  // ponytail: exec-bit sidecar; lift into VfsBus metadata when more consumers appear
+  execBits?: Map<string, number>;
 }
 
 const storeDirFor = (cwd: string, pkg: ResolvedGraphPackage): string =>
@@ -50,6 +52,7 @@ const linkBins = (
   edges: Record<string, string>,
   packages: Map<string, ResolvedGraphPackage>,
   materialized: Set<string>,
+  execBits?: Map<string, number>,
 ): void => {
   for (const [depName, depKey] of Object.entries(edges)) {
     if (!materialized.has(depKey)) continue;
@@ -61,6 +64,10 @@ const linkBins = (
       ensureParentDir(vfs, linkPath);
       removeExistingLink(vfs, linkPath);
       vfs.hot.symlinkSync(targetPath, linkPath, "file");
+      const execMode = execBits?.get(targetPath);
+      if (execBits && execMode) {
+        execBits.set(linkPath, execMode);
+      }
     }
   }
 };
@@ -144,7 +151,14 @@ export const materializeVirtualStore = async (options: MaterializeOptions): Prom
       linkPackage(vfs, `${nodeModulesDir}/${peerName}`, packageDirFor(cwd, peer));
     }
 
-    linkBins(vfs, nodeModulesDir, pkg.resolvedDependencies, graph.packages, materialized);
+    linkBins(
+      vfs,
+      nodeModulesDir,
+      pkg.resolvedDependencies,
+      graph.packages,
+      materialized,
+      options.execBits,
+    );
   }
 
   const rootNodeModules = `${cwd}/node_modules`;
@@ -156,5 +170,12 @@ export const materializeVirtualStore = async (options: MaterializeOptions): Prom
     const pkg = graph.packages.get(depKey)!;
     linkPackage(vfs, `${rootNodeModules}/${depName}`, packageDirFor(cwd, pkg));
   }
-  linkBins(vfs, rootNodeModules, graph.rootDependencies, graph.packages, materialized);
+  linkBins(
+    vfs,
+    rootNodeModules,
+    graph.rootDependencies,
+    graph.packages,
+    materialized,
+    options.execBits,
+  );
 };

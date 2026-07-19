@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { VfsBus } from "@bolojs/vfs-bus";
-import { PackageManager } from "./package-manager.js";
+import { PackageManager, extractTarball, verifyIntegrity } from "./package-manager.js";
 
 describe("PackageManager", () => {
   let vfs: VfsBus;
@@ -103,6 +103,103 @@ describe("PackageManager", () => {
   });
 });
 
+describe("extractTarball", () => {
+  it("rejects entry with ../ in name", () => {
+    const vfs = new VfsBus();
+    const tar = createRawTarball([
+      { name: "package/ok.js", content: "ok" },
+      { name: "../evil.js", content: "bad" },
+    ]);
+
+    extractTarball(tar, "/node_modules/evil", vfs);
+
+    expect(vfs.hot.existsSync("/node_modules/evil/ok.js")).toBe(true);
+    expect(vfs.hot.existsSync("/node_modules/evil/../evil.js")).toBe(false);
+    expect(vfs.hot.existsSync("/node_modules/evil.js")).toBe(false);
+  });
+
+  it("rejects absolute path", () => {
+    const vfs = new VfsBus();
+    const tar = createRawTarball([
+      { name: "package/ok.js", content: "ok" },
+      { name: "/etc/passwd", content: "bad" },
+    ]);
+
+    extractTarball(tar, "/node_modules/evil", vfs);
+
+    expect(vfs.hot.existsSync("/node_modules/evil/ok.js")).toBe(true);
+    expect(vfs.hot.existsSync("/node_modules/evil/etc/passwd")).toBe(false);
+    expect(vfs.hot.existsSync("/etc/passwd")).toBe(false);
+  });
+
+  it("skips malformed entry silently", () => {
+    const vfs = new VfsBus();
+    const tar = createRawTarball([
+      { name: "package/", content: "" },
+      { name: "package/valid.js", content: "valid" },
+    ]);
+
+    extractTarball(tar, "/node_modules/empty", vfs);
+
+    expect(vfs.hot.existsSync("/node_modules/empty/valid.js")).toBe(true);
+  });
+
+  it("strips arbitrary wrapper dir, not just package/", () => {
+    const vfs = new VfsBus();
+    const tar = createRawTarball([{ name: "my-wrapper/foo.js", content: "console.log(1);" }]);
+
+    extractTarball(tar, "/node_modules/wrapped", vfs);
+
+    expect(vfs.hot.existsSync("/node_modules/wrapped/foo.js")).toBe(true);
+    expect(vfs.hot.existsSync("/node_modules/wrapped/my-wrapper/foo.js")).toBe(false);
+  });
+
+  it("preserves exec bit for bin entries", () => {
+    const vfs = new VfsBus();
+    const pm = new PackageManager({ vfs, cwd: "/" });
+    const tar = createRawTarball([
+      { name: "package/cli.js", content: "#!/usr/bin/env node", mode: 0o755 },
+    ]);
+
+    extractTarball(tar, "/node_modules/bin-pkg", vfs, (pm as any).execBits);
+
+    expect(vfs.hot.existsSync("/node_modules/bin-pkg/cli.js")).toBe(true);
+    expect(pm.getExecBit("/node_modules/bin-pkg/cli.js")).toBe(0o111);
+  });
+
+  it("resolves in-tarball symlink to target content", async () => {
+    const vfs = new VfsBus();
+    const tar = createRawTarball([
+      { name: "package/foo.js", content: "foo" },
+      { name: "package/link.js", type: "2", linkname: "foo.js" },
+    ]);
+
+    extractTarball(tar, "/node_modules/symlinked", vfs);
+
+    if (typeof vfs.hot.symlinkSync === "function") {
+      expect(await vfs.readFile("/node_modules/symlinked/link.js")).toBe("foo");
+    } else {
+      // ponytail: VfsBus lacks symlink support; extraction should skip silently
+      expect(vfs.hot.existsSync("/node_modules/symlinked/link.js")).toBe(false);
+    }
+  });
+
+  it("resolves in-tarball hardlink to target content", async () => {
+    const vfs = new VfsBus();
+    const tar = createRawTarball([
+      { name: "package/foo.js", content: "X" },
+      { name: "package/bar.js", type: "1", linkname: "package/foo.js" },
+    ]);
+
+    extractTarball(tar, "/node_modules/hardlinked", vfs);
+
+    expect(vfs.hot.existsSync("/node_modules/hardlinked/foo.js")).toBe(true);
+    expect(vfs.hot.existsSync("/node_modules/hardlinked/bar.js")).toBe(true);
+    expect(await vfs.readFile("/node_modules/hardlinked/foo.js")).toBe("X");
+    expect(await vfs.readFile("/node_modules/hardlinked/bar.js")).toBe("X");
+  });
+});
+
 const textEncoder = new TextEncoder();
 
 const pad = (s: string, length: number): string => s.padEnd(length, "\0");
@@ -133,17 +230,33 @@ const compressGzip = async (data: Uint8Array): Promise<Uint8Array> => {
   return result;
 };
 
-const createTarball = async (entries: { name: string; content: string }[]): Promise<Uint8Array> => {
+const createRawTarball = (
+  entries: {
+    name: string;
+    prefix?: string;
+    content?: string;
+    type?: string;
+    mode?: number;
+    linkname?: string;
+  }[],
+): Uint8Array => {
   const chunks: Uint8Array[] = [];
   for (const entry of entries) {
-    const contentBytes = textEncoder.encode(entry.content);
+    const content = entry.content ?? "";
+    const contentBytes = textEncoder.encode(content);
     const header = new Uint8Array(512);
     const nameBytes = textEncoder.encode(pad(entry.name, 100));
+    const modeBytes = textEncoder.encode((entry.mode ?? 0o644).toString(8).padStart(7, "0") + " ");
     const sizeBytes = textEncoder.encode(contentBytes.length.toString(8).padStart(11, "0") + " ");
-    const typeBytes = textEncoder.encode("0");
+    const typeBytes = textEncoder.encode(entry.type ?? "0");
+    const linknameBytes = textEncoder.encode(pad(entry.linkname ?? "", 100));
+    const prefixBytes = textEncoder.encode(pad(entry.prefix ?? "", 155));
     header.set(nameBytes, 0);
+    header.set(modeBytes, 100);
     header.set(sizeBytes, 124);
     header.set(typeBytes, 156);
+    header.set(linknameBytes, 157);
+    header.set(prefixBytes, 345);
     chunks.push(header);
     chunks.push(contentBytes);
     const padding = (512 - (contentBytes.length % 512)) % 512;
@@ -158,7 +271,12 @@ const createTarball = async (entries: { name: string; content: string }[]): Prom
     tar.set(c, offset);
     offset += c.length;
   }
-  return compressGzip(tar);
+  return tar;
+};
+
+const createTarball = async (entries: { name: string; content: string }[]): Promise<Uint8Array> => {
+  const raw = createRawTarball(entries.map((entry) => ({ ...entry })));
+  return compressGzip(raw);
 };
 
 describe("lockfile-only install", () => {
@@ -294,5 +412,51 @@ describe("browser-native install", () => {
     } finally {
       globalThis.fetch = originalFetch;
     }
+  });
+});
+
+const digestToBase64 = async (subtle: string, data: Uint8Array): Promise<string> => {
+  const hashBuffer = await crypto.subtle.digest(subtle, data as unknown as ArrayBuffer);
+  const bytes = new Uint8Array(hashBuffer);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+};
+
+describe("verifyIntegrity", () => {
+  const buffer = new Uint8Array([1, 2, 3, 4, 5]);
+
+  it("prefers sha512 when multiple present", async () => {
+    const sha256Correct = await digestToBase64("SHA-256", buffer);
+    const sha512Wrong =
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+
+    await expect(
+      verifyIntegrity(buffer, `sha512-${sha512Wrong} sha256-${sha256Correct}`, "pkg", []),
+    ).rejects.toThrow("integrity mismatch for pkg");
+  });
+
+  it("strips SRI options after hash", async () => {
+    const sha512Correct = await digestToBase64("SHA-512", buffer);
+
+    const result = await verifyIntegrity(buffer, `sha512-${sha512Correct}?foo=bar`, "pkg", []);
+
+    expect(result).toBe(true);
+  });
+
+  it("warns on unsupported algorithm, does not throw", async () => {
+    const warnings: string[] = [];
+
+    const result = await verifyIntegrity(buffer, "md5-abc", "pkg", warnings);
+
+    expect(result).toBe(true);
+    expect(warnings.length).toBe(1);
+    expect(warnings[0]).toContain("md5");
+  });
+
+  it("throws on mismatch with descriptive error including URL", async () => {
+    await expect(
+      verifyIntegrity(buffer, "sha512-AAAAAA==", "https://reg/pkg/-/pkg-1.tgz", []),
+    ).rejects.toThrow("https://reg/pkg/-/pkg-1.tgz");
   });
 });

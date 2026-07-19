@@ -28,9 +28,10 @@ interface QueueItem {
  */
 export const walkDependencies = async (
   rootDeps: Record<string, string>,
-  fetchFn: typeof fetch = fetch,
+  fetchFn: typeof fetch = globalThis.fetch,
   onProgress?: (message: string) => void,
   cache?: ResolveCache,
+  registryBase?: string,
 ): Promise<ResolvedGraph> => {
   const packages = new Map<string, ResolvedGraphPackage>();
   const rootDependencies: Record<string, string> = {};
@@ -52,7 +53,7 @@ export const walkDependencies = async (
 
         if (!resolved) {
           try {
-            resolved = await resolvePackage(name, range, fetchFn, cache);
+            resolved = await resolvePackage(name, range, { registryBase, fetchFn }, cache);
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             if (optional) {

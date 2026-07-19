@@ -1,6 +1,6 @@
 import { maxSatisfying } from "semver";
 
-const REGISTRY = "https://registry.npmjs.org";
+export const DEFAULT_REGISTRY = "https://registry.npmjs.org";
 
 export interface ResolvedPackage {
   name: string;
@@ -41,29 +41,34 @@ export interface ResolveCache {
 export const resolvePackage = async (
   name: string,
   range: string,
-  fetchFn: typeof fetch = fetch,
+  options: { registryBase?: string; fetchFn?: typeof fetch } = {},
   cache?: ResolveCache,
 ): Promise<ResolvedPackage> => {
+  const envRegistry = globalThis.process?.env?.npm_config_registry;
+  const registry = (options.registryBase ?? envRegistry ?? DEFAULT_REGISTRY).replace(/\/+$/, "");
+  const fetchFn = options.fetchFn ?? globalThis.fetch;
+
   if (range.startsWith("npm:")) {
     const spec = range.slice(4);
     const atIdx = spec.lastIndexOf("@");
     const aliasName = atIdx > 0 ? spec.slice(0, atIdx) : spec;
     const aliasVersion = atIdx > 0 ? spec.slice(atIdx + 1) : "*";
-    const resolved = await resolvePackage(aliasName, aliasVersion, fetchFn, cache);
+    const resolved = await resolvePackage(aliasName, aliasVersion, options, cache);
     return { ...resolved, name };
   }
 
-  let packument = cache?.get ? await cache.get(name) : null;
+  const key = `${registry}/${name}`;
+  let packument = cache?.get ? await cache.get(key) : null;
 
   if (!packument) {
-    const res = await fetchFn(`${REGISTRY}/${name}`, {
+    const res = await fetchFn(`${registry}/${name}`, {
       headers: { Accept: "application/vnd.npm.install-v1+json" },
     });
     if (!res.ok) {
       throw new Error(`Registry fetch failed for ${name}: ${res.status}`);
     }
     packument = (await res.json()) as NpmPackument;
-    if (cache?.set) await cache.set(name, packument);
+    if (cache?.set) await cache.set(key, packument);
   }
 
   const versions = Object.keys(packument.versions);

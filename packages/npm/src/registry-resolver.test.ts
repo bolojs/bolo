@@ -29,7 +29,34 @@ const originalFetch = globalThis.fetch;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  delete process.env.npm_config_registry;
 });
+
+const fakePackument = (name: string, version: string = "1.0.0") => ({
+  name,
+  "dist-tags": { latest: version },
+  versions: {
+    [version]: {
+      version,
+      dist: { tarball: `https://reg/${name}/-/${name}-${version}.tgz`, integrity: "sha512-xxx" },
+    },
+  },
+});
+
+const recordingFetch = (packument: any) => {
+  let lastUrl: string | undefined;
+  let calls = 0;
+  const fetchFn = (async (url: string | URL | Request) => {
+    lastUrl = String(url);
+    calls++;
+    return {
+      ok: true,
+      status: 200,
+      json: async () => packument,
+    } as Response;
+  }) as typeof fetch;
+  return { fetchFn, getLastUrl: () => lastUrl, getCalls: () => calls };
+};
 
 describe("resolvePackage", () => {
   it("picks the highest version satisfying a range", async () => {
@@ -124,5 +151,60 @@ describe("resolvePackage", () => {
     await expect(resolvePackage("nonexistent", "^1.0.0")).rejects.toThrow(
       "Registry fetch failed for nonexistent: 404",
     );
+  });
+
+  it("uses default when no option", async () => {
+    const { fetchFn, getLastUrl } = recordingFetch(fakePackument("foo"));
+
+    await resolvePackage("foo", "^1.0.0", { fetchFn });
+
+    expect(getLastUrl()).toBe("https://registry.npmjs.org/foo");
+  });
+
+  it("uses registryBase option", async () => {
+    const { fetchFn, getLastUrl } = recordingFetch(fakePackument("foo"));
+
+    await resolvePackage("foo", "^1.0.0", {
+      registryBase: "https://verdaccio.example.com",
+      fetchFn,
+    });
+
+    expect(getLastUrl()).toBe("https://verdaccio.example.com/foo");
+  });
+
+  it("option overrides env var", async () => {
+    process.env.npm_config_registry = "https://env.example.com";
+    const { fetchFn, getLastUrl } = recordingFetch(fakePackument("foo"));
+
+    await resolvePackage("foo", "^1.0.0", { registryBase: "https://opt.example.com", fetchFn });
+
+    expect(getLastUrl()).toBe("https://opt.example.com/foo");
+  });
+
+  it("env var overrides default", async () => {
+    process.env.npm_config_registry = "https://env.example.com";
+    const { fetchFn, getLastUrl } = recordingFetch(fakePackument("foo"));
+
+    await resolvePackage("foo", "^1.0.0", { fetchFn });
+
+    expect(getLastUrl()).toBe("https://env.example.com/foo");
+  });
+
+  it("cache key is registry-scoped", async () => {
+    const packument = fakePackument("foo");
+    let calls = 0;
+    const fetchFn = (async () => {
+      calls++;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => packument,
+      } as Response;
+    }) as typeof fetch;
+
+    await resolvePackage("foo", "^1.0.0", { registryBase: "https://a", fetchFn });
+    await resolvePackage("foo", "^1.0.0", { registryBase: "https://b", fetchFn });
+
+    expect(calls).toBe(2);
   });
 });
