@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/vite-server",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "BrowserViteServer — a Vite dev server that runs on the main thread inside a bolo container.",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,6 +24,7 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bolojs/bolo.git",

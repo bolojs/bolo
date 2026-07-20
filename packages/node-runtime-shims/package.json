@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/node-runtime-shims",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "node:* to VfsBus/ServiceWorker bridges (fs, http createServer, net, child_process) for bolo containers.",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,6 +27,7 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bolojs/bolo.git",
