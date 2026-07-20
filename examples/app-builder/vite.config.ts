@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig, loadEnv, mergeConfig, type Plugin } from "vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { bolojsPreset } from "@bolojs/vite-preset";
 
@@ -95,7 +96,17 @@ export default defineConfig(({ mode }) => {
   }
 
   return mergeConfig(preset, {
-    plugins: [react(), tailwindcss(), devOpenRouterKey(), inlineOxcTransform()],
+    plugins: [
+      // React Compiler auto-applies useMemo/useCallback/React.memo equivalents
+      // inside components. v6 of @vitejs/plugin-react drops the `babel` option;
+      // wire the compiler via @rolldown/plugin-babel + reactCompilerPreset.
+      // Compiler fails open with bailouts if a component violates Rules of React.
+      react(),
+      babel({ presets: [reactCompilerPreset()] }),
+      tailwindcss(),
+      devOpenRouterKey(),
+      inlineOxcTransform(),
+    ],
     resolve: {
       alias: [{ find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) }],
     },
