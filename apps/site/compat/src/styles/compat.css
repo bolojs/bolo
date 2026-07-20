@@ -20,9 +20,12 @@
   --unknown-bg: #262626;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 .compat-page {
   padding-block: 2rem;
-  overflow-x: hidden;
 }
 
 .eyebrow {
