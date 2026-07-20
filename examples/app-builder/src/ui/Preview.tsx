@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
@@ -72,7 +72,11 @@ export default function Preview({ url }: Props) {
   // but the iframe's first navigation can still 404 (Chrome shows the error
   // page) because the SW fetch handler isn't live yet. Force a cache-busted
   // re-navigation once the iframe is in the DOM so SW definitely sees it.
-  const setIframeNode = (el: HTMLIFrameElement | null) => {
+  // Memoized on `src` so re-renders don't queue a fresh setTimeout each
+  // commit — without this every render called old(null)+new(el) on the ref,
+  // each `el` scheduling its own cache-buster that aborted the prior
+  // in-flight load (Firefox: NS_BINDING_ABORTED -> CORRUPTED_CONTENT cascade).
+  const setIframeNode = useCallback((el: HTMLIFrameElement | null) => {
     iframeRef.current = el;
     if (!el) return;
     setTimeout(() => {
@@ -80,7 +84,7 @@ export default function Preview({ url }: Props) {
       const fresh = src + (src.includes("?") ? "&" : "?") + "_=" + Date.now();
       if (iframeRef.current.src !== fresh) iframeRef.current.src = fresh;
     }, 250);
-  };
+  }, [src]);
 
   return <iframe key={iframeKey} ref={setIframeNode} src={src} title="preview" className="h-full w-full border-none bg-white" />;
 }
