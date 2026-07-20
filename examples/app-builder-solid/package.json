@@ -1,0 +1,50 @@
+{
+  "name": "@bolojs/example-app-builder-solid",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "portless run --name example-app-builder-solid --force vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bolojs/log": "workspace:*",
+    "@bolojs/runtime": "workspace:*",
+    "@bolojs/vfs-bus": "workspace:*",
+    "@codemirror/commands": "^6.10.4",
+    "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.35.0",
+    "@fontsource-variable/geist": "^5.2.9",
+    "@fontsource-variable/geist-mono": "^5.2.8",
+    "@lezer/highlight": "^1.2.3",
+    "@openrouter/ai-sdk-provider": "^3.0.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "ai": "7.0.31",
+    "clsx": "^2.1.1",
+    "fflate": "^0.8.2",
+    "lazy-tree-view": "^1.0.2",
+    "lucide-solid": "^1.25.0",
+    "marked": "^17.0.0",
+    "solid-js": "^1.9.0",
+    "solid-resizable-panels": "^0.5.4",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@bolojs/vite-preset": "workspace:*",
+    "@tailwindcss/vite": "^4.3.2",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.0",
+    "vite-plugin-solid": "^2.11.13"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
