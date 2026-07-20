@@ -2,7 +2,7 @@
 import "./client-globals";
 import { createSignal, onMount } from "solid-js";
 import { Shimmer } from "@shimmer-from-structure/solid";
-import { boot, type BrowserContainer, type ReplResult } from "@bolojs/runtime";
+import { boot, type BrowserContainer, type ReplResult } from "bolojs";
 import { getLogger } from "@bolojs/log/browser";
 import { createE2eBridge } from "./e2e-bridge";
 import Terminal from "./Terminal";
@@ -26,7 +26,7 @@ const logger = getLogger(["bolo", "site-landing", "demo"]);
 // no `{ type: 'module' }`, and classic workers can't load a cross-origin
 // script — surfacing as a raw WASM "unreachable" trap (JavaScriptCore: hits
 // this immediately on Safari/iOS; V8: printed as terminal output instead of
-// throwing). See @bolojs/wasm-registry's bundle.ts for the CDN-fallback logic
+// throwing). See @bolojs/registry's bundle.ts for the CDN-fallback logic
 // this flag opts out of.
 globalThis.__preferLocalRolldown = true;
 

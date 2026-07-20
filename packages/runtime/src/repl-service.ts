@@ -1,4 +1,4 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import type { RuntimeWorker } from "./runtime-worker.js";
 
 const HISTORY_FILE = "/home/web/.node_repl_history";

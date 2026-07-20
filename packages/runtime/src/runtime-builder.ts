@@ -1,8 +1,8 @@
 import type { BootOptions } from "./container-types.js";
 import { BrowserContainer, type BrowserContainerDeps } from "./container.js";
-import { VfsBus } from "@bolojs/vfs-bus";
-import { SWSandbox } from "@bolojs/sw-sandbox";
-import { PackageManager } from "@bolojs/npm";
+import { VfsBus } from "@bolojs/fs";
+import { SWSandbox } from "@bolojs/sandbox";
+import { PackageManager } from "@bolojs/pm";
 import { RuntimeWorker } from "./runtime-worker.js";
 import { ReplService } from "./repl-service.js";
 import { IframeSandbox } from "./iframe-sandbox.js";

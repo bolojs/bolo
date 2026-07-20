@@ -1,5 +1,5 @@
 {
-  "name": "@bolojs/runtime",
+  "name": "bolojs",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -13,13 +13,13 @@
   },
   "dependencies": {
     "@bolojs/log": "workspace:*",
-    "@bolojs/vfs-bus": "workspace:*",
-    "@bolojs/sw-sandbox": "workspace:*",
-    "@bolojs/npm": "workspace:*",
+    "@bolojs/fs": "workspace:*",
+    "@bolojs/sandbox": "workspace:*",
+    "@bolojs/pm": "workspace:*",
     "@bolojs/vite-server": "workspace:*",
     "@bolojs/node-web-shims": "workspace:*",
     "@bolojs/node-runtime-shims": "workspace:*",
-    "@bolojs/wasm-registry": "workspace:*",
+    "@bolojs/registry": "workspace:*",
     "isomorphic-git": "^1.38.7",
     "just-bash": "^3.1.0"
   },

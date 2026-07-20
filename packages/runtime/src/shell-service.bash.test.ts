@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
+import { VfsBus } from "@bolojs/fs";
 import { ShellService, type ShellServiceDeps } from "./shell-service.js";
 
 const createDeps = (vfs: VfsBus): ShellServiceDeps => ({

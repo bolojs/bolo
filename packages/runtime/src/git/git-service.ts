@@ -1,4 +1,4 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import type { AuthCallback, HttpClient } from "isomorphic-git";
 import type * as Git from "isomorphic-git";
 import { createGitFs } from "./fs-adapter.js";

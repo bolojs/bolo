@@ -1,4 +1,4 @@
-import { snapshot as snapshotVfs, restore as restoreVfs, type VfsBus } from "@bolojs/vfs-bus";
+import { snapshot as snapshotVfs, restore as restoreVfs, type VfsBus } from "@bolojs/fs";
 
 // boot() stashes the active container's VfsBus here (see packages/runtime/src/boot.ts).
 // There is exactly one live container at a time, so this is the correct instance

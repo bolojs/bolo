@@ -1,4 +1,4 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import type { Process, SpawnOptions } from "./container-types.js";
 import type { ShellService } from "./shell-service.js";
 import type { RuntimeWorker } from "./runtime-worker.js";

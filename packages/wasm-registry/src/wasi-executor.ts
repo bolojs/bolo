@@ -7,7 +7,7 @@ import {
   ConsoleStdout,
   type Inode,
 } from "@bjorn3/browser_wasi_shim";
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import type { WasmTool, WasmToolResult } from "./registry.js";
 
 export interface WasiPreopen {

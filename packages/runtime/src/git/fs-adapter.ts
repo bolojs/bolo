@@ -1,4 +1,4 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import type { PromiseFsClient } from "isomorphic-git";
 
 /** Ponytail: memfs hot promises already implements the full PromiseFsClient

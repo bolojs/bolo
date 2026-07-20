@@ -117,7 +117,7 @@ export default defineConfig({
   // asset/worker URLs.
   optimizeDeps: {
     exclude: [
-      '@bolojs/runtime',
+      'bolojs',
       'oxc-transform',
       '@rolldown/browser',
       'typescript',

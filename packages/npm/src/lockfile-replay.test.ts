@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
+import { VfsBus } from "@bolojs/fs";
 import { PackageManager } from "./package-manager.js";
 import { syntheticPackuments } from "./lockfile-replay.js";
 import type { NpmLockfileV3 } from "./lockfile-writer.js";

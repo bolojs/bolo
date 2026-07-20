@@ -43,7 +43,7 @@ const BARE_BUILTINS = ["crypto", "events", "path", "stream", "util", "assert", "
 
 /**
  * Vite plugins that alias Node builtins to browser-compatible shims for any
- * consumer of `@bolojs/runtime`. Combines the package's own shim-resolution
+ * consumer of `bolojs`. Combines the package's own shim-resolution
  * plugin with `vite-plugin-node-polyfills` for `Buffer`/`process` globals.
  *
  * `Buffer` is deliberately excluded from `globals` here — installing it
@@ -81,7 +81,7 @@ export function bolojsAlias(): Array<{ find: string | RegExp; replacement: strin
 /** `optimizeDeps` config so esbuild's dependency pre-bundling scan also resolves bare builtins to shims. */
 export function bolojsOptimizeDeps(): UserConfig["optimizeDeps"] {
   return {
-    exclude: ["@bolojs/runtime", "@rolldown/browser", "oxc-transform"],
+    exclude: ["bolojs", "@rolldown/browser", "oxc-transform"],
     esbuildOptions: {
       plugins: [
         {
@@ -100,7 +100,7 @@ export function bolojsOptimizeDeps(): UserConfig["optimizeDeps"] {
 }
 
 /**
- * Full Vite config fragment for consumers of `@bolojs/runtime`: the shim
+ * Full Vite config fragment for consumers of `bolojs`: the shim
  * plugins, `resolve.alias`, `optimizeDeps`, cross-origin-isolation dev
  * headers, and the `build.rollupOptions` exclusions/chunking those shims
  * need at build time. Spread this into your own `defineConfig({ ... })`
@@ -135,7 +135,7 @@ export function bolojsPreset(): UserConfig {
           manualChunks(id: string) {
             if (id.includes("quickjs-emscripten") || id.includes("@jitl/")) return "quickjs";
             if (id.includes("memfs")) return "memfs";
-            if (id.includes("@bolojs/npm") || id.includes("@unjs/lockfile")) return "npm";
+            if (id.includes("@bolojs/pm") || id.includes("@unjs/lockfile")) return "npm";
           },
         },
       },

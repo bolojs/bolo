@@ -1,8 +1,8 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
-import type { PackageManager } from "@bolojs/npm";
-import type { SWSandbox } from "@bolojs/sw-sandbox";
+import type { VfsBus } from "@bolojs/fs";
+import type { PackageManager } from "@bolojs/pm";
+import type { SWSandbox } from "@bolojs/sandbox";
 import { BrowserViteServer } from "@bolojs/vite-server";
-import { bundleEntry } from "@bolojs/wasm-registry";
+import { bundleEntry } from "@bolojs/registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
 import { git } from "./commands/git.js";

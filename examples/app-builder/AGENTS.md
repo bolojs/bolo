@@ -33,13 +33,13 @@ Vite process from a previous session is easy to leave running by accident.
 
 ### Stale `dist/` gotcha
 
-This package consumes `@bolojs/runtime`, `@bolojs/vfs-bus`, and
+This package consumes `bolojs`, `@bolojs/fs`, and
 `@bolojs/vite-preset` via their built `dist/` output (no TS path-mapping in
 `tsconfig.base.json`). If you edit those packages' source, rebuild them
 before app-builder will see the change:
 
 ```bash
-pnpm --filter @bolojs/runtime --filter @bolojs/vfs-bus --filter @bolojs/vite-preset build
+pnpm --filter bolojs --filter @bolojs/fs --filter @bolojs/vite-preset build
 ```
 
 Symptom if you skip this: TS errors like "has no exported member" for

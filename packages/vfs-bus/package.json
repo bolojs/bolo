@@ -1,5 +1,5 @@
 {
-  "name": "@bolojs/vfs-bus",
+  "name": "@bolojs/fs",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",

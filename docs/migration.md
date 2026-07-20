@@ -37,7 +37,7 @@ await proc.exit;
 ### After (bolo)
 
 ```ts
-import { boot } from '@bolojs/runtime';
+import { boot } from 'bolojs';
 
 const container = await boot();
 

@@ -1,6 +1,6 @@
 import { tool, type ToolSet } from "ai";
 import { z } from "zod";
-import type { BrowserContainer, DirEnt } from "@bolojs/runtime";
+import type { BrowserContainer, DirEnt } from "bolojs";
 
 // VfsBus.matchGlob (packages/vfs-bus/src/vfs-bus.ts) only matches "**", prefix*,
 // *suffix, or exact-path globs — no recursive glob support. listFiles recurses

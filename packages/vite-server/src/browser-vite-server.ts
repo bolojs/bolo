@@ -1,5 +1,5 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
-import { transformScript } from "@bolojs/wasm-registry";
+import type { VfsBus } from "@bolojs/fs";
+import { transformScript } from "@bolojs/registry";
 import { enrichMessage } from "@bolojs/log/error-hints";
 
 const TRANSFORMABLE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);

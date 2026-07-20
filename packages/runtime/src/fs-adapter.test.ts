@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
+import { VfsBus } from "@bolojs/fs";
 import { createFileSystem } from "./fs-adapter.js";
 
 describe("createFileSystem", () => {

@@ -1,5 +1,5 @@
 import { zipSync, type Zippable } from "fflate";
-import type { BrowserContainer } from "@bolojs/runtime";
+import type { BrowserContainer } from "bolojs";
 import { listFilesRecursive } from "./tools";
 
 export async function exportProjectZip(container: BrowserContainer): Promise<void> {

@@ -1,6 +1,6 @@
 import type { SandboxBackend } from "./sandbox-backend.js";
 import type { ShellService } from "./shell-service.js";
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import type { ReplResult } from "./repl-service.js";
 
 /**

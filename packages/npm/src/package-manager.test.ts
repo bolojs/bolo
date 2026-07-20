@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
+import { VfsBus } from "@bolojs/fs";
 import { PackageManager, extractTarball, verifyIntegrity } from "./package-manager.js";
 
 describe("PackageManager", () => {

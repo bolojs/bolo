@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
+import { VfsBus } from "@bolojs/fs";
 import { createProcess } from "./process.js";
 import { ShellService } from "./shell-service.js";
 import { RuntimeWorker } from "./runtime-worker.js";

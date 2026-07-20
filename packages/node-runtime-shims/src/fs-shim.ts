@@ -1,4 +1,4 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import { createEventsShim } from "@bolojs/node-web-shims";
 
 const { EventEmitter } = createEventsShim();

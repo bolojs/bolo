@@ -1,7 +1,7 @@
 # @bolojs/example-app-builder
 
 A Lovable/v0/bolt.new-style AI app builder, running entirely in the browser on
-top of bolo's in-browser Node.js runtime (`@bolojs/runtime`). This example
+top of bolo's in-browser Node.js runtime (`bolojs`). This example
 exists to prove bolo's existing core infrastructure already supports the
 "AI app builder" use case without any app-builder-specific changes to core.
 
@@ -22,7 +22,7 @@ from the ⚙ button in the sidebar header.
 
 ## How it works
 
-- `src/container/useContainer.ts` boots a `@bolojs/runtime` container, mounts
+- `src/container/useContainer.ts` boots a `bolojs` container, mounts
   a starter Vite+React project (`src/container/scaffold.ts`), and runs
   `npm install`.
 - `src/container/tools.ts` exposes the container's filesystem and process
@@ -39,7 +39,7 @@ from the ⚙ button in the sidebar header.
   plan/build models (fetched from OpenRouter's `/api/v1/models`) or use one
   model for both via a checkbox.
 - `src/container/persist.ts` snapshots the container's virtual filesystem
-  (via `@bolojs/vfs-bus`'s `VfsBus.snapshot()`/`restore()`) into IndexedDB on
+  (via `@bolojs/fs`'s `VfsBus.snapshot()`/`restore()`) into IndexedDB on
   every install/command, and restores it on reload — so a refresh doesn't
   lose the project.
 - `src/container/exportZip.ts` zips the project (via `fflate`, excluding
@@ -68,7 +68,7 @@ the API key above), and DOM.
 ## Known debt
 
 `public/sw.js` is a **copied**, not built, service worker script (mirrors
-`apps/site/landing/public/sw.js`). `@bolojs/sw-sandbox`'s `SWSandbox`
+`apps/site/landing/public/sw.js`). `@bolojs/sandbox`'s `SWSandbox`
 registers the service worker as a classic (non-`type: "module"`) script, but
 `packages/sw-sandbox/src/sw.ts` is written as an ES module (`export function
 initSW(...)`) — shipping its build output directly would be invalid in a

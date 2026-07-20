@@ -1,4 +1,4 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 
 // Same list `unenv/node/module` ships (`builtinModules`), kept in sync with
 // its https://github.com/unjs/unenv source rather than importing it, since

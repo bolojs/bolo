@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { VfsBus } from '@bolojs/vfs-bus';
+import { VfsBus } from '@bolojs/fs';
 import { createWasiTool } from '../src/wasi-executor.js';
 import { registerWasmTool, resolveWasmTool, createWasmRegistry, clearCache } from '../src/registry.js';
 

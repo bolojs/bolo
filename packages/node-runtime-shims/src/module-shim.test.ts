@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
+import { VfsBus } from "@bolojs/fs";
 import { createModuleShim } from "./module-shim.js";
 
 describe("createModuleShim", () => {

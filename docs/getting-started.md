@@ -35,8 +35,8 @@ Packages are not yet on npm. Link them from source using pnpm workspaces:
 // your-project/package.json
 {
   "dependencies": {
-    "@bolojs/runtime": "file:../bolo/packages/runtime",
-    "@bolojs/vfs-bus": "file:../bolo/packages/vfs-bus"
+    "bolojs": "file:../bolo/packages/runtime",
+    "@bolojs/fs": "file:../bolo/packages/vfs-bus"
   }
 }
 ```
@@ -46,10 +46,10 @@ Packages are not yet on npm. Link them from source using pnpm workspaces:
 The minimum wiring to run a script in the browser:
 
 ```ts
-import { VfsBus } from '@bolojs/vfs-bus';
-import { SWSandbox } from '@bolojs/sw-sandbox';
-import { PackageManager } from '@bolojs/npm';
-import { RuntimeWorker, IframeSandbox, ShellService } from '@bolojs/runtime';
+import { VfsBus } from '@bolojs/fs';
+import { SWSandbox } from '@bolojs/sandbox';
+import { PackageManager } from '@bolojs/pm';
+import { RuntimeWorker, IframeSandbox, ShellService } from 'bolojs';
 
 const vfs = new VfsBus();
 const swSandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });

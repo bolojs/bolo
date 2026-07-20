@@ -1,5 +1,5 @@
 {
-  "name": "@bolojs/npm",
+  "name": "@bolojs/pm",
   "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,7 +17,7 @@
     "semver": "^7.6.0"
   },
   "devDependencies": {
-    "@bolojs/vfs-bus": "workspace:*",
+    "@bolojs/fs": "workspace:*",
     "@types/semver": "^7.5.8",
     "memfs": "~4.56.11",
     "typescript": "^6.0.3",

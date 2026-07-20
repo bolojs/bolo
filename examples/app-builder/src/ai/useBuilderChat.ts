@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { streamText, stepCountIs, type ModelMessage } from "ai";
-import type { BrowserContainer } from "@bolojs/runtime";
+import type { BrowserContainer } from "bolojs";
 import { createContainerTools } from "../container/tools";
 import { getModel } from "./providers";
 

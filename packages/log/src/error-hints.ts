@@ -1,7 +1,7 @@
 /**
  * Error normalization + hint registry — shared across packages.
  *
- * Lives in @bolojs/log because it's a leaf dep that both @bolojs/runtime
+ * Lives in @bolojs/log because it's a leaf dep that both bolojs
  * and @bolojs/vite-server can consume without creating a circular dep
  * (runtime → vite-server → runtime).
  *
@@ -77,7 +77,7 @@ const HINTS: readonly HintRule[] = [
   {
     match: /Transform error:/i,
     hint:
-      "Module transform failed in @bolojs/wasm-registry. The underlying message is in " +
+      "Module transform failed in @bolojs/registry. The underlying message is in " +
       "the 500 body itself; window.__boloObsDrain() usually has the originating record.",
   },
   {

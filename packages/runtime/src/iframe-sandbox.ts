@@ -1,5 +1,5 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
-import { transformScript } from "@bolojs/wasm-registry";
+import type { VfsBus } from "@bolojs/fs";
+import { transformScript } from "@bolojs/registry";
 import { getLogger } from "@bolojs/log/browser";
 import type { SandboxBackend, SandboxRunResult } from "./sandbox-backend.js";
 

@@ -1,4 +1,4 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import { getLogger } from "@bolojs/log/browser";
 import { createFsFromVolume } from "memfs";
 import { parse, resolveGraph } from "@unjs/lockfile";

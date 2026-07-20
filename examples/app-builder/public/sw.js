@@ -1,5 +1,5 @@
 // Service worker for the bolo demo.
-// Implements the SWSandbox protocol from @bolojs/sw-sandbox.
+// Implements the SWSandbox protocol from @bolojs/sandbox.
 
 const pendingRequests = new Map();
 let mainPort = null;

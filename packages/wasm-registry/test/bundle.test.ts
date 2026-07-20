@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { VfsBus } from '@bolojs/vfs-bus';
+import { VfsBus } from '@bolojs/fs';
 import { bundleEntry, mapJsrSpecifier, transformScript } from '../src/bundle';
 
 const seed = (vfs: VfsBus, path: string, contents: string) => {

@@ -1,4 +1,4 @@
-import type { FileSystemTree } from "@bolojs/runtime";
+import type { FileSystemTree } from "bolojs";
 
 export const starterTree: FileSystemTree = {
   "package.json": {

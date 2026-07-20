@@ -77,7 +77,7 @@ export class SWSandbox {
             swError: { kind: string; source: string; message: string; stack?: string; ts: number };
           }
         ).swError;
-        // Push into the main-thread obs buffer installed by @bolojs/runtime's
+        // Push into the main-thread obs buffer installed by bolojs's
         // installMainRelay(). Cross-package bridge via globalThis avoids a
         // runtime -> sw-sandbox dep inversion.
         const push = (globalThis as { __boloObsPush?: (r: unknown) => void }).__boloObsPush;

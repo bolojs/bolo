@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
+import { VfsBus } from "@bolojs/fs";
 import { PackageManager } from "./package-manager.js";
 
 /**
@@ -13,7 +13,7 @@ import { PackageManager } from "./package-manager.js";
  */
 
 // Skip the test only when explicitly disabled. In offline environments, run:
-//   SKIP_NETWORK_TESTS=1 pnpm --filter @bolojs/npm test
+//   SKIP_NETWORK_TESTS=1 pnpm --filter @bolojs/pm test
 const SKIP_NETWORK_TESTS = process.env.SKIP_NETWORK_TESTS === "1";
 
 describe("e2e @e2e", () => {
@@ -49,7 +49,7 @@ describe("e2e @e2e", () => {
       expect(indexJs).toContain("module.exports");
 
       // 4. The CJS→ESM facade and import-map assertion are intentionally skipped
-      // here. The facade lives in the runtime/bundler layer, not in @bolojs/npm,
+      // here. The facade lives in the runtime/bundler layer, not in @bolojs/pm,
       // so importing from the memfs-backed VFS is not directly exercisable from
       // this package's unit tests.
     },

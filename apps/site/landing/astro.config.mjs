@@ -43,7 +43,7 @@ export default defineConfig({
               manualChunks(id) {
                 if (id.includes("quickjs-emscripten") || id.includes("@jitl/")) return "quickjs";
                 if (id.includes("memfs")) return "memfs";
-                if (id.includes("@bolojs/npm") || id.includes("@unjs/lockfile")) return "npm";
+                if (id.includes("@bolojs/pm") || id.includes("@unjs/lockfile")) return "npm";
               },
             },
           },

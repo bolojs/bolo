@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { configureBrowserLogging } from "@bolojs/log/browser";
 import type { BoloError } from "@bolojs/log/error-hints";
-import { installMainRelay, diagnoseRuntimeAsync } from "@bolojs/runtime";
+import { installMainRelay, diagnoseRuntimeAsync } from "bolojs";
 
 await configureBrowserLogging({
   customSink: (record) => {

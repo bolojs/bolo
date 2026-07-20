@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
-import { materializeVirtualStore } from "@bolojs/npm";
-import type { ResolvedGraph, ResolvedGraphPackage } from "@bolojs/npm";
+import { VfsBus } from "@bolojs/fs";
+import { materializeVirtualStore } from "@bolojs/pm";
+import type { ResolvedGraph, ResolvedGraphPackage } from "@bolojs/pm";
 import { bundleEntry } from "../src/bundle";
 
 const pkg = (overrides: Partial<ResolvedGraphPackage> = {}): ResolvedGraphPackage => ({

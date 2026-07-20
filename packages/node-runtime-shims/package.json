@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@bolojs/log": "workspace:*",
-    "@bolojs/vfs-bus": "workspace:*",
-    "@bolojs/sw-sandbox": "workspace:*",
+    "@bolojs/fs": "workspace:*",
+    "@bolojs/sandbox": "workspace:*",
     "@bolojs/node-web-shims": "workspace:*",
     "quickjs-emscripten-core": "^0.32.0",
     "@jitl/quickjs-wasmfile-release-sync": "^0.32.0"

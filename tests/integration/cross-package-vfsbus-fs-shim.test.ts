@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { VfsBus } from '@bolojs/vfs-bus';
+import { VfsBus } from '@bolojs/fs';
 import { createFsShim } from '@bolojs/node-runtime-shims';
 
 describe('Cross-package integration: VfsBus + node-runtime-shims fs shim', () => {

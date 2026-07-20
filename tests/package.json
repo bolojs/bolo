@@ -10,7 +10,7 @@
   "dependencies": {
     "@bolojs/log": "workspace:*",
     "@bolojs/node-runtime-shims": "workspace:*",
-    "@bolojs/vfs-bus": "workspace:*"
+    "@bolojs/fs": "workspace:*"
   },
   "devDependencies": {
     "elysia": "^1.4.29",

@@ -1,6 +1,6 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
+import type { VfsBus } from "@bolojs/fs";
 import type { Plugin } from "@rolldown/browser";
-import { buildEsmShUrl } from "@bolojs/npm";
+import { buildEsmShUrl } from "@bolojs/pm";
 
 declare global {
   // Set by a host app (see apps/compat-harness/src/main.ts) to load

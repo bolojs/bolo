@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
-import { VfsBus } from "@bolojs/vfs-bus";
-import type { PackageManager } from "@bolojs/npm";
-import type { SWSandbox } from "@bolojs/sw-sandbox";
+import { VfsBus } from "@bolojs/fs";
+import type { PackageManager } from "@bolojs/pm";
+import type { SWSandbox } from "@bolojs/sandbox";
 import { RuntimeBuilder } from "./runtime-builder.js";
 import { boot } from "./boot.js";
 import { BrowserContainer, type BrowserContainerDeps } from "./container.js";
 import type { ShellService } from "./shell-service.js";
 
-vi.mock("@bolojs/sw-sandbox", () => ({
+vi.mock("@bolojs/sandbox", () => ({
   SWSandbox: {
     create: vi.fn().mockResolvedValue({
       onFetch: vi.fn(),

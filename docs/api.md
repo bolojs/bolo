@@ -3,14 +3,14 @@ title: API Reference
 description: VfsBus, ShellService, SandboxBackend/IframeSandbox, RuntimeWorker, SWSandbox, and the demo contract.
 ---
 
-## VfsBus (`@bolojs/vfs-bus`)
+## VfsBus (`@bolojs/fs`)
 
 Single-owner observable virtual filesystem backed by memfs (hot layer) and OPFS (cold layer).
 The hot layer is authoritative; OPFS is a best-effort persistence cache that degrades silently.
 Files not accessed for 5 minutes are evicted from the hot layer (cold layer keeps a copy).
 
 ```ts
-import { VfsBus } from '@bolojs/vfs-bus';
+import { VfsBus } from '@bolojs/fs';
 const vfs = new VfsBus();
 ```
 
@@ -45,12 +45,12 @@ vfs.on('rename', ({ path }) => { /* file renamed */ });
 
 ---
 
-## ShellService (`@bolojs/runtime`)
+## ShellService (`bolojs`)
 
 Routes shell commands to the appropriate execution tier.
 
 ```ts
-import { ShellService } from '@bolojs/runtime';
+import { ShellService } from 'bolojs';
 
 const shell = new ShellService({ vfs, packageManager, runtimeWorker, sandbox });
 ```
@@ -92,7 +92,7 @@ Unknown commands return exit code `127`.
 
 ---
 
-## SandboxBackend / IframeSandbox (`@bolojs/runtime`)
+## SandboxBackend / IframeSandbox (`bolojs`)
 
 Untrusted-code execution is pluggable behind a small interface:
 
@@ -112,7 +112,7 @@ The default implementation is `IframeSandbox` — a cross-origin, opaque-origin 
 (browser-native isolation, no WASM runtime to load):
 
 ```ts
-import { IframeSandbox } from '@bolojs/runtime';
+import { IframeSandbox } from 'bolojs';
 const sandbox = new IframeSandbox();
 const { result, error } = await sandbox.run('2 + 2');
 // result: '4', error: undefined
@@ -124,16 +124,16 @@ const { result, error } = await sandbox.run('2 + 2');
 For hard, C-level memory/CPU/stack caps (not just origin isolation), implement
 `SandboxBackend` with the QuickJS-based `SandboxPool` from the separate
 [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox) package and
-pass it as `sandbox` — it's opt-in and not a dependency of `@bolojs/runtime`.
+pass it as `sandbox` — it's opt-in and not a dependency of `bolojs`.
 
 ---
 
-## RuntimeWorker (`@bolojs/runtime`)
+## RuntimeWorker (`bolojs`)
 
 Trusted code execution tier. Runs scripts in a dedicated Web Worker.
 
 ```ts
-import { RuntimeWorker } from '@bolojs/runtime';
+import { RuntimeWorker } from 'bolojs';
 const worker = new RuntimeWorker(vfs, sandbox);
 ```
 
@@ -157,12 +157,12 @@ A watchdog terminates the Worker if no heartbeat is received for >10 seconds.
 
 ---
 
-## SWSandbox (`@bolojs/sw-sandbox`)
+## SWSandbox (`@bolojs/sandbox`)
 
 ServiceWorker-based network proxy that intercepts requests to a virtual origin.
 
 ```ts
-import { SWSandbox } from '@bolojs/sw-sandbox';
+import { SWSandbox } from '@bolojs/sandbox';
 const sandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });
 ```
 

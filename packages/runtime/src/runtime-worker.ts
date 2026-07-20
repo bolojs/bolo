@@ -1,5 +1,5 @@
-import type { VfsBus } from "@bolojs/vfs-bus";
-import type { SWSandbox } from "@bolojs/sw-sandbox";
+import type { VfsBus } from "@bolojs/fs";
+import type { SWSandbox } from "@bolojs/sandbox";
 import { getLogger } from "@bolojs/log/browser";
 
 const logger = getLogger(["bolo", "runtime", "runtime-worker"]);
