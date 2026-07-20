@@ -5,16 +5,16 @@ description: Moving from WebContainers or Nodebox to bolo.
 
 ## Concept mapping
 
-| Concept | WebContainers | Nodebox | bolo |
+| Concept | bolo | WebContainers | Nodebox |
 |---------|--------------|---------|-------------------|
-| Boot | `WebContainer.boot()` | `new Nodebox({ iframe }); .connect()` | `boot()` |
-| Mount files | `.mount(files)` | `fs.init(fileMap)` | `vfs.writeFile(path, content)` per file, or `vfs.restore(snapshot)` for bulk |
-| Run command | `.spawn('node', ['file.js'])` | `shell.runCommand('node', ['file.js'])` | `shell.execute('runtime run file.js')` |
-| Streaming output | `process.output.pipeTo(writable)` | shell output stream | `execute(cmd, { stdout, stderr })` callbacks |
-| npm install | `.spawn('npm', ['install'])` | `shell.runCommand('npm', ['install'])` | `shell.execute('npm install')` |
-| Preview URL | `.on('server-ready', handler)` | port forwarding | `SWSandbox` virtual origin via iframe |
-| Untrusted sandbox | n/a | n/a | `shell.execute('agent run file.js')` (QuickJS tier) |
-| Trusted user code | Native (full Node.js) | Native (polyfills) | `shell.execute('runtime run file.js')` (V8 Web Worker) |
+| Boot | `boot()` | `WebContainer.boot()` | `new Nodebox({ iframe }); .connect()` |
+| Mount files | `vfs.writeFile(path, content)` per file, or `vfs.restore(snapshot)` for bulk | `.mount(files)` | `fs.init(fileMap)` |
+| Run command | `shell.execute('runtime run file.js')` | `.spawn('node', ['file.js'])` | `shell.runCommand('node', ['file.js'])` |
+| Streaming output | `execute(cmd, { stdout, stderr })` callbacks | `process.output.pipeTo(writable)` | shell output stream |
+| npm install | `shell.execute('npm install')` | `.spawn('npm', ['install'])` | `shell.runCommand('npm', ['install'])` |
+| Preview URL | `SWSandbox` virtual origin via iframe | `.on('server-ready', handler)` | port forwarding |
+| Untrusted sandbox | `shell.execute('agent run file.js')` (QuickJS tier) | n/a | n/a |
+| Trusted user code | `shell.execute('runtime run file.js')` (V8 Web Worker) | Native (full Node.js) | Native (polyfills) |
 
 ## Coming from WebContainers
 

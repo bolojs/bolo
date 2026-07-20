@@ -3,6 +3,20 @@ title: Getting Started
 description: Install bolo, boot a container, and deploy it correctly on the first try.
 ---
 
+## Set up with an AI agent
+
+Paste this into your coding agent (Claude Code, Cursor, etc.) and it'll do the setup below for
+you, headers included:
+
+```
+Set up bolo (https://bolojs.dev) in this project. Read
+https://bolojs.dev/docs/llms.txt for the full docs, then install `bolojs`,
+boot a container, and configure the COOP/COEP/CORP headers it needs to run.
+```
+
+**Documentation for agents:** [bolojs.dev/docs/llms.txt](https://bolojs.dev/docs/llms.txt) is a
+machine-readable version of these docs, meant for exactly this.
+
 ## Prerequisites
 
 - Chrome 110+ (required for OPFS persistence; Firefox and Safari work without persistence)
@@ -121,7 +135,7 @@ Write access to the VFS is blocked from inside the sandbox. If you need hard, C-
 memory/CPU/stack caps instead of origin isolation, use the QuickJS-based `SandboxPool`
 from the separate [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox)
 package: it implements `SandboxBackend`, so it drops in as the same `sandbox` dep. See
-[ADR-0001](/docs/adr/0001-two-tier-runtime/) for the design rationale.
+for the design rationale.
 
 ## Install packages
 

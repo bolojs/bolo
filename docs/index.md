@@ -8,6 +8,10 @@ bolo runs Node.js code client-side: no server, no VM. Boot a container, mount fi
 Check the [live compatibility dashboard](https://bolojs.dev/compat/) to see what runs today
 before you start.
 
+**Documentation for agents:** point your coding agent at
+[bolojs.dev/docs/llms.txt](https://bolojs.dev/docs/llms.txt) for a machine-readable version of
+these docs.
+
 - [Getting Started](/docs/getting-started/): install, boot, and deploy checklist
 - [Compatibility](/docs/compat/): what Node.js surface bolo supports
 - [API Reference](/docs/api/): VfsBus, ShellService, SandboxBackend, RuntimeWorker, SWSandbox

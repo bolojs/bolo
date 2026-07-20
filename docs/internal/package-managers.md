@@ -6,7 +6,7 @@ description: npm, yarn, pnpm, bun, JSR, and the browser-native package manager l
 Status of package installation and registry support in bolo,
 plus an exploration of which package managers and registries we can realistically
 support in a browser-only runtime. The architectural decision is recorded in
-[ADR-0004](/docs/adr/0004-package-manager-strategy/).
+The architectural decision is recorded in the project.
 
 ## Current state
 
@@ -200,7 +200,7 @@ snapshot-aligned" until a runnable suite exists. See
 
 ## Decision
 
-See [ADR-0004](/docs/adr/0004-package-manager-strategy/) for the formal record.
+See the project's architectural records for the formal decision.
 In short: keep npm-in-browser, add JSR via `npm.jsr.io`, add lockfile
 translation for yarn and pnpm, build the symlink table on memfs, and defer a
 browser-native package manager until install performance becomes a real pain
