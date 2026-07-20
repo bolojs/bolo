@@ -38,7 +38,7 @@ tests/
 
 - **This file** — project overview and conventions
 - **PRD, ADRs, contributing guide (internal)** — [`.agents/docs/`](.agents/docs/). Browse locally with `pnpm docs:internal`. PRD: `.agents/docs/PRD.md`. Architecture: `.agents/docs/ARCHITECTURE.md`. ADRs: `.agents/docs/adr/0001-...md`, ...0006. Shim contributing: `.agents/docs/contributing-shims.md`.
-- **End-user docs (public)** — Astro Starlight app, source [`docs/`](docs/) (symlinked into Starlight at `apps/site/docs/src/content/docs`). Live URL pattern `https://bolojs.dev/docs/<slug>/`. Slugs: `getting-started`, `api`, `alternatives`, `migration`, `compat`, `shim-coverage`, `package-managers`, `wasm-registry`, `index`.
+- **End-user docs (public)** — Astro Starlight app, source [`docs/`](docs/) (symlinked into Starlight at `apps/site/docs/src/content/docs`). Live URL pattern `https://bolojs.dev/docs/<slug>/`. Slugs: `getting-started`, `compat`, `api`, `migration`, `alternatives`, `index`. Internal exploration docs (not published) live in `docs/internal/`, e.g. `package-managers.md`.
 - **Implementation plan** — `.agents/plans/<date>-<purpose>.md` (ephemeral working plans)
 - **Nested AGENTS.md** — package/area-specific agent docs live next to their code (e.g. `packages/log/AGENTS.md`, `tests/AGENTS.md`); they load only when you work in that area.
 

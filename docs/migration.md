@@ -13,7 +13,7 @@ description: Moving from WebContainers or Nodebox to bolo.
 | Streaming output | `process.output.pipeTo(writable)` | shell output stream | `execute(cmd, { stdout, stderr })` callbacks |
 | npm install | `.spawn('npm', ['install'])` | `shell.runCommand('npm', ['install'])` | `shell.execute('npm install')` |
 | Preview URL | `.on('server-ready', handler)` | port forwarding | `SWSandbox` virtual origin via iframe |
-| Untrusted sandbox | — | — | `shell.execute('agent run file.js')` (QuickJS tier) |
+| Untrusted sandbox | n/a | n/a | `shell.execute('agent run file.js')` (QuickJS tier) |
 | Trusted user code | Native (full Node.js) | Native (polyfills) | `shell.execute('runtime run file.js')` (V8 Web Worker) |
 
 ## Coming from WebContainers
@@ -51,7 +51,7 @@ await proc.exit;
 ```
 
 **Key differences:**
-- `boot()` mirrors `@webcontainer/api`'s shape directly — same `mount()`/`spawn()`/`fs`/
+- `boot()` mirrors `@webcontainer/api`'s shape directly: same `mount()`/`spawn()`/`fs`/
   `on('server-ready')`/`teardown()` surface
 - `spawn()`'s `output` is a `ReadableStream<string>` (not bytes); `container.fs` exposes
   `readFile`/`writeFile`/`mkdir`/`rm`/`readdir`/`rename`/`watch` (`fs.promises`-style, no
@@ -106,6 +106,5 @@ These features exist in WebContainers or Nodebox but are not yet implemented:
 
 | Feature | Status |
 |---------|--------|
-| npm-published packages | Roadmap |
 | Full Node.js native package support (NAPI) | Not planned (WASM/JS only) |
 | `fork()` / `cluster` | Not planned |

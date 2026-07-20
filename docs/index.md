@@ -3,13 +3,13 @@ title: Documentation
 description: Everything you need to run Node.js in the browser.
 ---
 
-Welcome to the bolo documentation.
+bolo runs Node.js code client-side: no server, no VM. Boot a container, mount files, run them.
 
-- [Getting Started](/docs/getting-started/)
-- [API Reference](/docs/api/)
-- [Migration Guide](/docs/migration/)
-- [Node.js Compatibility](/docs/compat/)
-- [Shim Coverage](/docs/shim-coverage/)
-- [Package Manager Support](/docs/package-managers/)
-- [WASM Registry](/docs/wasm-registry/)
-- [Alternatives Comparison](/docs/alternatives/)
+Check the [live compatibility dashboard](https://bolojs.dev/compat/) to see what runs today
+before you start.
+
+- [Getting Started](/docs/getting-started/): install, boot, and deploy checklist
+- [Compatibility](/docs/compat/): what Node.js surface bolo supports
+- [API Reference](/docs/api/): VfsBus, ShellService, SandboxBackend, RuntimeWorker, SWSandbox
+- [Migration Guide](/docs/migration/): coming from WebContainers or Nodebox
+- [Alternatives Comparison](/docs/alternatives/): bolo vs. Node.js, WebContainers, AlmostNode

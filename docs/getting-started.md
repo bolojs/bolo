@@ -1,13 +1,57 @@
 ---
 title: Getting Started
-description: Clone the repo, run the demo, and embed bolo in your own project.
+description: Install bolo, boot a container, and deploy it correctly on the first try.
 ---
 
 ## Prerequisites
 
-- Node.js 20+
-- pnpm 10+
 - Chrome 110+ (required for OPFS persistence; Firefox and Safari work without persistence)
+- Node.js 20+ and pnpm 10+ (only if building from source)
+
+## Install
+
+```bash
+npm i bolojs
+```
+
+`boot()` alone is enough to get started. Sub-packages (`@bolojs/fs`, `@bolojs/sandbox`, `@bolojs/pm`,
+and friends) are pulled in automatically; import them directly only if you need manual, low-level
+wiring (see below).
+
+## Quickstart
+
+```ts
+import { boot } from 'bolojs';
+
+const container = await boot({ workdirName: '/home/web' });
+
+await container.mount({
+  'hello.js': { file: { contents: `console.log('hello from bolo')` } },
+});
+
+const proc = container.spawn('node', ['hello.js']);
+proc.output.pipeTo(new WritableStream({ write: (chunk) => console.log(chunk) }));
+await proc.exit;
+```
+
+## Production setup checklist
+
+`boot()` requires **cross-origin isolation**. Without it, the WASM bundler's `SharedArrayBuffer`
+transfer throws and worker fetches get blocked. Set these three headers on every response from
+your host, not just your app's entry document:
+
+```
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Resource-Policy: same-origin
+```
+
+- **COOP + COEP** make `self.crossOriginIsolated` true, which `SharedArrayBuffer` requires.
+- **CORP** is needed because COEP `require-corp` also applies to same-origin sub-resource fetches
+  (worker scripts included), and Chrome rejects those without an explicit CORP header.
+
+Missing any one of the three breaks the boot. `examples/app-builder/public/_headers` in the bolo
+repo is a working reference for a Cloudflare Pages-style deploy; copy its pattern for your host.
 
 ## Run the demo
 
@@ -27,23 +71,9 @@ runtime run /hello.js
 agent run /untrusted.js
 ```
 
-## Use packages in your own project
+## Manual wiring
 
-Packages are not yet on npm. Link them from source using pnpm workspaces:
-
-```jsonc
-// your-project/package.json
-{
-  "dependencies": {
-    "bolojs": "file:../bolo/packages/runtime",
-    "@bolojs/fs": "file:../bolo/packages/vfs-bus"
-  }
-}
-```
-
-## Basic example
-
-The minimum wiring to run a script in the browser:
+`boot()` covers most cases. For direct control over each tier, wire the primitives yourself:
 
 ```ts
 import { VfsBus } from '@bolojs/fs';
@@ -90,7 +120,7 @@ console.log(result.stdout); // 'processed: ...'
 Write access to the VFS is blocked from inside the sandbox. If you need hard, C-level
 memory/CPU/stack caps instead of origin isolation, use the QuickJS-based `SandboxPool`
 from the separate [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox)
-package — it implements `SandboxBackend`, so it drops in as the same `sandbox` dep. See
+package: it implements `SandboxBackend`, so it drops in as the same `sandbox` dep. See
 [ADR-0001](/docs/adr/0001-two-tier-runtime/) for the design rationale.
 
 ## Install packages
@@ -104,7 +134,7 @@ const result = await shell.execute('npm install lodash', {
 
 ## Next steps
 
-- [API reference](/docs/api/) — full API surface for all packages
-- [Alternatives comparison](/docs/alternatives/) — how bolo compares to WebContainers and Nodebox
-- [Migration guide](/docs/migration/) — coming from WebContainers or Nodebox
-- [ADRs](/docs/adr/) — architecture decisions
+- [Compatibility](/docs/compat/): what Node.js surface bolo supports, and the live dashboard
+- [API reference](/docs/api/): full API surface for all packages
+- [Migration guide](/docs/migration/): coming from WebContainers or Nodebox
+- [Alternatives comparison](/docs/alternatives/): how bolo compares to Node.js and WebContainers

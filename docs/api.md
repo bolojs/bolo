@@ -3,6 +3,9 @@ title: API Reference
 description: VfsBus, ShellService, SandboxBackend/IframeSandbox, RuntimeWorker, SWSandbox, and the demo contract.
 ---
 
+For which `node:*` modules are shimmed and to what degree, see the
+[module status table](/docs/compat/#module-status) on the Compatibility page.
+
 ## VfsBus (`@bolojs/fs`)
 
 Single-owner observable virtual filesystem backed by memfs (hot layer) and OPFS (cold layer).
@@ -40,8 +43,8 @@ vfs.on('rename', ({ path }) => { /* file renamed */ });
 
 ### Internal surfaces
 
-`vfs.vol` — the underlying `memfs` Volume (use for low-level operations).
-`vfs.hot` — `memfs` fs interface (sync methods available: `readFileSync`, `writeFileSync`, etc.).
+`vfs.vol`: the underlying `memfs` Volume (use for low-level operations).
+`vfs.hot`: `memfs` fs interface (sync methods available: `readFileSync`, `writeFileSync`, etc.).
 
 ---
 
@@ -108,7 +111,7 @@ interface SandboxBackend {
 }
 ```
 
-The default implementation is `IframeSandbox` — a cross-origin, opaque-origin iframe
+The default implementation is `IframeSandbox`: a cross-origin, opaque-origin iframe
 (browser-native isolation, no WASM runtime to load):
 
 ```ts
@@ -124,7 +127,7 @@ const { result, error } = await sandbox.run('2 + 2');
 For hard, C-level memory/CPU/stack caps (not just origin isolation), implement
 `SandboxBackend` with the QuickJS-based `SandboxPool` from the separate
 [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox) package and
-pass it as `sandbox` — it's opt-in and not a dependency of `bolojs`.
+pass it as `sandbox`: it's opt-in and not a dependency of `bolojs`.
 
 ---
 
@@ -188,7 +191,35 @@ Attach a `Map<string, unknown>` of sandbox policies. Used by `@bolojs/sandbox-po
 
 ---
 
-## Extension points (`@bolojs/node-runtime-shims`)
+## Extending bolo
+
+Something you need isn't supported yet? Check the [live compatibility dashboard](https://bolojs.dev/compat/)
+first, then extend through one of these seams instead of forking.
+
+### Bundler tools (`@bolojs/registry`)
+
+`registerWasmTool()` registers additional native-binary-to-WASM tools (formatters, linters, other
+transpilers) behind the same lazy-load dispatcher bolo uses for its own bundler:
+
+```ts
+import { registerWasmTool, resolveWasmTool } from '@bolojs/registry';
+
+registerWasmTool('my-tool', async () => {
+  const mod = await import('my-wasm-tool');
+  return {
+    async run(args, stdin) {
+      const result = await mod.compile(args.join(' '));
+      return { stdout: result.output, stderr: result.errors, exitCode: 0 };
+    },
+  };
+});
+
+const tool = await resolveWasmTool('my-tool');
+```
+
+Unregistered commands fall through to `ShellService`.
+
+### Runtime shims (`@bolojs/node-runtime-shims`)
 
 Some Node.js features need capabilities the browser can't provide natively. Instead of
 blocking these forever, `createLiveShimRegistry` exposes backend hooks:

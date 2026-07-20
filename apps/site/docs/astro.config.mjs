@@ -20,12 +20,9 @@ export default defineConfig({
       plugins: [starlightLlmsTxt()],
       sidebar: [
         { label: 'Getting Started', link: '/getting-started/' },
+        { label: 'Compatibility', link: '/compat/' },
         { label: 'API Reference', link: '/api/' },
         { label: 'Migration Guide', link: '/migration/' },
-        { label: 'Node.js Compatibility', link: '/compat/' },
-        { label: 'Shim Coverage', link: '/shim-coverage/' },
-        { label: 'Package Manager Support', link: '/package-managers/' },
-        { label: 'WASM Registry', link: '/wasm-registry/' },
         { label: 'Alternatives Comparison', link: '/alternatives/' },
       ],
     }),
