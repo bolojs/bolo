@@ -16,9 +16,14 @@
     "docs:internal": "docmd dev --cwd .agents",
     "docs:internal:build": "docmd build --cwd .agents",
     "compat:refresh": "bash apps/compat-harness/bin/run-local.sh",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build --filter='!@bolojs/compat-harness' && changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.1",
     "@docmd/core": "^0.8.12",
     "@playwright/cli": "^0.1.17",
     "@types/node": "^26.1.1",
