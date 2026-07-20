@@ -76,18 +76,27 @@ const ConfigDialog: Component<Props> = (props) => {
     });
   };
 
-  let ref: HTMLDialogElement | undefined;
-  // Wire the open prop to <dialog>.showModal() / .close().
+  // Track the dialog element via a signal so the effect re-runs after
+  // mount (when the JSX ref callback fires), not just on prop changes.
+  const [dialogRef, setDialogRef] = createSignal<HTMLDialogElement | undefined>(undefined);
+
+  // Open/close the native <dialog> element. Using a callback ref
+  // (setDialogRef) as the bridge ensures this effect re-runs AFTER
+  // the dialog is in the DOM — avoiding the race where the effect fires
+  // before the JSX ref has assigned the element.
   createEffect(() => {
-    if (!ref) return;
-    if (props.open && !ref.open) ref.showModal();
-    else if (!props.open && ref.open) ref.close();
+    const ref = dialogRef();
+    if (props.open) {
+      if (ref && !ref.open) ref.showModal();
+    } else {
+      if (ref?.open) ref.close();
+    }
   });
 
   return (
     <Show when={props.open}>
       <dialog
-        ref={ref}
+        ref={setDialogRef}
         class="backdrop:bg-black/50 open:animate-in open:fade-in-0 open:zoom-in-95 rounded-lg border border-border bg-background p-6 shadow-lg max-w-lg w-full"
         onClose={() => props.onCancel?.()}
         onCancel={(e) => {
