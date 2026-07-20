@@ -1,6 +1,7 @@
 {
   "name": "@bolojs/pm",
   "version": "0.2.0",
+  "description": "Browser-native npm package installer — registry resolve + tarball extract, no server required.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,6 +25,18 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/npm"
+  },
+  "homepage": "https://bolojs.dev/docs/api/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=24.0.0"
   }

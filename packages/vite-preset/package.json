@@ -1,6 +1,7 @@
 {
   "name": "@bolojs/vite-preset",
   "version": "0.1.0",
+  "description": "Vite preset that wires node:* polyfills and the crossOriginIsolated headers apps embedding bolo need.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,6 +32,18 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/vite-preset"
+  },
+  "homepage": "https://bolojs.dev/docs/getting-started/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=24.0.0"
   }

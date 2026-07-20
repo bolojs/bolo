@@ -1,6 +1,7 @@
 {
   "name": "bolojs",
   "version": "0.2.0",
+  "description": "Core container API for bolo — boot a browser-native Node.js runtime with a pluggable sandbox backend.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -30,6 +31,15 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/runtime"
+  },
+  "homepage": "https://bolojs.dev/docs/getting-started/",
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=24.0.0"
   }

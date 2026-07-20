@@ -1,6 +1,7 @@
 {
   "name": "@bolojs/node-web-shims",
   "version": "0.2.0",
+  "description": "node:* to Web API shims (crypto, stream, buffer, path, url, events, os, http, worker_threads); usable standalone.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,6 +36,18 @@
     "unenv": "2.0.0-rc.24"
   },
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/node-web-shims"
+  },
+  "homepage": "https://bolojs.dev/docs/api/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=24.0.0"
   }
