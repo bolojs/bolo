@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/pm",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "Browser-native npm package installer — registry resolve + tarball extract, no server required.",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@bolojs/log": "workspace:*",
-    "@unjs/lockfile": "workspace:*",
+    "@bolojs/lockfile": "workspace:*",
     "semver": "^7.6.0"
   },
   "devDependencies": {
@@ -25,6 +25,7 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bolojs/bolo.git",

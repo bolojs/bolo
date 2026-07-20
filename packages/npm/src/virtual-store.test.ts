@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { VfsBus } from "@bolojs/fs";
-import type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
+import type { ResolvedGraph, ResolvedGraphPackage } from "@bolojs/lockfile";
 import { materializeVirtualStore } from "./virtual-store.js";
 
 const pkg = (overrides: Partial<ResolvedGraphPackage> = {}): ResolvedGraphPackage => ({
