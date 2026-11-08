@@ -12,8 +12,8 @@ Every package and API lands in one of four tiers. The tier determines how much (
 support is required.
 
 - **T1: Web-Standard**: no shims, 100% coverage today.
-- **T2: WinterTC Minimum**: no shims, ~90% coverage today.
-- **T3: Node-API via shims**: shims required, ~85 to 90% coverage.
+- **T2: WinterTC Minimum**: no shims. Coverage not yet measured by the fixed scorer.
+- **T3: Node-API via shims**: shims required. Measured 2026-11-08 with the fixed scorer: 9 of 98 Node core tests pass (subset pinned to Node 22.0.0) and 56 of 111 probed npm packages pass.
 - **T4: Unsupported**: intentionally absent.
 
 ### T1: Web-Standard
@@ -32,7 +32,7 @@ runtime agrees to provide: `fetch`, full Streams API, `TextEncoder`/`TextDecoder
 `URL`/`URLPattern`, `CompressionStream`, `Blob`/`File`, WebCrypto, `WebAssembly.*`, `setTimeout`,
 `queueMicrotask`, `structuredClone`, MessageChannel, and the Event/EventTarget family.
 
-~90% coverage via native Web APIs plus `@bolojs/node-web-shims`. Known gaps: `navigator.userAgent`
+Coverage via native Web APIs plus `@bolojs/node-web-shims`. Known gaps: `navigator.userAgent`
 is not wired, and `PromiseRejectionEvent`/`onunhandledrejection`/`onrejectionhandled` are not
 wired. Note the official WinterTC test suite (a WPT subset) is not yet published, so any
 compliance claim should be hedged as "ECMA-429 2025 snapshot-aligned" until a runnable suite
@@ -47,7 +47,7 @@ Packages that import `node:*` builtins. We provide 28 builtins through two layer
 `@bolojs/node-web-shims` (unenv-backed Web API bridges) and `@bolojs/node-runtime-shims`
 (runtime-backed factories for `fs`, `child_process`, `process`, `module`, `http`, `net`).
 
-~85 to 90% coverage of real-world npm surface. The majority of mainstream npm packages that do not
+56 of 111 probed npm packages pass the install-and-run probe (2026-11-08). The majority of mainstream npm packages that do not
 depend on raw sockets, native addons, or server-only clustering run here.
 
 #### Module status
