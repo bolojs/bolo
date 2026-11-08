@@ -40,6 +40,7 @@ const ESM_SH_URL = /https?:\/\/esm\.sh\/([^\s'"\\)]+)/g;
 const IMPORT_SPECIFIER = /\b(?:from|import)\s*(?:\(\s*)?['"]([^'"\n]+)['"]/g;
 const PASS_MARKER = /^PASS[ \t\r]*$/m;
 const SKIP_MARKER = /\bskip\b/i;
+export const DEFAULT_PACKAGE_TIMEOUT_MS = 60_000;
 
 /** Splits `lodash@4.17.21/fp` or `@scope/name@1/sub` into name, version and subpath. */
 const specifierParts = (raw: string): SpecifierParts => {
@@ -153,11 +154,18 @@ export class PackageMatrixRunner {
   private readonly packageTimeoutMs: number;
   private readonly isolation: "fresh-boot" | "shared";
 
-  constructor(options: { packageTimeoutMs?: number; isolation?: "fresh-boot" | "shared" } = {}) {
-    this.packageTimeoutMs = options.packageTimeoutMs ?? 180_000;
+  constructor(
+    options: {
+      packageTimeoutMs?: number;
+      isolation?: "fresh-boot" | "shared";
+      harness?: CompatHarness;
+      matrix?: PackageMatrix;
+    } = {},
+  ) {
+    this.packageTimeoutMs = options.packageTimeoutMs ?? DEFAULT_PACKAGE_TIMEOUT_MS;
     this.isolation = options.isolation ?? "fresh-boot";
-    this.matrix = packageMatrix as PackageMatrix;
-    this.harness = window.__compatHarness;
+    this.matrix = options.matrix ?? (packageMatrix as PackageMatrix);
+    this.harness = options.harness ?? window.__compatHarness;
   }
 
   async boot(): Promise<void> {
@@ -174,36 +182,17 @@ export class PackageMatrixRunner {
 
   private async runOne(pkg: PackageEntry): Promise<PackageResult> {
     const start = performance.now();
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      if (this.isolation === "fresh-boot") await this.reboot();
-
-      const source = buildProbeSource(pkg);
-      const specs = extractInstallSpecs(source);
-      const path = `/probe/${pkg.name}.mjs`;
-
-      let timer: ReturnType<typeof setTimeout> | undefined;
       const outcome = await Promise.race([
-        (async (): Promise<{ phase: "install" | "probe"; exitCode: number; output: string }> => {
-          if (specs.length > 0) {
-            const install = await this.harness.install(specs);
-            if (install.exitCode !== 0) {
-              return { phase: "install", exitCode: install.exitCode, output: install.output };
-            }
-          }
-          await this.harness.write(path, source);
-          const probe = await this.harness.exec(path);
-          return { phase: "probe", exitCode: probe.exitCode, output: probe.output };
-        })(),
+        this.runPackage(pkg),
         new Promise<"timeout">((resolve) => {
           timer = setTimeout(() => resolve("timeout"), this.packageTimeoutMs);
         }),
       ]);
-      clearTimeout(timer);
       const duration = performance.now() - start;
 
       if (outcome === "timeout") {
-        // Same reasoning as NodeTestRunner.runOne: a wedged container cannot be
-        // reclaimed on the main thread, so the next package gets a fresh boot.
         return {
           name: pkg.name,
           class: pkg.class,
@@ -242,7 +231,30 @@ export class PackageMatrixRunner {
         error: err instanceof Error ? err.message : String(err),
         duration: performance.now() - start,
       };
+    } finally {
+      clearTimeout(timer);
     }
+  }
+
+  private async runPackage(
+    pkg: PackageEntry,
+  ): Promise<{ phase: "install" | "probe"; exitCode: number; output: string }> {
+    if (this.isolation === "fresh-boot") await this.reboot();
+    else if (!this.harness.ready) await this.harness.boot();
+
+    const source = buildProbeSource(pkg);
+    const specs = extractInstallSpecs(source);
+    const path = `/probe/${pkg.name}.mjs`;
+
+    if (specs.length > 0) {
+      const install = await this.harness.install(specs);
+      if (install.exitCode !== 0) {
+        return { phase: "install", exitCode: install.exitCode, output: install.output };
+      }
+    }
+    await this.harness.write(path, source);
+    const probe = await this.harness.exec(path);
+    return { phase: "probe", exitCode: probe.exitCode, output: probe.output };
   }
 
   private async reboot(): Promise<void> {

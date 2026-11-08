@@ -3,10 +3,91 @@ import {
   bareSpecifierToInstall,
   buildProbeSource,
   classifyProbe,
+  DEFAULT_PACKAGE_TIMEOUT_MS,
   esmShUrlToSpecifier,
   extractInstallSpecs,
+  PackageMatrixRunner,
   rewriteEsmImports,
+  type PackageMatrix,
 } from "../../apps/compat-harness/src/package-runner.ts";
+import type { CompatHarness } from "../../apps/compat-harness/src/main.ts";
+
+const createHarness = (
+  options: {
+    boot?: () => Promise<void>;
+    install?: () => Promise<{ exitCode: number; output: string }>;
+  } = {},
+): CompatHarness => ({
+  ready: false,
+  boot: async () => {
+    await options.boot?.();
+  },
+  write: async () => {},
+  exec: async () => ({ exitCode: 0, output: "PASS\n" }),
+  install: async () => (await options.install?.()) ?? { exitCode: 0, output: "" },
+  run: async () => ({ exitCode: 0, output: "" }),
+  teardown: async () => {},
+});
+
+const testMatrix: PackageMatrix = {
+  version: "test",
+  packages: [
+    { name: "first", class: "test", bind: "import x from 'first'", probe: "x" },
+    { name: "second", class: "test", bind: "import x from 'second'", probe: "x" },
+  ],
+};
+
+describe("PackageMatrixRunner timeouts", () => {
+  it("uses a 60 second per-package timeout by default", () => {
+    expect(DEFAULT_PACKAGE_TIMEOUT_MS).toBe(60_000);
+  });
+
+  it("records a boot timeout and continues with the next package", async () => {
+    let bootCalls = 0;
+    const harness = createHarness({
+      boot: async () => {
+        bootCalls += 1;
+        if (bootCalls === 1) await new Promise<void>(() => {});
+      },
+    });
+    const runner = new PackageMatrixRunner({
+      harness,
+      matrix: testMatrix,
+      packageTimeoutMs: 10,
+    });
+
+    const results = await runner.runAll();
+
+    expect(results.map((result) => [result.status, result.error])).toEqual([
+      ["fail", "TIMEOUT after 10ms"],
+      ["pass", undefined],
+    ]);
+    expect(bootCalls).toBe(2);
+  }, 1_000);
+
+  it("records an install timeout and continues with the next package", async () => {
+    let installCalls = 0;
+    const harness = createHarness({
+      install: async () => {
+        installCalls += 1;
+        if (installCalls === 1) return new Promise(() => {});
+        return { exitCode: 0, output: "" };
+      },
+    });
+    const runner = new PackageMatrixRunner({
+      harness,
+      matrix: testMatrix,
+      packageTimeoutMs: 10,
+    });
+
+    const results = await runner.runAll();
+
+    expect(results.map((result) => [result.status, result.error])).toEqual([
+      ["fail", "TIMEOUT after 10ms"],
+      ["pass", undefined],
+    ]);
+  });
+});
 
 describe("esmShUrlToSpecifier", () => {
   it("strips the origin and keeps a plain package name", () => {

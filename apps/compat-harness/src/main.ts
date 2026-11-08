@@ -148,7 +148,6 @@ window.__runNodeTests = async () => {
 
 window.__runPackageMatrix = async () => {
   const runner = new PackageMatrixRunner();
-  await runner.boot();
   const results = await runner.runAll();
   await runner.teardown();
   window.__packageResults = results;
