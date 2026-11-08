@@ -92,6 +92,11 @@ body {
   line-height: 1;
 }
 
+.stat-value--text {
+  font-size: clamp(1.25rem, 2.5vw, 1.875rem);
+  line-height: 1.15;
+}
+
 .stat-label {
   margin-top: 0.5rem;
   color: var(--muted);
@@ -411,7 +416,9 @@ body {
   font: inherit;
   color: transparent;
   position: relative;
-  transition: transform 0.1s ease, filter 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    filter 0.1s ease;
 }
 
 .cell:hover {
@@ -642,7 +649,9 @@ body {
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .search-command-shortcut.is-hidden {
@@ -754,6 +763,10 @@ body {
   background: var(--fail);
 }
 
+.search-command-dot.status-pending {
+  background: var(--unknown);
+}
+
 .search-command-dot.status-unknown {
   background: var(--unknown);
 }
@@ -815,7 +828,10 @@ body {
   cursor: pointer;
   margin-top: 0.75rem;
   background: transparent;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .search-command-expand-block .search-command-expand:hover {

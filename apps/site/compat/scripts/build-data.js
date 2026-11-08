@@ -1,229 +1,243 @@
-import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { isValidated, rowStatus, PENDING_STATUS, PENDING_NOTE } from "./status.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const sourceDir = join(__dirname, '..', '..', 'landing', 'public', 'results');
-const outDir = join(dirname(__dirname), 'src', 'data');
-const outFile = join(outDir, 'packages.json');
-const latestFile = join(outDir, 'latest.json');
-const historyFile = join(outDir, 'history.json');
+const sourceDir = join(__dirname, "..", "..", "landing", "public", "results");
+const outDir = join(dirname(__dirname), "src", "data");
+const outFile = join(outDir, "packages.json");
+const latestFile = join(outDir, "latest.json");
+const historyFile = join(outDir, "history.json");
 
-const nodeCompat = JSON.parse(readFileSync(join(sourceDir, 'node-compat.json'), 'utf8'));
-const packageMatrix = JSON.parse(readFileSync(join(sourceDir, 'package-matrix.json'), 'utf8'));
-const tools = JSON.parse(readFileSync(join(sourceDir, 'tools.json'), 'utf8'));
+const nodeCompat = JSON.parse(readFileSync(join(sourceDir, "node-compat.json"), "utf8"));
+const packageMatrix = JSON.parse(readFileSync(join(sourceDir, "package-matrix.json"), "utf8"));
+const tools = JSON.parse(readFileSync(join(sourceDir, "tools.json"), "utf8"));
+const validated = isValidated(nodeCompat, packageMatrix);
 
 const nodeMap = new Map(nodeCompat.modules.map((m) => [m.name, m]));
 const pkgMap = new Map(packageMatrix.packages.map((p) => [p.name, p]));
 const toolMap = new Map(tools.map((t) => [t.name, t]));
 
 const columns = [
-  { key: 'node24', label: 'Node 24 Krypton', measured: false },
-  { key: 'node22', label: 'Node 22 Jod', measured: false },
-  { key: 'deno', label: 'Deno 2', measured: false },
-  { key: 'bun', label: 'Bun 1.x', measured: false },
-  { key: 'browser', label: 'Browser (latest)', measured: true },
-  { key: 'safari', label: 'Safari (latest)', measured: false },
+  { key: "node24", label: "Node 24 Krypton", measured: false },
+  { key: "node22", label: "Node 22 Jod", measured: false },
+  { key: "deno", label: "Deno 2", measured: false },
+  { key: "bun", label: "Bun 1.x", measured: false },
+  { key: "browser", label: "Browser (latest)", measured: true },
+  { key: "safari", label: "Safari (latest)", measured: false },
 ];
 
 const categories = [
-  { key: 'http-clients', label: 'HTTP clients' },
-  { key: 'file-system', label: 'File system' },
-  { key: 'build-tools', label: 'Build tools' },
-  { key: 'bundlers', label: 'Bundlers' },
-  { key: 'testing', label: 'Testing' },
-  { key: 'http-servers', label: 'HTTP servers' },
-  { key: 'crypto', label: 'Crypto' },
-  { key: 'templates', label: 'Templates' },
-  { key: 'node-core', label: 'Node core APIs' },
+  { key: "http-clients", label: "HTTP clients" },
+  { key: "file-system", label: "File system" },
+  { key: "build-tools", label: "Build tools" },
+  { key: "bundlers", label: "Bundlers" },
+  { key: "testing", label: "Testing" },
+  { key: "http-servers", label: "HTTP servers" },
+  { key: "crypto", label: "Crypto" },
+  { key: "templates", label: "Templates" },
+  { key: "node-core", label: "Node core APIs" },
 ];
 
 const nodeCoreModules = [
-  'events',
-  'stream',
-  'buffer',
-  'crypto',
-  'path',
-  'url',
-  'querystring',
-  'os',
-  'util',
-  'assert',
-  'fs',
-  'http',
-  'process',
-  'timers',
-  'console',
-  'child_process',
-  'worker_threads',
-  'perf_hooks',
-  'net',
-  'dns',
+  "events",
+  "stream",
+  "buffer",
+  "crypto",
+  "path",
+  "url",
+  "querystring",
+  "os",
+  "util",
+  "assert",
+  "fs",
+  "http",
+  "process",
+  "timers",
+  "console",
+  "child_process",
+  "worker_threads",
+  "perf_hooks",
+  "net",
+  "dns",
 ];
 
 const rowsSpec = [
-  { name: 'fetch', category: 'http-clients' },
-  { name: 'axios', category: 'http-clients' },
-  { name: 'node-fetch', category: 'http-clients' },
-  { name: 'undici', category: 'http-clients' },
-  { name: 'got', category: 'http-clients' },
-  { name: 'ky', category: 'http-clients' },
-  { name: 'http-proxy-agent', category: 'http-clients' },
-  { name: 'form-data', category: 'http-clients' },
-  { name: 'fs-extra', category: 'file-system' },
-  { name: 'globby', category: 'file-system' },
-  { name: 'chokidar', category: 'file-system' },
-  { name: 'rimraf', category: 'file-system' },
-  { name: 'glob', category: 'file-system' },
-  { name: 'mkdirp', category: 'file-system' },
-  { name: 'del', category: 'file-system' },
-  { name: 'memfs', category: 'file-system' },
-  { name: 'esbuild', category: 'build-tools' },
-  { name: 'swc', category: 'build-tools' },
-  { name: 'tsc', category: 'build-tools' },
-  { name: 'sass', category: 'build-tools' },
-  { name: 'lightningcss', category: 'build-tools' },
-  { name: 'postcss', category: 'build-tools' },
-  { name: 'babel', category: 'build-tools' },
-  { name: 'sucrase', category: 'build-tools' },
-  { name: 'acorn', category: 'build-tools' },
-  { name: 'rollup', category: 'bundlers' },
-  { name: 'webpack', category: 'bundlers' },
-  { name: 'vite', category: 'bundlers' },
-  { name: 'parcel', category: 'bundlers' },
-  { name: 'rspack', category: 'bundlers' },
-  { name: 'turbo', category: 'bundlers' },
-  { name: 'vitest', category: 'testing' },
-  { name: 'jest', category: 'testing' },
-  { name: 'chai', category: 'testing' },
-  { name: 'sinon', category: 'testing' },
-  { name: 'dompurify', category: 'testing' },
-  { name: 'linkedom', category: 'testing' },
-  { name: 'express', category: 'http-servers' },
-  { name: 'fastify', category: 'http-servers' },
-  { name: 'h3', category: 'http-servers' },
-  { name: 'polka', category: 'http-servers' },
-  { name: 'hono', category: 'http-servers' },
-  { name: 'elysia', category: 'http-servers' },
-  { name: 'itty-router', category: 'http-servers' },
-  { name: 'koa', category: 'http-servers' },
-  { name: 'cors', category: 'http-servers' },
-  { name: 'helmet', category: 'http-servers' },
-  { name: 'morgan', category: 'http-servers' },
-  { name: 'compression', category: 'http-servers' },
-  { name: 'serve-static', category: 'http-servers' },
-  { name: 'cookie-parser', category: 'http-servers' },
-  { name: 'body-parser', category: 'http-servers' },
-  { name: 'pino', category: 'http-servers' },
-  { name: 'winston', category: 'http-servers' },
-  { name: 'ws', category: 'http-servers' },
-  { name: 'crypto-js', category: 'crypto' },
-  { name: 'bcrypt', category: 'crypto' },
-  { name: 'argon2', category: 'crypto' },
-  { name: 'sha.js', category: 'crypto' },
-  { name: 'hash.js', category: 'crypto' },
-  { name: 'md5', category: 'crypto' },
-  { name: 'create-hash', category: 'crypto' },
-  { name: 'jose', category: 'crypto' },
-  { name: 'jsonwebtoken', category: 'crypto' },
-  { name: 'pbkdf2', category: 'crypto' },
-  { name: 'handlebars', category: 'templates' },
-  { name: 'ejs', category: 'templates' },
-  { name: 'pug', category: 'templates' },
-  { name: 'marked', category: 'templates' },
-  { name: 'markdown-it', category: 'templates' },
-  { name: 'micromark', category: 'templates' },
-  { name: 'nunjucks', category: 'templates' },
-  { name: 'liquidjs', category: 'templates' },
-  { name: 'mustache', category: 'templates' },
-  { name: 'twig', category: 'templates' },
-  { name: 'zod', category: 'validation' },
-  { name: 'ajv', category: 'validation' },
-  { name: 'joi', category: 'validation' },
-  { name: 'valibot', category: 'validation' },
-  { name: 'yup', category: 'validation' },
-  { name: 'fast-json-stringify', category: 'validation' },
-  { name: 'superstruct', category: 'validation' },
-  { name: 'io-ts', category: 'validation' },
-  { name: 'uuid', category: 'utilities' },
-  { name: 'lodash', category: 'utilities' },
-  { name: 'chalk', category: 'utilities' },
-  { name: 'nanoid', category: 'utilities' },
-  { name: 'dotenv', category: 'utilities' },
-  { name: 'js-yaml', category: 'utilities' },
-  { name: 'json5', category: 'utilities' },
-  { name: 'semver', category: 'utilities' },
-  { name: 'ms', category: 'utilities' },
-  { name: 'debug', category: 'utilities' },
-  { name: 'deepmerge', category: 'utilities' },
-  { name: 'query-string', category: 'utilities' },
-  { name: 'fast-deep-equal', category: 'utilities' },
-  { name: 'change-case', category: 'utilities' },
-  { name: 'p-limit', category: 'utilities' },
-  { name: 'lru-cache', category: 'utilities' },
-  { name: 'date-fns', category: 'utilities' },
-  { name: 'dayjs', category: 'utilities' },
-  { name: 'luxon', category: 'utilities' },
-  { name: 'throttle-debounce', category: 'utilities' },
-  ...nodeCoreModules.map((name) => ({ name, category: 'node-core' })),
+  { name: "fetch", category: "http-clients" },
+  { name: "axios", category: "http-clients" },
+  { name: "node-fetch", category: "http-clients" },
+  { name: "undici", category: "http-clients" },
+  { name: "got", category: "http-clients" },
+  { name: "ky", category: "http-clients" },
+  { name: "http-proxy-agent", category: "http-clients" },
+  { name: "form-data", category: "http-clients" },
+  { name: "fs-extra", category: "file-system" },
+  { name: "globby", category: "file-system" },
+  { name: "chokidar", category: "file-system" },
+  { name: "rimraf", category: "file-system" },
+  { name: "glob", category: "file-system" },
+  { name: "mkdirp", category: "file-system" },
+  { name: "del", category: "file-system" },
+  { name: "memfs", category: "file-system" },
+  { name: "esbuild", category: "build-tools" },
+  { name: "swc", category: "build-tools" },
+  { name: "tsc", category: "build-tools" },
+  { name: "sass", category: "build-tools" },
+  { name: "lightningcss", category: "build-tools" },
+  { name: "postcss", category: "build-tools" },
+  { name: "babel", category: "build-tools" },
+  { name: "sucrase", category: "build-tools" },
+  { name: "acorn", category: "build-tools" },
+  { name: "rollup", category: "bundlers" },
+  { name: "webpack", category: "bundlers" },
+  { name: "vite", category: "bundlers" },
+  { name: "parcel", category: "bundlers" },
+  { name: "rspack", category: "bundlers" },
+  { name: "turbo", category: "bundlers" },
+  { name: "vitest", category: "testing" },
+  { name: "jest", category: "testing" },
+  { name: "chai", category: "testing" },
+  { name: "sinon", category: "testing" },
+  { name: "dompurify", category: "testing" },
+  { name: "linkedom", category: "testing" },
+  { name: "express", category: "http-servers" },
+  { name: "fastify", category: "http-servers" },
+  { name: "h3", category: "http-servers" },
+  { name: "polka", category: "http-servers" },
+  { name: "hono", category: "http-servers" },
+  { name: "elysia", category: "http-servers" },
+  { name: "itty-router", category: "http-servers" },
+  { name: "koa", category: "http-servers" },
+  { name: "cors", category: "http-servers" },
+  { name: "helmet", category: "http-servers" },
+  { name: "morgan", category: "http-servers" },
+  { name: "compression", category: "http-servers" },
+  { name: "serve-static", category: "http-servers" },
+  { name: "cookie-parser", category: "http-servers" },
+  { name: "body-parser", category: "http-servers" },
+  { name: "pino", category: "http-servers" },
+  { name: "winston", category: "http-servers" },
+  { name: "ws", category: "http-servers" },
+  { name: "crypto-js", category: "crypto" },
+  { name: "bcrypt", category: "crypto" },
+  { name: "argon2", category: "crypto" },
+  { name: "sha.js", category: "crypto" },
+  { name: "hash.js", category: "crypto" },
+  { name: "md5", category: "crypto" },
+  { name: "create-hash", category: "crypto" },
+  { name: "jose", category: "crypto" },
+  { name: "jsonwebtoken", category: "crypto" },
+  { name: "pbkdf2", category: "crypto" },
+  { name: "handlebars", category: "templates" },
+  { name: "ejs", category: "templates" },
+  { name: "pug", category: "templates" },
+  { name: "marked", category: "templates" },
+  { name: "markdown-it", category: "templates" },
+  { name: "micromark", category: "templates" },
+  { name: "nunjucks", category: "templates" },
+  { name: "liquidjs", category: "templates" },
+  { name: "mustache", category: "templates" },
+  { name: "twig", category: "templates" },
+  { name: "zod", category: "validation" },
+  { name: "ajv", category: "validation" },
+  { name: "joi", category: "validation" },
+  { name: "valibot", category: "validation" },
+  { name: "yup", category: "validation" },
+  { name: "fast-json-stringify", category: "validation" },
+  { name: "superstruct", category: "validation" },
+  { name: "io-ts", category: "validation" },
+  { name: "uuid", category: "utilities" },
+  { name: "lodash", category: "utilities" },
+  { name: "chalk", category: "utilities" },
+  { name: "nanoid", category: "utilities" },
+  { name: "dotenv", category: "utilities" },
+  { name: "js-yaml", category: "utilities" },
+  { name: "json5", category: "utilities" },
+  { name: "semver", category: "utilities" },
+  { name: "ms", category: "utilities" },
+  { name: "debug", category: "utilities" },
+  { name: "deepmerge", category: "utilities" },
+  { name: "query-string", category: "utilities" },
+  { name: "fast-deep-equal", category: "utilities" },
+  { name: "change-case", category: "utilities" },
+  { name: "p-limit", category: "utilities" },
+  { name: "lru-cache", category: "utilities" },
+  { name: "date-fns", category: "utilities" },
+  { name: "dayjs", category: "utilities" },
+  { name: "luxon", category: "utilities" },
+  { name: "throttle-debounce", category: "utilities" },
+  ...nodeCoreModules.map((name) => ({ name, category: "node-core" })),
 ];
 
 function cellFromStatus(status, source) {
   switch (status) {
-    case 'pass':
-      return { status: 'pass', note: source === 'tool' ? 'Browser ready' : 'Supported' };
-    case 'partial':
-      return { status: 'partial', note: source === 'tool' ? 'Limited browser support' : 'Partial support' };
-    case 'fail':
-      return { status: 'fail', note: source === 'tool' ? 'Not browser ready' : 'Not supported' };
+    case "pass":
+      return { status: "pass", note: source === "tool" ? "Browser ready" : "Supported" };
+    case "partial":
+      return {
+        status: "partial",
+        note: source === "tool" ? "Limited browser support" : "Partial support",
+      };
+    case "fail":
+      return { status: "fail", note: source === "tool" ? "Not browser ready" : "Not supported" };
+    case PENDING_STATUS:
+      return { status: PENDING_STATUS, note: PENDING_NOTE };
     default:
-      return { status: 'unknown', note: 'No data' };
+      return { status: "unknown", note: "No data" };
   }
 }
 
 function coreStatus(module) {
-  if (module.passed === module.total) return 'pass';
-  if (module.passed === 0) return 'fail';
-  return 'partial';
+  if (module.passed === module.total) return "pass";
+  if (module.passed === 0) return "fail";
+  return "partial";
 }
 
 function toolStatus(tool) {
-  if (tool.status === 'stable') return 'pass';
-  if (tool.status === 'beta' || tool.status === 'wip') return 'partial';
-  if (tool.status === 'none') return 'fail';
-  return 'unknown';
+  if (tool.status === "stable") return "pass";
+  if (tool.status === "beta" || tool.status === "wip") return "partial";
+  if (tool.status === "none") return "fail";
+  return "unknown";
 }
 
 function packageStatus(pkg) {
-  if (pkg.status === 'pass') return 'pass';
-  if (pkg.status === 'fail') return 'fail';
-  return 'unknown';
+  if (pkg.status === "pass") return "pass";
+  if (pkg.status === "fail") return "fail";
+  return "unknown";
 }
 
 function makeCells(status, source) {
   const cells = {};
   for (const col of columns) {
-    if (col.key === 'browser') {
+    if (col.key === "browser") {
       cells[col.key] = cellFromStatus(status, source);
     } else {
-      cells[col.key] = { status: 'unknown', note: 'Not measured' };
+      cells[col.key] = { status: "unknown", note: "Not measured" };
     }
   }
   return cells;
 }
 
-function makeDetails(row) {
-  const details = { features: [], knownIssues: [], links: [], raw: '' };
+function makeDetails(row, pending) {
+  const details = { features: [], knownIssues: [], links: [], raw: "" };
   const tool = toolMap.get(row.name);
   const pkg = pkgMap.get(row.name);
   const mod = nodeMap.get(row.name);
+
+  if (pending) {
+    details.features.push(PENDING_NOTE);
+    details.knownIssues.push("Awaiting regenerated harness results");
+    if (pkg) details.links.push(`https://www.npmjs.com/package/${pkg.name}`);
+    return details;
+  }
 
   if (tool) {
     if (tool.wasmPackage) details.features.push(`WASM package: ${tool.wasmPackage}`);
     if (tool.wasmTarget) details.features.push(`WASM target: ${tool.wasmTarget}`);
     details.features.push(`Browser ready: ${tool.browserReady}`);
-    if (tool.requiresSimd) details.features.push('Requires SIMD');
-    if (tool.requiresThreads) details.features.push('Requires threads');
+    if (tool.requiresSimd) details.features.push("Requires SIMD");
+    if (tool.requiresThreads) details.features.push("Requires threads");
     details.knownIssues.push(tool.notes);
     details.links.push(`https://www.npmjs.com/package/${tool.npm}`);
     details.raw = JSON.stringify(tool, null, 2);
@@ -235,9 +249,9 @@ function makeDetails(row) {
   } else if (mod) {
     details.features.push(`${mod.passed}/${mod.total} tests passed`);
     details.knownIssues.push(
-      ...mod.tests.filter((t) => t.status !== 'pass').map((t) => `${t.file}: ${t.error}`)
+      ...mod.tests.filter((t) => t.status !== "pass").map((t) => `${t.file}: ${t.error}`),
     );
-    if (details.knownIssues.length === 0) details.knownIssues = ['No known issues'];
+    if (details.knownIssues.length === 0) details.knownIssues = ["No known issues"];
     details.raw = JSON.stringify(mod.tests, null, 2);
   }
 
@@ -249,33 +263,35 @@ function makeRow(spec) {
   const pkg = pkgMap.get(spec.name);
   const mod = nodeMap.get(spec.name);
 
-  let status = 'unknown';
-  let source = 'unknown';
+  let status = "unknown";
+  let source = "unknown";
   let wasmOnly = false;
 
   if (tool) {
     status = toolStatus(tool);
-    source = 'tool';
+    source = "tool";
     wasmOnly = Boolean(tool.wasmPackage);
   } else if (pkg) {
     status = packageStatus(pkg);
-    source = 'package';
+    source = "package";
   } else if (mod) {
     status = coreStatus(mod);
-    source = 'core';
+    source = "core";
   }
+
+  status = rowStatus(validated, { tool, pkg, mod }, status);
 
   const categoryLabel = categories.find((c) => c.key === spec.category)?.label ?? spec.category;
 
   return {
-    id: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    id: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     name: spec.name,
     category: spec.category,
     categoryLabel,
-    description: '',
+    description: "",
     wasmOnly,
     cells: makeCells(status, source),
-    details: makeDetails(spec),
+    details: makeDetails(spec, status === PENDING_STATUS),
   };
 }
 
@@ -284,18 +300,18 @@ const rows = rowsSpec.map(makeRow);
 const output = {
   meta: {
     generatedAt: new Date().toISOString(),
-    source: 'apps/site/landing/public/results',
+    source: "apps/site/landing/public/results",
+    validated,
   },
   columns,
   categories,
   rows,
 };
 
-const STUB_RUN_URL =
-  'https://github.com/bolojs/bolo/actions/workflows/compat-harness.yml';
+const STUB_RUN_URL = "https://github.com/bolojs/bolo/actions/workflows/compat-harness.yml";
 
 function resolveRunUrl(id) {
-  const argIdx = process.argv.indexOf('--run-url');
+  const argIdx = process.argv.indexOf("--run-url");
   const argUrl = argIdx >= 0 ? process.argv[argIdx + 1] : undefined;
   if (argUrl) return argUrl;
   if (process.env.RUN_URL) return process.env.RUN_URL;
@@ -314,7 +330,7 @@ function writeJsonAtomic(filePath, data) {
 }
 
 function deterministicStatus(id, offset) {
-  const statuses = ['pass', 'partial', 'fail'];
+  const statuses = ["pass", "partial", "fail"];
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = (hash << 5) - hash + id.charCodeAt(i);
@@ -339,7 +355,7 @@ function seedHistory(id, entries) {
 }
 
 const today = new Date().toISOString().slice(0, 10);
-const history = existsSync(historyFile) ? JSON.parse(readFileSync(historyFile, 'utf8')) : {};
+const history = existsSync(historyFile) ? JSON.parse(readFileSync(historyFile, "utf8")) : {};
 const latest = {};
 
 for (const row of rows) {

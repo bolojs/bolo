@@ -1,4 +1,4 @@
-import data from '../data/packages.json';
+import data from "../data/packages.json";
 
 // ponytail: packages.json cells are inferred as a literal-keyed object, but
 // col.key is a runtime string keyed off the same columns — cast to a record.
@@ -16,7 +16,7 @@ export interface CategorySummary {
 const measuredColumns = data.columns.filter((col) => col.measured);
 
 function isSupported(status: string | undefined): boolean {
-  return status === 'pass' || status === 'partial';
+  return status === "pass" || status === "partial";
 }
 
 export function getHeadlineStat() {
@@ -44,9 +44,9 @@ export function getCategorySummaries(): CategorySummary[] {
     for (const row of rows) {
       for (const col of measuredColumns) {
         const status = (row.cells as CellMap)[col.key]?.status;
-        if (status === 'pass') pass += 1;
-        else if (status === 'partial') partial += 1;
-        else if (status === 'fail') fail += 1;
+        if (status === "pass") pass += 1;
+        else if (status === "partial") partial += 1;
+        else if (status === "fail") fail += 1;
       }
     }
     return { key: cat.key, label: cat.label, total: rows.length, pass, partial, fail };
@@ -59,4 +59,8 @@ export function getPackageCount() {
 
 export function getGeneratedAt() {
   return data.meta.generatedAt;
+}
+
+export function getValidated() {
+  return data.meta.validated === true;
 }
