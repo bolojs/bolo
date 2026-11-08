@@ -150,47 +150,37 @@ const makeSink = (results, seen, onResult) => async (result) => {
   await onResult(result);
 };
 
-/** The function body installed into the page as window.__boloPartialPush. */
-const PARTIAL_PUSH_SOURCE = () => {
-  window.__boloPartialPush = (result) => window.__boloPartialPushBinding(result);
-};
-
 /**
- * Opens (or reopens) the harness page, brings the container up, arms the
- * incremental-result channel and starts the matrix run.
+ * Brings the harness page up and starts the matrix run.
+ *
+ * The same page is reused across recoveries (a reload is `page.goto` again)
+ * so the page-scoped route that serves a filtered matrix keeps working: a
+ * route registered with `page.route` only applies to that page.
  *
  * Every page gets the same observability hooks (console, pageerror,
- * requestfailed). A wedged page is closed and replaced by a fresh one, so
- * the hooks must be attached here rather than once at startup.
+ * requestfailed). The hooks are attached once, on the page that is reused.
  */
-const startMatrixRun = async (context, url, skip, log) => {
-  const page = await context.newPage();
-  page.on("console", (msg) =>
-    log.info(`browser:${msg.type()}`, { text: msg.text().slice(0, 400) }),
-  );
-  page.on("pageerror", (err) =>
-    log.error("browser pageerror", { error: err.message.slice(0, 400) }),
-  );
-  page.on("requestfailed", (req) =>
-    log.error("browser requestfailed", { url: req.url(), error: req.failure()?.errorText }),
-  );
-  await page.goto(url, { timeout: LOAD_TIMEOUT });
-  await page.waitForFunction(() => typeof window.__compatHarness !== "undefined", undefined, {
-    timeout: LOAD_TIMEOUT,
+const startMatrixRun = async (page, url, skip, log, { reload = true } = {}) => {
+  if (reload) {
+    await page.goto(url, { timeout: LOAD_TIMEOUT });
+    await page.waitForFunction(() => typeof window.__compatHarness !== "undefined", undefined, {
+      timeout: LOAD_TIMEOUT,
+    });
+    await page.click("#bootBtn");
+    await page.waitForFunction(
+      () => document.getElementById("status")?.textContent === "ready",
+      undefined,
+      { timeout: LOAD_TIMEOUT },
+    );
+  }
+  await page.evaluate(() => {
+    window.__boloPartialPush = (result) => window.__boloPartialPushBinding(result);
   });
-  await page.click("#bootBtn");
-  await page.waitForFunction(
-    () => document.getElementById("status")?.textContent === "ready",
-    undefined,
-    { timeout: LOAD_TIMEOUT },
-  );
-  await page.evaluate(PARTIAL_PUSH_SOURCE);
   await page.evaluate((names) => {
     window.__packageSkip = names;
   }, skip);
   await page.click("#pkgBtn");
   log.info("package matrix started");
-  return page;
 };
 
 /**
@@ -205,16 +195,19 @@ const startMatrixRun = async (context, url, skip, log) => {
  * running, and when the page stops answering past the deadline it records
  * the package as a TIMEOUT failure, reloads the page and carries on.
  */
-const runPackageMatrix = async ({ context, url, skip, onResult, log }) => {
+const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => {
   const results = [];
   const seen = new Set();
   const sink = makeSink(results, seen, onResult);
   // exposeBinding installs window.__boloPartialPushBinding on every page of
-  // the context, so a page reopened after a hang keeps the same channel.
+  // the context, so a reloaded page keeps the same channel.
   await context.exposeBinding("__boloPartialPushBinding", async (_source, result) => {
     await sink(result);
   });
-  let page = await startMatrixRun(context, url, skip, log);
+  // The page is already booted (the canaries ran on it): start the matrix
+  // without reloading, so the container that just passed the canaries is the
+  // one that runs the packages.
+  await startMatrixRun(page, url, skip, log, { reload: false });
 
   let currentPackage = null;
   let packageStartedAt = Date.now();
@@ -234,15 +227,13 @@ const runPackageMatrix = async ({ context, url, skip, onResult, log }) => {
 
   const recover = async (reason) => {
     log.error("reloading wedged harness page", { reason });
-    try {
-      await page.close({ runBeforeUnload: false });
-    } catch {
-      // a wedged page may refuse to close; the context outlives it
-    }
+    // The same page is reused: a page-scoped route (the filtered matrix) only
+    // applies to the page it was registered on, and the exposed binding
+    // survives a reload.
     // The reloaded page must not redo the packages that already finished:
     // they are in `seen` and would be re-run (and re-reported) otherwise.
     const doneNames = [...seen];
-    page = await startMatrixRun(context, url, doneNames, log);
+    await startMatrixRun(page, url, doneNames, log);
     currentPackage = null;
     packageStartedAt = Date.now();
   };
@@ -305,7 +296,6 @@ const runPackageMatrix = async ({ context, url, skip, onResult, log }) => {
     await sleep(DEFAULT_HEARTBEAT_INTERVAL_MS);
   }
 
-  await page.close({ runBeforeUnload: false }).catch(() => {});
   return results;
 };
 
@@ -393,9 +383,12 @@ const main = async () => {
         });
       }
 
+      const pendingNames = new Set(runPackages.map((p) => p.name));
       const fresh = await runPackageMatrix({
+        page,
         context,
         url: options.url,
+        skip: packages.filter((p) => !pendingNames.has(p.name)).map((p) => p.name),
         onResult: async (result) => {
           if (partialPath) await appendPartial(partialPath, result);
           const duration = result.duration ? `${Math.round(result.duration)}ms` : "n/a";
