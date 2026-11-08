@@ -1,0 +1,1124 @@
+[
+  {
+    "engine": "chromium",
+    "version": "149.0.7827.55",
+    "result": {
+      "controlled": true,
+      "moduleWorker": {
+        "status": "done",
+        "seen": [
+          "loaded"
+        ],
+        "report": {
+          "ok": [
+            "dyn-import",
+            "fetch:200"
+          ],
+          "err": [],
+          "progress": [
+            "loaded"
+          ]
+        }
+      },
+      "classicWorker": {
+        "status": "done",
+        "seen": [
+          "loaded",
+          "past-importScripts-synth",
+          "past-importScripts"
+        ],
+        "report": {
+          "ok": [
+            "importScripts-synth:true",
+            "importScripts",
+            "fetch:200",
+            "dyn-import"
+          ],
+          "err": [],
+          "progress": [
+            "loaded",
+            "past-importScripts-synth",
+            "past-importScripts"
+          ]
+        }
+      },
+      "swLog": [
+        {
+          "url": "/a/worker.mjs?w=module",
+          "dest": "worker",
+          "clientId": "71f9b635-3cca-4984-8855-c61c6c598c6a",
+          "client": "window"
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "dest": "worker",
+          "clientId": "8e1720f3-6fd4-41c1-838f-f8011e42b1a1",
+          "client": "passthrough"
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "dest": "script",
+          "clientId": "8e1720f3-6fd4-41c1-838f-f8011e42b1a1",
+          "client": "worker"
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "dest": "",
+          "clientId": "8e1720f3-6fd4-41c1-838f-f8011e42b1a1",
+          "client": "worker"
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "dest": "worker",
+          "clientId": "71f9b635-3cca-4984-8855-c61c6c598c6a",
+          "client": "window"
+        },
+        {
+          "url": "/a/synth-dep.js?w=imp-synth&synth=1",
+          "dest": "script",
+          "clientId": "b896148c-5111-402b-9a25-ce2fb2d1a9be",
+          "client": "synthetic"
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "dest": "script",
+          "clientId": "b896148c-5111-402b-9a25-ce2fb2d1a9be",
+          "client": "passthrough"
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "dest": "",
+          "clientId": "b896148c-5111-402b-9a25-ce2fb2d1a9be",
+          "client": "worker"
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "dest": "script",
+          "clientId": "b896148c-5111-402b-9a25-ce2fb2d1a9be",
+          "client": "worker"
+        }
+      ],
+      "error": null,
+      "netLog": [
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/index.html?nosw=1",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        }
+      ]
+    },
+    "verdicts": [
+      {
+        "kind": "worker script (module)",
+        "w": "module",
+        "intercepted": true,
+        "client": "window"
+      },
+      {
+        "kind": "static import in module worker",
+        "w": "static",
+        "intercepted": true,
+        "client": "passthrough"
+      },
+      {
+        "kind": "dynamic import() in module worker",
+        "w": "dyn",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "fetch() in module worker",
+        "w": "modfetch",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "worker script (classic)",
+        "w": "classic",
+        "intercepted": true,
+        "client": "window"
+      },
+      {
+        "kind": "importScripts in classic worker",
+        "w": "imp",
+        "intercepted": true,
+        "client": "synthetic"
+      },
+      {
+        "kind": "fetch() in classic worker",
+        "w": "cfetch",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "dynamic import() in classic worker",
+        "w": "cdyn",
+        "intercepted": true,
+        "client": "worker"
+      }
+    ]
+  },
+  {
+    "engine": "firefox",
+    "version": "151.0",
+    "result": {
+      "controlled": true,
+      "moduleWorker": {
+        "status": "done",
+        "seen": [
+          "loaded"
+        ],
+        "report": {
+          "ok": [
+            "dyn-import",
+            "fetch:200"
+          ],
+          "err": [],
+          "progress": [
+            "loaded"
+          ]
+        }
+      },
+      "classicWorker": {
+        "status": "done",
+        "seen": [
+          "loaded",
+          "past-importScripts-synth",
+          "past-importScripts"
+        ],
+        "report": {
+          "ok": [
+            "importScripts-synth:true",
+            "importScripts",
+            "dyn-import",
+            "fetch:200"
+          ],
+          "err": [],
+          "progress": [
+            "loaded",
+            "past-importScripts-synth",
+            "past-importScripts"
+          ]
+        }
+      },
+      "swLog": [
+        {
+          "url": "/a/worker.mjs?w=module",
+          "dest": "worker",
+          "clientId": "3a1c9034-c3cb-42f1-bc14-badf79dabeb7",
+          "client": "window"
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "dest": "worker",
+          "clientId": "43bf20ff-ad81-418d-a813-120e5926b8f7",
+          "client": "passthrough"
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "dest": "script",
+          "clientId": "43bf20ff-ad81-418d-a813-120e5926b8f7",
+          "client": "worker"
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "dest": "",
+          "clientId": "43bf20ff-ad81-418d-a813-120e5926b8f7",
+          "client": "worker"
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "dest": "worker",
+          "clientId": "3a1c9034-c3cb-42f1-bc14-badf79dabeb7",
+          "client": "window"
+        },
+        {
+          "url": "/a/synth-dep.js?w=imp-synth&synth=1",
+          "dest": "script",
+          "clientId": "9ee11468-acbb-4711-85d1-c7b31d181b77",
+          "client": "synthetic"
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "dest": "script",
+          "clientId": "9ee11468-acbb-4711-85d1-c7b31d181b77",
+          "client": "passthrough"
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "dest": "",
+          "clientId": "9ee11468-acbb-4711-85d1-c7b31d181b77",
+          "client": "worker"
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "dest": "script",
+          "clientId": "9ee11468-acbb-4711-85d1-c7b31d181b77",
+          "client": "worker"
+        }
+      ],
+      "error": null,
+      "netLog": [
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/index.html?nosw=1",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        }
+      ]
+    },
+    "verdicts": [
+      {
+        "kind": "worker script (module)",
+        "w": "module",
+        "intercepted": true,
+        "client": "window"
+      },
+      {
+        "kind": "static import in module worker",
+        "w": "static",
+        "intercepted": true,
+        "client": "passthrough"
+      },
+      {
+        "kind": "dynamic import() in module worker",
+        "w": "dyn",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "fetch() in module worker",
+        "w": "modfetch",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "worker script (classic)",
+        "w": "classic",
+        "intercepted": true,
+        "client": "window"
+      },
+      {
+        "kind": "importScripts in classic worker",
+        "w": "imp",
+        "intercepted": true,
+        "client": "synthetic"
+      },
+      {
+        "kind": "fetch() in classic worker",
+        "w": "cfetch",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "dynamic import() in classic worker",
+        "w": "cdyn",
+        "intercepted": true,
+        "client": "worker"
+      }
+    ]
+  },
+  {
+    "engine": "webkit",
+    "version": "26.5",
+    "result": {
+      "controlled": true,
+      "moduleWorker": {
+        "status": "done",
+        "seen": [
+          "loaded"
+        ],
+        "report": {
+          "ok": [
+            "dyn-import",
+            "fetch:200"
+          ],
+          "err": [],
+          "progress": [
+            "loaded"
+          ]
+        }
+      },
+      "classicWorker": {
+        "status": "done",
+        "seen": [
+          "loaded",
+          "past-importScripts-synth",
+          "past-importScripts"
+        ],
+        "report": {
+          "ok": [
+            "importScripts-synth:true",
+            "importScripts",
+            "fetch:200",
+            "dyn-import"
+          ],
+          "err": [],
+          "progress": [
+            "loaded",
+            "past-importScripts-synth",
+            "past-importScripts"
+          ]
+        }
+      },
+      "swLog": [
+        {
+          "url": "/a/worker.mjs?w=module",
+          "dest": "worker",
+          "clientId": "fe1f2e91-ed91-4c21-bc4b-10f3a7c38410",
+          "client": "window"
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "dest": "worker",
+          "clientId": "328bc53a-4252-4b2a-bfc2-4790a2feb647",
+          "client": "passthrough"
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "dest": "script",
+          "clientId": "328bc53a-4252-4b2a-bfc2-4790a2feb647",
+          "client": "worker"
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "dest": "",
+          "clientId": "328bc53a-4252-4b2a-bfc2-4790a2feb647",
+          "client": "worker"
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "dest": "worker",
+          "clientId": "fe1f2e91-ed91-4c21-bc4b-10f3a7c38410",
+          "client": "window"
+        },
+        {
+          "url": "/a/synth-dep.js?w=imp-synth&synth=1",
+          "dest": "script",
+          "clientId": "66f2da0a-944f-463b-b0bf-63e3f3cd08b5",
+          "client": "synthetic"
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "dest": "script",
+          "clientId": "66f2da0a-944f-463b-b0bf-63e3f3cd08b5",
+          "client": "passthrough"
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "dest": "",
+          "clientId": "66f2da0a-944f-463b-b0bf-63e3f3cd08b5",
+          "client": "worker"
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "dest": "script",
+          "clientId": "66f2da0a-944f-463b-b0bf-63e3f3cd08b5",
+          "client": "worker"
+        }
+      ],
+      "error": null,
+      "netLog": [
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/index.html?nosw=1",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        },
+        {
+          "url": "/a/worker.mjs?w=module",
+          "via": null
+        },
+        {
+          "url": "/a/static-dep.js?w=static&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=dyn",
+          "via": null
+        },
+        {
+          "url": "/a/data.json?w=modfetch",
+          "via": null
+        },
+        {
+          "url": "/a/worker-classic.js?w=classic",
+          "via": null
+        },
+        {
+          "url": "/a/classic-dep.js?w=imp&pt=1",
+          "via": null
+        },
+        {
+          "url": "/a/data2.json?w=cfetch",
+          "via": null
+        },
+        {
+          "url": "/a/dyn.js?w=cdyn",
+          "via": null
+        }
+      ]
+    },
+    "verdicts": [
+      {
+        "kind": "worker script (module)",
+        "w": "module",
+        "intercepted": true,
+        "client": "window"
+      },
+      {
+        "kind": "static import in module worker",
+        "w": "static",
+        "intercepted": true,
+        "client": "passthrough"
+      },
+      {
+        "kind": "dynamic import() in module worker",
+        "w": "dyn",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "fetch() in module worker",
+        "w": "modfetch",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "worker script (classic)",
+        "w": "classic",
+        "intercepted": true,
+        "client": "window"
+      },
+      {
+        "kind": "importScripts in classic worker",
+        "w": "imp",
+        "intercepted": true,
+        "client": "synthetic"
+      },
+      {
+        "kind": "fetch() in classic worker",
+        "w": "cfetch",
+        "intercepted": true,
+        "client": "worker"
+      },
+      {
+        "kind": "dynamic import() in classic worker",
+        "w": "cdyn",
+        "intercepted": true,
+        "client": "worker"
+      }
+    ]
+  }
+]
