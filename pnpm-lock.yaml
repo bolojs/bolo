@@ -79,7 +79,7 @@ importers:
         version: 1.59.1
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -131,7 +131,7 @@ importers:
         version: 19.2.3(@types/react@19.2.17)
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -280,7 +280,7 @@ importers:
         version: 3.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@typescript-eslint/parser@8.63.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0))
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -422,7 +422,7 @@ importers:
         version: 0.140.0
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -507,6 +507,9 @@ importers:
         specifier: ^0.32.0
         version: 0.32.0
     devDependencies:
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -731,6 +734,9 @@ importers:
       '@bolojs/node-runtime-shims':
         specifier: workspace:*
         version: link:../packages/node-runtime-shims
+      '@bolojs/node-web-shims':
+        specifier: workspace:*
+        version: link:../packages/node-web-shims
     devDependencies:
       elysia:
         specifier: ^1.4.29
@@ -738,12 +744,18 @@ importers:
       esbuild:
         specifier: ^0.28.1
         version: 0.28.1
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
       hono:
         specifier: ^4.12.28
         version: 4.12.28
       itty-router:
         specifier: ^5.0.24
         version: 5.0.24
+      unenv:
+        specifier: 2.0.0-rc.24
+        version: 2.0.0-rc.24(patch_hash=32bbf32bd7977f9060c55a25feae797d012e9f054a0330f1d0f4f33638ea489b)
 
   tests/e2e:
     dependencies:
@@ -5032,6 +5044,10 @@ packages:
   extendable-error@0.1.7:
     resolution: {integrity: sha512-UOiS2in6/Q0FK0R0q6UY9vYpQ21mr/Qn1KOnte7vsACuNJf514WvCCUHSRCPcgjPT2bAhNIJdlE6bVap1GKmeg==}
 
+  fast-check@4.10.2:
+    resolution: {integrity: sha512-iK2f+YrcmoeGqk6fA0ea2bptcu/itMIm4NfEozq6N25+aG6h7s5HZbB/k1aV7b5w5sFLMCbbtRUsTVR+BgC3xw==}
+    engines: {node: '>=12.17.0'}
+
   fast-decode-uri-component@1.0.1:
     resolution: {integrity: sha512-WKgKWg5eUxvRZGwW8FvfbaH7AXSh2cL+3j5fMGzUMCxWBJ3dV3a7Wz8y2f/uQ0e3B6WmodD3oS54jTQ9HVTIIg==}
 
@@ -6450,8 +6466,8 @@ packages:
   points-on-path@0.2.1:
     resolution: {integrity: sha512-25ClnWWuw7JbWZcgqY/gJ4FQWadKxGWk+3kR/7kD0tCaDtPPMj7oHu2ToLaVhfpnHrZzYby2w6tUA0eOIuUg8g==}
 
-  portless@0.15.4:
-    resolution: {integrity: sha512-tOxEsdlDGuPHO6DPkuK3c3mMV5ctXEgVFm53Sa8nfZ2RsRGTq4By424C6z5+JWfNbd3ktR5SOd1FJBOlB1Woqg==}
+  portless@0.16.0:
+    resolution: {integrity: sha512-qklO8w/OhLGLKYoeAi8HOFFnd2JQYenWzbev0rvDcyAZ3xDpMg9tqb/aKlz8qrd6NIEJB5bSiDxGURaq0+YLkA==}
     engines: {node: '>=24'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -6540,6 +6556,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pure-rand@8.4.2:
+    resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
 
   qs@6.15.1:
     resolution: {integrity: sha512-6YHEFRL9mfgcAvql/XhwTvf5jKcOiiupt2FiJxHkiX1z4j7WL8J/jRHYLluORvc1XxB5rV20KoeK00gVJamspg==}
@@ -12239,6 +12258,10 @@ snapshots:
 
   extendable-error@0.1.7: {}
 
+  fast-check@4.10.2:
+    dependencies:
+      pure-rand: 8.4.2
+
   fast-decode-uri-component@1.0.1: {}
 
   fast-deep-equal@3.1.3: {}
@@ -14108,7 +14131,7 @@ snapshots:
       path-data-parser: 0.1.0
       points-on-curve: 0.2.0
 
-  portless@0.15.4: {}
+  portless@0.16.0: {}
 
   possible-typed-array-names@1.1.0: {}
 
@@ -14206,6 +14229,8 @@ snapshots:
   punycode@1.4.1: {}
 
   punycode@2.3.1: {}
+
+  pure-rand@8.4.2: {}
 
   qs@6.15.1:
     dependencies:
