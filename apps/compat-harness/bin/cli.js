@@ -136,7 +136,10 @@ const main = async () => {
   }
 
   const LOAD_TIMEOUT = 120000;
-  const RUN_TIMEOUT = options.mode === "node-tests" ? 3_600_000 : 300000;
+  // Package mode boots a fresh container per package and installs through the
+  // container's own package manager — that takes orders of magnitude longer
+  // than the old esm.sh probes.
+  const RUN_TIMEOUT = 3_600_000;
 
   try {
     logger.info("navigating to", { url: options.url });

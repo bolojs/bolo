@@ -28,18 +28,23 @@ describe("compat-harness classify (mutation-testable pure functions)", () => {
   });
 
   describe("classifyPackageProbe", () => {
-    it("exit 0 is always pass", () => {
-      expect(classifyPackageProbe(0, "")).toBe("pass");
-      expect(classifyPackageProbe(0, "SKIP this is ignored")).toBe("pass");
+    it("pass requires exit 0 AND a PASS line", () => {
+      expect(classifyPackageProbe(0, "PASS\n")).toBe("pass");
+      expect(classifyPackageProbe(0, "log\nPASS  \nmore")).toBe("pass");
     });
-    it("non-zero exit with SKIP marker is skip", () => {
-      expect(classifyPackageProbe(1, "not supported: SKIP")).toBe("skip");
-      expect(classifyPackageProbe(1, "# skip arm64")).toBe("skip");
+    it("exit 0 without a PASS line is fail", () => {
+      expect(classifyPackageProbe(0, "")).toBe("fail");
+      expect(classifyPackageProbe(0, "not PASS here")).toBe("fail");
     });
-    it("non-zero exit without marker is fail", () => {
+    it("PASS line with non-zero exit is fail", () => {
+      expect(classifyPackageProbe(1, "PASS\n")).toBe("fail");
+    });
+    it("a skip marker classifies as skip", () => {
+      expect(classifyPackageProbe(1, "not supported: skip")).toBe("skip");
+    });
+    it("plain failure is fail", () => {
       expect(classifyPackageProbe(1, "probe failed")).toBe("fail");
-      expect(classifyPackageProbe(1, "")).toBe("fail");
-      expect(classifyPackageProbe(2, "skip lowercase only is not a marker")).toBe("fail");
+      expect(classifyPackageProbe(2, "")).toBe("fail");
     });
   });
 

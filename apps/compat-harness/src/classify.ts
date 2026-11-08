@@ -14,9 +14,16 @@ export const classifyNodeTest = (exitCode: number, output: string): RunStatus =>
   return exitCode === 0 ? "pass" : "fail";
 };
 
+const PASS_MARKER = /^PASS[ \t\r]*$/m;
+const SKIP_MARKER = /\bskip\b/i;
+/**
+ * A pass requires both a clean exit and the explicit PASS marker: exit 0 alone
+ * proved nothing under the old esm.sh matrix (falsy probes, swallowed throws).
+ * A skip marker classifies a skipped probe regardless of exit code.
+ */
 export const classifyPackageProbe = (exitCode: number, output: string): RunStatus => {
-  if (exitCode === 0) return "pass";
-  if (output.includes("SKIP") || output.includes("# skip")) return "skip";
+  if (exitCode === 0 && PASS_MARKER.test(output)) return "pass";
+  if (SKIP_MARKER.test(output)) return "skip";
   return "fail";
 };
 
