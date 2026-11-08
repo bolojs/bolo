@@ -79,7 +79,7 @@ importers:
         version: 1.59.1
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -106,7 +106,7 @@ importers:
         version: 1.1.19(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       astro:
         specifier: ^7.1.0
-        version: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
+        version: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
       phosphor-icons-astro:
         specifier: ^2.1.1-17042025
         version: 2.1.1-17042025
@@ -131,7 +131,7 @@ importers:
         version: 19.2.3(@types/react@19.2.17)
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -143,7 +143,7 @@ importers:
     dependencies:
       '@astrojs/starlight':
         specifier: ^0.41.3
-        version: 0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3)
+        version: 0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3)
       '@fontsource-variable/geist':
         specifier: ^5.2.9
         version: 5.2.9
@@ -152,10 +152,10 @@ importers:
         version: 5.2.8
       astro:
         specifier: ^7.1.0
-        version: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
+        version: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
       starlight-llms-txt:
         specifier: ^0.11.0
-        version: 0.11.0(@astrojs/markdown-satteri@0.3.4)(@astrojs/starlight@0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3))(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
+        version: 0.11.0(@astrojs/markdown-satteri@0.3.4)(@astrojs/starlight@0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3))(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.9
@@ -228,7 +228,7 @@ importers:
         version: 6.0.0
       astro:
         specifier: ^7.1.0
-        version: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
+        version: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
       bolojs:
         specifier: workspace:*
         version: link:../../../packages/runtime
@@ -277,10 +277,10 @@ importers:
         version: 10.7.0(jiti@2.7.0)
       eslint-plugin-astro:
         specifier: ^3.0.1
-        version: 3.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@typescript-eslint/parser@8.63.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0))
+        version: 3.0.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@typescript-eslint/parser@8.63.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0))
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -422,7 +422,7 @@ importers:
         version: 0.140.0
       portless:
         specifier: latest
-        version: 0.15.4
+        version: 0.16.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -719,6 +719,19 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@26.1.1)(happy-dom@20.10.6)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
+
+  spikes:
+    dependencies:
+      '@oxc-parser/binding-wasm32-wasip1':
+        specifier: 0.157.0
+        version: 0.157.0
+      '@rolldown/browser':
+        specifier: 1.1.5
+        version: 1.1.5(patch_hash=fa3f227c24a20aa2b37790c84292796f251cc54589135ab96232931680d9abf6)
+    devDependencies:
+      vite:
+        specifier: ^8.0.0
+        version: 8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
 
   tests:
     dependencies:
@@ -1384,14 +1397,23 @@ packages:
   '@emnapi/core@1.11.2':
     resolution: {integrity: sha512-TC8MkTuZUtcTSiFeuC0ksCh9QIJ5+F21MvZ4Wn4ORfYaFJ/0dsiudv5tVkejgwZlwQ39jL9WWDe2lz8x0WglOA==}
 
+  '@emnapi/core@2.0.0-alpha.6':
+    resolution: {integrity: sha512-MNVvMV7WtEJMgqaWJMvCyupK7Oi8sZctUIgPRZTsiS3cVvefk8DXPflOU3MSBddtj/rrYHygpYgpHDgwXnI3+w==}
+
   '@emnapi/runtime@1.11.1':
     resolution: {integrity: sha512-vgj7R3y3Wgx24IQaGPA/R6YFXLHVMOZ0uVEyIQPaWs+rd1AzfEMXlAC22FYwO1XkKR6NPsq7mUandH8oIRdZFw==}
 
   '@emnapi/runtime@1.11.2':
     resolution: {integrity: sha512-kyOl3X0DuTiT1h2ft8r2fYO8JYtU9a9Xis/zBSiGArNaagCOWx90N1k2wxp18czFDH+OgcWGb5ZP/XMt3dcyPA==}
 
+  '@emnapi/runtime@2.0.0-alpha.6':
+    resolution: {integrity: sha512-5ZR49ZsZ3cLvu5lkrVj6CMpHRgZjYz7XSlqK23GYYpyEqp749RVuIH0bEUKaGNghMh2pXRhIC3cnVrH28Y1j1Q==}
+
   '@emnapi/wasi-threads@1.2.2':
     resolution: {integrity: sha512-c95qOXkHdydNKhscBTebqEC1CVAZpyqOfVfBzQ1qgzyl3gfeldUjIggDbIZgDKsHLgnsM+igH7TJ/eAasaVuMA==}
+
+  '@emnapi/wasi-threads@2.2.0':
+    resolution: {integrity: sha512-JP7OYH38Q7+pyTAe14raZHLQIK7BDKbdwji+Xi3pcd/6QkJYQH3SX4wu6EplGrGJWRepoNzedfm0G3B9Z4e9Rw==}
 
   '@esbuild/aix-ppc64@0.28.1':
     resolution: {integrity: sha512-Svl7tq8k/08+p6CXPpRjQ1fKX+1odH/BQbb48fV6fj3CWHhsoIOoY87w1oHXm0qEpkIK3ZfVgp0hed3XBXzXMQ==}
@@ -2068,6 +2090,13 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
+  '@napi-rs/wasm-runtime@1.2.7':
+    resolution: {integrity: sha512-zJccwplOAbgfZju95IUHazLnx9RAPtPN2YGJXI6UbrgeaR9QfPjGrQL6ERkSAtnVCA4Q+83ApGyaX5zdpCaKkQ==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
+    peerDependencies:
+      '@emnapi/core': ^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3
+      '@emnapi/runtime': ^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3
+
   '@nodable/entities@2.2.0':
     resolution: {integrity: sha512-9uGyhaQavEUMC8AIddIjau4NsnsXhou+j5sBAGojCM1oxmQpVKTWR/9JxABD6UAv12vpIms55fPZKFQEhG6uBg==}
 
@@ -2092,6 +2121,10 @@ packages:
 
   '@oslojs/encoding@1.1.0':
     resolution: {integrity: sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ==}
+
+  '@oxc-parser/binding-wasm32-wasip1@0.157.0':
+    resolution: {integrity: sha512-Ioo7hbYCVC/KU8iUD6vzh4iyWDNc3JsLCGjcOt/NuHQYzemFzgdFiLMpzFI2NVh4oBaw0ImffJZLP0sWTm4XpQ==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
 
   '@oxc-project/types@0.139.0':
     resolution: {integrity: sha512-r9gHphtCs+1M7J0pw6Sn/hh/Wpa/iQrOOkrNAlVLF/gHq+/CJmHIWKKUUhdWjcD6CIa8idarspCsASiXCXvFUw==}
@@ -6139,11 +6172,6 @@ packages:
   muggle-string@0.4.1:
     resolution: {integrity: sha512-VNTrAak/KhO2i8dqqnqnAHOa3cYBwXEZe9h+D5h/1ZqFSTEFHdM65lR7RoIqq3tBBYavsOXV84NoHXZ0AkPyqQ==}
 
-  nanoid@3.3.11:
-    resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
   nanoid@3.3.16:
     resolution: {integrity: sha512-bzlKTyNJ7+LdGIIwy8ijFpIqEQIvafahV7eYykJ8Cvh42EdJeODoJ6gUJXpQJvej1BddH8OqTXZNE/KfbWAu8Q==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -6450,8 +6478,8 @@ packages:
   points-on-path@0.2.1:
     resolution: {integrity: sha512-25ClnWWuw7JbWZcgqY/gJ4FQWadKxGWk+3kR/7kD0tCaDtPPMj7oHu2ToLaVhfpnHrZzYby2w6tUA0eOIuUg8g==}
 
-  portless@0.15.4:
-    resolution: {integrity: sha512-tOxEsdlDGuPHO6DPkuK3c3mMV5ctXEgVFm53Sa8nfZ2RsRGTq4By424C6z5+JWfNbd3ktR5SOd1FJBOlB1Woqg==}
+  portless@0.16.0:
+    resolution: {integrity: sha512-qklO8w/OhLGLKYoeAi8HOFFnd2JQYenWzbev0rvDcyAZ3xDpMg9tqb/aKlz8qrd6NIEJB5bSiDxGURaq0+YLkA==}
     engines: {node: '>=24'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -6476,10 +6504,6 @@ packages:
 
   postcss@8.5.19:
     resolution: {integrity: sha512-Mz8SaolMd8nB+G13WkORcxQKHZ/NE4xXevtkJHVuG+guo9/wYKlIMTKAqGdEmYOXR2ijPjTYNHssizdaVSUNdQ==}
-    engines: {node: ^10 || ^12 || >=14}
-
-  postcss@8.5.9:
-    resolution: {integrity: sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw==}
     engines: {node: ^10 || ^12 || >=14}
 
   prebuild-install@7.1.3:
@@ -7801,9 +7825,9 @@ snapshots:
   '@astrojs/compiler-binding-linux-x64-musl@0.3.1':
     optional: true
 
-  '@astrojs/compiler-binding-wasm32-wasi@0.3.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
+  '@astrojs/compiler-binding-wasm32-wasi@0.3.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.1.6(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      '@napi-rs/wasm-runtime': 1.1.6(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -7815,7 +7839,7 @@ snapshots:
   '@astrojs/compiler-binding-win32-x64-msvc@0.3.1':
     optional: true
 
-  '@astrojs/compiler-binding@0.3.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
+  '@astrojs/compiler-binding@0.3.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)':
     optionalDependencies:
       '@astrojs/compiler-binding-darwin-arm64': 0.3.1
       '@astrojs/compiler-binding-darwin-x64': 0.3.1
@@ -7823,16 +7847,16 @@ snapshots:
       '@astrojs/compiler-binding-linux-arm64-musl': 0.3.1
       '@astrojs/compiler-binding-linux-x64-gnu': 0.3.1
       '@astrojs/compiler-binding-linux-x64-musl': 0.3.1
-      '@astrojs/compiler-binding-wasm32-wasi': 0.3.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      '@astrojs/compiler-binding-wasm32-wasi': 0.3.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)
       '@astrojs/compiler-binding-win32-arm64-msvc': 0.3.1
       '@astrojs/compiler-binding-win32-x64-msvc': 0.3.1
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@astrojs/compiler-rs@0.3.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
+  '@astrojs/compiler-rs@0.3.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)':
     dependencies:
-      '@astrojs/compiler-binding': 0.3.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      '@astrojs/compiler-binding': 0.3.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -7905,13 +7929,13 @@ snapshots:
       hast-util-from-html: 2.0.3
       satteri: 0.9.5
 
-  '@astrojs/mdx@7.0.3(@astrojs/markdown-satteri@0.3.4)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))':
+  '@astrojs/mdx@7.0.3(@astrojs/markdown-satteri@0.3.4)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))':
     dependencies:
       '@astrojs/internal-helpers': 0.10.1
       '@astrojs/markdown-remark': 7.2.1
       '@mdx-js/mdx': 3.1.1
       acorn: 8.16.0
-      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
+      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
       es-module-lexer: 2.3.1
       estree-util-visit: 2.0.0
       hast-util-to-html: 9.0.5
@@ -7984,17 +8008,17 @@ snapshots:
       - tsx
       - yaml
 
-  '@astrojs/starlight@0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3)':
+  '@astrojs/starlight@0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3)':
     dependencies:
       '@astrojs/markdown-satteri': 0.3.4
-      '@astrojs/mdx': 7.0.3(@astrojs/markdown-satteri@0.3.4)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
+      '@astrojs/mdx': 7.0.3(@astrojs/markdown-satteri@0.3.4)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
       '@astrojs/sitemap': 3.7.3
       '@pagefind/default-ui': 1.5.2
       '@types/hast': 3.0.5
       '@types/js-yaml': 4.0.9
       '@types/mdast': 4.0.4
-      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
-      astro-expressive-code: 0.44.0(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
+      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
+      astro-expressive-code: 0.44.0(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
       bcp-47: 2.1.1
       hast-util-from-html: 2.0.3
       hast-util-select: 6.0.4
@@ -8671,6 +8695,11 @@ snapshots:
       '@emnapi/wasi-threads': 1.2.2
       tslib: 2.8.1
 
+  '@emnapi/core@2.0.0-alpha.6':
+    dependencies:
+      '@emnapi/wasi-threads': 2.2.0
+      tslib: 2.8.1
+
   '@emnapi/runtime@1.11.1':
     dependencies:
       tslib: 2.8.1
@@ -8679,7 +8708,15 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@emnapi/runtime@2.0.0-alpha.6':
+    dependencies:
+      tslib: 2.8.1
+
   '@emnapi/wasi-threads@1.2.2':
+    dependencies:
+      tslib: 2.8.1
+
+  '@emnapi/wasi-threads@2.2.0':
     dependencies:
       tslib: 2.8.1
 
@@ -8798,8 +8835,8 @@ snapshots:
       hast-util-to-html: 9.0.5
       hast-util-to-text: 4.0.2
       hastscript: 9.0.1
-      postcss: 8.5.9
-      postcss-nested: 6.2.0(postcss@8.5.9)
+      postcss: 8.5.19
+      postcss-nested: 6.2.0(postcss@8.5.19)
       unist-util-visit: 5.1.0
       unist-util-visit-parents: 6.0.2
 
@@ -8968,7 +9005,7 @@ snapshots:
 
   '@img/sharp-wasm32@0.35.3':
     dependencies:
-      '@emnapi/runtime': 1.11.1
+      '@emnapi/runtime': 1.11.2
     optional: true
 
   '@img/sharp-webcontainers-wasm32@0.35.3':
@@ -9318,6 +9355,19 @@ snapshots:
       '@emnapi/runtime': 1.11.2
       '@tybys/wasm-util': 0.10.3
 
+  '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)':
+    dependencies:
+      '@emnapi/core': 2.0.0-alpha.6
+      '@emnapi/runtime': 2.0.0-alpha.6
+      '@tybys/wasm-util': 0.10.3
+    optional: true
+
+  '@napi-rs/wasm-runtime@1.2.7(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)':
+    dependencies:
+      '@emnapi/core': 2.0.0-alpha.6
+      '@emnapi/runtime': 2.0.0-alpha.6
+      '@tybys/wasm-util': 0.10.3
+
   '@nodable/entities@2.2.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -9338,6 +9388,12 @@ snapshots:
       zod: 4.4.3
 
   '@oslojs/encoding@1.1.0': {}
+
+  '@oxc-parser/binding-wasm32-wasip1@0.157.0':
+    dependencies:
+      '@emnapi/core': 2.0.0-alpha.6
+      '@emnapi/runtime': 2.0.0-alpha.6
+      '@napi-rs/wasm-runtime': 1.2.7(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)
 
   '@oxc-project/types@0.139.0': {}
 
@@ -11218,9 +11274,9 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-eslint-parser@3.0.0(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2):
+  astro-eslint-parser@3.0.0(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6):
     dependencies:
-      '@astrojs/compiler-rs': 0.3.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      '@astrojs/compiler-rs': 0.3.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)
       '@typescript-eslint/scope-manager': 8.63.0
       '@typescript-eslint/types': 8.63.0
       debug: 4.4.3
@@ -11234,15 +11290,15 @@ snapshots:
       - '@emnapi/runtime'
       - supports-color
 
-  astro-expressive-code@0.44.0(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)):
+  astro-expressive-code@0.44.0(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
-      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
+      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
       rehype-expressive-code: 0.44.0
       url-extras: 0.1.0
 
-  astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0):
+  astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0):
     dependencies:
-      '@astrojs/compiler-rs': 0.3.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      '@astrojs/compiler-rs': 0.3.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)
       '@astrojs/internal-helpers': 0.10.1
       '@astrojs/markdown-satteri': 0.3.4
       '@astrojs/telemetry': 3.3.3
@@ -12087,12 +12143,12 @@ snapshots:
 
   escape-string-regexp@5.0.0: {}
 
-  eslint-plugin-astro@3.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@typescript-eslint/parser@8.63.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)):
+  eslint-plugin-astro@3.0.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@typescript-eslint/parser@8.63.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.7.0(jiti@2.7.0))
       '@jridgewell/sourcemap-codec': 1.5.5
       '@typescript-eslint/types': 8.63.0
-      astro-eslint-parser: 3.0.0(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)
+      astro-eslint-parser: 3.0.0(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)
       eslint: 10.7.0(jiti@2.7.0)
       espree: 11.2.0
       globals: 17.7.0
@@ -13747,8 +13803,6 @@ snapshots:
 
   muggle-string@0.4.1: {}
 
-  nanoid@3.3.11: {}
-
   nanoid@3.3.16: {}
 
   napi-build-utils@2.0.0:
@@ -14108,13 +14162,13 @@ snapshots:
       path-data-parser: 0.1.0
       points-on-curve: 0.2.0
 
-  portless@0.15.4: {}
+  portless@0.16.0: {}
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-nested@6.2.0(postcss@8.5.9):
+  postcss-nested@6.2.0(postcss@8.5.19):
     dependencies:
-      postcss: 8.5.9
+      postcss: 8.5.19
       postcss-selector-parser: 6.1.4
 
   postcss-selector-parser@6.1.4:
@@ -14130,12 +14184,6 @@ snapshots:
   postcss@8.5.19:
     dependencies:
       nanoid: 3.3.16
-      picocolors: 1.1.1
-      source-map-js: 1.2.1
-
-  postcss@8.5.9:
-    dependencies:
-      nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -14882,13 +14930,13 @@ snapshots:
 
   stackback@0.0.2: {}
 
-  starlight-llms-txt@0.11.0(@astrojs/markdown-satteri@0.3.4)(@astrojs/starlight@0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3))(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)):
+  starlight-llms-txt@0.11.0(@astrojs/markdown-satteri@0.3.4)(@astrojs/starlight@0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3))(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
-      '@astrojs/mdx': 7.0.3(@astrojs/markdown-satteri@0.3.4)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
-      '@astrojs/starlight': 0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3)
+      '@astrojs/mdx': 7.0.3(@astrojs/markdown-satteri@0.3.4)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))
+      '@astrojs/starlight': 0.41.3(@astrojs/markdown-remark@7.2.1)(astro@7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0))(typescript@6.0.3)
       '@types/hast': 3.0.5
       '@types/micromatch': 4.0.10
-      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
+      astro: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
       github-slugger: 2.0.0
       hast-util-select: 6.0.4
       micromatch: 4.0.8
