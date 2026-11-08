@@ -13,6 +13,7 @@ import type { RuntimeWorker } from "./runtime-worker.js";
 import type { SandboxBackend } from "./sandbox-backend.js";
 import type { ContainerEvents } from "./events.js";
 import { VfsBashFileSystem } from "./vfs-bash-fs.js";
+import { superviseRun } from "./supervise-run.js";
 
 declare global {
   // Populated just before executing a bundled node app so its aliased `node:*`
@@ -32,6 +33,8 @@ export interface ShellServiceDeps {
   runtimeWorker: RuntimeWorker;
   sandbox?: SandboxBackend;
   workdir?: string;
+  /** Max ms to wait for pending timers before reporting a node app's exit. Default 5000. */
+  quiescenceCapMs?: number;
 }
 
 export interface ShellResult {
@@ -218,12 +221,27 @@ export class ShellService {
    * (`routeNpmRun`, above) uses, so a node server drives the preview iframe
    * identically to `npm run dev`.
    */
-  private async runNodeApp(filePath: string, output: OutputCallbacks): Promise<number> {
+  private async runNodeApp(filePath: string, rawOutput: OutputCallbacks): Promise<number> {
+    // Drop output after the program has terminated (e.g. code following
+    // process.exit() that already started running).
+    let terminated = false;
+    const output: OutputCallbacks = {
+      stdout: (d) => {
+        if (!terminated) rawOutput.stdout(d);
+      },
+      stderr: (d) => {
+        if (!terminated) rawOutput.stderr(d);
+      },
+    };
     try {
+      let serving = false;
       const onPortEvent = (event: string, data: { port: number; url?: string }) => {
         const url = data.url ?? "";
         if (event === "server-ready") this.deps.events?.emit("server-ready", data.port, url);
-        if (event === "port-open") this.deps.events?.emit("port", data.port, "open", url);
+        if (event === "port-open") {
+          serving = true;
+          this.deps.events?.emit("port", data.port, "open", url);
+        }
         if (event === "port-close") this.deps.events?.emit("port", data.port, "close", url);
       };
 
@@ -231,19 +249,20 @@ export class ShellService {
       // relative to it (e.g. '/server.ts' → '/home/web/server.ts').
       const entry = this.resolvePath(filePath);
 
+      const shims = createLiveShimRegistry({
+        vfs: this.deps.vfs,
+        sandbox: this.deps.swSandbox,
+        onPortEvent,
+        shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+        cwd: this.cwd,
+        argv: ["node", entry],
+        onStdout: output.stdout,
+        onStderr: output.stderr,
+      });
       globalThis.__browserContainers = {
         vfs: this.deps.vfs,
         sandbox: this.deps.swSandbox,
-        shims: createLiveShimRegistry({
-          vfs: this.deps.vfs,
-          sandbox: this.deps.swSandbox,
-          onPortEvent,
-          shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
-          cwd: this.cwd,
-          argv: ["node", entry],
-          onStdout: output.stdout,
-          onStderr: output.stderr,
-        }),
+        shims,
       };
 
       const { code, warnings } = await bundleEntry(entry, {
@@ -254,22 +273,32 @@ export class ShellService {
       });
       for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
 
-      const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
-      const mod = (await import(/* @vite-ignore */ moduleUrl)) as {
-        default?: { fetch?: (req: Request) => Promise<Response> };
-      };
-      // Hono/workers-style: if the module exports a default with a `.fetch`
-      // method, auto-register it as a fetch handler so the server starts
-      // without an explicit http.createServer().listen() call.
-      const exportedApp = mod?.default;
-      if (exportedApp && typeof exportedApp.fetch === "function" && this.deps.swSandbox) {
-        this.deps.swSandbox.onFetch(exportedApp.fetch.bind(exportedApp));
-        onPortEvent("server-ready", { port: 3000, url: "https://sandbox.local" });
-        onPortEvent("port-open", { port: 3000, url: "https://sandbox.local" });
-      }
-      return 0;
+      const result = await superviseRun({
+        process: shims.process as Parameters<typeof superviseRun>[0]["process"],
+        stderr: output.stderr,
+        isServing: () => serving,
+        quiescenceCapMs: this.deps.quiescenceCapMs,
+        run: async () => {
+          const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
+          const mod = (await import(/* @vite-ignore */ moduleUrl)) as {
+            default?: { fetch?: (req: Request) => Promise<Response> };
+          };
+          // Hono/workers-style: if the module exports a default with a `.fetch`
+          // method, auto-register it as a fetch handler so the server starts
+          // without an explicit http.createServer().listen() call.
+          const exportedApp = mod?.default;
+          if (exportedApp && typeof exportedApp.fetch === "function" && this.deps.swSandbox) {
+            this.deps.swSandbox.onFetch(exportedApp.fetch.bind(exportedApp));
+            onPortEvent("server-ready", { port: 3000, url: "https://sandbox.local" });
+            onPortEvent("port-open", { port: 3000, url: "https://sandbox.local" });
+          }
+        },
+      });
+      terminated = result.terminated;
+      return result.exitCode;
     } catch (err) {
-      output.stderr(err instanceof Error ? err.message : String(err));
+      terminated = false;
+      rawOutput.stderr(err instanceof Error ? err.message : String(err));
       return 1;
     }
   }

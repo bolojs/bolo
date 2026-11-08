@@ -10,6 +10,22 @@ export interface ProcessShimOptions {
   readonly onStderr?: (data: string) => void;
 }
 
+/**
+ * Thrown by `process.exit()` to unwind the caller's stack, since the main
+ * thread cannot be terminated. Embedders (ShellService.runNodeApp) catch it and
+ * report `code` as the exit status. Scripts that swallow it with a bare
+ * try/catch will keep running: a limit of the main-thread stopgap, resolved by
+ * the worker-per-process model (v0.2.0).
+ */
+export class ProcessExit extends Error {
+  readonly code: number;
+  constructor(code: number) {
+    super(`process.exit(${code})`);
+    this.name = "ProcessExit";
+    this.code = code;
+  }
+}
+
 const toText = (chunk: unknown): string =>
   typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk as ArrayBufferView);
 
@@ -75,7 +91,10 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     { bigint: () => BigInt(Math.round((performance.now() - startedAt) * 1e6)) },
   );
 
+  let exiting = false;
+
   const process = Object.assign(new EventEmitter(), {
+    exitCode: undefined as number | undefined,
     env: options.env ?? {},
     platform: "browser" as const,
     argv: options.argv ?? ["node", "/entry.js"],
@@ -93,7 +112,19 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     chdir: (dir: string) => {
       cwd = dir;
     },
-    exit: (_code?: number) => {},
+    exit: (code?: number): never => {
+      if (code !== undefined) process.exitCode = code;
+      const finalCode = process.exitCode ?? 0;
+      if (!exiting) {
+        exiting = true;
+        try {
+          process.emit("exit", finalCode);
+        } catch (err) {
+          if (!(err instanceof ProcessExit)) throw err;
+        }
+      }
+      throw new ProcessExit(process.exitCode ?? finalCode);
+    },
     hrtime,
     stdout: createStdioStream(options.onStdout),
     stderr: createStdioStream(options.onStderr),
