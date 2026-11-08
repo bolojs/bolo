@@ -1,0 +1,25 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>spike c: COOP+COEP control</title>
+<body>
+  <pre id="out"></pre>
+  <script>
+    // Control page served with COOP: same-origin + COEP: require-corp, to
+    // contrast with the DIP document. Same reporting shape.
+    const report = {
+      host: location.host,
+      headers: "COOP: same-origin + COEP: require-corp",
+      crossOriginIsolated: self.crossOriginIsolated,
+      sharedArrayBuffer: typeof SharedArrayBuffer,
+      sabConstructible: null,
+    };
+    try {
+      new SharedArrayBuffer(8);
+      report.sabConstructible = true;
+    } catch (e) {
+      report.sabConstructible = String(e);
+    }
+    document.getElementById("out").textContent = JSON.stringify(report, null, 2);
+    window.__spikeResult = report;
+  </script>
+</body>
