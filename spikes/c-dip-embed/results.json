@@ -1,0 +1,131 @@
+[
+  {
+    "engine": "chromium",
+    "version": "149.0.7827.55",
+    "dip": {
+      "host": "127.0.0.1:5311",
+      "crossOriginIsolated": true,
+      "sharedArrayBuffer": "function",
+      "sabConstructible": true,
+      "frame": "postMessage",
+      "frameReport": {
+        "from": "dip-frame",
+        "host": "localhost:5311",
+        "crossOriginIsolated": false,
+        "sharedArrayBuffer": "undefined"
+      }
+    },
+    "hosted": {
+      "host": "127.0.0.1:5311",
+      "crossOriginIsolated": false,
+      "sharedArrayBuffer": "undefined",
+      "frame": "postMessage",
+      "frameReport": {
+        "host": "localhost:5311",
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": "function",
+        "sabConstructible": true,
+        "frame": "postMessage",
+        "frameReport": {
+          "from": "dip-frame",
+          "host": "127.0.0.1:5311",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": "undefined"
+        }
+      }
+    },
+    "coopCoep": {
+      "host": "127.0.0.1:5311",
+      "headers": "COOP: same-origin + COEP: require-corp",
+      "crossOriginIsolated": true,
+      "sharedArrayBuffer": "function",
+      "sabConstructible": true
+    }
+  },
+  {
+    "engine": "firefox",
+    "version": "151.0",
+    "dip": {
+      "host": "127.0.0.1:5311",
+      "crossOriginIsolated": false,
+      "sharedArrayBuffer": "undefined",
+      "sabConstructible": "ReferenceError: SharedArrayBuffer is not defined",
+      "frame": "postMessage",
+      "frameReport": {
+        "from": "dip-frame",
+        "host": "localhost:5311",
+        "crossOriginIsolated": false,
+        "sharedArrayBuffer": "undefined"
+      }
+    },
+    "hosted": {
+      "host": "127.0.0.1:5311",
+      "crossOriginIsolated": false,
+      "sharedArrayBuffer": "undefined",
+      "frame": "postMessage",
+      "frameReport": {
+        "host": "localhost:5311",
+        "crossOriginIsolated": false,
+        "sharedArrayBuffer": "undefined",
+        "sabConstructible": "ReferenceError: SharedArrayBuffer is not defined",
+        "frame": "postMessage",
+        "frameReport": {
+          "from": "dip-frame",
+          "host": "127.0.0.1:5311",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": "undefined"
+        }
+      }
+    },
+    "coopCoep": {
+      "host": "127.0.0.1:5311",
+      "headers": "COOP: same-origin + COEP: require-corp",
+      "crossOriginIsolated": true,
+      "sharedArrayBuffer": "function",
+      "sabConstructible": true
+    }
+  },
+  {
+    "engine": "webkit",
+    "version": "26.5",
+    "dip": {
+      "host": "127.0.0.1:5311",
+      "crossOriginIsolated": false,
+      "sharedArrayBuffer": "undefined",
+      "sabConstructible": "ReferenceError: Can't find variable: SharedArrayBuffer",
+      "frame": "postMessage",
+      "frameReport": {
+        "from": "dip-frame",
+        "host": "localhost:5311",
+        "crossOriginIsolated": false,
+        "sharedArrayBuffer": "undefined"
+      }
+    },
+    "hosted": {
+      "host": "127.0.0.1:5311",
+      "crossOriginIsolated": false,
+      "sharedArrayBuffer": "undefined",
+      "frame": "postMessage",
+      "frameReport": {
+        "host": "localhost:5311",
+        "crossOriginIsolated": false,
+        "sharedArrayBuffer": "undefined",
+        "sabConstructible": "ReferenceError: Can't find variable: SharedArrayBuffer",
+        "frame": "postMessage",
+        "frameReport": {
+          "from": "dip-frame",
+          "host": "127.0.0.1:5311",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": "undefined"
+        }
+      }
+    },
+    "coopCoep": {
+      "host": "127.0.0.1:5311",
+      "headers": "COOP: same-origin + COEP: require-corp",
+      "crossOriginIsolated": true,
+      "sharedArrayBuffer": "function",
+      "sabConstructible": true
+    }
+  }
+]

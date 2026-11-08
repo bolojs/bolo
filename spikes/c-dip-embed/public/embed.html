@@ -1,0 +1,46 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>spike c: DIP embed</title>
+<body>
+  <h1>DIP embed host</h1>
+  <pre id="out"></pre>
+  <script>
+    // This document is served with `Document-Isolation-Policy:
+    // isolate-and-credentialless` and no COOP/COEP. It embeds a cross-site
+    // iframe (other hostname, same port) and reports isolation state.
+    const report = {
+      host: location.host,
+      crossOriginIsolated: self.crossOriginIsolated,
+      sharedArrayBuffer: typeof SharedArrayBuffer,
+      sabConstructible: null,
+      frame: "pending",
+      frameReport: null,
+    };
+    try {
+      new SharedArrayBuffer(8);
+      report.sabConstructible = true;
+    } catch (e) {
+      report.sabConstructible = String(e);
+    }
+
+    const other = location.hostname === "127.0.0.1" ? "localhost" : "127.0.0.1";
+    const frame = document.createElement("iframe");
+    frame.src = `${location.protocol}//${other}:${location.port}/c/frame.html`;
+    frame.onload = () => {
+      if (report.frame === "pending") report.frame = "load-event";
+    };
+    frame.onerror = () => (report.frame = "error-event");
+
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.from === "dip-frame") report.frameReport = e.data;
+    });
+
+    document.body.appendChild(frame);
+    setTimeout(() => {
+      if (report.frameReport) report.frame = "postMessage";
+      document.getElementById("out").textContent = JSON.stringify(report, null, 2);
+      window.__spikeResult = report;
+      parent.postMessage({ from: "dip-embed", report }, "*");
+    }, 3000);
+  </script>
+</body>

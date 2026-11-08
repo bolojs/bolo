@@ -1,0 +1,49 @@
+[
+  {
+    "engine": "webkit",
+    "version": "26.5",
+    "result": {
+      "controlled": true,
+      "worker": {
+        "status": "done",
+        "report": {
+          "sizes": {
+            "16": {
+              "n": 1000,
+              "p50": 1,
+              "p95": 2,
+              "p99": 4,
+              "min": 0,
+              "max": 10,
+              "mean": 1.413
+            },
+            "65536": {
+              "n": 1000,
+              "p50": 3,
+              "p95": 10,
+              "p99": 34,
+              "min": 1,
+              "max": 78,
+              "mean": 4.106
+            }
+          },
+          "prefixes": {
+            "16": {
+              "SW:": 1000
+            },
+            "65536": {
+              "SW:": 1000
+            }
+          },
+          "aborted": false,
+          "probe": {
+            "ms": 7,
+            "prefix": "SW:xxxxx",
+            "status": 200
+          }
+        }
+      },
+      "error": null
+    }
+  }
+]
