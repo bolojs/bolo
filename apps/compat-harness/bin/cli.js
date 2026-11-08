@@ -204,6 +204,7 @@ const main = async () => {
 };
 
 main().catch((err) => {
+  console.error(err instanceof Error ? err.stack : String(err));
   logger.fatal("compat-harness cli failed", {
     error: err instanceof Error ? err.message : String(err),
   });

@@ -31,6 +31,8 @@ export interface CompatHarness {
   write(path: string, source: string): Promise<void>;
   /** Runs `node <path>` and returns the combined stdout+stderr text, exit code, and elapsed time. */
   exec(path: string): Promise<ExecResult>;
+  /** Installs npm packages into the container VFS via the container's own package manager. */
+  install(names: string[]): Promise<ExecResult>;
   /**
    * Writes `source` to `path` and runs it via `node <path>`, returning the combined
    * stdout+stderr text and exit code. Kept for backwards compatibility.
@@ -90,6 +92,14 @@ window.__compatHarness = {
     const [output, exitCode] = await Promise.all([readAll(proc.output), proc.exit]);
     const duration = performance.now() - start;
     return { exitCode, output, duration };
+  },
+
+  install: async (names) => {
+    if (!container) throw new Error("CompatHarness: boot() must resolve before install()");
+    const start = performance.now();
+    const proc = container.spawn("npm", ["install", ...names]);
+    const [output, exitCode] = await Promise.all([readAll(proc.output), proc.exit]);
+    return { exitCode, output, duration: performance.now() - start };
   },
 
   run: async (path, source) => {
