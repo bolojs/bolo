@@ -57,6 +57,8 @@ export interface ShellDeps {
 
 export type { OutputCallbacks };
 
+let runCounter = 0;
+
 export class ShellService {
   private deps: ShellServiceDeps;
   private cwd: string;
@@ -279,7 +281,9 @@ export class ShellService {
         isServing: () => serving,
         quiescenceCapMs: this.deps.quiescenceCapMs,
         run: async () => {
-          const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
+          // Identical source would hit the module cache and never re-execute.
+          const unique = `\n//# bolo-run=${++runCounter}`;
+          const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code + unique)}`;
           const mod = (await import(/* @vite-ignore */ moduleUrl)) as {
             default?: { fetch?: (req: Request) => Promise<Response> };
           };
