@@ -3,6 +3,7 @@
 import type { CompatHarness } from "./main.js";
 import { commonIndexSource } from "./test-common.js";
 import { assertCanariesFail, runCanaries } from "./canaries.js";
+import { classifyNodeTest } from "./classify.js";
 
 export interface ModuleManifest {
   version: string;
@@ -100,7 +101,7 @@ export class NodeTestRunner {
     return {
       file,
       module: moduleName,
-      status: this.classify(exitCode, output),
+      status: classifyNodeTest(exitCode, output),
       exitCode,
       output,
       duration,
@@ -134,11 +135,5 @@ export class NodeTestRunner {
       throw new Error(`Failed to fetch ${url}: ${response.status}`);
     }
     return response.text();
-  }
-
-  private classify(exitCode: number, output: string): TestResult["status"] {
-    // Node's test/common `skip()` prints a TAP skip plan and exits 0.
-    if (exitCode === 0 && /^1\.\.0 # SKIP/m.test(output)) return "skip";
-    return exitCode === 0 ? "pass" : "fail";
   }
 }
