@@ -114,16 +114,12 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     },
     exit: (code?: number): never => {
       if (code !== undefined) process.exitCode = code;
-      const finalCode = process.exitCode ?? 0;
-      if (!exiting) {
-        exiting = true;
-        try {
-          process.emit("exit", finalCode);
-        } catch (err) {
-          if (!(err instanceof ProcessExit)) throw err;
-        }
+      try {
+        process.emit("exit", process.exitCode ?? 0);
+      } catch (err) {
+        if (!(err instanceof ProcessExit)) throw err;
       }
-      throw new ProcessExit(process.exitCode ?? finalCode);
+      throw new ProcessExit(process.exitCode ?? 0);
     },
     hrtime,
     stdout: createStdioStream(options.onStdout),
@@ -135,6 +131,17 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
       rss: () => (performance as any).memory?.totalHeapSize ?? 0,
     }),
   });
+
+  // 'exit' fires at most once, whether triggered by process.exit() or by the
+  // embedder at natural completion.
+  const emit = process.emit.bind(process) as (event: string, ...args: unknown[]) => boolean;
+  process.emit = ((event: string, ...args: unknown[]) => {
+    if (event === "exit") {
+      if (exiting) return false;
+      exiting = true;
+    }
+    return emit(event, ...args);
+  }) as typeof process.emit;
 
   return process;
 };

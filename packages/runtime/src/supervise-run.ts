@@ -51,6 +51,7 @@ export const superviseRun = async (options: SuperviseOptions): Promise<Supervise
   const cap = options.quiescenceCapMs ?? 5000;
 
   let terminal: { code: number } | undefined;
+  let explicitExit = false;
   const terminate = (code: number) => {
     if (!terminal) terminal = { code };
   };
@@ -58,6 +59,7 @@ export const superviseRun = async (options: SuperviseOptions): Promise<Supervise
   const onFatal = (err: unknown) => {
     if (terminal) return;
     if (err instanceof ProcessExit) {
+      explicitExit = true;
       terminate(err.code);
       return;
     }
@@ -136,6 +138,15 @@ export const superviseRun = async (options: SuperviseOptions): Promise<Supervise
     await sleep(0);
 
     if (terminal) {
+      // Node fires 'exit' after an uncaught exception too (handlers such as
+      // common.expectExitCode rely on it); process.exit() already fired it.
+      if (!explicitExit) {
+        try {
+          proc.emit("exit", terminal.code);
+        } catch (err) {
+          if (err instanceof ProcessExit) terminal = { code: err.code };
+        }
+      }
       return { exitCode: terminal.code, terminated: true };
     }
 

@@ -44,6 +44,17 @@ describe("superviseRun (canaries: each must NOT exit 0)", () => {
     expect(r.exitCode).toBe(1);
   });
 
+  it("uncaught error still fires 'exit' handlers (which may rewrite the code)", async () => {
+    const h = harness();
+    h.proc.on("exit", () => {
+      h.proc.exit(0);
+    });
+    const r = await h.run(() => {
+      throw new Error("expected");
+    });
+    expect(r).toEqual({ exitCode: 0, terminated: true });
+  });
+
   it("process.exit inside a timeout -> its code", async () => {
     const h = harness();
     const r = await h.run(() => {
