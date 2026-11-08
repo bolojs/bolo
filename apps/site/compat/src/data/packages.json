@@ -1,8 +1,8 @@
 {
   "meta": {
-    "generatedAt": "2026-11-08T09:48:41.205Z",
+    "generatedAt": "2026-11-08T11:35:14.801Z",
     "source": "apps/site/landing/public/results",
-    "validated": false
+    "validated": true
   },
   "columns": [
     {
@@ -100,8 +100,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -110,15 +110,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/fetch"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"duration\": 30.679999947547913\n}"
       }
     },
     {
@@ -146,8 +144,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -156,15 +154,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0mEventEmitter\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m          ──────┬─────  \n \u001b[38;5;240m   │\u001b[0m                ╰─────── Missing export\n\u001b[38;5;246m────╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/axios"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"axios\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 2035.7299998998642,\n  \"error\": \"[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m{\\u001b[0m\\u001b[38;5;249m \\u001b[0mEventEmitter\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m   │\\u001b[0m          ──────┬─────  \\n \\u001b[38;5;240m   │\\u001b[0m                ╰─────── Missing export\\n\\u001b[38;5;246m────╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -192,8 +190,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -202,15 +200,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                    ────────┬───────  \n \u001b[38;5;240m  │\u001b[0m                            ╰───────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/node-fetch"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"node-fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 630.5199999809265,\n  \"error\": \"m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                    ────────┬───────  \\n \\u001b[38;5;240m  │\\u001b[0m                            ╰───────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -238,8 +236,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -248,15 +246,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "B%0A%09__result%20%3D%20await%20(typeof%20import_undici.request%20%3D%3D%3D%20%22function%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D10:28316:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/undici"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 476.1599999666214,\n  \"error\": \"B%0A%09__result%20%3D%20await%20(typeof%20import_undici.request%20%3D%3D%3D%20%22function%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D10:28316:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -284,8 +282,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -294,15 +292,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                    ─────────┬─────────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/got"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"got\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 3968.6999999284744,\n  \"error\": \"\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                    ─────────┬─────────  \\n \\u001b[38;5;240m  │\\u001b[0m                                             ╰─────────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -330,8 +328,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -340,15 +338,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/ky"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"ky\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"duration\": 518.5999999046326\n}"
       }
     },
     {
@@ -376,8 +372,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -386,15 +382,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0monce\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m          ──┬─  \n \u001b[38;5;240m  │\u001b[0m            ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/http-proxy-agent"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"http-proxy-agent\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 710.6399999856949,\n  \"error\": \"38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m{\\u001b[0m\\u001b[38;5;249m \\u001b[0monce\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m          ──┬─  \\n \\u001b[38;5;240m  │\\u001b[0m            ╰─── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -422,8 +418,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -432,15 +428,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP client"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "form-data failed\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/form-data"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"form-data\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 606.2299998998642,\n  \"error\": \"form-data failed\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -468,8 +464,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -478,15 +474,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "st%20file%20%3D%20%22%2Ftmp%2Fharness-fs-extra.txt%22%3B%0A%09await%20import_lib.default.outputFile(file%2C%20%22ok%22)%3B%0A%09if%20(await%20import_lib.default.readFile(file%2C%20%22utf8%22)%20!%3D%3D%20%22ok%22)%20throw%20new%20Error(%22content%20mismatch%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D11:2800:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/fs-extra"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 626.5899999141693,\n  \"error\": \"st%20file%20%3D%20%22%2Ftmp%2Fharness-fs-extra.txt%22%3B%0A%09await%20import_lib.default.outputFile(file%2C%20%22ok%22)%3B%0A%09if%20(await%20import_lib.default.readFile(file%2C%20%22utf8%22)%20!%3D%3D%20%22ok%22)%20throw%20new%20Error(%22content%20mismatch%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D11:2800:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -514,8 +510,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -524,15 +520,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                       ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/globby"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"globby\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 1614.1299999952316,\n  \"error\": \"49md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249m_\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                       ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                                             ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -560,8 +556,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -570,15 +566,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "0mrealpathSync\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                            ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                                  ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/chokidar"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"chokidar\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 353.6749999523163,\n  \"error\": \"0mrealpathSync\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                            ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                                  ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -606,8 +602,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -616,15 +612,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m                                           ────┬────  \n \u001b[38;5;240m   │\u001b[0m                                               ╰────── Missing export\n\u001b[38;5;246m────╯\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/rimraf"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"rimraf\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 909.7800000905991,\n  \"error\": \"38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249mj\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m   │\\u001b[0m                                           ────┬────  \\n \\u001b[38;5;240m   │\\u001b[0m                                               ╰────── Missing export\\n\\u001b[38;5;246m────╯\\u001b[0m\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -652,8 +648,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -662,15 +658,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "  ──┬─  \n \u001b[38;5;240m  │\u001b[0m          ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"realpathSync\" is not exported by \"bolo-node-shim:fs\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51125..51137\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"EventEmitter\" is not exported by \"bolo-node-shim:events\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51273..51285\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/glob"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"glob\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 81.49500000476837,\n  \"error\": \"  ──┬─  \\n \\u001b[38;5;240m  │\\u001b[0m          ╰─── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n\\n\\u001b[31m[MISSING_EXPORT] \\u001b[0m\\\"realpathSync\\\" is not exported by \\\"bolo-node-shim:fs\\\".\\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51125..51137\\n\\n\\u001b[31m[MISSING_EXPORT] \\u001b[0m\\\"EventEmitter\\\" is not exported by \\\"bolo-node-shim:events\\\".\\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51273..51285\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -698,8 +694,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -708,15 +704,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          ";5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mmkdirp\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mk\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ───┬──  \n \u001b[38;5;240m  │\u001b[0m           ╰──── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/mkdirp"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"mkdirp\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 168.9800000190735,\n  \"error\": \";5;249mi\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0mmkdirp\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mk\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m        ───┬──  \\n \\u001b[38;5;240m  │\\u001b[0m           ╰──── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -744,8 +740,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -754,15 +750,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                       ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/del"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"del\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 1632.164999961853,\n  \"error\": \"49md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249m_\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                       ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                                             ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -790,8 +786,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "unknown",
+          "note": "No data"
         },
         "safari": {
           "status": "unknown",
@@ -800,15 +796,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: File system"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "0%7B%0A%09const%20vol%20%3D%20new%20import_lib.Volume()%3B%0A%09const%20fs%20%3D%20(0%2C%20import_lib.createFsFromVolume)(vol)%3B%0A%09fs.writeFileSync(%22%2Fa%22%2C%20%22x%22)%3B%0A%09if%20(fs.readFileSync(%22%2Fa%22%2C%20%22utf8%22)%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22memfs%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D54:10897:5\n\nNode.js v22.0.0"
         ],
         "links": [
           "https://www.npmjs.com/package/memfs"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"skip\",\n  \"duration\": 2118.935000061989,\n  \"error\": \"0%7B%0A%09const%20vol%20%3D%20new%20import_lib.Volume()%3B%0A%09const%20fs%20%3D%20(0%2C%20import_lib.createFsFromVolume)(vol)%3B%0A%09fs.writeFileSync(%22%2Fa%22%2C%20%22x%22)%3B%0A%09if%20(fs.readFileSync(%22%2Fa%22%2C%20%22utf8%22)%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22memfs%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D54:10897:5\\n\\nNode.js v22.0.0\"\n}"
       }
     },
     {
@@ -1072,8 +1068,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1082,15 +1078,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Build tool"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/postcss"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"postcss\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"duration\": 365.99000000953674\n}"
       }
     },
     {
@@ -1118,8 +1112,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1128,15 +1122,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Build tool"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 6 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/babel"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"babel\",\n  \"class\": \"Build tool\",\n  \"status\": \"fail\",\n  \"duration\": 4903.714999914169,\n  \"error\": \"Build failed with 6 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1164,8 +1158,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1174,15 +1168,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Build tool"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/sucrase"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"sucrase\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"duration\": 1318.6599999666214\n}"
       }
     },
     {
@@ -1210,8 +1202,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1220,15 +1212,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Build tool"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/acorn"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"acorn\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"duration\": 200.3400000333786\n}"
       }
     },
     {
@@ -1256,8 +1246,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1266,15 +1256,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Bundler"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 1 error:\n\n\u001b[31m[PARSE_ERROR] \u001b[0mFile appears to be binary.\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/rollup"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"rollup\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 5293.40499997139,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[PARSE_ERROR] \\u001b[0mFile appears to be binary.\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1348,8 +1338,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1358,15 +1348,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Bundler"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m      │\u001b[0m       ────┬────  \n \u001b[38;5;240m      │\u001b[0m           ╰────── It can not be redeclared here\n\u001b[38;5;246m───────╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/vite"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"vite\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 12226.265000104904,\n  \"error\": \"[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249m(\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ma\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249mu\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249m)\\u001b[0m\\u001b[38;5;249m)\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m      │\\u001b[0m       ────┬────  \\n \\u001b[38;5;240m      │\\u001b[0m           ╰────── It can not be redeclared here\\n\\u001b[38;5;246m───────╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1487,8 +1477,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1497,15 +1487,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Bundler"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "install failed (exit 1): Failed to fetch\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/turbo"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"turbo\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 102.8400000333786,\n  \"error\": \"install failed (exit 1): Failed to fetch\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1533,8 +1523,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1543,15 +1533,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Testing"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                            ─────────┬─────────  \n \u001b[38;5;240m  │\u001b[0m                                     ╰─────────── \n\u001b[38;5;246m───╯\u001b[0m\n\nprobe returned a falsy value\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/vitest"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"vitest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"duration\": 1959.8799999952316,\n  \"error\": \"\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m=\\u001b[0m\\u001b[38;5;249m=\\u001b[0m\\u001b[38;5;249m=\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mu\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m)\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                            ─────────┬─────────  \\n \\u001b[38;5;240m  │\\u001b[0m                                     ╰─────────── \\n\\u001b[38;5;246m───╯\\u001b[0m\\n\\nprobe returned a falsy value\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1579,8 +1569,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1589,15 +1579,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Testing"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          " already been declared here\n \u001b[38;5;240m   │\u001b[0m \n \u001b[38;5;246m19 │\u001b[0m \u001b[38;5;249ml\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m__dirname\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m     ────┬────  \n \u001b[38;5;240m   │\u001b[0m         ╰────── It can not be redeclared here\n\u001b[38;5;246m────╯\u001b[0m\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/jest"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"jest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"duration\": 22507.25,\n  \"error\": \" already been declared here\\n \\u001b[38;5;240m   │\\u001b[0m \\n \\u001b[38;5;246m19 │\\u001b[0m \\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0m__dirname\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m   │\\u001b[0m     ────┬────  \\n \\u001b[38;5;240m   │\\u001b[0m         ╰────── It can not be redeclared here\\n\\u001b[38;5;246m────╯\\u001b[0m\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1625,8 +1615,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1635,15 +1625,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Testing"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/chai"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"chai\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 125.53999996185303\n}"
       }
     },
     {
@@ -1671,8 +1659,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1681,15 +1669,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Testing"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/sinon"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"sinon\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 1247.2949999570847\n}"
       }
     },
     {
@@ -1717,8 +1703,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1727,15 +1713,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Testing"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/dompurify"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"dompurify\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 670.5049999952316\n}"
       }
     },
     {
@@ -1763,8 +1747,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1773,15 +1757,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Testing"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/linkedom"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"linkedom\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 3580.4349999427795\n}"
       }
     },
     {
@@ -1809,8 +1791,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1819,15 +1801,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/express"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 3486.9950000047684,\n  \"error\": \"Build failed with 10 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1855,8 +1837,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1865,15 +1847,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/fastify"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"fastify\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 3241.399999976158,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1901,8 +1883,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1911,15 +1893,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "obe/h3.mjs:2:8 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mh3\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ─┬  \n \u001b[38;5;240m  │\u001b[0m         ╰── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/h3"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"h3\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 448.7550001144409,\n  \"error\": \"obe/h3.mjs:2:8 \\u001b[38;5;246m]\\u001b[0m\\n   \\u001b[38;5;246m│\\u001b[0m\\n \\u001b[38;5;246m2 │\\u001b[0m \\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0mh3\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249m3\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m        ─┬  \\n \\u001b[38;5;240m  │\\u001b[0m         ╰── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1947,8 +1929,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1957,15 +1939,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/polka"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"polka\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 666.8649998903275\n}"
       }
     },
     {
@@ -1993,8 +1973,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2003,15 +1983,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/hono"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"hono\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 651.454999923706\n}"
       }
     },
     {
@@ -2039,8 +2017,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2049,15 +2027,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/elysia"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"elysia\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 6049.745000004768\n}"
       }
     },
     {
@@ -2085,8 +2061,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2095,15 +2071,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/itty-router"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"itty-router\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 60003.27999997139,\n  \"error\": \"TIMEOUT after 60000ms\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2131,8 +2107,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2141,15 +2117,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 4 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/koa"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"koa\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 1589.530000090599,\n  \"error\": \"Build failed with 4 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2177,8 +2153,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2187,15 +2163,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/cors"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"cors\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 217.39999997615814\n}"
       }
     },
     {
@@ -2223,8 +2197,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2233,15 +2207,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/helmet"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"helmet\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 177.6449999809265\n}"
       }
     },
     {
@@ -2269,8 +2241,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2279,15 +2251,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/morgan"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"morgan\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 545.9850000143051\n}"
       }
     },
     {
@@ -2315,8 +2285,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2325,15 +2295,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/compression"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"compression\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 519.4950000047684,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2361,8 +2331,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2371,15 +2341,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/serve-static"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"serve-static\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 187.99500000476837,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2407,8 +2377,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2417,15 +2387,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/cookie-parser"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"cookie-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 182.7300000190735\n}"
       }
     },
     {
@@ -2453,8 +2421,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2463,15 +2431,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/body-parser"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"body-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 762.7800000905991,\n  \"error\": \"Build failed with 10 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2499,8 +2467,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2509,15 +2477,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/pino"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"pino\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 60.019999980926514\n}"
       }
     },
     {
@@ -2545,8 +2511,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2555,15 +2521,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/winston"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"winston\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 4326.889999985695,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2591,8 +2557,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2601,15 +2567,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: HTTP server"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "ws failed\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/ws"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"ws\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 339.6599999666214,\n  \"error\": \"ws failed\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2637,8 +2603,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2647,15 +2613,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/crypto-js"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"crypto-js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 238.33500003814697\n}"
       }
     },
     {
@@ -2683,8 +2647,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2693,15 +2657,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20import_bcrypt.default.hashSync(%22abc%22%2C%2010)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D17:702:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/bcrypt"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 559.2699999809265,\n  \"error\": \"%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20import_bcrypt.default.hashSync(%22abc%22%2C%2010)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D17:702:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2729,8 +2693,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2739,15 +2703,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "t%20__result%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20await%20import_argon2.hash(%22abc%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D18:917:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/argon2"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 756.1750000715256,\n  \"error\": \"t%20__result%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20await%20import_argon2.hash(%22abc%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D18:917:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2775,8 +2739,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2785,15 +2749,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/sha.js"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"sha.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 2678.3650000095367\n}"
       }
     },
     {
@@ -2821,8 +2783,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2831,15 +2793,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "import_hash.default.utils.sha256 is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/hash.js"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"hash.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 489.1299999952316,\n  \"error\": \"import_hash.default.utils.sha256 is not a function\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2867,8 +2829,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2877,15 +2839,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/md5"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"md5\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 736.4349999427795\n}"
       }
     },
     {
@@ -2913,8 +2873,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -2923,15 +2883,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "60()%3B%0A%09%09return%20new%20Hash(sha(alg))%3B%0A%09%7D%3B%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20((0%2C%20import_browser.default)(%22sha256%22).update(%22hello%22).digest(%22hex%22).length%20!%3D%3D%2064)%20throw%20new%20Error(%22create-hash%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D65:45:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/create-hash"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2977.2050000429153,\n  \"error\": \"60()%3B%0A%09%09return%20new%20Hash(sha(alg))%3B%0A%09%7D%3B%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20((0%2C%20import_browser.default)(%22sha256%22).update(%22hello%22).digest(%22hex%22).length%20!%3D%3D%2064)%20throw%20new%20Error(%22create-hash%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D65:45:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2959,8 +2919,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2969,15 +2929,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/jose"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"jose\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 507.875\n}"
       }
     },
     {
@@ -3005,8 +2963,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -3015,15 +2973,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "0%7B%0A%09const%20token%20%3D%20import_jsonwebtoken.default.sign(%7B%20sub%3A%20%22x%22%20%7D%2C%20%22secret%22)%3B%0A%09if%20(import_jsonwebtoken.default.verify(token%2C%20%22secret%22).sub%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22jsonwebtoken%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D67:44:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/jsonwebtoken"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2254.3300000429153,\n  \"error\": \"0%7B%0A%09const%20token%20%3D%20import_jsonwebtoken.default.sign(%7B%20sub%3A%20%22x%22%20%7D%2C%20%22secret%22)%3B%0A%09if%20(import_jsonwebtoken.default.verify(token%2C%20%22secret%22).sub%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22jsonwebtoken%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D67:44:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -3051,8 +3009,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -3061,15 +3019,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Crypto"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "exports.pbkdf2Sync%20%3D%20nativePBKDF2Sync%3B%0A%09%09exports.pbkdf2%20%3D%20nativePBKDF2%3B%0A%09%7D%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20(typeof%20import_pbkdf2.default.pbkdf2Sync%20!%3D%3D%20%22function%22)%20throw%20new%20Error(%22pbkdf2%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D68:45:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/pbkdf2"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 687.3949999809265,\n  \"error\": \"exports.pbkdf2Sync%20%3D%20nativePBKDF2Sync%3B%0A%09%09exports.pbkdf2%20%3D%20nativePBKDF2%3B%0A%09%7D%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20(typeof%20import_pbkdf2.default.pbkdf2Sync%20!%3D%3D%20%22function%22)%20throw%20new%20Error(%22pbkdf2%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D68:45:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -3097,8 +3055,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3107,15 +3065,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/handlebars"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"handlebars\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 983.2599999904633\n}"
       }
     },
     {
@@ -3143,8 +3099,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3153,15 +3109,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/ejs"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"ejs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 184.3050000667572\n}"
       }
     },
     {
@@ -3189,8 +3143,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -3199,15 +3153,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/pug"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"pug\",\n  \"class\": \"Template\",\n  \"status\": \"fail\",\n  \"duration\": 2686.429999947548,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -3235,8 +3189,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3245,15 +3199,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/marked"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"marked\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 346.79499995708466\n}"
       }
     },
     {
@@ -3281,8 +3233,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3291,15 +3243,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/markdown-it"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"markdown-it\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 1648.9700000286102\n}"
       }
     },
     {
@@ -3327,8 +3277,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3337,15 +3287,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/micromark"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"micromark\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 4342.400000095367\n}"
       }
     },
     {
@@ -3373,8 +3321,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3383,15 +3331,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/nunjucks"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"nunjucks\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 981.2200000286102\n}"
       }
     },
     {
@@ -3419,8 +3365,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -3429,15 +3375,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                                                                                ────┬───  \n \u001b[38;5;240m  │\u001b[0m                                                                                                    ╰───── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/liquidjs"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"liquidjs\",\n  \"class\": \"Template\",\n  \"status\": \"fail\",\n  \"duration\": 811.8200000524521,\n  \"error\": \"38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                                                                                ────┬───  \\n \\u001b[38;5;240m  │\\u001b[0m                                                                                                    ╰───── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -3465,8 +3411,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3475,15 +3421,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/mustache"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"mustache\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 293.5\n}"
       }
     },
     {
@@ -3511,8 +3455,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3521,15 +3465,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Template"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/twig"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"twig\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 2021.5750000476837\n}"
       }
     },
     {
@@ -3557,8 +3499,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3567,15 +3509,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/zod"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"zod\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 1445.170000076294\n}"
       }
     },
     {
@@ -3603,8 +3543,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -3613,15 +3553,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/ajv"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"ajv\",\n  \"class\": \"Validation\",\n  \"status\": \"fail\",\n  \"duration\": 83.43999993801117,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -3649,8 +3589,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3659,15 +3599,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/joi"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"joi\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 828.5449999570847\n}"
       }
     },
     {
@@ -3695,8 +3633,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3705,15 +3643,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/valibot"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"valibot\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 275.32999992370605\n}"
       }
     },
     {
@@ -3741,8 +3677,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3751,15 +3687,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/yup"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"yup\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 503.8249999284744\n}"
       }
     },
     {
@@ -3787,8 +3721,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -3797,15 +3731,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/fast-json-stringify"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"fast-json-stringify\",\n  \"class\": \"Validation\",\n  \"status\": \"fail\",\n  \"duration\": 135.0349999666214,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -3833,8 +3767,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3843,15 +3777,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/superstruct"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"superstruct\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 189.25499999523163\n}"
       }
     },
     {
@@ -3879,8 +3811,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3889,15 +3821,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Validation"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/io-ts"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"io-ts\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 294.57999992370605\n}"
       }
     },
     {
@@ -3925,8 +3855,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3935,15 +3865,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/uuid"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"uuid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 202\n}"
       }
     },
     {
@@ -3971,8 +3899,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3981,15 +3909,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/lodash"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"lodash\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 455.80999994277954\n}"
       }
     },
     {
@@ -4017,8 +3943,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4027,15 +3953,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/chalk"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"chalk\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 65.55999994277954\n}"
       }
     },
     {
@@ -4063,8 +3987,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4073,15 +3997,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/nanoid"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"nanoid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 129.06500005722046\n}"
       }
     },
     {
@@ -4109,8 +4031,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -4119,15 +4041,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          ".0.9/node_modules/dotenv/dist/index.cjs:2:2 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249m#\u001b[0m!\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mb\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\n \u001b[38;5;240m  │\u001b[0m  ┬  \n \u001b[38;5;240m  │\u001b[0m  ╰── \n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/dotenv"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"dotenv\",\n  \"class\": \"Utility\",\n  \"status\": \"fail\",\n  \"duration\": 115.07500004768372,\n  \"error\": \".0.9/node_modules/dotenv/dist/index.cjs:2:2 \\u001b[38;5;246m]\\u001b[0m\\n   \\u001b[38;5;246m│\\u001b[0m\\n \\u001b[38;5;246m2 │\\u001b[0m \\u001b[38;5;249m#\\u001b[0m!\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249mu\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249mb\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m  ┬  \\n \\u001b[38;5;240m  │\\u001b[0m  ╰── \\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -4155,8 +4077,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -4165,15 +4087,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0myaml\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m-\u001b[0m\u001b[38;5;249my\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ──┬─  \n \u001b[38;5;240m  │\u001b[0m          ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/js-yaml"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"js-yaml\",\n  \"class\": \"Utility\",\n  \"status\": \"fail\",\n  \"duration\": 321.77499997615814,\n  \"error\": \"0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0myaml\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mj\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m-\\u001b[0m\\u001b[38;5;249my\\u001b[0m\\u001b[38;5;249ma\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m        ──┬─  \\n \\u001b[38;5;240m  │\\u001b[0m          ╰─── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -4201,8 +4123,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4211,15 +4133,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/json5"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"json5\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 33.12000000476837\n}"
       }
     },
     {
@@ -4247,8 +4167,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4257,15 +4177,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/semver"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"semver\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 50.77499997615814\n}"
       }
     },
     {
@@ -4293,8 +4211,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4303,15 +4221,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/ms"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"ms\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 21.72000002861023\n}"
       }
     },
     {
@@ -4339,8 +4255,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4349,15 +4265,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/debug"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"debug\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 30.37999999523163\n}"
       }
     },
     {
@@ -4385,8 +4299,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4395,15 +4309,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/deepmerge"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"deepmerge\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 54.764999985694885\n}"
       }
     },
     {
@@ -4431,8 +4343,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4441,15 +4353,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/query-string"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"query-string\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 308.17000007629395\n}"
       }
     },
     {
@@ -4477,8 +4387,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4487,15 +4397,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/fast-deep-equal"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"fast-deep-equal\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 21.585000038146973\n}"
       }
     },
     {
@@ -4523,8 +4431,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4533,15 +4441,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/change-case"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"change-case\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 164.1600000858307\n}"
       }
     },
     {
@@ -4569,8 +4475,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4579,15 +4485,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/p-limit"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"p-limit\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 91.375\n}"
       }
     },
     {
@@ -4615,8 +4519,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4625,15 +4529,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/lru-cache"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"lru-cache\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 47.37000000476837\n}"
       }
     },
     {
@@ -4661,8 +4563,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -4671,15 +4573,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/date-fns"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"date-fns\",\n  \"class\": \"Utility\",\n  \"status\": \"fail\",\n  \"duration\": 60002.9050000906,\n  \"error\": \"TIMEOUT after 60000ms\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -4707,8 +4609,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4717,15 +4619,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/dayjs"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"dayjs\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 328.5349999666214\n}"
       }
     },
     {
@@ -4753,8 +4653,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4763,15 +4663,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/luxon"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"luxon\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 469.710000038147\n}"
       }
     },
     {
@@ -4799,8 +4697,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4809,15 +4707,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Utility"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/throttle-debounce"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"throttle-debounce\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 172.67000007629395\n}"
       }
     },
     {
@@ -4845,8 +4741,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -4855,15 +4751,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Node core API"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m          ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/events"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"events\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 33.75999999046326,\n  \"error\": \"0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m          ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -4891,8 +4787,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4901,15 +4797,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/stream"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"stream\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 16.28500008583069\n}"
       }
     },
     {
@@ -4937,8 +4831,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -4947,15 +4841,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Node core API"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "   at superviseRun (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/supervise-run.js:90:19)\n    at ShellService.runNodeApp (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:221:34)\n    at async ShellService.execute (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:35:30)\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/buffer"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"buffer\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 2900.710000038147,\n  \"error\": \"   at superviseRun (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/supervise-run.js:90:19)\\n    at ShellService.runNodeApp (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:221:34)\\n    at async ShellService.execute (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:35:30)\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -4983,8 +4877,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -4993,15 +4887,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Node core API"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "[unenv] crypto.createHash is not implemented yet!\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/crypto"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"crypto\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 30.68499994277954,\n  \"error\": \"[unenv] crypto.createHash is not implemented yet!\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -5029,8 +4923,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5039,15 +4933,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/path"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"path\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 18.125\n}"
       }
     },
     {
@@ -5075,8 +4967,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5085,15 +4977,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/url"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"url\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 15.545000076293945\n}"
       }
     },
     {
@@ -5121,8 +5011,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5131,15 +5021,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "Class: Node core API"
         ],
-        "knownIssues": [
-          "Awaiting regenerated harness results"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/querystring"
         ],
-        "raw": ""
+        "raw": "{\n  \"name\": \"querystring\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 17.575000047683716\n}"
       }
     },
     {
@@ -5167,8 +5055,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5177,13 +5065,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-os-eol.js: Uncaught TypeError: Cannot redefine property: EOL",
+          "test-os-checked-function.js: [bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding",
+          "test-os-homedir-no-envvar.js: Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-os-eol.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot redefine property: EOL\"\n  },\n  {\n    \"file\": \"test-os-checked-function.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"internal/test/binding\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding\"\n  },\n  {\n    \"file\": \"test-os-homedir-no-envvar.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead.\"\n  }\n]"
       }
     },
     {
@@ -5211,8 +5101,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5221,13 +5111,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-util-format.js: Uncaught TypeError: Cannot read properties of undefined (reading 'replace')",
+          "test-util-inspect.js: [bundle warning] \"vm\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm",
+          "test-util-types.js: [bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot read properties of undefined (reading 'replace')\"\n  },\n  {\n    \"file\": \"test-util-inspect.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"vm\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"internal/test/binding\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding\"\n  }\n]"
       }
     },
     {
@@ -5255,8 +5147,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "partial",
+          "note": "Partial support"
         },
         "safari": {
           "status": "unknown",
@@ -5265,13 +5157,14 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "1/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-assert.js: [bundle warning] \"vm\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm",
+          "test-assert-async.js: Uncaught AssertionError: {} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\"}"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-assert.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"vm\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm\"\n  },\n  {\n    \"file\": \"test-assert-fail.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-async.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: {} deepStrictEqual {\\\"code\\\":\\\"ERR_INVALID_ARG_TYPE\\\"}\"\n  }\n]"
       }
     },
     {
@@ -5299,8 +5192,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5309,13 +5202,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-fs-mkdir.js: Build failed with 1 error:",
+          "test-fs-write-file.js: Build failed with 1 error:",
+          "test-fs-readfile.js: Build failed with 1 error:"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-fs-mkdir.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-fs-write-file.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  }\n]"
       }
     },
     {
@@ -5343,8 +5238,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5353,13 +5248,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-http-status-code.js: Build failed with 1 error:",
+          "test-http-methods.js: Uncaught AssertionError: undefined deepStrictEqual [\"ACL\",\"BIND\",\"CHECKOUT\",\"CONNECT\",\"COPY\",\"DELETE\",\"GET\",\"HEAD\",\"LINK\",\"LOCK\",\"M-SEARCH\",\"MERGE\",\"MKACTIVITY\",\"MKCALENDAR\",\"MKCOL\",\"MOVE\",\"NOTIFY\",\"OPTIONS\",\"PATCH\",\"POST\",\"PROPFIND\",\"PROPPATCH\",\"PURGE\",\"PUT\",\"QUERY\",\"REBIND\",\"REPORT\",\"SEARCH\",\"SOUR...",
+          "test-http-write-head.js: Mismatched <anonymous> function calls. Expected 1, actual 0."
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-http-status-code.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-http-methods.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: undefined deepStrictEqual [\\\"ACL\\\",\\\"BIND\\\",\\\"CHECKOUT\\\",\\\"CONNECT\\\",\\\"COPY\\\",\\\"DELETE\\\",\\\"GET\\\",\\\"HEAD\\\",\\\"LINK\\\",\\\"LOCK\\\",\\\"M-SEARCH\\\",\\\"MERGE\\\",\\\"MKACTIVITY\\\",\\\"MKCALENDAR\\\",\\\"MKCOL\\\",\\\"MOVE\\\",\\\"NOTIFY\\\",\\\"OPTIONS\\\",\\\"PATCH\\\",\\\"POST\\\",\\\"PROPFIND\\\",\\\"PROPPATCH\\\",\\\"PURGE\\\",\\\"PUT\\\",\\\"QUERY\\\",\\\"REBIND\\\",\\\"REPORT\\\",\\\"SEARCH\\\",\\\"SOUR...\"\n  },\n  {\n    \"file\": \"test-http-write-head.js\",\n    \"status\": \"fail\",\n    \"error\": \"Mismatched <anonymous> function calls. Expected 1, actual 0.\"\n  }\n]"
       }
     },
     {
@@ -5387,8 +5284,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5397,13 +5294,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-process-env.js: Uncaught AssertionError: 42 strictEqual '42'",
+          "test-process-next-tick.js: Uncaught Error",
+          "test-process-hrtime.js: Uncaught TypeError: assert is not a function"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-process-env.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: 42 strictEqual '42'\"\n  },\n  {\n    \"file\": \"test-process-next-tick.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error\"\n  },\n  {\n    \"file\": \"test-process-hrtime.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: assert is not a function\"\n  }\n]"
       }
     },
     {
@@ -5431,8 +5330,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "partial",
+          "note": "Partial support"
         },
         "safari": {
           "status": "unknown",
@@ -5441,13 +5340,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "1/2 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-timers-immediate.js: Uncaught AssertionError: function should not have been called"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-timers-args.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: function should not have been called\"\n  }\n]"
       }
     },
     {
@@ -5475,8 +5374,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5485,13 +5384,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-console-clear.js: Uncaught TypeError: console.clear is not a function",
+          "test-console-count.js: Uncaught TypeError: console.count is not a function",
+          "test-console-methods.js: Uncaught TypeError: Console is not a constructor"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-console-clear.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: console.clear is not a function\"\n  },\n  {\n    \"file\": \"test-console-count.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: console.count is not a function\"\n  },\n  {\n    \"file\": \"test-console-methods.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Console is not a constructor\"\n  }\n]"
       }
     },
     {
@@ -5519,8 +5420,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5529,13 +5430,14 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/2 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-child-process-spawnsync.js: Build failed with 1 error:",
+          "test-child-process-execsync-maxbuf.js: Uncaught AssertionError: undefined strictEqual 'ENOBUFS'"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-child-process-spawnsync.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-child-process-execsync-maxbuf.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: undefined strictEqual 'ENOBUFS'\"\n  }\n]"
       }
     },
     {
@@ -5563,8 +5465,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5573,13 +5475,15 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/3 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-worker-message-port-constructor.js: Uncaught TypeError: MessageChannel is not a constructor",
+          "test-worker-exit-event-error.js: Mismatched noop function calls. Expected 1, actual 0.",
+          "test-worker-load-file-with-extension-other-than-js.js: Build failed with 1 error:"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-worker-message-port-constructor.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: MessageChannel is not a constructor\"\n  },\n  {\n    \"file\": \"test-worker-exit-event-error.js\",\n    \"status\": \"fail\",\n    \"error\": \"Mismatched noop function calls. Expected 1, actual 0.\"\n  },\n  {\n    \"file\": \"test-worker-load-file-with-extension-other-than-js.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  }\n]"
       }
     },
     {
@@ -5607,8 +5511,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5617,13 +5521,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/1 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-performanceobserver.js: [bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-performanceobserver.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"internal/test/binding\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding\"\n  }\n]"
       }
     },
     {
@@ -5651,8 +5555,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5661,13 +5565,13 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/1 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-net-connect-buffer.js: Uncaught TypeError: Class constructor Server cannot be invoked without 'new'"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-net-connect-buffer.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Class constructor Server cannot be invoked without 'new'\"\n  }\n]"
       }
     },
     {
@@ -5695,8 +5599,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pending",
-          "note": "Under re-validation"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -5705,13 +5609,14 @@
       },
       "details": {
         "features": [
-          "Under re-validation"
+          "0/2 tests passed"
         ],
         "knownIssues": [
-          "Awaiting regenerated harness results"
+          "test-dns-set-default-order.js: [bundle warning] \"dns\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns",
+          "test-dns-setlocaladdress.js: [bundle warning] \"dns\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns"
         ],
         "links": [],
-        "raw": ""
+        "raw": "[\n  {\n    \"file\": \"test-dns-set-default-order.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"dns\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns\"\n  },\n  {\n    \"file\": \"test-dns-setlocaladdress.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"dns\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns\"\n  }\n]"
       }
     }
   ]

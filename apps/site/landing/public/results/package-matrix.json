@@ -1,702 +1,727 @@
 {
-  "validated": false,
+  "generatedAt": "2026-11-08T11:28:32.348Z",
+  "validated": true,
   "packages": [
     {
       "name": "fetch",
       "class": "HTTP client",
       "status": "pass",
-      "duration": 3887.1449999999895
+      "duration": 30.679999947547913
     },
     {
       "name": "axios",
       "class": "HTTP client",
-      "status": "pass",
-      "duration": 316.9199999999837
+      "status": "fail",
+      "duration": 2035.7299998998642,
+      "error": "[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0mEventEmitter\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   \u2502\u001b[0m          \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m   \u2502\u001b[0m                \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "node-fetch",
       "class": "HTTP client",
-      "status": "pass",
-      "duration": 367.34499999997206
+      "status": "fail",
+      "duration": 630.5199999809265,
+      "error": "m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                            \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "undici",
       "class": "HTTP client",
       "status": "fail",
-      "duration": 71.94500000000698,
-      "error": "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20undici%20from%20%22https%3A%2F%2Fesm.sh%2Fundici%22%3B%0Atry%20%7B%0A%09undici.request%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+      "duration": 476.1599999666214,
+      "error": "B%0A%09__result%20%3D%20await%20(typeof%20import_undici.request%20%3D%3D%3D%20%22function%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D10:28316:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "fs-extra",
       "class": "File system",
-      "status": "pass",
-      "duration": 1249.8850000000093
+      "status": "fail",
+      "duration": 626.5899999141693,
+      "error": "st%20file%20%3D%20%22%2Ftmp%2Fharness-fs-extra.txt%22%3B%0A%09await%20import_lib.default.outputFile(file%2C%20%22ok%22)%3B%0A%09if%20(await%20import_lib.default.readFile(file%2C%20%22utf8%22)%20!%3D%3D%20%22ok%22)%20throw%20new%20Error(%22content%20mismatch%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D11:2800:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "globby",
       "class": "File system",
       "status": "fail",
-      "duration": 1275.4700000000012,
-      "error": "The requested module '/unicorn-magic@^0.4.0/node?target=es2022' does not provide an export named 'toPath'"
+      "duration": 1614.1299999952316,
+      "error": "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                       \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                             \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "chokidar",
       "class": "File system",
-      "status": "pass",
-      "duration": 219.1349999999802
+      "status": "fail",
+      "duration": 353.6749999523163,
+      "error": "0mrealpathSync\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                            \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                  \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "esbuild",
       "class": "Build tool",
-      "status": "pass",
-      "duration": 225.64000000001397
+      "status": "fail",
+      "duration": 8386.789999961853,
+      "error": "[bundle warning] \"pnpapi\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/pnpapi\nUnsupported platform: browser  LE\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "swc",
       "class": "Build tool",
-      "status": "pass",
-      "duration": 326.41499999997905
+      "status": "fail",
+      "duration": 798.039999961853,
+      "error": "unexpected export\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "tsc",
       "class": "Build tool",
       "status": "fail",
-      "duration": 515.2400000000198,
-      "error": "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20ts%20from%20%22https%3A%2F%2Fesm.sh%2Ftypescript%22%3B%0Atry%20%7B%0A%09if%20(typeof%20ts.transpile(%22let%20x%3A%20number%20%3D%201%3B%22)%20!%3D%3D%20%22string%22)%20throw%20new%20Error(%22transpile%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+      "duration": 12316.700000047684,
+      "error": "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "sass",
       "class": "Build tool",
       "status": "fail",
-      "duration": 260.4100000000035,
-      "error": "The requested module 'https://esm.sh/sass' does not provide an export named 'default'"
+      "duration": 2775.555000066757,
+      "error": "8;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0msass\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m          \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "rollup",
       "class": "Bundler",
       "status": "fail",
-      "duration": 76.14999999999418,
-      "error": "The requested module 'https://esm.sh/rollup' does not provide an export named 'default'"
+      "duration": 5293.40499997139,
+      "error": "Build failed with 1 error:\n\n\u001b[31m[PARSE_ERROR] \u001b[0mFile appears to be binary.\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "webpack",
       "class": "Bundler",
       "status": "fail",
-      "duration": 487.0100000000093,
-      "error": "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20%22https%3A%2F%2Fesm.sh%2Fwebpack%22%3B%0Atry%20%7B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+      "duration": 60003.47000002861,
+      "error": "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "vite",
       "class": "Bundler",
       "status": "fail",
-      "duration": 1898.2399999999907,
-      "error": "The requested module 'https://esm.sh/vite' does not provide an export named 'default'"
+      "duration": 12226.265000104904,
+      "error": "[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m      \u2502\u001b[0m       \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m      \u2502\u001b[0m           \u2570\u2500\u2500\u2500\u2500\u2500\u2500 It can not be redeclared here\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "parcel",
       "class": "Bundler",
       "status": "fail",
-      "duration": 399.945000000007,
-      "error": "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20parcel%20from%20%22https%3A%2F%2Fesm.sh%2Fparcel%22%3B%0Atry%20%7B%0A%09if%20(typeof%20parcel%20!%3D%3D%20%22object%22%20%26%26%20typeof%20parcel%20!%3D%3D%20%22function%22)%20throw%20new%20Error(%22unexpected%20export%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+      "duration": 33203.18499994278,
+      "error": "l@2.16.4/node_modules/parcel/lib/bin.js:2:2 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249m#\u001b[0m!\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mb\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m  \u252c  \n \u001b[38;5;240m  \u2502\u001b[0m  \u2570\u2500\u2500 \n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "vitest",
       "class": "Testing",
       "status": "fail",
-      "duration": 1346.5149999999849,
-      "error": "The requested module 'https://esm.sh/vitest' does not provide an export named 'default'"
+      "duration": 1959.8799999952316,
+      "error": "\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                            \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                     \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n\nprobe returned a falsy value\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "jest",
       "class": "Testing",
       "status": "fail",
-      "duration": 603.2099999999919,
-      "error": "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20%22https%3A%2F%2Fesm.sh%2Fjest%22%3B%0Atry%20%7B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+      "duration": 22507.25,
+      "error": " already been declared here\n \u001b[38;5;240m   \u2502\u001b[0m \n \u001b[38;5;246m19 \u2502\u001b[0m \u001b[38;5;249ml\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m__dirname\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   \u2502\u001b[0m     \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m   \u2502\u001b[0m         \u2570\u2500\u2500\u2500\u2500\u2500\u2500 It can not be redeclared here\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u256f\u001b[0m\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "express",
       "class": "HTTP server",
       "status": "fail",
-      "duration": 316.74499999999534,
-      "error": "Object prototype may only be an Object or null: undefined"
+      "duration": 3486.9950000047684,
+      "error": "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "fastify",
       "class": "HTTP server",
-      "status": "pass",
-      "duration": 1129.9499999999825
+      "status": "fail",
+      "duration": 3241.399999976158,
+      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "h3",
       "class": "HTTP server",
       "status": "fail",
-      "duration": 1008.8050000000221,
-      "error": "The requested module 'https://esm.sh/h3' does not provide an export named 'default'"
+      "duration": 448.7550001144409,
+      "error": "obe/h3.mjs:2:8 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mh3\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u252c  \n \u001b[38;5;240m  \u2502\u001b[0m         \u2570\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "polka",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 670.9100000000035
+      "duration": 666.8649998903275
     },
     {
       "name": "crypto-js",
       "class": "Crypto",
       "status": "pass",
-      "duration": 64.55999999999767
+      "duration": 238.33500003814697
     },
     {
       "name": "bcrypt",
       "class": "Crypto",
       "status": "fail",
-      "duration": 224.375,
-      "error": "No native build was found for platform=linux arch= runtime=node abi=undefined uv= libc=glibc node=22.14.0\n    loaded from: /bcrypt@6.0.0/es2022"
+      "duration": 559.2699999809265,
+      "error": "%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20import_bcrypt.default.hashSync(%22abc%22%2C%2010)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D17:702:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "argon2",
       "class": "Crypto",
       "status": "fail",
-      "duration": 313.7749999999942,
-      "error": "No native build was found for platform=linux arch= runtime=node abi=undefined uv= libc=glibc node=22.14.0\n    loaded from: /argon2@0.44.0/es2022"
+      "duration": 756.1750000715256,
+      "error": "t%20__result%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20await%20import_argon2.hash(%22abc%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D18:917:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "handlebars",
       "class": "Template",
       "status": "pass",
-      "duration": 223.17500000001746
+      "duration": 983.2599999904633
     },
     {
       "name": "ejs",
       "class": "Template",
       "status": "pass",
-      "duration": 298.02999999999884
+      "duration": 184.3050000667572
     },
     {
       "name": "pug",
       "class": "Template",
-      "status": "pass",
-      "duration": 412.8300000000163
+      "status": "fail",
+      "duration": 2686.429999947548,
+      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "hono",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 303.23499999998603
+      "duration": 651.454999923706
     },
     {
       "name": "elysia",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 635.0350000000035
+      "duration": 6049.745000004768
     },
     {
       "name": "itty-router",
       "class": "HTTP server",
-      "status": "pass",
-      "duration": 386.5
+      "status": "fail",
+      "duration": 60003.27999997139,
+      "error": "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "koa",
       "class": "HTTP server",
-      "status": "pass",
-      "duration": 387.375
+      "status": "fail",
+      "duration": 1589.530000090599,
+      "error": "Build failed with 4 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "zod",
       "class": "Validation",
       "status": "pass",
-      "duration": 90.22500000000582
+      "duration": 1445.170000076294
     },
     {
       "name": "uuid",
       "class": "Utility",
-      "status": "fail",
-      "duration": 58.429999999993015,
-      "error": "The requested module 'https://esm.sh/uuid' does not provide an export named 'default'"
+      "status": "pass",
+      "duration": 202
     },
     {
       "name": "lodash",
       "class": "Utility",
       "status": "pass",
-      "duration": 76.85999999998603
+      "duration": 455.80999994277954
     },
     {
       "name": "chalk",
       "class": "Utility",
       "status": "pass",
-      "duration": 68.19000000000233
+      "duration": 65.55999994277954
     },
     {
       "name": "events",
       "class": "Node core API",
       "status": "fail",
-      "duration": 13.179999999993015,
-      "error": "Build failed with 1 error:\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"EventEmitter\" is not exported by \"bolo-node-shim:events\".\n   \u001b[38;5;246m╭\u001b[0m\u001b[38;5;246m─\u001b[0m\u001b[38;5;246m[\u001b[0m probe/events.mjs:2:10 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0mEventEmitter\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m          ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m"
+      "duration": 33.75999999046326,
+      "error": "0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m          \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "stream",
       "class": "Node core API",
       "status": "pass",
-      "duration": 11.85999999998603
+      "duration": 16.28500008583069
     },
     {
       "name": "buffer",
       "class": "Node core API",
       "status": "fail",
-      "duration": 10.790000000008149,
-      "error": "Identifier 'Buffer' has already been declared"
+      "duration": 2900.710000038147,
+      "error": "   at superviseRun (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/supervise-run.js:90:19)\n    at ShellService.runNodeApp (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:221:34)\n    at async ShellService.execute (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:35:30)\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "crypto",
       "class": "Node core API",
-      "status": "pass",
-      "duration": 26.535000000003492
+      "status": "fail",
+      "duration": 30.68499994277954,
+      "error": "[unenv] crypto.createHash is not implemented yet!\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "path",
       "class": "Node core API",
       "status": "pass",
-      "duration": 38.320000000006985
+      "duration": 18.125
     },
     {
       "name": "url",
       "class": "Node core API",
       "status": "pass",
-      "duration": 15.369999999995343
+      "duration": 15.545000076293945
     },
     {
       "name": "querystring",
       "class": "Node core API",
       "status": "pass",
-      "duration": 12.020000000018626
+      "duration": 17.575000047683716
     },
     {
       "name": "zlib",
       "class": "Node core API",
-      "status": "pass",
-      "duration": 12.375
+      "status": "fail",
+      "duration": 14.625,
+      "error": "[unenv] zlib.gzipSync is not implemented yet!\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "ajv",
       "class": "Validation",
-      "status": "pass",
-      "duration": 187.67499999998836
+      "status": "fail",
+      "duration": 83.43999993801117,
+      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "joi",
       "class": "Validation",
       "status": "pass",
-      "duration": 194.61999999999534
+      "duration": 828.5449999570847
     },
     {
       "name": "valibot",
       "class": "Validation",
       "status": "pass",
-      "duration": 52.5
+      "duration": 275.32999992370605
     },
     {
       "name": "yup",
       "class": "Validation",
       "status": "pass",
-      "duration": 219.09500000000116
+      "duration": 503.8249999284744
     },
     {
       "name": "fast-json-stringify",
       "class": "Validation",
-      "status": "pass",
-      "duration": 172.02999999999884
+      "status": "fail",
+      "duration": 135.0349999666214,
+      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "superstruct",
       "class": "Validation",
       "status": "pass",
-      "duration": 181.85000000000582
+      "duration": 189.25499999523163
     },
     {
       "name": "io-ts",
       "class": "Validation",
       "status": "pass",
-      "duration": 288.52999999999884
+      "duration": 294.57999992370605
     },
     {
       "name": "nanoid",
       "class": "Utility",
       "status": "pass",
-      "duration": 57.07500000001164
+      "duration": 129.06500005722046
     },
     {
       "name": "dotenv",
       "class": "Utility",
-      "status": "pass",
-      "duration": 65.48000000001048
+      "status": "fail",
+      "duration": 115.07500004768372,
+      "error": ".0.9/node_modules/dotenv/dist/index.cjs:2:2 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249m#\u001b[0m!\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mb\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m  \u252c  \n \u001b[38;5;240m  \u2502\u001b[0m  \u2570\u2500\u2500 \n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "js-yaml",
       "class": "Utility",
       "status": "fail",
-      "duration": 175.89000000001397,
-      "error": "The requested module 'https://esm.sh/js-yaml' does not provide an export named 'default'"
+      "duration": 321.77499997615814,
+      "error": "0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0myaml\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m-\u001b[0m\u001b[38;5;249my\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m          \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "json5",
       "class": "Utility",
       "status": "pass",
-      "duration": 142.82000000000698
+      "duration": 33.12000000476837
     },
     {
       "name": "semver",
       "class": "Utility",
       "status": "pass",
-      "duration": 38.79000000000815
+      "duration": 50.77499997615814
     },
     {
       "name": "ms",
       "class": "Utility",
       "status": "pass",
-      "duration": 175.13999999998487
+      "duration": 21.72000002861023
     },
     {
       "name": "debug",
       "class": "Utility",
       "status": "pass",
-      "duration": 36.52499999999418
+      "duration": 30.37999999523163
     },
     {
       "name": "deepmerge",
       "class": "Utility",
       "status": "pass",
-      "duration": 186.54000000000815
+      "duration": 54.764999985694885
     },
     {
       "name": "query-string",
       "class": "Utility",
       "status": "pass",
-      "duration": 606.8899999999849
+      "duration": 308.17000007629395
     },
     {
       "name": "fast-deep-equal",
       "class": "Utility",
       "status": "pass",
-      "duration": 146.5450000000128
+      "duration": 21.585000038146973
     },
     {
       "name": "change-case",
       "class": "Utility",
       "status": "pass",
-      "duration": 169.47500000000582
+      "duration": 164.1600000858307
     },
     {
       "name": "p-limit",
       "class": "Utility",
       "status": "pass",
-      "duration": 210.5099999999802
+      "duration": 91.375
     },
     {
       "name": "lru-cache",
       "class": "Utility",
       "status": "pass",
-      "duration": 199.77000000001863
+      "duration": 47.37000000476837
     },
     {
       "name": "date-fns",
       "class": "Utility",
-      "status": "pass",
-      "duration": 588.0249999999651
+      "status": "fail",
+      "duration": 60002.9050000906,
+      "error": "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "dayjs",
       "class": "Utility",
       "status": "pass",
-      "duration": 50.66500000003725
+      "duration": 328.5349999666214
     },
     {
       "name": "luxon",
       "class": "Utility",
       "status": "pass",
-      "duration": 79.56500000000233
+      "duration": 469.710000038147
     },
     {
       "name": "throttle-debounce",
       "class": "Utility",
       "status": "pass",
-      "duration": 176.15499999996973
+      "duration": 172.67000007629395
     },
     {
       "name": "rimraf",
       "class": "File system",
       "status": "fail",
-      "duration": 248.41499999997905,
-      "error": "The requested module 'https://esm.sh/rimraf' does not provide an export named 'default'"
+      "duration": 909.7800000905991,
+      "error": "38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   \u2502\u001b[0m                                           \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m   \u2502\u001b[0m                                               \u2570\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u256f\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "glob",
       "class": "File system",
       "status": "fail",
-      "duration": 1252.2300000000396,
-      "error": "The requested module 'https://esm.sh/glob' does not provide an export named 'default'"
+      "duration": 81.49500000476837,
+      "error": "  \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m          \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"realpathSync\" is not exported by \"bolo-node-shim:fs\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51125..51137\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"EventEmitter\" is not exported by \"bolo-node-shim:events\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51273..51285\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "mkdirp",
       "class": "File system",
       "status": "fail",
-      "duration": 204.55499999999302,
-      "error": "The requested module 'https://esm.sh/mkdirp' does not provide an export named 'default'"
+      "duration": 168.9800000190735,
+      "error": ";5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mmkdirp\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mk\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u2500\u2500\u252c\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m           \u2570\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "del",
       "class": "File system",
       "status": "fail",
-      "duration": 286.6599999999744,
-      "error": "The requested module '/unicorn-magic@^0.3.0?target=es2022' does not provide an export named 'toPath'"
+      "duration": 1632.164999961853,
+      "error": "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                       \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                             \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "memfs",
       "class": "File system",
-      "status": "fail",
-      "duration": 319.7750000000233,
-      "error": "The requested module 'https://esm.sh/memfs' does not provide an export named 'Volume'"
+      "status": "skip",
+      "duration": 2118.935000061989,
+      "error": "0%7B%0A%09const%20vol%20%3D%20new%20import_lib.Volume()%3B%0A%09const%20fs%20%3D%20(0%2C%20import_lib.createFsFromVolume)(vol)%3B%0A%09fs.writeFileSync(%22%2Fa%22%2C%20%22x%22)%3B%0A%09if%20(fs.readFileSync(%22%2Fa%22%2C%20%22utf8%22)%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22memfs%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D54:10897:5\n\nNode.js v22.0.0"
     },
     {
       "name": "cors",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 314.4100000000326
+      "duration": 217.39999997615814
     },
     {
       "name": "helmet",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 62.56500000000233
+      "duration": 177.6449999809265
     },
     {
       "name": "morgan",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 209.72999999998137
+      "duration": 545.9850000143051
     },
     {
       "name": "compression",
       "class": "HTTP server",
-      "status": "pass",
-      "duration": 212.7600000000093
+      "status": "fail",
+      "duration": 519.4950000047684,
+      "error": "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "serve-static",
       "class": "HTTP server",
       "status": "fail",
-      "duration": 160.82000000000698,
-      "error": "Object prototype may only be an Object or null: undefined"
+      "duration": 187.99500000476837,
+      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "cookie-parser",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 62.98000000003958
+      "duration": 182.7300000190735
     },
     {
       "name": "body-parser",
       "class": "HTTP server",
-      "status": "pass",
-      "duration": 166.10499999998137
+      "status": "fail",
+      "duration": 762.7800000905991,
+      "error": "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "pino",
       "class": "HTTP server",
       "status": "pass",
-      "duration": 166.72499999997672
+      "duration": 60.019999980926514
     },
     {
       "name": "winston",
       "class": "HTTP server",
       "status": "fail",
-      "duration": 338.6149999999907,
-      "error": "Class constructor E cannot be invoked without 'new'"
+      "duration": 4326.889999985695,
+      "error": "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "got",
       "class": "HTTP client",
       "status": "fail",
-      "duration": 363.9349999999977,
-      "error": "[unenv] PassThrough is not implemented yet!"
+      "duration": 3968.6999999284744,
+      "error": "\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                             \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "ky",
       "class": "HTTP client",
       "status": "pass",
-      "duration": 46.78000000002794
+      "duration": 518.5999999046326
     },
     {
       "name": "http-proxy-agent",
       "class": "HTTP client",
-      "status": "pass",
-      "duration": 72.72999999998137
+      "status": "fail",
+      "duration": 710.6399999856949,
+      "error": "38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0monce\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m          \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m            \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "form-data",
       "class": "HTTP client",
-      "status": "pass",
-      "duration": 244.52999999996973
+      "status": "fail",
+      "duration": 606.2299998998642,
+      "error": "form-data failed\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "sha.js",
       "class": "Crypto",
       "status": "pass",
-      "duration": 249.97500000003492
+      "duration": 2678.3650000095367
     },
     {
       "name": "hash.js",
       "class": "Crypto",
-      "status": "pass",
-      "duration": 184.7949999999837
+      "status": "fail",
+      "duration": 489.1299999952316,
+      "error": "import_hash.default.utils.sha256 is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "md5",
       "class": "Crypto",
       "status": "pass",
-      "duration": 84.77000000001863
+      "duration": 736.4349999427795
     },
     {
       "name": "create-hash",
       "class": "Crypto",
-      "status": "pass",
-      "duration": 409.0799999999581
+      "status": "fail",
+      "duration": 2977.2050000429153,
+      "error": "60()%3B%0A%09%09return%20new%20Hash(sha(alg))%3B%0A%09%7D%3B%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20((0%2C%20import_browser.default)(%22sha256%22).update(%22hello%22).digest(%22hex%22).length%20!%3D%3D%2064)%20throw%20new%20Error(%22create-hash%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D65:45:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "jose",
       "class": "Crypto",
       "status": "pass",
-      "duration": 121.39000000001397
+      "duration": 507.875
     },
     {
       "name": "jsonwebtoken",
       "class": "Crypto",
       "status": "fail",
-      "duration": 230.59999999997672,
-      "error": "Object prototype may only be an Object or null: undefined"
+      "duration": 2254.3300000429153,
+      "error": "0%7B%0A%09const%20token%20%3D%20import_jsonwebtoken.default.sign(%7B%20sub%3A%20%22x%22%20%7D%2C%20%22secret%22)%3B%0A%09if%20(import_jsonwebtoken.default.verify(token%2C%20%22secret%22).sub%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22jsonwebtoken%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D67:44:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "pbkdf2",
       "class": "Crypto",
-      "status": "pass",
-      "duration": 244.9100000000326
+      "status": "fail",
+      "duration": 687.3949999809265,
+      "error": "exports.pbkdf2Sync%20%3D%20nativePBKDF2Sync%3B%0A%09%09exports.pbkdf2%20%3D%20nativePBKDF2%3B%0A%09%7D%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20(typeof%20import_pbkdf2.default.pbkdf2Sync%20!%3D%3D%20%22function%22)%20throw%20new%20Error(%22pbkdf2%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D68:45:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "marked",
       "class": "Template",
       "status": "pass",
-      "duration": 58.93499999999767
+      "duration": 346.79499995708466
     },
     {
       "name": "markdown-it",
       "class": "Template",
       "status": "pass",
-      "duration": 207.71999999997206
+      "duration": 1648.9700000286102
     },
     {
       "name": "micromark",
       "class": "Template",
       "status": "pass",
-      "duration": 140.69000000000233
+      "duration": 4342.400000095367
     },
     {
       "name": "nunjucks",
       "class": "Template",
       "status": "pass",
-      "duration": 206.21000000002095
+      "duration": 981.2200000286102
     },
     {
       "name": "liquidjs",
       "class": "Template",
-      "status": "pass",
-      "duration": 243.41500000003725
+      "status": "fail",
+      "duration": 811.8200000524521,
+      "error": "38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                                                                                \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                                                                                    \u2570\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "mustache",
       "class": "Template",
       "status": "pass",
-      "duration": 169.52499999996508
+      "duration": 293.5
     },
     {
       "name": "twig",
       "class": "Template",
       "status": "pass",
-      "duration": 332.39000000001397
+      "duration": 2021.5750000476837
     },
     {
       "name": "chai",
       "class": "Testing",
       "status": "pass",
-      "duration": 162.32000000000698
+      "duration": 125.53999996185303
     },
     {
       "name": "sinon",
       "class": "Testing",
       "status": "pass",
-      "duration": 220.76500000001397
+      "duration": 1247.2949999570847
     },
     {
       "name": "dompurify",
       "class": "Testing",
       "status": "pass",
-      "duration": 67.4199999999837
+      "duration": 670.5049999952316
     },
     {
       "name": "linkedom",
       "class": "Testing",
       "status": "pass",
-      "duration": 439.6900000000023
+      "duration": 3580.4349999427795
     },
     {
       "name": "lightningcss",
       "class": "Build tool",
       "status": "fail",
-      "duration": 38.51000000000931,
-      "error": "Cannot read properties of null (reading 'transform')"
+      "duration": 5276.080000042915,
+      "error": "%7D%0A%09%09%09%09return%20result%3B%0A%09%09%09%7D%20else%20return%20call(options)%3B%0A%09%09%7D%3B%0A%09%7D%0A%7D)))()%2C%201)).default%3B%0Atry%20%7B%0A%09if%20(typeof%20transform%20!%3D%3D%20%22function%22)%20throw%20new%20Error(%22lightningcss%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D79:948:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "postcss",
       "class": "Build tool",
       "status": "pass",
-      "duration": 47.85999999998603
+      "duration": 365.99000000953674
     },
     {
       "name": "babel",
       "class": "Build tool",
       "status": "fail",
-      "duration": 310.4199999999837,
-      "error": "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20*%20as%20babel%20from%20%22https%3A%2F%2Fesm.sh%2F%40babel%2Fcore%22%3B%0Atry%20%7B%0A%09if%20(typeof%20babel.transformSync(%22const%20x%20%3D%201%3B%22%2C%20%7B%20presets%3A%20%5B%5D%20%7D).code%20!%3D%3D%20%22string%22)%20throw%20new%20Error(%22babel%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+      "duration": 4903.714999914169,
+      "error": "Build failed with 6 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "sucrase",
       "class": "Build tool",
       "status": "pass",
-      "duration": 618.9749999999767
+      "duration": 1318.6599999666214
     },
     {
       "name": "acorn",
       "class": "Build tool",
       "status": "pass",
-      "duration": 37.82500000001164
+      "duration": 200.3400000333786
     },
     {
       "name": "rspack",
       "class": "Bundler",
       "status": "fail",
-      "duration": 230.55999999999767,
-      "error": "[unenv] module.require is not implemented yet!"
+      "duration": 29247.44000005722,
+      "error": "[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m          \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                      \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "turbo",
       "class": "Bundler",
       "status": "fail",
-      "duration": 129.0349999999744,
-      "error": "Failed to fetch dynamically imported module: data:text/javascript;charset=utf-8,var%20__bcGlobals%20%3D%20()%20%3D%3E%20globalThis.__browserContainers%3B%0Avar%20process%20%3D%20__bcGlobals()%3F.shims%3F.process%3B%0A__bcGlobals()%3F.shims%3F.buffer%3F.Buffer%3B%0Avar%20__bcFormat%20%3D%20(args)%20%3D%3E%20args.map((a)%20%3D%3E%20%7B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22string%22)%20return%20a%3B%0A%09if%20(a%20instanceof%20Error)%20return%20a.stack%20%7C%7C%20String(a)%3B%0A%09if%20(typeof%20a%20%3D%3D%3D%20%22object%22%20%26%26%20a%20!%3D%3D%20null)%20try%20%7B%0A%09%09return%20JSON.stringify(a)%3B%0A%09%7D%20catch%20%7B%0A%09%09return%20String(a)%3B%0A%09%7D%0A%09return%20String(a)%3B%0A%7D).join(%22%20%22)%3B%0Avar%20__bcWrite%20%3D%20(stream%2C%20args)%20%3D%3E%20__bcGlobals()%3F.shims%3F.process%3F.%5Bstream%5D%3F.write(__bcFormat(args)%20%2B%20%22%5Cn%22)%3B%0Avar%20console%20%3D%20%7B%0A%09log%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09info%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09debug%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09table%3A%20(...args)%20%3D%3E%20__bcWrite(%22stdout%22%2C%20args)%2C%0A%09warn%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09error%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20args)%2C%0A%09trace%3A%20(...args)%20%3D%3E%20__bcWrite(%22stderr%22%2C%20%5B%22Trace%3A%22%2C%20...args%5D)%2C%0A%09assert%3A%20(cond%2C%20...args)%20%3D%3E%20%7B%0A%09%09if%20(!cond)%20__bcWrite(%22stderr%22%2C%20%5B%22Assertion%20failed%22%20%2B%20(args.length%20%3F%20%22%3A%22%20%3A%20%22%22)%2C%20...args%5D)%3B%0A%09%7D%2C%0A%09group%3A%20()%20%3D%3E%20%7B%7D%2C%0A%09groupEnd%3A%20()%20%3D%3E%20%7B%7D%0A%7D%3B%0Aimport%20*%20as%20turbo%20from%20%22https%3A%2F%2Fesm.sh%2F%40turbo%2Fworker%22%3B%0Atry%20%7B%0A%09if%20(typeof%20turbo%20!%3D%3D%20%22object%22)%20throw%20new%20Error(%22turbo%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A"
+      "duration": 102.8400000333786,
+      "error": "install failed (exit 1): Failed to fetch\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "ws",
       "class": "HTTP server",
-      "status": "pass",
-      "duration": 52.65500000002794
+      "status": "fail",
+      "duration": 339.6599999666214,
+      "error": "ws failed\n(bolo diagnostics: .logs/latest.jsonl)"
     }
   ]
 }
