@@ -4,6 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { configureBoloLogging, getLogger } from "@bolojs/log";
+import { toNodeCompatReport } from "./node-compat-report.js";
 
 const logger = getLogger(["bolo", "compat-harness", "cli"]);
 
@@ -20,7 +21,8 @@ const usage = () =>
   `  --mode <m>          packages (default) | node-tests | canaries\n` +
   `  --json              Print JSON to stdout\n` +
   `  --url <url>         Harness URL (default: http://localhost:5173)\n` +
-  `  --output <path>     Write JSON result to a file\n` +
+  `  --output <path>     Write JSON result to a file (site-consumable shape)\n` +
+  `  --raw-output <path> Also write the detailed per-test run record to a file\n` +
   `  --source <path>     Path to package-matrix.json source to override\n` +
   `  --packages <names>  Comma-separated or JSON-array package names to filter\n` +
   `  --shard-index <n>   Zero-based shard index for parallel runs\n` +
@@ -32,6 +34,7 @@ const parseArgs = () => {
     mode: process.env.HARNESS_MODE || "packages",
     url: process.env.HARNESS_URL || "http://localhost:5173",
     output: process.env.OUTPUT_PATH,
+    rawOutput: process.env.RAW_OUTPUT_PATH,
     source: process.env.SOURCE_MATRIX,
     packages: process.env.PACKAGE_NAMES,
     shardIndex: parseInt(process.env.SHARD_INDEX || "0", 10),
@@ -48,6 +51,8 @@ const parseArgs = () => {
       options.url = args[++i];
     } else if (arg === "--output" || arg === "-o") {
       options.output = args[++i];
+    } else if (arg === "--raw-output") {
+      options.rawOutput = args[++i];
     } else if (arg === "--source" || arg === "-s") {
       options.source = args[++i];
     } else if (arg === "--packages" || arg === "-p") {
@@ -160,16 +165,10 @@ const main = async () => {
     let output;
     if (options.mode === "node-tests") {
       const modules = await page.evaluate(() => window.__runNodeTests());
-      const tests = modules.flatMap((m) => m.results);
-      const count = (status) => tests.filter((t) => t.status === status).length;
-      output = {
-        nodeVersion: await readNodeVersion(),
-        total: tests.length,
-        pass: count("pass"),
-        fail: count("fail"),
-        skip: count("skip"),
-        modules,
-      };
+      output = toNodeCompatReport(modules, { nodeVersion: await readNodeVersion() });
+      if (options.rawOutput) {
+        await writeFile(options.rawOutput, JSON.stringify(modules, null, 2) + "\n");
+      }
     } else {
       await page.click("#pkgBtn");
       await page.waitForFunction(() => window.__packageResults !== null, undefined, {
@@ -181,7 +180,7 @@ const main = async () => {
           r.error = `${r.error ?? ""}\n(bolo diagnostics: .logs/latest.jsonl)`.trim();
         }
       }
-      output = { packages: results };
+      output = { generatedAt: new Date().toISOString(), validated: true, packages: results };
     }
 
     if (options.output) {
