@@ -46,9 +46,15 @@ declare global {
     __compatHarness: CompatHarness;
     __testResults: { module: string; results: TestResult[] }[] | null;
     __packageResults: PackageResult[] | null;
+    /** Liveness + incremental-result channel for the CLI watchdog. */
+    __packageProgress: { current: string | null; startedAt: number; last?: string } | null;
+    /** Called by the runner after each package; the CLI forwards it to the partial JSONL. */
+    __packagePartial?: (result: PackageResult) => void;
+    /** Packages a resumed run should skip (already completed by an earlier run). */
+    __packageSkip: string[] | null;
     __runCanaries(): Promise<CanaryResult[]>;
     __runNodeTests(): Promise<{ module: string; results: TestResult[] }[]>;
-    __runPackageMatrix(): Promise<PackageResult[]>;
+    __runPackageMatrix(options?: { skip?: string[] }): Promise<PackageResult[]>;
   }
 }
 
@@ -118,6 +124,8 @@ window.__compatHarness = {
 
 window.__testResults = null;
 window.__packageResults = null;
+window.__packageProgress = null;
+window.__packageSkip = null;
 
 window.__runCanaries = async () => {
   await window.__compatHarness.boot();
@@ -146,11 +154,21 @@ window.__runNodeTests = async () => {
   return results;
 };
 
-window.__runPackageMatrix = async () => {
-  const runner = new PackageMatrixRunner();
+window.__runPackageMatrix = async (options?: { skip?: string[] }) => {
+  const runner = new PackageMatrixRunner({
+    skip: options?.skip ?? window.__packageSkip ?? undefined,
+    onPackageStart: (name) => {
+      window.__packageProgress = { current: name, startedAt: Date.now() };
+    },
+    onResult: (result) => {
+      window.__packageProgress = { current: null, startedAt: Date.now(), last: result.name };
+      window.__packagePartial?.(result);
+    },
+  });
   const results = await runner.runAll();
   await runner.teardown();
   window.__packageResults = results;
+  window.__packageProgress = null;
   console.table(
     results.map((r) => ({
       name: r.name,

@@ -89,6 +89,65 @@ describe("PackageMatrixRunner timeouts", () => {
   });
 });
 
+describe("PackageMatrixRunner incremental progress", () => {
+  it("calls onPackageStart before each package and onResult after it", async () => {
+    const events: string[] = [];
+    const harness = createHarness();
+    const runner = new PackageMatrixRunner({
+      harness,
+      matrix: testMatrix,
+      packageTimeoutMs: 10,
+      onPackageStart: (name) => events.push(`start:${name}`),
+      onResult: (result) => events.push(`result:${result.name}:${result.status}`),
+    });
+
+    await runner.runAll();
+
+    expect(events).toEqual([
+      "start:first",
+      "result:first:pass",
+      "start:second",
+      "result:second:pass",
+    ]);
+  });
+
+  it("reports timeout results through onResult as well", async () => {
+    const results: { name: string; status: string }[] = [];
+    const harness = createHarness({
+      boot: async () => {
+        await new Promise<void>(() => {});
+      },
+    });
+    const runner = new PackageMatrixRunner({
+      harness,
+      matrix: testMatrix,
+      packageTimeoutMs: 10,
+      onResult: (r) => results.push({ name: r.name, status: r.status }),
+    });
+
+    await runner.runAll();
+
+    expect(results).toEqual([
+      { name: "first", status: "fail" },
+      { name: "second", status: "fail" },
+    ]);
+  });
+
+  it("skips the packages named in `skip` (resume support)", async () => {
+    const harness = createHarness();
+    const runner = new PackageMatrixRunner({
+      harness,
+      matrix: testMatrix,
+      packageTimeoutMs: 10,
+      skip: ["first"],
+    });
+
+    const results = await runner.runAll();
+
+    expect(results.map((r) => r.name)).toEqual(["second"]);
+  });
+});
+
 describe("esmShUrlToSpecifier", () => {
   it("strips the origin and keeps a plain package name", () => {
     expect(esmShUrlToSpecifier("lodash")).toEqual({

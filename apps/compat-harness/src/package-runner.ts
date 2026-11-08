@@ -143,6 +143,9 @@ export class PackageMatrixRunner {
   private harness: CompatHarness;
   private readonly packageTimeoutMs: number;
   private readonly isolation: "fresh-boot" | "shared";
+  private readonly onResult: ((result: PackageResult) => void) | undefined;
+  private readonly onPackageStart: ((name: string) => void) | undefined;
+  private readonly skip: Set<string>;
 
   constructor(
     options: {
@@ -150,12 +153,21 @@ export class PackageMatrixRunner {
       isolation?: "fresh-boot" | "shared";
       harness?: CompatHarness;
       matrix?: PackageMatrix;
+      /** Called after every finished package, so the caller can persist progress incrementally. */
+      onResult?: (result: PackageResult) => void;
+      /** Called just before a package starts, so the caller can track liveness. */
+      onPackageStart?: (name: string) => void;
+      /** Package names to skip: already completed by an earlier (killed) run. */
+      skip?: Iterable<string>;
     } = {},
   ) {
     this.packageTimeoutMs = options.packageTimeoutMs ?? DEFAULT_PACKAGE_TIMEOUT_MS;
     this.isolation = options.isolation ?? "fresh-boot";
     this.matrix = options.matrix ?? (packageMatrix as PackageMatrix);
     this.harness = options.harness ?? window.__compatHarness;
+    this.onResult = options.onResult;
+    this.onPackageStart = options.onPackageStart;
+    this.skip = new Set(options.skip ?? []);
   }
 
   async boot(): Promise<void> {
@@ -165,7 +177,11 @@ export class PackageMatrixRunner {
   async runAll(): Promise<PackageResult[]> {
     const results: PackageResult[] = [];
     for (const pkg of this.matrix.packages) {
-      results.push(await this.runOne(pkg));
+      if (this.skip.has(pkg.name)) continue;
+      this.onPackageStart?.(pkg.name);
+      const result = await this.runOne(pkg);
+      results.push(result);
+      this.onResult?.(result);
     }
     return results;
   }
