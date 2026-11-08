@@ -17,6 +17,7 @@ const defaultSourcePath = join(
 const usage = () =>
   `Usage: compat-harness [options]\n\n` +
   `Options:\n` +
+  `  --mode <m>          packages (default) | node-tests | canaries\n` +
   `  --json              Print JSON to stdout\n` +
   `  --url <url>         Harness URL (default: http://localhost:5173)\n` +
   `  --output <path>     Write JSON result to a file\n` +
@@ -28,6 +29,7 @@ const parseArgs = () => {
   const args = process.argv.slice(2);
   const options = {
     json: false,
+    mode: process.env.HARNESS_MODE || "packages",
     url: process.env.HARNESS_URL || "http://localhost:5173",
     output: process.env.OUTPUT_PATH,
     source: process.env.SOURCE_MATRIX,
@@ -40,6 +42,8 @@ const parseArgs = () => {
     const arg = args[i];
     if (arg === "--json") {
       options.json = true;
+    } else if (arg === "--mode") {
+      options.mode = args[++i];
     } else if (arg === "--url" || arg === "-u") {
       options.url = args[++i];
     } else if (arg === "--output" || arg === "-o") {
@@ -75,13 +79,26 @@ const parsePackages = (raw) => {
     .filter(Boolean);
 };
 
+const readNodeVersion = async () => {
+  const manifest = JSON.parse(
+    await readFile(
+      join(dirname(fileURLToPath(import.meta.url)), "..", "src", "manifest.json"),
+      "utf8",
+    ),
+  );
+  return manifest.nodeVersion;
+};
+
 const main = async () => {
   await configureBoloLogging();
   const options = parseArgs();
   const allowed = parsePackages(options.packages);
   const sourcePath = options.source || defaultSourcePath;
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: process.env.CHROME || undefined,
+  });
   const context = await browser.newContext();
   const page = await context.newPage();
   page.on("console", (msg) => logger.info(`browser:${msg.type()}`, { text: msg.text() }));
@@ -114,7 +131,7 @@ const main = async () => {
   }
 
   const LOAD_TIMEOUT = 120000;
-  const RUN_TIMEOUT = 300000;
+  const RUN_TIMEOUT = options.mode === "node-tests" ? 3_600_000 : 300000;
 
   try {
     logger.info("navigating to", { url: options.url });
@@ -129,17 +146,43 @@ const main = async () => {
       undefined,
       { timeout: LOAD_TIMEOUT },
     );
-    await page.click("#pkgBtn");
-    await page.waitForFunction(() => window.__packageResults !== null, undefined, {
-      timeout: RUN_TIMEOUT,
-    });
-    const results = await page.evaluate(() => window.__packageResults);
-    for (const r of results) {
-      if (r.status === "fail") {
-        r.error = `${r.error ?? ""}\n(bolo diagnostics: .logs/latest.jsonl)`.trim();
+    // A scorer that passes any canary is lying: the whole run is invalid.
+    const canaries = await page.evaluate(() => window.__runCanaries());
+    const leaked = canaries.filter((c) => !c.failedAsExpected);
+    if (leaked.length > 0 || options.mode === "canaries") {
+      console.log(JSON.stringify(canaries, null, 2));
+      if (leaked.length > 0) {
+        throw new Error(`INVALID RUN: canaries passed: ${leaked.map((c) => c.name).join(", ")}`);
       }
     }
-    const output = { packages: results };
+    if (options.mode === "canaries") return;
+
+    let output;
+    if (options.mode === "node-tests") {
+      const modules = await page.evaluate(() => window.__runNodeTests());
+      const tests = modules.flatMap((m) => m.results);
+      const count = (status) => tests.filter((t) => t.status === status).length;
+      output = {
+        nodeVersion: await readNodeVersion(),
+        total: tests.length,
+        pass: count("pass"),
+        fail: count("fail"),
+        skip: count("skip"),
+        modules,
+      };
+    } else {
+      await page.click("#pkgBtn");
+      await page.waitForFunction(() => window.__packageResults !== null, undefined, {
+        timeout: RUN_TIMEOUT,
+      });
+      const results = await page.evaluate(() => window.__packageResults);
+      for (const r of results) {
+        if (r.status === "fail") {
+          r.error = `${r.error ?? ""}\n(bolo diagnostics: .logs/latest.jsonl)`.trim();
+        }
+      }
+      output = { packages: results };
+    }
 
     if (options.output) {
       await writeFile(options.output, JSON.stringify(output, null, 2) + "\n");
@@ -148,6 +191,7 @@ const main = async () => {
     if (options.json) {
       console.log(JSON.stringify(output, null, 2));
     } else if (!options.output) {
+      const results = output.packages ?? [];
       console.log(`Ran ${results.length} packages`);
       for (const r of results) {
         const duration = r.duration ? `${r.duration.toFixed(0)}ms` : "n/a";

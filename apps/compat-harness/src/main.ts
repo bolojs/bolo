@@ -1,5 +1,7 @@
 import { boot, type BrowserContainer } from "bolojs";
 import { NodeTestRunner, type ModuleManifest, type TestResult } from "./runner.js";
+import { runCanaries, type CanaryResult } from "./canaries.js";
+import { commonIndexSource } from "./test-common.js";
 import { PackageMatrixRunner, type PackageResult } from "./package-runner.js";
 
 declare global {
@@ -42,6 +44,7 @@ declare global {
     __compatHarness: CompatHarness;
     __testResults: { module: string; results: TestResult[] }[] | null;
     __packageResults: PackageResult[] | null;
+    __runCanaries(): Promise<CanaryResult[]>;
     __runNodeTests(): Promise<{ module: string; results: TestResult[] }[]>;
     __runPackageMatrix(): Promise<PackageResult[]>;
   }
@@ -96,14 +99,21 @@ window.__compatHarness = {
   },
 
   teardown: async () => {
-    await container?.teardown();
+    const closing = container;
     container = undefined;
     window.__compatHarness.ready = false;
+    await closing?.teardown();
   },
 };
 
 window.__testResults = null;
 window.__packageResults = null;
+
+window.__runCanaries = async () => {
+  await window.__compatHarness.boot();
+  await window.__compatHarness.write("/test/common/index.js", commonIndexSource);
+  return runCanaries(window.__compatHarness);
+};
 
 window.__runNodeTests = async () => {
   const response = await fetch("/src/manifest.json");
