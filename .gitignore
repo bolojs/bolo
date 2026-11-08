@@ -25,3 +25,4 @@ tests/e2e/reports/
 .playwright/
 .playwright-cli/
 .logs/
+.playwright-browsers/

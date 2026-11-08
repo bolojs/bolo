@@ -1,0 +1,61 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>spike b</title>
+<script>
+  // Registers /b/sw.js, then answers /b/sync requests relayed by the SW with
+  // a prebuilt payload, and starts the benchmark worker.
+  (async () => {
+    const result = { controlled: false, worker: null, error: null };
+    try {
+      const payload = (size) => "SW:" + "x".repeat(Math.max(0, size - 3));
+
+      navigator.serviceWorker.addEventListener("message", (e) => {
+        const m = e.data;
+        if (m && m.type === "b-sync") {
+          navigator.serviceWorker.controller.postMessage({
+            type: "b-reply",
+            id: m.id,
+            body: payload(m.size),
+          });
+        }
+      });
+
+      await navigator.serviceWorker.register("/b/sw.js", { scope: "/b/" });
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((r) => {
+          navigator.serviceWorker.addEventListener("controllerchange", r, { once: true });
+          setTimeout(r, 2000);
+        });
+      }
+      if (!navigator.serviceWorker.controller && !sessionStorage.getItem("reloaded")) {
+        sessionStorage.setItem("reloaded", "1");
+        location.reload();
+        return;
+      }
+      result.controlled = !!navigator.serviceWorker.controller;
+
+      result.worker = await new Promise((resolve) => {
+        const w = new Worker("/b/worker.js");
+        const to = setTimeout(() => {
+          w.terminate();
+          resolve({ status: "timeout" });
+        }, 240000);
+        w.onmessage = (e) => {
+          clearTimeout(to);
+          w.terminate();
+          resolve({ status: "done", report: e.data });
+        };
+        w.onerror = (e) => {
+          clearTimeout(to);
+          w.terminate();
+          resolve({ status: "error", error: e.message || String(e) });
+        };
+        w.postMessage("start");
+      });
+    } catch (e) {
+      result.error = String(e && e.stack ? e.stack : e);
+    }
+    window.__spikeResult = result;
+  })();
+</script>
