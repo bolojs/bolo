@@ -3,6 +3,7 @@ import { NodeTestRunner, type ModuleManifest, type TestResult } from "./runner.j
 import { runCanaries, type CanaryResult } from "./canaries.js";
 import { commonIndexSource } from "./test-common.js";
 import { PackageMatrixRunner, type PackageResult } from "./package-runner.js";
+import { PARTIAL_CHANNEL, PARTIAL_CHANNEL_NAME_GLOBAL } from "./partial-channel.js";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -49,7 +50,9 @@ declare global {
     /** Liveness + incremental-result channel for the CLI watchdog. */
     __packageProgress: { current: string | null; startedAt: number; last?: string } | null;
     /** Called by the runner after each package; the CLI forwards it to the partial JSONL. */
-    __packagePartial?: (result: PackageResult) => void;
+    [PARTIAL_CHANNEL]?: (result: PackageResult) => void;
+    /** Publishes PARTIAL_CHANNEL so the CLI can discover it instead of hardcoding it. */
+    [PARTIAL_CHANNEL_NAME_GLOBAL]?: string;
     /** Packages a resumed run should skip (already completed by an earlier run). */
     __packageSkip: string[] | null;
     __runCanaries(): Promise<CanaryResult[]>;
@@ -126,6 +129,7 @@ window.__testResults = null;
 window.__packageResults = null;
 window.__packageProgress = null;
 window.__packageSkip = null;
+window[PARTIAL_CHANNEL_NAME_GLOBAL] = PARTIAL_CHANNEL;
 
 window.__runCanaries = async () => {
   await window.__compatHarness.boot();
@@ -162,7 +166,7 @@ window.__runPackageMatrix = async (options?: { skip?: string[] }) => {
     },
     onResult: (result) => {
       window.__packageProgress = { current: null, startedAt: Date.now(), last: result.name };
-      window.__packagePartial?.(result);
+      window[PARTIAL_CHANNEL]?.(result);
     },
   });
   const results = await runner.runAll();

@@ -18,6 +18,19 @@ import {
   readPartialFile,
 } from "./progress-report.js";
 
+/**
+ * Where the harness page publishes the name of its incremental-result
+ * channel (src/partial-channel.ts). The CLI reads it at runtime instead of
+ * hardcoding the channel name: the page side is TypeScript and this file is
+ * plain JavaScript (Node 20 in CI), so they cannot share an import, and two
+ * independently maintained literals is exactly how the channel silently
+ * broke before.
+ */
+const PARTIAL_CHANNEL_NAME_GLOBAL = "__partialChannelName";
+
+/** The Playwright binding the CLI exposes; the page forwards results to it. */
+const PARTIAL_BINDING = "__boloPartialPushBinding";
+
 const logger = getLogger(["bolo", "compat-harness", "cli"]);
 
 const defaultSourcePath = join(
@@ -173,9 +186,21 @@ const startMatrixRun = async (page, url, skip, log, { reload = true } = {}) => {
       { timeout: LOAD_TIMEOUT },
     );
   }
-  await page.evaluate(() => {
-    window.__boloPartialPush = (result) => window.__boloPartialPushBinding(result);
-  });
+  // The page publishes its incremental-result channel name under
+  // __partialChannelName (see src/partial-channel.ts). Reading it here, as
+  // late as possible, keeps the CLI honest about the name it must install:
+  // when the page calls that global, results stream out per package.
+  const channel = await page.evaluate(
+    (global) => window[global] ?? null,
+    PARTIAL_CHANNEL_NAME_GLOBAL,
+  );
+  if (!channel) throw new Error("harness page did not publish its partial-result channel name");
+  await page.evaluate(
+    ({ name, binding }) => {
+      window[name] = (result) => window[binding](result);
+    },
+    { name: channel, binding: PARTIAL_BINDING },
+  );
   await page.evaluate((names) => {
     window.__packageSkip = names;
   }, skip);
