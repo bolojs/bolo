@@ -1,5 +1,6 @@
 import packageMatrix from "./package-matrix.json" with { type: "json" };
 import type { CompatHarness } from "./main.js";
+import { classifyPackageProbe } from "./classify.js";
 
 export interface PackageResult {
   name: string;
@@ -47,7 +48,7 @@ export class PackageMatrixRunner {
         await this.harness.write(path, source);
         const { exitCode, output } = await this.harness.exec(path);
         const duration = performance.now() - start;
-        const status = this.classify(exitCode, output);
+        const status = classifyPackageProbe(exitCode, output);
         const result: PackageResult = { name: pkg.name, class: pkg.class, status, duration };
         if (status === "fail") {
           result.error = output.trim() || "probe failed";
@@ -92,11 +93,5 @@ try {
   private importIdentifier(name: string): string {
     const safe = name.replace(/[^a-zA-Z0-9_$]/g, "_");
     return /^[a-zA-Z_$]/.test(safe) ? safe : `_${safe}`;
-  }
-
-  private classify(exitCode: number, output: string): PackageResult["status"] {
-    if (exitCode === 0) return "pass";
-    if (output.includes("SKIP") || output.includes("# skip")) return "skip";
-    return "fail";
   }
 }

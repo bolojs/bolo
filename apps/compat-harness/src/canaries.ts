@@ -1,4 +1,5 @@
 import type { CompatHarness } from "./main.js";
+import { canaryFailedAsExpected, leakedCanaryNames } from "./classify.js";
 
 /**
  * Adversarial scripts that FAIL under real Node (non-zero exit). If the harness
@@ -45,15 +46,14 @@ export const runCanaries = async (harness: CompatHarness): Promise<CanaryResult[
       name,
       exitCode: outcome.exitCode,
       output: outcome.output.slice(0, 200),
-      // A hang is not a pass either, but only a real non-zero exit counts as correct.
-      failedAsExpected: typeof outcome.exitCode === "number" && outcome.exitCode !== 0,
+      failedAsExpected: canaryFailedAsExpected(outcome.exitCode),
     });
   }
   return results;
 };
 
 export const assertCanariesFail = (results: CanaryResult[]): void => {
-  const leaked = results.filter((r) => !r.failedAsExpected).map((r) => r.name);
+  const leaked = leakedCanaryNames(results);
   if (leaked.length > 0) {
     throw new Error(`INVALID RUN: canaries scored as pass/hang: ${leaked.join(", ")}`);
   }
