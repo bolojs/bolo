@@ -42,7 +42,9 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
   ],
   "engines": {
     "node": ">=24.0.0"
