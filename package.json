@@ -19,7 +19,8 @@
     "prepare": "lefthook install",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo run build --filter='!@bolojs/compat-harness' && changeset publish"
+    "release": "turbo run build --filter='!@bolojs/compat-harness' && changeset publish",
+    "release:build": "turbo run build --filter='!@bolojs/compat-harness'"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",
