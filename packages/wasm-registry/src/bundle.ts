@@ -583,14 +583,21 @@ const nodeAliasPlugin = (
       };
     }
     const keys = Object.keys(shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
-    const contents = [
-      `const __shim = globalThis.__browserContainers.shims[${JSON.stringify(builtin)}];`,
-      "export default __shim;",
-      ...keys.map((k) => `export const ${k} = __shim[${JSON.stringify(k)}];`),
-    ].join("\n");
+    const contents = shimModuleSource(builtin, keys);
     return { code: contents, map: null };
   },
 });
+
+/** Source of the virtual module that re-exports a container's live builtin shim. */
+export const shimModuleSource = (builtin: string, keys: string[]): string =>
+  [
+    `const __shim = globalThis.__browserContainers.shims[${JSON.stringify(builtin)}];`,
+    "export default __shim;",
+    // Node's CJS interop: require('assert') is the shim itself, so callable
+    // builtins (assert, ...) work as `assert(cond)`.
+    'export { __shim as "module.exports" };',
+    ...keys.map((k) => `export const ${k} = __shim[${JSON.stringify(k)}];`),
+  ].join("\n");
 
 const jsrAliasPlugin = (): Plugin => ({
   name: "bolo-jsr-alias",
