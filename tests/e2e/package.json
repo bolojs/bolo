@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/e2e",
-  "version": "0.0.1",
+  "version": "0.0.2-rc.0",
   "private": true,
   "description": "E2E tests for bolo using Gauge + gauge-ts",
   "scripts": {

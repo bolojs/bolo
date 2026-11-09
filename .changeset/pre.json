@@ -23,5 +23,8 @@
     "@bolojs/tests": "0.2.0",
     "@bolojs/e2e": "0.0.1"
   },
-  "changesets": []
+  "changesets": [
+    "initial-public-release",
+    "process-model"
+  ]
 }
