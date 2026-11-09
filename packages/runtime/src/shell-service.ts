@@ -98,6 +98,8 @@ export class ShellService {
     const callbacks: OutputCallbacks = {
       stdout: (data: string) => {
         stdoutChunks.push(data);
+      // Carried through so runNodeAppInWorker can register the process for kill(tag).
+      tag: output?.tag,
         output?.stdout?.(data);
       },
       stderr: (data: string) => {
