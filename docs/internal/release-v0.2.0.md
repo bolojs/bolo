@@ -1,4 +1,7 @@
-# Release v0.2.0
+---
+title: Release runbook v0.2.0
+description: Ordered steps and open checklist to ship v0.2.0.
+---
 
 Human runbook. Nothing here has been run for real. The rehearsal in step 4 never publishes.
 
