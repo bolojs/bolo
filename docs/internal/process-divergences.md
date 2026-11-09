@@ -41,3 +41,11 @@ Symptom: two timers with the same deadline (for example `setTimeout(a, 60)` and 
 Cause: Node derives each timer start from a real, cached loop clock; two timers created microseconds apart land on the same or adjacent millisecond depending on scheduling. bolo uses a virtual clock with creation-order tie-breaking, which matches Node's common outcome but not its race.
 
 Why unfixable: the oracle is not deterministic here. A residual disagreement is only counted when Node itself is stable across repeated runs.
+
+## BOLO-DIV-006: residual 1ms tie races that Node's oracle happened to resolve the same way eight times
+
+Symptom: in about 6 of 10000 generated programs (seeds 100 to 119, one divergence each in seeds 100, 107, 109, 110, 111, 113), a timer or interval re-arm lands exactly 1ms before or after another deadline and bolo orders them differently from Node. Typical forms: an unref'd interval that Node never gets to run once the last ref'd timer fires runs once more in bolo (seeds 107, 111, 113); two timers at adjacent deadlines swap (seeds 100, 109, 110).
+
+Cause: same family as BOLO-DIV-005. The virtual clock models libuv's ~1ms wake lateness per interval re-arm as a constant, while Node's actual lateness depends on real wake jitter. In a chain of nested intervals the modelled and real offsets can differ by one tick, which flips a tie. The 8-run oracle recheck only accepts bolo when Node itself shows the bolo outcome, so a race that Node resolves one way 8 of 8 times still counts as a divergence.
+
+Why not fixed: a constant offset cannot track a jittery one; changing WAKE_LATENESS_MS fixes some programs and breaks others (the 47 regression fixtures pin the current value). Rate is 0.06%, all in programs with 3 or more nested timer layers.
