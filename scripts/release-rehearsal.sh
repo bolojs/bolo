@@ -60,10 +60,10 @@ require("fs").writeFileSync(process.argv[2]+"/check.mjs",Object.keys(o).map(n=>`
 ( cd "$APP" && pnpm install --no-frozen-lockfile --config.confirmModulesPurge=false )
 
 step "assert packages resolve and bundle (vite build)"
-# KNOWN GAP (reported in docs/release-v0.2.0.md): oxc-transform's browser entry needs
-# @oxc-transform/binding-wasm32-wasi, which is not pulled in for consumers. Without this
-# line the build fails. Set REHEARSAL_STRICT_OXC=1 to reproduce the raw consumer failure.
-if [ "${REHEARSAL_STRICT_OXC:-0}" != 1 ]; then
+# Strict by default: consumers get @oxc-transform/binding-wasm32-wasi through the
+# dependency declared in @bolojs/registry and @bolojs/vite-server. Set
+# REHEARSAL_WORKAROUND_OXC=1 only to reproduce the old manual-install workaround.
+if [ "${REHEARSAL_WORKAROUND_OXC:-0}" = 1 ]; then
   ( cd "$APP" && pnpm add @oxc-transform/binding-wasm32-wasi@0.140.0 )
 fi
 ( cd "$APP" && pnpm exec vite build )
