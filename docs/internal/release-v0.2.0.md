@@ -61,3 +61,11 @@ Release plumbing (done on `v020/publish-rc`):
 - Optionally move to npm trusted publishing (OIDC) and drop the long-lived token once the packages exist on the registry.
 - The `dry-run` job intentionally has neither `NPM_TOKEN` nor `id-token: write`.
 - Also required: `GITHUB_TOKEN` write access to contents and pull requests (set in the workflow), and the repo setting "Allow GitHub Actions to create and approve pull requests".
+
+## Version retarget: 0.3.0
+
+A stale `v0.2.0` tag from April already exists, so this release ships as `0.3.0` instead.
+The first rc attempt (`0.2.0-rc.0`) never reached npm (`ENEEDAUTH`, no `NPM_TOKEN`), so nothing is burned.
+The 11 packages were set to `0.3.0-rc.0` by hand in `package.json`; `changeset publish` publishes any version not yet on npm, with the `rc` dist-tag while pre mode is active.
+To promote: `pnpm changeset pre exit`, add a changeset, let the action version to `0.3.0`, publish under `latest`.
+Read every "0.2.0" above as "0.3.0".

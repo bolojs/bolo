@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/registry",
-  "version": "0.2.0-rc.0",
+  "version": "0.3.0-rc.0",
   "description": "In-browser bundler (rolldown + oxc-transform) with a registerWasmTool() extension seam for bolo.",
   "type": "module",
   "main": "./dist/index.js",

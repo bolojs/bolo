@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/pm",
-  "version": "0.2.0-rc.0",
+  "version": "0.3.0-rc.0",
   "description": "Browser-native npm package installer — registry resolve + tarball extract, no server required.",
   "type": "module",
   "main": "./dist/index.js",
