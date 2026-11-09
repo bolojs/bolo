@@ -124,4 +124,24 @@ describe("createNodeTimers", () => {
     timers.unenroll(item);
     expect(item._idleTimeout).toBe(-1);
   });
+
+  it("survives user-overwritten call/apply and warns on overflow", async () => {
+    const warn = vi.fn();
+    const { timers } = createNodeTimers({
+      setNative: (fn, ms) => setTimeout(fn, ms),
+      clearNative: (id) => clearTimeout(id as never),
+      afterCallback: () => {},
+      warn,
+    });
+    const fn = Object.assign(vi.fn(), { call: "x", apply: "y" });
+    timers.setImmediate(fn, 1);
+    timers.setTimeout(fn, 1);
+    await wait(10);
+    expect(fn).toHaveBeenCalledTimes(2);
+    timers.clearTimeout(timers.setTimeout(() => {}, 2 ** 31));
+    expect(warn).toHaveBeenCalledWith(
+      "TimeoutOverflowWarning",
+      `${2 ** 31} does not fit into a 32-bit signed integer.\nTimeout duration was set to 1.`,
+    );
+  });
 });

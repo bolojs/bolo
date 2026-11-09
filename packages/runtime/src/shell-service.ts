@@ -33,6 +33,8 @@ declare global {
           clearTimeout: (t: unknown) => unknown;
           setInterval: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
           clearInterval: (t: unknown) => unknown;
+          setImmediate?: (fn: (...a: unknown[]) => void, ...rest: unknown[]) => unknown;
+          clearImmediate?: (t: unknown) => unknown;
         };
       }
     | undefined;

@@ -106,7 +106,8 @@ const crash = (err: unknown) => {
       /* exit handlers must not mask the crash */
     }
   }
-  finish(1);
+  // Exit handlers may overwrite process.exitCode (Node honours it).
+  finish(processShim?.exitCode ?? 1);
 };
 const finish = (code: number) => {
   if (exited) return;
@@ -215,6 +216,10 @@ const runProcess = async (msg: ProcRunMessage) => {
     // Node runs the tick queue right after each macrotask callback, before promise jobs.
     afterCallback: () => processShim?.drainTicks(),
     hop: channelHop,
+    warn: (name, message) => {
+      const warning = Object.assign(new Error(message), { name });
+      processShim?.emit("warning", warning);
+    },
   });
   globalThis.__browserContainers!.timers = trackedTimers;
   // `require('node:timers')` sees the same tracked implementation.
@@ -294,7 +299,8 @@ const runProcess = async (msg: ProcRunMessage) => {
     try {
       processShim.emit("beforeExit", processShim.exitCode ?? 0);
     } catch (err) {
-      finish(err instanceof ProcessExit ? err.code : 1);
+      if (err instanceof ProcessExit) finish(err.code);
+      else crash(err);
       return;
     }
     // beforeExit scheduled new work — drain again before exiting.

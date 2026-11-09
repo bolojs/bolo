@@ -53,6 +53,14 @@ const mustSucceed = (fn, exact = 1) =>
     if (typeof fn === 'function') return fn.apply(this, args);
   }, exact);
 
+// Node's expectsError: returns a mustCall'd checker asserting the thrown error's shape.
+const expectsError = (validator, exact) =>
+  mustCall((...args) => {
+    const error = args.pop();
+    assert.throws(() => { throw error; }, validator);
+    return true;
+  }, exact);
+
 const skip = (msg) => {
   console.log('1..0 # SKIP ' + (msg || ''));
   process.exit(0);
@@ -94,6 +102,7 @@ module.exports = {
   mustCallAtLeast,
   mustNotCall,
   mustSucceed,
+  expectsError,
   expectExitCode,
   skip,
   noop,

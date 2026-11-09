@@ -15,6 +15,8 @@ export interface NodeTimersHost {
   afterCallback: () => void;
   /** Defers to a later task than a plain 0ms timer (check phase). */
   hop?: (fn: () => void) => void;
+  /** Emits a process warning (e.g. TimeoutOverflowWarning). */
+  warn?: (name: string, message: string) => void;
 }
 
 const TIMEOUT_MAX = 2 ** 31 - 1;
@@ -66,6 +68,12 @@ export const createNodeTimers = (host: NodeTimersHost) => {
   const byId = new Map<number, Timeout>();
   const live = new Set<{ refed: boolean }>();
 
+  const overflow = (ms: number) =>
+    host.warn?.(
+      "TimeoutOverflowWarning",
+      `${ms} does not fit into a 32-bit signed integer.\nTimeout duration was set to 1.`,
+    );
+
   const hasRefed = (): boolean => {
     for (const h of live) if (h.refed) return true;
     return false;
@@ -85,6 +93,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
 
     constructor(fn: (...a: unknown[]) => void, after: unknown, args: unknown[], repeat: boolean) {
       let ms = Number(after);
+      if (ms > TIMEOUT_MAX) overflow(ms);
       if (!(ms >= 1 && ms <= TIMEOUT_MAX)) ms = 1;
       this._idleTimeout = ms;
       this._repeat = repeat ? ms : null;
@@ -106,7 +115,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       this.pending = false;
       try {
         if (typeof this._onTimeout === "function") {
-          this._onTimeout.apply(this, this._timerArgs);
+          Reflect.apply(this._onTimeout, this, this._timerArgs);
         }
       } finally {
         const repeat = this._repeat;
@@ -188,7 +197,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       }
       this._destroyed = true;
       try {
-        this._onImmediate?.apply(this, this._argv);
+        if (this._onImmediate) Reflect.apply(this._onImmediate, this, this._argv);
       } finally {
         host.afterCallback();
       }
@@ -275,12 +284,16 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       return new Immediate(fn, args);
     },
     clearImmediate,
-    enroll: (item, msecs) => {
+    enroll: (item, msecs: unknown) => {
       if (typeof msecs !== "number") throw invalidArgType("msecs", "number", msecs);
       if (msecs < 0 || !Number.isFinite(msecs)) {
         throw outOfRange("msecs", "a non-negative finite number", msecs);
       }
       timers.unenroll(item);
+      if (msecs > TIMEOUT_MAX) {
+        overflow(msecs);
+        msecs = 1;
+      }
       item._idleTimeout = msecs;
     },
     unenroll: (item) => {
