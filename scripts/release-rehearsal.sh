@@ -66,7 +66,18 @@ step "assert packages resolve and bundle (vite build)"
 if [ "${REHEARSAL_WORKAROUND_OXC:-0}" = 1 ]; then
   ( cd "$APP" && pnpm add @oxc-transform/binding-wasm32-wasi@0.140.0 )
 fi
+cat > "$APP/vite.config.js" <<'JS'
+import { bolojsShimPlugins } from "@bolojs/vite-preset";
+export default { plugins: bolojsShimPlugins(), build: { target: "esnext" } };
+JS
 ( cd "$APP" && pnpm exec vite build )
+
+step "assert consumer-side patches applied (wasi async pool disabled, no stock pool of 4)"
+if grep -rhoE 'asyncWorkPoolSize: ?[0-9]+' "$APP/dist" | grep -qE ': ?[1-9]'; then
+  fail "a WASI binding in the consumer bundle still has asyncWorkPoolSize > 0 (vite-preset patch not applied)"
+fi
+grep -rqE '"AssertionError"' "$APP/dist" || fail "unenv assert patch not applied in consumer bundle (AssertionError name missing)"
+grep -rqE 'asyncWorkPoolSize: ?0' "$APP/dist" || fail "no WASI binding with asyncWorkPoolSize found in consumer bundle"
 
 step "assert packages import in Node (resolution + export maps)"
 ( cd "$APP" && node check.mjs ) || echo "NOTE: Node-side import failures above are informational (browser-only packages); vite build is the gate."

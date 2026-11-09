@@ -1,4 +1,5 @@
 import type { Plugin } from "vite";
+import { patchUnenvAssert } from "./unenv-patches.js";
 
 // Builtins with a first-party wrapper in this package's `src/`.
 const SHIMMED_BUILTINS = new Set([
@@ -47,6 +48,10 @@ export const nodeWebShims = (): Plugin => {
   return {
     name: "@bolojs/node-web-shims",
     enforce: "pre",
+    transform(code, id) {
+      const patched = patchUnenvAssert(id, code);
+      return patched === null ? null : { code: patched, map: null };
+    },
     async resolveId(id, importer, options) {
       const bareName = id.startsWith("node:") ? id.slice("node:".length) : id;
 

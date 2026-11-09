@@ -28,6 +28,29 @@ const resolvePolyfillsShim = (): Plugin => ({
   },
 });
 
+// Consumer-side equivalent of the repo's pnpm patches for
+// @oxc-transform/binding-wasm32-wasi and @rolldown/browser (patchedDependencies
+// do not travel with published packages). The napi async-work pool workers die
+// opaquely in cross-origin module-worker contexts, so async napi calls hang;
+// pool size 0 selects emnapi's supported single-thread path.
+const WASI_BROWSER_ID =
+  /[\\/](?:@oxc-transform[\\/]binding-wasm32-wasi[\\/]transform\.wasi-browser\.js|@rolldown[\\/]browser[\\/]dist[\\/]rolldown-binding\.wasi-browser\.js)(?:\?.*)?$/;
+
+/** Returns source with the napi async pool disabled, or null if `id` is not a WASI browser binding or has no pool setting. */
+export const patchWasiAsyncPool = (id: string, code: string): string | null => {
+  if (!WASI_BROWSER_ID.test(id) || !/asyncWorkPoolSize:\s*[1-9]\d*/.test(code)) return null;
+  return code.replace(/asyncWorkPoolSize:\s*[1-9]\d*/, "asyncWorkPoolSize: 0");
+};
+
+const wasiAsyncPoolPlugin = (): Plugin => ({
+  name: "bolojs:wasi-async-pool",
+  enforce: "pre",
+  transform(code, id) {
+    const patched = patchWasiAsyncPool(id, code);
+    return patched === null ? null : { code: patched, map: null };
+  },
+});
+
 /**
  * Cross-Origin-Opener-Policy / Cross-Origin-Embedder-Policy headers required
  * for cross-origin isolation (SharedArrayBuffer, the sw-sandbox worker
@@ -56,6 +79,7 @@ const BARE_BUILTINS = ["crypto", "events", "path", "stream", "util", "assert", "
 export function bolojsShimPlugins(): Plugin[] {
   return [
     resolvePolyfillsShim(),
+    wasiAsyncPoolPlugin(),
     nodeWebShims(),
     ...nodePolyfills({
       include: ["buffer"],
@@ -81,7 +105,7 @@ export function bolojsAlias(): Array<{ find: string | RegExp; replacement: strin
 /** `optimizeDeps` config so esbuild's dependency pre-bundling scan also resolves bare builtins to shims. */
 export function bolojsOptimizeDeps(): UserConfig["optimizeDeps"] {
   return {
-    exclude: ["bolojs", "@rolldown/browser", "oxc-transform"],
+    exclude: ["bolojs", "@rolldown/browser", "oxc-transform", "@oxc-transform/binding-wasm32-wasi"],
     esbuildOptions: {
       plugins: [
         {
