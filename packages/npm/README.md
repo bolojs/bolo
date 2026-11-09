@@ -1,7 +1,6 @@
 # @bolojs/pm
 
-Browser-native npm package installer for [bolo](https://github.com/bolojs/bolo). Resolves the
-registry and extracts tarballs into a `@bolojs/fs` virtual filesystem, no server required.
+Browser-native npm package installer for [bolo](https://github.com/bolojs/bolo). Resolves the registry and extracts tarballs into a `@bolojs/fs` virtual filesystem, no server required.
 
 ## Install
 
@@ -21,8 +20,7 @@ const pm = new PackageManager({ vfs, cwd: "/project" });
 await pm.install(["lodash@^4"]);
 ```
 
-Used internally by `bolojs` to power `npm install` inside a container; usable standalone in any
-app that needs an in-browser package installer.
+Used internally by `bolojs` to power `npm install` inside a container; usable standalone in any app that needs an in-browser package installer.
 
 ## Docs
 

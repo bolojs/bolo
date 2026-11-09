@@ -30,11 +30,11 @@ Note: this file lives in `docs/`, which is symlinked into the public Starlight s
 
 Found by the rehearsal on this branch (all real, none fixed here, scope was release plumbing only):
 
-- [ ] Consumers cannot bundle `@bolojs/registry` or `@bolojs/vite-server` in a clean Vite app: `oxc-transform/browser.js` imports `@oxc-transform/binding-wasm32-wasi`, which is not installed for consumers (the repo has a pnpm patch for it, `patchedDependencies` do not travel with published packages). The rehearsal works around it with `pnpm add @oxc-transform/binding-wasm32-wasi@0.140.0`; `REHEARSAL_STRICT_OXC=1` reproduces the failure. Fix by declaring the dependency in the packages that use it, or document it.
-- [ ] Other patched dependencies (`@rolldown/browser@1.1.5`, `unenv@2.0.0-rc.24`) are also not applied for consumers. Verify behavior without the patches or vendor the fixes.
-- [ ] Compiled test files are published (`dist/**/*.test.js`, 229 files in the dry-run). Exclude them from `files` (e.g. `"!dist/**/*.test.*"`) or from the build tsconfig.
+- [x] Consumers cannot bundle `@bolojs/registry` or `@bolojs/vite-server` in a clean Vite app: `oxc-transform/browser.js` imports `@oxc-transform/binding-wasm32-wasi`, which is not installed for consumers (the repo has a pnpm patch for it, `patchedDependencies` do not travel with published packages). The rehearsal works around it with `pnpm add @oxc-transform/binding-wasm32-wasi@0.140.0`; `REHEARSAL_STRICT_OXC=1` reproduces the failure. Fixed: `@oxc-transform/binding-wasm32-wasi@0.140.0` is now a dependency of `@bolojs/registry` and `@bolojs/vite-server`; the rehearsal is strict by default (`REHEARSAL_WORKAROUND_OXC=1` restores the old manual install).
+- [x] Other patched dependencies (`@rolldown/browser@1.1.5`, `unenv@2.0.0-rc.24`) are also not applied for consumers. Fixed: the unenv assert fix ships as a transform in the `nodeWebShims()` Vite plugin, and the oxc/rolldown WASI `asyncWorkPoolSize` fix as a transform in `@bolojs/vite-preset` (`bolojsShimPlugins()`). The rehearsal asserts both are applied in a consumer bundle. Consumers who do not use the preset or plugin must apply them themselves.
+- [x] Compiled test files are published (`dist/**/*.test.js`, 229 files in the dry-run). Excluded via `files` negations.
 - [ ] `dist` uses extensionless relative imports (`./registry`, `./crypto`). Fine for bundlers, fails in plain Node ESM (`Cannot find module .../dist/registry`). Acceptable only if the packages are documented as bundler-only.
-- [ ] No per-package `README.md`; npm pages will be empty. A `LICENSE` is now copied into each package.
+- [x] Every package has a `README.md` (listed in `files`, with a bundler-only note where it applies). A `LICENSE` is now copied into each package.
 - [ ] Consumers installing with pnpm 10 hit `ERR_PNPM_IGNORED_BUILDS` for `@mongodb-js/zstd` and `node-liblzma` (transitive through `@bolojs/pm` lockfile parsing). Document `onlyBuiltDependencies` or drop the native deps.
 - [ ] `@bolojs/node-web-shims` ships `unenv` pinned to a prerelease (`2.0.0-rc.24`); acceptable for rc, decide for 0.2.0.
 

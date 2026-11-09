@@ -1,8 +1,6 @@
 # @bolojs/lockfile
 
-Parses npm, yarn, yarn-berry, pnpm, and bun lockfiles into a unified dependency graph. Used by
-[bolo](https://github.com/bolojs/bolo)'s in-browser package manager to resolve installs without
-hitting the registry for packages already pinned in a lockfile.
+Parses npm, yarn, yarn-berry, pnpm, and bun lockfiles into a unified dependency graph. Used by [bolo](https://github.com/bolojs/bolo)'s in-browser package manager to resolve installs without hitting the registry for packages already pinned in a lockfile.
 
 ## Install
 

@@ -48,6 +48,7 @@
   },
   "files": [
     "dist",
+    "README.md",
     "!dist/**/*.test.*",
     "!dist/**/*.test.*.map"
   ],
