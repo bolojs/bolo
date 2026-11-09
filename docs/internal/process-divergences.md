@@ -1,4 +1,7 @@
-# Process semantics: known divergences from Node
+---
+title: Process semantics divergences
+description: Known, inherent differences between bolo process semantics and Node (BOLO-DIV codes).
+---
 
 Differential runner: `tests/differential/run.ts` (Node is the oracle, bolo runs in Chromium). Programs come from the grammar in `tests/differential/process-programs.ts`. Each code below is an inherent limit of running in a browser (or of the oracle itself), not a bug to fix. Grammar exclusions reference these codes.
 
