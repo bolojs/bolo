@@ -93,6 +93,23 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
 
   let exiting = false;
 
+  // nextTick queue: drained after the microtasks already queued when the first
+  // tick is scheduled, and nested ticks join the same drain (Node runs the
+  // whole tick queue before returning to promise jobs).
+  const tickQueue: Array<() => void> = [];
+  let tickScheduled = false;
+  const drainTicks = () => {
+    try {
+      while (tickQueue.length > 0) tickQueue.shift()!();
+    } finally {
+      tickScheduled = false;
+      if (tickQueue.length > 0) {
+        tickScheduled = true;
+        queueMicrotask(drainTicks);
+      }
+    }
+  };
+
   const process = Object.assign(new EventEmitter(), {
     exitCode: undefined as number | undefined,
     env: options.env ?? {},
@@ -106,8 +123,15 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     pid: 1,
     ppid: 0,
     title: "bolo",
-    nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) =>
-      queueMicrotask(() => fn(...args)),
+    /** Runs queued nextTick callbacks now; the host calls it after each macrotask callback. */
+    drainTicks: () => drainTicks(),
+    nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) => {
+      tickQueue.push(() => fn(...args));
+      if (!tickScheduled) {
+        tickScheduled = true;
+        queueMicrotask(drainTicks);
+      }
+    },
     cwd: () => cwd,
     chdir: (dir: string) => {
       cwd = dir;

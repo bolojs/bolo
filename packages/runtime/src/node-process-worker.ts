@@ -80,6 +80,19 @@ setInterval(() => {
 
 let processShim: ProcessShim | null = null;
 let exited = false;
+/** Fatal uncaught error: Node prints it, runs 'exit' handlers with code 1, then exits 1. */
+const crash = (err: unknown) => {
+  post({ type: "STDERR", data: formatUncaught(err, "v22.0.0") });
+  if (processShim) {
+    processShim.exitCode = 1;
+    try {
+      processShim.emit("exit", 1);
+    } catch {
+      /* exit handlers must not mask the crash */
+    }
+  }
+  finish(1);
+};
 const finish = (code: number) => {
   if (exited) return;
   exited = true;
@@ -100,8 +113,7 @@ self.addEventListener("error", (ev: ErrorEvent) => {
     ev.preventDefault();
     return;
   }
-  post({ type: "STDERR", data: formatUncaught(err, "v22.0.0") });
-  finish(1);
+  crash(err);
 });
 
 self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
@@ -114,8 +126,7 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
   // createLiveShimRegistry installs its own unhandledrejection hook that
   // emits on the process shim; only crash when nobody is listening.
   if (processShim && processShim.listenerCount("unhandledRejection") > 0) return;
-  post({ type: "STDERR", data: formatUncaught(reason, "v22.0.0") });
-  finish(1);
+  crash(reason);
 });
 
 const runProcess = async (msg: ProcRunMessage) => {
@@ -149,6 +160,20 @@ const runProcess = async (msg: ProcRunMessage) => {
     onPortEvent: (event, data) => post({ type: "PORT_EVENT", event, data }),
   });
   processShim = shims.process as ProcessShim;
+  // process.exit must be uncatchable (Node semantics): run the shim's exit
+  // handlers, tell the host, then stall until the host terminates this worker.
+  const shimExit = processShim.exit;
+  processShim.exit = ((code?: number) => {
+    try {
+      shimExit(code);
+    } catch (err) {
+      if (!(err instanceof ProcessExit)) throw err;
+      finish(err.code);
+    }
+    for (;;) {
+      /* host terminates the worker on EXIT */
+    }
+  }) as typeof processShim.exit;
   globalThis.__browserContainers = {
     vfs: remote.vfs,
     sandbox: remote.sandbox,
@@ -202,6 +227,9 @@ const runProcess = async (msg: ProcRunMessage) => {
       (...a: unknown[]) => {
         timerHandles.delete(id);
         fn(...a);
+        // Node runs the tick queue right after each macrotask callback,
+        // before promise jobs.
+        processShim?.drainTicks();
       },
       ms,
       ...rest,
@@ -218,7 +246,14 @@ const runProcess = async (msg: ProcRunMessage) => {
   };
   const trackedSetInterval = (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
     const handle: TimerHandle = { refed: true, timeout: undefined as never };
-    const id = origSetInterval(fn, ms, ...rest);
+    const id = origSetInterval(
+      (...a: unknown[]) => {
+        fn(...a);
+        processShim?.drainTicks();
+      },
+      ms,
+      ...rest,
+    );
     timerHandles.set(id, handle);
     return makeTimeout(handle, id);
   };
@@ -285,8 +320,7 @@ const runProcess = async (msg: ProcRunMessage) => {
     if (processShim.listenerCount("uncaughtException") > 0) {
       processShim.emit("uncaughtException", fatal, "uncaughtException");
     } else {
-      post({ type: "STDERR", data: formatUncaught(fatal, "v22.0.0") });
-      finish(1);
+      crash(fatal);
       return;
     }
   }
@@ -305,7 +339,11 @@ const runProcess = async (msg: ProcRunMessage) => {
     while (!exited && hasRefedTimers()) {
       await sleep(5);
     }
+    // Grace period: unhandledrejection events and just-posted messages are
+    // delivered as tasks after the last timer; quiescence must not race them.
+    await sleep(10);
     if (exited) return;
+    if (hasRefedTimers()) continue;
     // A listening server keeps the process alive indefinitely — the worker
     // must not emit exit (main would terminate it and kill the server).
     if (serving()) {
