@@ -53,4 +53,27 @@ describe("createProcessShim", () => {
       delete (performance as any).memory;
     }
   });
+
+  it("validates nextTick callbacks with ERR_INVALID_ARG_TYPE", () => {
+    const process = createProcessShim();
+    for (const bad of [false, 1, "str", {}, []]) {
+      expect(() => process.nextTick(bad as never)).toThrow(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE", name: "TypeError" }),
+      );
+    }
+  });
+
+  it("sets _exiting on exit and ignores nextTick scheduled afterwards", () => {
+    const process = createProcessShim();
+    let late = false;
+    process.on("exit", () => {
+      expect(process._exiting).toBe(true);
+      process.nextTick(() => {
+        late = true;
+      });
+    });
+    process.emit("exit", 0);
+    process.drainTicks();
+    expect(late).toBe(false);
+  });
 });

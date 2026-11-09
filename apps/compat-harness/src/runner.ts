@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import type { CompatHarness } from "./main.js";
-import { commonIndexSource } from "./test-common.js";
+import { commonIndexSource, countdownSource } from "./test-common.js";
 import { assertCanariesFail, runCanaries } from "./canaries.js";
 import { classifyNodeTest } from "./classify.js";
 
@@ -74,6 +74,7 @@ export class NodeTestRunner {
     const source = await this.loadSource(file, this.manifest.nodeVersion);
     const filePath = `/${file}`;
     await this.harness.write("/test/common/index.js", commonIndexSource);
+    await this.harness.write("/test/common/countdown.js", countdownSource);
     await this.harness.write(filePath, source);
 
     let timer: ReturnType<typeof setTimeout> | undefined;

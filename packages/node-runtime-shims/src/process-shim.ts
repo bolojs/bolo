@@ -125,7 +125,19 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     title: "bolo",
     /** Runs queued nextTick callbacks now; the host calls it after each macrotask callback. */
     drainTicks: () => drainTicks(),
+    /** True once 'exit' has begun; Node ignores nextTick callbacks scheduled after that. */
+    _exiting: false,
     nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) => {
+      if (typeof fn !== "function") {
+        const err = new TypeError(
+          `The "callback" argument must be of type function. Received ${
+            fn === null || fn === undefined ? String(fn) : `type ${typeof fn}`
+          }`,
+        ) as TypeError & { code: string };
+        err.code = "ERR_INVALID_ARG_TYPE";
+        throw err;
+      }
+      if (process._exiting) return;
       tickQueue.push(() => fn(...args));
       if (!tickScheduled) {
         tickScheduled = true;
@@ -163,6 +175,7 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     if (event === "exit") {
       if (exiting) return false;
       exiting = true;
+      process._exiting = true;
     }
     return emit(event, ...args);
   }) as typeof process.emit;
