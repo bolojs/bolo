@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/node-web-shims",
-  "version": "0.1.0",
+  "version": "0.2.0-rc.0",
   "description": "node:* to Web API shims (crypto, stream, buffer, path, url, events, os, http, worker_threads); usable standalone.",
   "type": "module",
   "main": "./dist/index.js",
