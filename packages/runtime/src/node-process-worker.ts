@@ -6,6 +6,7 @@ import type { ProcessShim } from "@bolojs/node-runtime-shims";
 import { createRpcPeer } from "./rpc.js";
 import { createRemoteDeps } from "./remote-objects.js";
 import { createSyncCaller } from "./sync-channel.js";
+import { createNodeTimers } from "./node-timers.js";
 
 // ponytail: see worker-script.ts — fire-and-forget to stay TLA-free.
 configureBrowserLogging().catch(() => {});
@@ -62,10 +63,24 @@ declare global {
           clearTimeout: (t: unknown) => unknown;
           setInterval: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
           clearInterval: (t: unknown) => unknown;
+          setImmediate?: (fn: (...a: unknown[]) => void, ...rest: unknown[]) => unknown;
+          clearImmediate?: (t: unknown) => unknown;
         };
       }
     | undefined;
 }
+
+// Macrotask hop through a MessageChannel: runs after the browser's
+// unhandledrejection task, matching Node (rejections precede the check phase).
+const channelHop = (() => {
+  const c = new MessageChannel();
+  const q: Array<() => void> = [];
+  c.port1.onmessage = () => q.shift()?.();
+  return (f: () => void) => {
+    q.push(f);
+    c.port2.postMessage(0);
+  };
+})();
 
 const post = (msg: ProcWorkerMessage | unknown) => (self as unknown as Worker).postMessage(msg);
 
@@ -91,7 +106,8 @@ const crash = (err: unknown) => {
       /* exit handlers must not mask the crash */
     }
   }
-  finish(1);
+  // Exit handlers may overwrite process.exitCode (Node honours it).
+  finish(processShim?.exitCode ?? 1);
 };
 const finish = (code: number) => {
   if (exited) return;
@@ -185,99 +201,30 @@ const runProcess = async (msg: ProcRunMessage) => {
     rpc.handle(ev.data);
   });
 
-  // libuv-style handle table: each timer the *program* creates is a
-  // ref-counted handle; `unref()` drops it out of the liveness count.
+  // libuv-style handle table (see node-timers.ts): each timer the *program*
+  // creates is a ref-counted handle; `unref()` drops it out of liveness.
   // Tracked timers are injected into the bundle's globals via
   // `__browserContainers.timers` (see GLOBALS_BANNER) and into the
-  // `node:timers` shim — infrastructure timers (logtape flushers, rpc)
-  // use the realm's real globals and never count as handles.
-  interface TimerHandle {
-    refed: boolean;
-    timeout: { unref(): unknown; ref(): unknown; hasRef(): boolean; __id: unknown };
-  }
-  const timerHandles = new Map<unknown, TimerHandle>();
+  // `node:timers` shim; infrastructure timers (logtape flushers, rpc) use the
+  // realm's real globals and never count as handles.
   const g = globalThis as unknown as Record<string, (...a: unknown[]) => unknown>;
   const origSet = g.setTimeout!;
   const origClear = g.clearTimeout!;
-  const origSetInterval = g.setInterval!;
-  const origClearInterval = g.clearInterval!;
-
-  const makeTimeout = (handle: TimerHandle, id: unknown) => {
-    const timeout = {
-      __id: id,
-      unref() {
-        handle.refed = false;
-        return this;
-      },
-      ref() {
-        handle.refed = true;
-        return this;
-      },
-      hasRef() {
-        return handle.refed;
-      },
-    };
-    handle.timeout = timeout;
-    return timeout;
-  };
-
-  const trackedSetTimeout = (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
-    const handle: TimerHandle = { refed: true, timeout: undefined as never };
-    const id = origSet(
-      (...a: unknown[]) => {
-        timerHandles.delete(id);
-        fn(...a);
-        // Node runs the tick queue right after each macrotask callback,
-        // before promise jobs.
-        processShim?.drainTicks();
-      },
-      ms,
-      ...rest,
-    );
-    timerHandles.set(id, handle);
-    return makeTimeout(handle, id);
-  };
-  const timerId = (t: unknown): unknown =>
-    t && typeof t === "object" && "__id" in t ? (t as { __id: unknown }).__id : t;
-  const trackedClearTimeout = (t: unknown) => {
-    const id = timerId(t);
-    timerHandles.delete(id);
-    return origClear(id);
-  };
-  const trackedSetInterval = (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
-    const handle: TimerHandle = { refed: true, timeout: undefined as never };
-    const id = origSetInterval(
-      (...a: unknown[]) => {
-        fn(...a);
-        processShim?.drainTicks();
-      },
-      ms,
-      ...rest,
-    );
-    timerHandles.set(id, handle);
-    return makeTimeout(handle, id);
-  };
-  const trackedClearInterval = (t: unknown) => {
-    const id = timerId(t);
-    timerHandles.delete(id);
-    return origClearInterval(id);
-  };
-
-  const trackedTimers = {
-    setTimeout: trackedSetTimeout,
-    clearTimeout: trackedClearTimeout,
-    setInterval: trackedSetInterval,
-    clearInterval: trackedClearInterval,
-  };
+  const { timers: trackedTimers, hasRefed: hasRefedTimers } = createNodeTimers({
+    setNative: (fn, ms) => origSet(fn, ms),
+    clearNative: (id) => origClear(id),
+    // Node runs the tick queue right after each macrotask callback, before promise jobs.
+    afterCallback: () => processShim?.drainTicks(),
+    hop: channelHop,
+    warn: (name, message) => {
+      const warning = Object.assign(new Error(message), { name });
+      processShim?.emit("warning", warning);
+    },
+  });
   globalThis.__browserContainers!.timers = trackedTimers;
   // `require('node:timers')` sees the same tracked implementation.
   const timersShim = shims.timers as Record<string, unknown> | undefined;
   if (timersShim) Object.assign(timersShim, trackedTimers);
-
-  const hasRefedTimers = () => {
-    for (const h of timerHandles.values()) if (h.refed) return true;
-    return false;
-  };
 
   const sleep = (ms: number) => new Promise<void>((r) => origSet(r, ms));
   // A registered fetch handler means a server is listening — a live handle
@@ -352,7 +299,8 @@ const runProcess = async (msg: ProcRunMessage) => {
     try {
       processShim.emit("beforeExit", processShim.exitCode ?? 0);
     } catch (err) {
-      finish(err instanceof ProcessExit ? err.code : 1);
+      if (err instanceof ProcessExit) finish(err.code);
+      else crash(err);
       return;
     }
     // beforeExit scheduled new work — drain again before exiting.

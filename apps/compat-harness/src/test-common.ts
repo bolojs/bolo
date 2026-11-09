@@ -24,8 +24,12 @@ function runCallChecks(exitCode) {
 }
 
 function register(fn, name, exact, atLeast) {
+  if (process._exiting) throw new Error('Cannot use common.mustCall*() in process exit handler');
+  // Node: mustCall(n) is shorthand for mustCall(noop, n).
   if (typeof fn === 'number') {
-    throw new TypeError('mustCall: first argument must be a function (got a number)');
+    if (atLeast === undefined) exact = fn;
+    else atLeast = fn;
+    fn = noop;
   }
   if (fn === undefined) fn = noop;
   if (mustCallChecks.length === 0) process.on('exit', runCallChecks);
@@ -47,6 +51,14 @@ const mustSucceed = (fn, exact = 1) =>
   mustCall(function (err, ...args) {
     assert.ifError(err);
     if (typeof fn === 'function') return fn.apply(this, args);
+  }, exact);
+
+// Node's expectsError: returns a mustCall'd checker asserting the thrown error's shape.
+const expectsError = (validator, exact) =>
+  mustCall((...args) => {
+    const error = args.pop();
+    assert.throws(() => { throw error; }, validator);
+    return true;
   }, exact);
 
 const skip = (msg) => {
@@ -90,6 +102,7 @@ module.exports = {
   mustCallAtLeast,
   mustNotCall,
   mustSucceed,
+  expectsError,
   expectExitCode,
   skip,
   noop,
@@ -109,9 +122,33 @@ module.exports = {
   canCreateWorker: typeof Worker !== 'undefined',
   hasWasm: typeof WebAssembly !== 'undefined',
   platformTimeout,
+  skipIfWorker: noop,
   skipIfEslintDisabled: noop,
   skipIfInspectorDisabled: noop,
   skipIf32Bits: noop,
   getArrayBufferViews: (buf) => [buf],
 };
+`;
+
+// Mirrors Node's test/common/countdown.js (written to /test/common/countdown.js).
+export const countdownSource = String.raw`'use strict';
+const assert = require('assert');
+const kLimit = Symbol('limit');
+const kCallback = Symbol('callback');
+const common = require('./index.js');
+class Countdown {
+  constructor(limit, cb) {
+    assert.strictEqual(typeof limit, 'number');
+    assert.strictEqual(typeof cb, 'function');
+    this[kLimit] = limit;
+    this[kCallback] = common.mustCall(cb);
+  }
+  dec() {
+    assert(this[kLimit] > 0, 'Countdown expired');
+    if (--this[kLimit] === 0) this[kCallback]();
+    return this[kLimit];
+  }
+  get remaining() { return this[kLimit]; }
+}
+module.exports = Countdown;
 `;

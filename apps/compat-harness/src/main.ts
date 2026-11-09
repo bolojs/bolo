@@ -56,7 +56,7 @@ declare global {
     /** Packages a resumed run should skip (already completed by an earlier run). */
     __packageSkip: string[] | null;
     __runCanaries(): Promise<CanaryResult[]>;
-    __runNodeTests(): Promise<{ module: string; results: TestResult[] }[]>;
+    __runNodeTests(filter?: string): Promise<{ module: string; results: TestResult[] }[]>;
     __runPackageMatrix(options?: { skip?: string[] }): Promise<PackageResult[]>;
   }
 }
@@ -137,12 +137,12 @@ window.__runCanaries = async () => {
   return runCanaries(window.__compatHarness);
 };
 
-window.__runNodeTests = async () => {
+window.__runNodeTests = async (filter?: string) => {
   const response = await fetch("/src/manifest.json");
   const manifest = (await response.json()) as ModuleManifest;
   const runner = new NodeTestRunner(manifest);
   await runner.boot();
-  const results = await runner.runAll();
+  const results = await runner.runAll(filter ? new RegExp(filter) : undefined);
   await runner.teardown();
   window.__testResults = results;
   console.table(

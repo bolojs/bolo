@@ -1,9 +1,10 @@
 /// <reference types="vite/client" />
 
 import type { CompatHarness } from "./main.js";
-import { commonIndexSource } from "./test-common.js";
+import { commonIndexSource, countdownSource } from "./test-common.js";
 import { assertCanariesFail, runCanaries } from "./canaries.js";
 import { classifyNodeTest } from "./classify.js";
+import expectations from "./expectations.json";
 
 export interface ModuleManifest {
   version: string;
@@ -18,7 +19,14 @@ export interface TestResult {
   exitCode: number;
   output: string;
   duration?: number;
+  /** One-line reason this test cannot pass in a browser (src/expectations.json). */
+  expectedFail?: string;
 }
+
+const expectedFailOf = (file: string, status: TestResult["status"]) => {
+  const reason = (expectations as Record<string, string>)[file];
+  return reason && status !== "pass" ? { expectedFail: reason } : {};
+};
 
 export class NodeTestRunner {
   private manifest: ModuleManifest;
@@ -52,7 +60,7 @@ export class NodeTestRunner {
     assertCanariesFail(await runCanaries(this.harness));
   }
 
-  async runAll(): Promise<{ module: string; results: TestResult[] }[]> {
+  async runAll(filter?: RegExp): Promise<{ module: string; results: TestResult[] }[]> {
     await this.verifyCanaries();
 
     const moduleResults: { module: string; results: TestResult[] }[] = [];
@@ -60,9 +68,10 @@ export class NodeTestRunner {
     for (const [moduleName, { files }] of Object.entries(this.manifest.modules)) {
       const results: TestResult[] = [];
       for (const file of files) {
+        if (filter && !filter.test(file)) continue;
         results.push(await this.runOne(moduleName, file));
       }
-      moduleResults.push({ module: moduleName, results });
+      if (results.length > 0) moduleResults.push({ module: moduleName, results });
     }
 
     return moduleResults;
@@ -73,6 +82,7 @@ export class NodeTestRunner {
     const source = await this.loadSource(file, this.manifest.nodeVersion);
     const filePath = `/${file}`;
     await this.harness.write("/test/common/index.js", commonIndexSource);
+    await this.harness.write("/test/common/countdown.js", countdownSource);
     await this.harness.write(filePath, source);
 
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -98,13 +108,15 @@ export class NodeTestRunner {
       };
     }
     const { exitCode, output, duration } = outcome;
+    const status = classifyNodeTest(exitCode, output);
     return {
       file,
       module: moduleName,
-      status: classifyNodeTest(exitCode, output),
+      status,
       exitCode,
       output,
       duration,
+      ...expectedFailOf(file, status),
     };
   }
 
