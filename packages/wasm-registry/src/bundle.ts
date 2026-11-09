@@ -426,6 +426,15 @@ const resolveBarePackage = (
   );
 };
 
+const TIMER_GLOBALS = [
+  "setTimeout",
+  "clearTimeout",
+  "setInterval",
+  "clearInterval",
+  "setImmediate",
+  "clearImmediate",
+] as const;
+
 const GLOBALS_BANNER = `
 var __bcGlobals = () => globalThis.__browserContainers;
 var process = __bcGlobals()?.shims?.process;
@@ -435,18 +444,18 @@ var global = globalThis;
 // timers keep the process alive — infrastructure (logging, rpc) uses real
 // globals and is invisible to liveness. Main-thread path: real globals.
 var __bcTimers = __bcGlobals()?.timers;
-var setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
-var clearTimeout = __bcTimers?.clearTimeout ?? globalThis.clearTimeout;
-var setInterval = __bcTimers?.setInterval ?? globalThis.setInterval;
-var clearInterval = __bcTimers?.clearInterval ?? globalThis.clearInterval;
+var __bc_setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
+var __bc_clearTimeout = __bcTimers?.clearTimeout ?? globalThis.clearTimeout;
+var __bc_setInterval = __bcTimers?.setInterval ?? globalThis.setInterval;
+var __bc_clearInterval = __bcTimers?.clearInterval ?? globalThis.clearInterval;
 // Process workers own a Node-style loop (check phase, ref-counted handles);
 // elsewhere fall back to a plain macrotask hop.
-var setImmediate = __bcTimers?.setImmediate ?? ((fn, ...args) => {
+var __bc_setImmediate = __bcTimers?.setImmediate ?? ((fn, ...args) => {
   const imm = { cancelled: false, ref() { return imm; }, unref() { return imm; }, hasRef() { return true; } };
   globalThis.setTimeout(() => { if (!imm.cancelled) { fn(...args); process?.drainTicks?.(); } }, 0);
   return imm;
 });
-var clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm.cancelled = true; });
+var __bc_clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm.cancelled = true; });
 
 var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;
@@ -628,6 +637,10 @@ export const bundleEntry = async (
       define: {
         "process.env.NODE_ENV": JSON.stringify("development"),
         "process.browser": "true",
+        // Free references to the timer globals resolve to the banner's injected
+        // bindings. They are renamed (and only unbound references rewritten) so a
+        // program's own top-level `const { setTimeout } = ...` cannot collide.
+        ...Object.fromEntries(TIMER_GLOBALS.map((n) => [n, `__bc_${n}`])),
       },
     },
     onLog(level, log, _logger) {
