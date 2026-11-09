@@ -16,7 +16,13 @@ export {
   clearCache,
   getRegisteredToolNames,
 };
-export { loadBinary, precacheAll, isInstalled, pruneCache, BINARY_MANIFEST } from "./binary-loader.js";
+export {
+  loadBinary,
+  precacheAll,
+  isInstalled,
+  pruneCache,
+  BINARY_MANIFEST,
+} from "./binary-loader.js";
 export type { WasmTool, WasmToolResult, WasmToolLoader };
 export { createWasiTool } from "./wasi-executor.js";
 export type { WasiToolOptions, WasiPreopen } from "./wasi-executor.js";
