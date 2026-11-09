@@ -52,7 +52,7 @@ export class NodeTestRunner {
     assertCanariesFail(await runCanaries(this.harness));
   }
 
-  async runAll(): Promise<{ module: string; results: TestResult[] }[]> {
+  async runAll(filter?: RegExp): Promise<{ module: string; results: TestResult[] }[]> {
     await this.verifyCanaries();
 
     const moduleResults: { module: string; results: TestResult[] }[] = [];
@@ -60,9 +60,10 @@ export class NodeTestRunner {
     for (const [moduleName, { files }] of Object.entries(this.manifest.modules)) {
       const results: TestResult[] = [];
       for (const file of files) {
+        if (filter && !filter.test(file)) continue;
         results.push(await this.runOne(moduleName, file));
       }
-      moduleResults.push({ module: moduleName, results });
+      if (results.length > 0) moduleResults.push({ module: moduleName, results });
     }
 
     return moduleResults;

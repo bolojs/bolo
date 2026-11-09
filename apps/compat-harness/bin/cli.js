@@ -54,6 +54,7 @@ const usage = () =>
   `  --raw-output <path> Also write the detailed per-test run record to a file\n` +
   `  --source <path>     Path to package-matrix.json source to override\n` +
   `  --packages <names>  Comma-separated or JSON-array package names to filter\n` +
+  `  --tests <regex>     node-tests mode: only run test files matching this regex\n` +
   `  --shard-index <n>   Zero-based shard index for parallel runs\n` +
   `  --shard-total <n>   Total number of shards\n` +
   `  --resume            Skip packages already recorded in <output>.partial.jsonl\n` +
@@ -72,6 +73,7 @@ const parseArgs = () => {
     shardIndex: parseInt(process.env.SHARD_INDEX || "0", 10),
     shardTotal: parseInt(process.env.SHARD_TOTAL || "1", 10),
     resume: false,
+    tests: process.env.NODE_TESTS_FILTER,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -88,6 +90,8 @@ const parseArgs = () => {
       options.rawOutput = args[++i];
     } else if (arg === "--source" || arg === "-s") {
       options.source = args[++i];
+    } else if (arg === "--tests") {
+      options.tests = args[++i];
     } else if (arg === "--packages" || arg === "-p") {
       options.packages = args[++i];
     } else if (arg === "--shard-index") {
@@ -388,7 +392,7 @@ const main = async () => {
 
     let output;
     if (options.mode === "node-tests") {
-      const modules = await page.evaluate(() => window.__runNodeTests());
+      const modules = await page.evaluate((f) => window.__runNodeTests(f), options.tests);
       output = toNodeCompatReport(modules, { nodeVersion: await readNodeVersion() });
       if (options.rawOutput) {
         await writeFile(options.rawOutput, JSON.stringify(modules, null, 2) + "\n");
