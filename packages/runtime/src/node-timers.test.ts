@@ -16,9 +16,13 @@ describe("createNodeTimers", () => {
   it("binds this to the Timeout and passes args", async () => {
     const { timers } = setup();
     const seen: unknown[] = [];
-    const t = timers.setTimeout(function (this: unknown, ...a: unknown[]) {
-      seen.push(this, ...a);
-    }, 1, "x");
+    const t = timers.setTimeout(
+      function (this: unknown, ...a: unknown[]) {
+        seen.push(this, ...a);
+      },
+      1,
+      "x",
+    );
     await wait(10);
     expect(seen).toEqual([t, "x"]);
   });
@@ -26,7 +30,9 @@ describe("createNodeTimers", () => {
   it("throws ERR_INVALID_ARG_TYPE for non-function callbacks", () => {
     const { timers } = setup();
     for (const f of [timers.setTimeout, timers.setInterval, timers.setImmediate]) {
-      expect(() => f("foo" as never)).toThrow(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }));
+      expect(() => f("foo" as never)).toThrow(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+      );
     }
   });
 
@@ -46,7 +52,11 @@ describe("createNodeTimers", () => {
 
   it("tracks refed handles and unref drops liveness", () => {
     const { timers, hasRefed } = setup();
-    const t = timers.setTimeout(() => {}, 50) as { unref(): unknown; ref(): unknown; hasRef(): boolean };
+    const t = timers.setTimeout(() => {}, 50) as {
+      unref(): unknown;
+      ref(): unknown;
+      hasRef(): boolean;
+    };
     expect(hasRefed()).toBe(true);
     t.unref();
     expect(hasRefed()).toBe(false);
@@ -102,11 +112,14 @@ describe("createNodeTimers", () => {
 
   it("implements enroll validation and active/unenroll", async () => {
     const { timers } = setup();
-    expect(() => timers.enroll({}, "foo")).toThrow(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }));
+    expect(() => timers.enroll({}, "foo")).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
     expect(() => timers.enroll({}, -1)).toThrow(
       expect.objectContaining({
         code: "ERR_OUT_OF_RANGE",
-        message: 'The value of "msecs" is out of range. It must be a non-negative finite number. Received -1',
+        message:
+          'The value of "msecs" is out of range. It must be a non-negative finite number. Received -1',
       }),
     );
     const onTimeout = vi.fn();

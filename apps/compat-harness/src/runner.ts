@@ -4,6 +4,7 @@ import type { CompatHarness } from "./main.js";
 import { commonIndexSource, countdownSource } from "./test-common.js";
 import { assertCanariesFail, runCanaries } from "./canaries.js";
 import { classifyNodeTest } from "./classify.js";
+import expectations from "./expectations.json";
 
 export interface ModuleManifest {
   version: string;
@@ -18,7 +19,14 @@ export interface TestResult {
   exitCode: number;
   output: string;
   duration?: number;
+  /** One-line reason this test cannot pass in a browser (src/expectations.json). */
+  expectedFail?: string;
 }
+
+const expectedFailOf = (file: string, status: TestResult["status"]) => {
+  const reason = (expectations as Record<string, string>)[file];
+  return reason && status !== "pass" ? { expectedFail: reason } : {};
+};
 
 export class NodeTestRunner {
   private manifest: ModuleManifest;
@@ -100,13 +108,15 @@ export class NodeTestRunner {
       };
     }
     const { exitCode, output, duration } = outcome;
+    const status = classifyNodeTest(exitCode, output);
     return {
       file,
       module: moduleName,
-      status: classifyNodeTest(exitCode, output),
+      status,
       exitCode,
       output,
       duration,
+      ...expectedFailOf(file, status),
     };
   }
 
