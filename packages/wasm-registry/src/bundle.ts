@@ -617,6 +617,9 @@ export const bundleEntry = async (
   const result = await bundle.generate({
     format: "es",
     banner: GLOBALS_BANNER,
+    // The bundle executes from a single data:/blob: URL — relative chunk
+    // imports (dynamic import() splitting) would be unresolvable.
+    inlineDynamicImports: true,
   });
 
   const chunk = result.output.find((o) => o.type === "chunk");

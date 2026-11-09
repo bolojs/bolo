@@ -81,6 +81,10 @@ const finish = (code: number) => {
 self.addEventListener("error", (ev: ErrorEvent) => {
   if (exited) return;
   const err = ev.error ?? ev.message;
+  if (err instanceof ProcessExit) {
+    finish(err.code);
+    return;
+  }
   if (processShim && processShim.listenerCount("uncaughtException") > 0) {
     processShim.emit("uncaughtException", err, "uncaughtException");
     ev.preventDefault();
@@ -241,6 +245,13 @@ const runProcess = async (msg: ProcRunMessage) => {
     await sleep(5);
   }
   await sleep(0);
+
+  // A listening server keeps the process alive indefinitely — the worker
+  // must not emit exit (main would terminate it and kill the server).
+  // Exit can still arrive later via process.exit() in a timer or handler.
+  if (!exited && serving()) {
+    await new Promise<void>(() => {});
+  }
 
   if (exited) return;
   try {

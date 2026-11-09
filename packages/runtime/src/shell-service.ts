@@ -337,8 +337,9 @@ export class ShellService {
 
       if (this.deps.syncServer && typeof Worker === "function") {
         const proc = this.runNodeAppInWorker(entry, code, output, onPortEvent);
+        const exitCode = await proc.exit;
         terminated = true;
-        return await proc.exit;
+        return exitCode;
       }
 
       const result = await superviseRun({

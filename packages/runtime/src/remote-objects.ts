@@ -3,6 +3,7 @@ import type { SWSandbox } from "@bolojs/sandbox";
 import { getLogger } from "@bolojs/log/browser";
 import type { RpcPeer } from "./rpc.js";
 import { decodeOpResult, encodeOpCall } from "./rpc.js";
+import { decodeResponse } from "./sync-channel.js";
 import type { SyncCaller } from "./sync-channel.js";
 
 const logger = getLogger(["bolo", "runtime", "remote-objects"]);
@@ -92,7 +93,7 @@ export const createRemoteDeps = (opts: RemoteDepsOptions): RemoteDeps => {
   let fetchHandlers = 0;
 
   const syncOp = (op: string, args: unknown[]): unknown =>
-    decodeOpResult(syncCaller.call(encodeOpCall(op, args)));
+    decodeOpResult(decodeResponse(syncCaller.call(encodeOpCall(op, args))));
 
   const hot: Record<string, unknown> = {};
   for (const m of HOT_METHODS) {
