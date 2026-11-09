@@ -175,8 +175,7 @@ export const createEventLoop = (deps: EventLoopDeps) => {
       return (f: () => void) => void realSet(f, 0);
     }
   })();
-  const yieldTask = () =>
-    new Promise<void>((r) => realSet(() => hop(r), 0));
+  const yieldTask = () => new Promise<void>((r) => realSet(() => hop(r), 0));
 
   const runCallback = async (fn: () => void) => {
     try {
