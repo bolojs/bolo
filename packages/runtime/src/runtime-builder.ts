@@ -14,6 +14,7 @@ import { createMount } from "./mount.js";
 import { createExport } from "./export.js";
 import { installNavigatorUserAgent } from "@bolojs/node-web-shims";
 import { BrowserViteServer } from "@bolojs/vite-server";
+import { createSyncServer } from "./sync-channel.js";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -34,7 +35,12 @@ export class RuntimeBuilder {
     try {
       return await SWSandbox.create({ origin, swPath: this.options.swPath ?? "/sw.js" });
     } catch {
-      return { onFetch: () => {}, setPolicyRegistry: () => {} } as unknown as SWSandbox;
+      return {
+        onFetch: () => {},
+        onSyncRequest: () => {},
+        setPolicyRegistry: () => {},
+        scope: "/",
+      } as unknown as SWSandbox;
     }
   }
 
@@ -111,6 +117,7 @@ export class RuntimeBuilder {
       const replService = this.createReplService(vfs, runtimeWorker);
       const packageManager = this.createPackageManager(vfs);
       const events = createEventEmitter();
+      const syncServer = createSyncServer({ sandbox });
       const shellService = this.createShellService({
         vfs,
         swSandbox: sandbox,
@@ -119,6 +126,7 @@ export class RuntimeBuilder {
         runtimeWorker,
         sandbox: agentSandbox ?? undefined,
         workdir,
+        syncServer,
       });
 
       const fs = createFileSystem(vfs);

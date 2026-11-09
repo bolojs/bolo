@@ -19,6 +19,7 @@ describe("createProcess", () => {
     expect(shell.execute).toHaveBeenCalledWith("npm install", {
       stdout: expect.any(Function),
       stderr: expect.any(Function),
+      tag: expect.any(String),
     });
   });
 
@@ -57,6 +58,7 @@ describe("createProcess", () => {
     expect(shell.execute).toHaveBeenCalledWith("runtime run /script.js", {
       stdout: expect.any(Function),
       stderr: expect.any(Function),
+      tag: expect.any(String),
     });
   });
 
@@ -72,6 +74,7 @@ describe("createProcess", () => {
     expect(shell.execute).toHaveBeenCalledWith("runtime run", {
       stdout: expect.any(Function),
       stderr: expect.any(Function),
+      tag: expect.any(String),
     });
   });
 
@@ -79,11 +82,13 @@ describe("createProcess", () => {
     const vfs = new VfsBus();
     const shell = {
       execute: vi.fn().mockReturnValue(new Promise(() => {})),
+      kill: vi.fn(),
     } as unknown as ShellService;
     const runtimeWorker = { dispose: vi.fn() } as unknown as RuntimeWorker;
     const proc = createProcess("sleep", ["10"], {}, { vfs, shell, runtimeWorker });
     proc.kill();
     expect(await proc.exit).toBe(1);
+    expect(shell.kill).toHaveBeenCalledWith(expect.any(String));
     // runtimeWorker is shared across every process in the container; killing
     // one process must not tear it down and take unrelated processes with it.
     expect(runtimeWorker.dispose).not.toHaveBeenCalled();
@@ -93,6 +98,7 @@ describe("createProcess", () => {
     const vfs = new VfsBus();
     const shell = {
       execute: vi.fn().mockReturnValue(new Promise(() => {})),
+      kill: vi.fn(),
     } as unknown as ShellService;
     const runtimeWorker = { dispose: vi.fn() } as unknown as RuntimeWorker;
     const devServer = createProcess("npm", ["run", "dev"], {}, { vfs, shell, runtimeWorker });

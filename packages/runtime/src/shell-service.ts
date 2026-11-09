@@ -14,6 +14,9 @@ import type { SandboxBackend } from "./sandbox-backend.js";
 import type { ContainerEvents } from "./events.js";
 import { VfsBashFileSystem } from "./vfs-bash-fs.js";
 import { superviseRun } from "./supervise-run.js";
+import { NodeProcess } from "./node-process.js";
+import { DEFAULT_SAB_BYTES } from "./sync-channel.js";
+import type { SyncServer } from "./sync-channel.js";
 
 declare global {
   // Populated just before executing a bundled node app so its aliased `node:*`
@@ -35,6 +38,10 @@ export interface ShellServiceDeps {
   workdir?: string;
   /** Max ms to wait for pending timers before reporting a node app's exit. Default 5000. */
   quiescenceCapMs?: number;
+  /** Sync-channel server for process workers. When present (and `Worker`
+   * exists), node apps run in a dedicated worker process instead of on the
+   * main thread. */
+  syncServer?: SyncServer;
 }
 
 export interface ShellResult {
@@ -46,6 +53,9 @@ export interface ShellResult {
 interface OutputCallbacks {
   stdout: (data: string) => void;
   stderr: (data: string) => void;
+  /** Opaque tag identifying this execution; `kill(tag)` terminates a process
+   * worker started under it. */
+  tag?: unknown;
 }
 
 export interface ShellDeps {
@@ -64,6 +74,7 @@ export class ShellService {
   private cwd: string;
   private bash: Bash;
   private viteWatcher?: ReturnType<VfsBus["watch"]>;
+  private processes = new Map<unknown, NodeProcess>();
 
   constructor(deps: ShellServiceDeps) {
     this.deps = deps;
@@ -87,12 +98,14 @@ export class ShellService {
 
     try {
       const exitCode = await this.route(command, callbacks);
+      if (output?.tag !== undefined) this.processes.delete(output.tag);
       return {
         stdout: stdoutChunks.join(""),
         stderr: stderrChunks.join(""),
         exitCode,
       };
     } catch (err) {
+      if (output?.tag !== undefined) this.processes.delete(output.tag);
       const message = err instanceof Error ? err.message : String(err);
       callbacks.stderr(message);
       return {
@@ -101,6 +114,16 @@ export class ShellService {
         exitCode: 1,
       };
     }
+  }
+
+  /** Terminate a process worker started under `tag`, if one is running.
+   * Returns true when a process was killed. */
+  kill(tag: unknown): boolean {
+    const proc = this.processes.get(tag);
+    if (!proc) return false;
+    this.processes.delete(tag);
+    proc.kill();
+    return true;
   }
 
   /** Resolve a user-supplied path against the workdir. */
@@ -223,11 +246,48 @@ export class ShellService {
    * (`routeNpmRun`, above) uses, so a node server drives the preview iframe
    * identically to `npm run dev`.
    */
+  /**
+   * Runs a bundled node app in a dedicated process worker: real exit codes,
+   * globals isolated per spawn, and `kill()`/`terminate()` that reclaims even
+   * synchronous infinite loops. Used whenever `Worker` is available and a
+   * sync server is configured; otherwise falls back to `runNodeAppMainThread`.
+   */
+  private runNodeAppInWorker(
+    entry: string,
+    code: string,
+    output: OutputCallbacks,
+    onPortEvent: (event: string, data: { port: number; url?: string }) => void,
+  ): NodeProcess {
+    const pid = `p${++runCounter}`;
+    const scope = this.deps.swSandbox?.scope ?? "/";
+    const proc = new NodeProcess({
+      pid,
+      vfs: this.deps.vfs,
+      sandbox: this.deps.swSandbox,
+      syncServer: this.deps.syncServer!,
+      xhrUrl: `${scope}__bolo_sync/${pid}`,
+      shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+      quiescenceCapMs: this.deps.quiescenceCapMs,
+      sabBytes:
+        typeof crossOriginIsolated !== "undefined" && crossOriginIsolated ? DEFAULT_SAB_BYTES : 0,
+    });
+    proc.onStdout = output.stdout;
+    proc.onStderr = output.stderr;
+    proc.onPortEvent = onPortEvent;
+    if (output.tag !== undefined) this.processes.set(output.tag, proc);
+    void proc.exit.finally(() => {
+      if (output.tag !== undefined) this.processes.delete(output.tag);
+    });
+    proc.run({ code, filename: entry, cwd: this.cwd });
+    return proc;
+  }
+
   private async runNodeApp(filePath: string, rawOutput: OutputCallbacks): Promise<number> {
     // Drop output after the program has terminated (e.g. code following
     // process.exit() that already started running).
     let terminated = false;
     const output: OutputCallbacks = {
+      ...rawOutput,
       stdout: (d) => {
         if (!terminated) rawOutput.stdout(d);
       },
@@ -274,6 +334,12 @@ export class ShellService {
           globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
       });
       for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
+
+      if (this.deps.syncServer && typeof Worker === "function") {
+        const proc = this.runNodeAppInWorker(entry, code, output, onPortEvent);
+        terminated = true;
+        return await proc.exit;
+      }
 
       const result = await superviseRun({
         process: shims.process as Parameters<typeof superviseRun>[0]["process"],

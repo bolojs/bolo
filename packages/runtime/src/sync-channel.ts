@@ -256,14 +256,16 @@ export const createSyncServer = (deps: { sandbox?: SWSandbox }): SyncServer => {
     },
   };
 
-  deps.sandbox?.onSyncRequest(async (req) => {
-    const pid = new URL(req.url).pathname.match(SYNC_URL_RE)?.[1];
-    const proc = pid ? processes.get(pid) : undefined;
-    if (!pid || !proc) return undefined;
-    const payload = req.body ? new Uint8Array(req.body) : new Uint8Array(0);
-    const raw = await dispatch(proc, payload);
-    return { status: 200, body: raw.slice().buffer };
-  });
+  if (typeof deps.sandbox?.onSyncRequest === "function") {
+    deps.sandbox.onSyncRequest(async (req) => {
+      const pid = new URL(req.url).pathname.match(SYNC_URL_RE)?.[1];
+      const proc = pid ? processes.get(pid) : undefined;
+      if (!pid || !proc) return undefined;
+      const payload = req.body ? new Uint8Array(req.body) : new Uint8Array(0);
+      const raw = await dispatch(proc, payload);
+      return { status: 200, body: raw.slice().buffer };
+    });
+  }
 
   return server;
 };
