@@ -32,9 +32,13 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  // Intercept the vite preview prefix, the virtual container ports and the
-  // virtual sandbox hostname (cross-origin user servers like Hono/Express).
+  const isSync = url.pathname.includes("/__bolo_sync/");
+  // Intercept the vite preview prefix, the virtual container ports, the
+  // virtual sandbox hostname (cross-origin user servers like Hono/Express)
+  // and the sync channel prefix used by process workers for synchronous
+  // syscalls (sync-XHR fallback when SharedArrayBuffer is unavailable).
   if (
+    !isSync &&
     !url.pathname.startsWith("/__preview/") &&
     !url.pathname.startsWith("/__virtual__/") &&
     url.hostname !== "sandbox.local"
@@ -42,6 +46,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   if (!isReady || !mainPort) {
+    // A sync XHR cannot wait for the port handshake — fail fast.
+    if (isSync) {
+      event.respondWith(new Response("Sync channel not ready", { status: 503 }));
+      return;
+    }
     event.respondWith(
       new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -55,7 +64,7 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
-  event.respondWith(handleFetchEvent(event.request));
+  event.respondWith(handleFetchEvent(event.request, isSync));
 });
 
 self.addEventListener("message", (event) => {
@@ -63,7 +72,7 @@ self.addEventListener("message", (event) => {
     mainPort = event.ports[0];
     mainPort.onmessage = (e) => {
       const { type, requestId, response, error } = e.data;
-      if (type === "FETCH_RESPONSE") {
+      if (type === "FETCH_RESPONSE" || type === "SYNC_RESPONSE") {
         const pending = pendingRequests.get(requestId);
         if (!pending) return;
         pendingRequests.delete(requestId);
@@ -111,7 +120,7 @@ self.addEventListener("unhandledrejection", (event) => {
   postSWError("unhandledrejection", event.reason);
 });
 
-async function handleFetchEvent(req) {
+async function handleFetchEvent(req, isSync = false) {
   if (!mainPort) {
     return new Response("ServiceWorker not ready", { status: 503 });
   }
@@ -125,7 +134,7 @@ async function handleFetchEvent(req) {
     pendingRequests.set(requestId, { resolve, reject });
     mainPort.postMessage(
       {
-        type: "FETCH_REQUEST",
+        type: isSync ? "SYNC_REQUEST" : "FETCH_REQUEST",
         requestId,
         request: { url: req.url, method: req.method, headers, body },
       },
