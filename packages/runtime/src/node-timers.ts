@@ -1,20 +1,19 @@
+import type { LoopHandle } from "./event-loop.js";
+
 /**
  * Node-flavoured timers for a process worker: `Timeout`/`Immediate` objects
  * with `ref`/`unref`/`refresh`/`close`, `this` binding, argument validation,
  * numeric ids (`+timeout`), and the legacy `enroll`/`unenroll`/`active` API.
- * Each timer the program creates is a handle; `unref()`ed handles do not
- * count towards liveness (`hasRefed`). Built on injected native scheduling so
- * infrastructure timers never become handles.
+ * Scheduling, ordering and liveness belong to the event loop (event-loop.ts):
+ * each Timeout/Immediate owns a loop handle, and `ref`/`unref` propagate to it.
  */
 
 export interface NodeTimersHost {
-  /** Native scheduler (the realm's real setTimeout). */
-  setNative: (fn: () => void, ms: number) => unknown;
-  clearNative: (id: unknown) => void;
-  /** Runs after every macrotask callback (drains process.nextTick). */
-  afterCallback: () => void;
-  /** Defers to a later task than a plain 0ms timer (check phase). */
-  hop?: (fn: () => void) => void;
+  /** One-shot timer backed by the loop (handle carries ref/unref state). */
+  setTimer: (fn: () => void, ms: number) => LoopHandle;
+  clearTimer: (h: LoopHandle) => void;
+  setImmediate: (fn: () => void) => LoopHandle;
+  clearImmediate: (h: LoopHandle) => void;
   /** Emits a process warning (e.g. TimeoutOverflowWarning). */
   warn?: (name: string, message: string) => void;
 }
@@ -66,18 +65,12 @@ export interface NodeTimers {
 export const createNodeTimers = (host: NodeTimersHost) => {
   let nextId = 1;
   const byId = new Map<number, Timeout>();
-  const live = new Set<{ refed: boolean }>();
 
   const overflow = (ms: number) =>
     host.warn?.(
       "TimeoutOverflowWarning",
       `${ms} does not fit into a 32-bit signed integer.\nTimeout duration was set to 1.`,
     );
-
-  const hasRefed = (): boolean => {
-    for (const h of live) if (h.refed) return true;
-    return false;
-  };
 
   class Timeout {
     _idleTimeout: number;
@@ -88,7 +81,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     _destroyed = false;
     refed = true;
     private id = nextId++;
-    private native: unknown;
+    private native: LoopHandle | undefined;
     private pending = false;
 
     constructor(fn: (...a: unknown[]) => void, after: unknown, args: unknown[], repeat: boolean) {
@@ -107,8 +100,9 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       this.pending = true;
       this._destroyed = false;
       this._idleStart = Math.trunc(performance.now());
-      live.add(this);
-      this.native = host.setNative(() => this.fire(), ms);
+      const h = host.setTimer(() => this.fire(), ms);
+      if (!this.refed) h.unref();
+      this.native = h;
     }
 
     private fire() {
@@ -129,22 +123,22 @@ export const createNodeTimers = (host: NodeTimersHost) => {
         } else if (!this.pending) {
           this.dispose();
         }
-        host.afterCallback();
       }
     }
 
     private dispose() {
       this._destroyed = true;
-      live.delete(this);
       byId.delete(this.id);
     }
 
     ref() {
       this.refed = true;
+      this.native?.ref();
       return this;
     }
     unref() {
       this.refed = false;
+      this.native?.unref();
       return this;
     }
     hasRef() {
@@ -155,12 +149,12 @@ export const createNodeTimers = (host: NodeTimersHost) => {
         // Node re-arms a fired timer on refresh; a cleared one stays dead.
         if (!byId.has(this.id)) byId.set(this.id, this);
       }
-      host.clearNative(this.native);
+      if (this.native) host.clearTimer(this.native);
       this.schedule(this._idleTimeout);
       return this;
     }
     close() {
-      host.clearNative(this.native);
+      if (this.native) host.clearTimer(this.native);
       this.pending = false;
       this.dispose();
       return this;
@@ -178,36 +172,25 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     _argv: unknown[];
     _destroyed = false;
     refed = true;
+    native: LoopHandle;
     constructor(fn: (...a: unknown[]) => void, args: unknown[]) {
       this._onImmediate = fn;
       this._argv = args;
-      live.add(this);
-      host.setNative(() => {
-        const run = host.hop ?? ((f: () => void) => f());
-        run(() => this.fire());
-      }, 0);
+      this.native = host.setImmediate(() => this.fire());
     }
     private fire() {
       if (this._destroyed) return;
-      live.delete(this);
-      // An unref'd immediate only runs while something else keeps the loop alive.
-      if (!this.refed && !hasRefed()) {
-        this._destroyed = true;
-        return;
-      }
       this._destroyed = true;
-      try {
-        if (this._onImmediate) Reflect.apply(this._onImmediate, this, this._argv);
-      } finally {
-        host.afterCallback();
-      }
+      if (this._onImmediate) Reflect.apply(this._onImmediate, this, this._argv);
     }
     ref() {
       this.refed = true;
+      this.native.ref();
       return this;
     }
     unref() {
       this.refed = false;
+      this.native.unref();
       return this;
     }
     hasRef() {
@@ -229,20 +212,19 @@ export const createNodeTimers = (host: NodeTimersHost) => {
   const clearImmediate = (i: unknown) => {
     if (i instanceof Immediate && !i._destroyed) {
       i._destroyed = true;
-      live.delete(i);
+      host.clearImmediate(i.native);
     }
   };
 
   // Legacy enroll/active API: items are plain objects carrying _idleTimeout/_onTimeout.
-  const enrolled = new WeakMap<object, unknown>();
+  const enrolled = new WeakMap<object, LoopHandle>();
   const stop = (item: object) => {
     const native = enrolled.get(item);
-    if (native !== undefined) {
-      host.clearNative(native);
+    if (native) {
+      host.clearTimer(native);
       enrolled.delete(item);
     }
   };
-  const handles = new WeakMap<object, { refed: boolean }>();
   const activate = (item: Record<string, unknown>, refed: boolean) => {
     const msecs = item._idleTimeout;
     if (typeof msecs !== "number" || !(msecs >= 0)) return;
@@ -250,22 +232,12 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     item._idleStart = Math.trunc(performance.now());
     item._idleNext = item._idleNext ?? {};
     item._idlePrev = item._idlePrev ?? {};
-    const handle = handles.get(item) ?? { refed };
-    handle.refed = refed;
-    handles.set(item, handle);
-    live.add(handle);
-    enrolled.set(
-      item,
-      host.setNative(() => {
-        enrolled.delete(item);
-        live.delete(handle);
-        try {
-          (item._onTimeout as (() => void) | undefined)?.call(item);
-        } finally {
-          host.afterCallback();
-        }
-      }, msecs),
-    );
+    const native = host.setTimer(() => {
+      enrolled.delete(item);
+      (item._onTimeout as (() => void) | undefined)?.call(item);
+    }, msecs);
+    if (!refed) native.unref();
+    enrolled.set(item, native);
   };
 
   const timers: NodeTimers = {
@@ -303,8 +275,6 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       }
       if (item && typeof item === "object") {
         stop(item);
-        const handle = handles.get(item);
-        if (handle) live.delete(handle);
         (item as Record<string, unknown>)._idleTimeout = -1;
       }
     },
@@ -312,5 +282,5 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     _unrefActive: (item) => activate(item, false),
   };
 
-  return { timers, hasRefed };
+  return { timers };
 };

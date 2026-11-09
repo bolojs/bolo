@@ -32,6 +32,11 @@ export interface CompatHarness {
   write(path: string, source: string): Promise<void>;
   /** Runs `node <path>` and returns the combined stdout+stderr text, exit code, and elapsed time. */
   exec(path: string): Promise<ExecResult>;
+  /**
+   * Spawns `node <path>`, waits until it prints its first output (so the program
+   * is running), kills it, and reports how long `exit` took to resolve.
+   */
+  spawnAndKill(path: string): Promise<{ killMs: number; exitCode: number; output: string }>;
   /** Installs npm packages into the container VFS via the container's own package manager. */
   install(names: string[]): Promise<ExecResult>;
   /**
@@ -101,6 +106,17 @@ window.__compatHarness = {
     const [output, exitCode] = await Promise.all([readAll(proc.output), proc.exit]);
     const duration = performance.now() - start;
     return { exitCode, output, duration };
+  },
+
+  spawnAndKill: async (path) => {
+    if (!container) throw new Error("CompatHarness: boot() must resolve before spawnAndKill()");
+    const proc = container.spawn("node", [normalize(path)]);
+    const reader = proc.output.getReader();
+    const first = await reader.read();
+    const killedAt = performance.now();
+    proc.kill();
+    const exitCode = await proc.exit;
+    return { killMs: performance.now() - killedAt, exitCode, output: first.value ?? "" };
   },
 
   install: async (names) => {

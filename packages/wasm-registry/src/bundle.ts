@@ -439,18 +439,14 @@ var setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
 var clearTimeout = __bcTimers?.clearTimeout ?? globalThis.clearTimeout;
 var setInterval = __bcTimers?.setInterval ?? globalThis.setInterval;
 var clearInterval = __bcTimers?.clearInterval ?? globalThis.clearInterval;
-// Process workers provide a Node-style setImmediate (a tracked check-phase
-// handle); the main-thread fallback is a plain 0ms timer.
+// Process workers own a Node-style loop (check phase, ref-counted handles);
+// elsewhere fall back to a plain macrotask hop.
 var setImmediate = __bcTimers?.setImmediate ?? ((fn, ...args) => {
-  const imm = { cancelled: false, timer: undefined, ref() { imm.timer?.ref?.(); return imm; }, unref() { imm.timer?.unref?.(); return imm; }, hasRef() { return imm.timer?.hasRef?.() ?? true; } };
-  imm.timer = setTimeout(() => {
-    if (imm.cancelled) return;
-    fn(...args);
-    process?.drainTicks?.();
-  }, 0);
+  const imm = { cancelled: false, ref() { return imm; }, unref() { return imm; }, hasRef() { return true; } };
+  globalThis.setTimeout(() => { if (!imm.cancelled) { fn(...args); process?.drainTicks?.(); } }, 0);
   return imm;
 });
-var clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) { imm.cancelled = true; clearTimeout(imm.timer); } });
+var clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm.cancelled = true; });
 
 var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;

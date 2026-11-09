@@ -1,20 +1,32 @@
 import { describe, it, expect, vi } from "vitest";
 import { createNodeTimers } from "./node-timers.js";
+import { createEventLoop } from "./event-loop.js";
 
-const setup = () => {
+const setup = (warn?: (name: string, message: string) => void) => {
   const after = vi.fn();
-  const { timers, hasRefed } = createNodeTimers({
-    setNative: (fn, ms) => setTimeout(fn, ms),
-    clearNative: (id) => clearTimeout(id as never),
-    afterCallback: after,
+  const loop = createEventLoop({
+    drainTicks: after,
+    onUncaught: (e) => {
+      throw e;
+    },
+    isExited: () => false,
   });
-  return { timers, hasRefed, after };
+  const { timers } = createNodeTimers({
+    setTimer: (fn, ms) => loop.setTimeout(fn, ms),
+    clearTimer: (h) => loop.clearTimeout(h),
+    setImmediate: (fn) => loop.setImmediate(fn),
+    clearImmediate: (h) => loop.clearImmediate(h),
+    warn,
+  });
+  // Drive the loop like the worker does; it returns once no ref'd handle remains.
+  const run = () => loop.run();
+  return { timers, hasRefed: loop.hasRefed, after, run };
 };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe("createNodeTimers", () => {
   it("binds this to the Timeout and passes args", async () => {
-    const { timers } = setup();
+    const { timers, run } = setup();
     const seen: unknown[] = [];
     const t = timers.setTimeout(
       function (this: unknown, ...a: unknown[]) {
@@ -23,12 +35,12 @@ describe("createNodeTimers", () => {
       1,
       "x",
     );
-    await wait(10);
+    await run();
     expect(seen).toEqual([t, "x"]);
   });
 
   it("throws ERR_INVALID_ARG_TYPE for non-function callbacks", () => {
-    const { timers } = setup();
+    const { timers, run } = setup();
     for (const f of [timers.setTimeout, timers.setInterval, timers.setImmediate]) {
       expect(() => f("foo" as never)).toThrow(
         expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
@@ -37,7 +49,7 @@ describe("createNodeTimers", () => {
   });
 
   it("supports numeric/string ids, toPrimitive, close, dispose and _destroyed", async () => {
-    const { timers } = setup();
+    const { timers, run } = setup();
     const fn = vi.fn();
     const a = timers.setTimeout(fn, 1) as { [Symbol.toPrimitive](): number; _destroyed: boolean };
     timers.clearTimeout(+(a as never));
@@ -46,7 +58,7 @@ describe("createNodeTimers", () => {
     timers.clearTimeout(`${b as never}`);
     const c = timers.setTimeout(fn, 1) as { [Symbol.dispose](): void };
     c[Symbol.dispose]();
-    await wait(10);
+    await run();
     expect(fn).not.toHaveBeenCalled();
   });
 
@@ -65,53 +77,52 @@ describe("createNodeTimers", () => {
   });
 
   it("refresh re-arms a timer from inside its callback", async () => {
-    const { timers } = setup();
+    const { timers, run } = setup();
     let calls = 0;
     const t = timers.setTimeout(() => {
       if (++calls === 1) (t as { refresh(): void }).refresh();
     }, 1);
-    await wait(30);
+    await run();
     expect(calls).toBe(2);
   });
 
   it("turns a timeout into an interval by setting _repeat", async () => {
-    const { timers } = setup();
+    const { timers, run } = setup();
     let calls = 0;
     const t = timers.setTimeout(() => {
       calls++;
       if ((t as { _repeat: number | null })._repeat) timers.clearInterval(t);
       (t as { _repeat: number | null })._repeat = 1;
     }, 1);
-    await wait(30);
+    await run();
     expect(calls).toBe(2);
   });
 
   it("does not run an unref'd immediate when nothing else is alive", async () => {
-    const { timers } = setup();
+    const { timers, run } = setup();
     const fn = vi.fn();
     (timers.setImmediate(fn) as { unref(): void }).unref();
-    await wait(10);
+    await run();
     expect(fn).not.toHaveBeenCalled();
     const ran = vi.fn();
-    const keep = timers.setTimeout(() => {}, 20);
+    timers.setTimeout(() => {}, 20);
     (timers.setImmediate(ran) as { unref(): void }).unref();
-    await wait(10);
+    await run();
     expect(ran).toHaveBeenCalled();
-    timers.clearTimeout(keep);
   });
 
   it("clears an immediate and runs afterCallback", async () => {
-    const { timers, after } = setup();
+    const { timers, after, run } = setup();
     const fn = vi.fn();
     timers.clearImmediate(timers.setImmediate(fn));
     timers.setImmediate(() => {});
-    await wait(10);
+    await run();
     expect(fn).not.toHaveBeenCalled();
     expect(after).toHaveBeenCalledTimes(1);
   });
 
   it("implements enroll validation and active/unenroll", async () => {
-    const { timers } = setup();
+    const { timers, run } = setup();
     expect(() => timers.enroll({}, "foo")).toThrow(
       expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
     );
@@ -129,7 +140,7 @@ describe("createNodeTimers", () => {
     expect(item._idleTimeout).toBe(5);
     timers.active(item);
     expect(Number.isInteger(item._idleStart)).toBe(true);
-    await wait(30);
+    await run();
     expect(onTimeout).toHaveBeenCalledTimes(1);
     const bogus = { _idleTimeout: -1 };
     timers.active(bogus);
@@ -140,16 +151,11 @@ describe("createNodeTimers", () => {
 
   it("survives user-overwritten call/apply and warns on overflow", async () => {
     const warn = vi.fn();
-    const { timers } = createNodeTimers({
-      setNative: (fn, ms) => setTimeout(fn, ms),
-      clearNative: (id) => clearTimeout(id as never),
-      afterCallback: () => {},
-      warn,
-    });
+    const { timers, run } = setup(warn);
     const fn = Object.assign(vi.fn(), { call: "x", apply: "y" });
     timers.setImmediate(fn, 1);
     timers.setTimeout(fn, 1);
-    await wait(10);
+    await run();
     expect(fn).toHaveBeenCalledTimes(2);
     timers.clearTimeout(timers.setTimeout(() => {}, 2 ** 31));
     expect(warn).toHaveBeenCalledWith(
