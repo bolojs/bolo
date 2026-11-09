@@ -433,6 +433,14 @@ var Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
 var global = globalThis;
 var setImmediate = (fn, ...args) => { queueMicrotask(() => fn(...args)); return 0; };
 var clearImmediate = () => {};
+// Process workers inject handle-tracked timers so only the *program's*
+// timers keep the process alive — infrastructure (logging, rpc) uses real
+// globals and is invisible to liveness. Main-thread path: real globals.
+var __bcTimers = __bcGlobals()?.timers;
+var setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
+var clearTimeout = __bcTimers?.clearTimeout ?? globalThis.clearTimeout;
+var setInterval = __bcTimers?.setInterval ?? globalThis.setInterval;
+var clearInterval = __bcTimers?.clearInterval ?? globalThis.clearInterval;
 
 var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;

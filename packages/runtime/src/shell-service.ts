@@ -24,7 +24,17 @@ declare global {
   // container's live `VfsBus`/`SWSandbox` instead of a fresh one per bundle.
   // eslint-disable-next-line no-var
   var __browserContainers:
-    | { vfs: VfsBus; sandbox?: SWSandbox; shims: Record<string, unknown> }
+    | {
+        vfs: VfsBus;
+        sandbox?: SWSandbox;
+        shims: Record<string, unknown>;
+        timers?: {
+          setTimeout: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
+          clearTimeout: (t: unknown) => unknown;
+          setInterval: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
+          clearInterval: (t: unknown) => unknown;
+        };
+      }
     | undefined;
 }
 

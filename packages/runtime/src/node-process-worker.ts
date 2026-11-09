@@ -53,7 +53,17 @@ export type ProcWorkerMessage =
 declare global {
   // eslint-disable-next-line no-var
   var __browserContainers:
-    | { vfs: VfsBus; sandbox?: SWSandbox; shims: Record<string, unknown> }
+    | {
+        vfs: VfsBus;
+        sandbox?: SWSandbox;
+        shims: Record<string, unknown>;
+        timers?: {
+          setTimeout: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
+          clearTimeout: (t: unknown) => unknown;
+          setInterval: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
+          clearInterval: (t: unknown) => unknown;
+        };
+      }
     | undefined;
 }
 
@@ -150,40 +160,89 @@ const runProcess = async (msg: ProcRunMessage) => {
     rpc.handle(ev.data);
   });
 
-  // Track pending timers so natural completion can fire beforeExit/exit once
-  // the "event loop" drains — a serving server (sandbox.onFetch invoked) is
-  // treated as a live handle and skips the wait entirely.
+  // libuv-style handle table: each timer the *program* creates is a
+  // ref-counted handle; `unref()` drops it out of the liveness count.
+  // Tracked timers are injected into the bundle's globals via
+  // `__browserContainers.timers` (see GLOBALS_BANNER) and into the
+  // `node:timers` shim — infrastructure timers (logtape flushers, rpc)
+  // use the realm's real globals and never count as handles.
+  interface TimerHandle {
+    refed: boolean;
+    timeout: { unref(): unknown; ref(): unknown; hasRef(): boolean; __id: unknown };
+  }
+  const timerHandles = new Map<unknown, TimerHandle>();
   const g = globalThis as unknown as Record<string, (...a: unknown[]) => unknown>;
   const origSet = g.setTimeout!;
   const origClear = g.clearTimeout!;
   const origSetInterval = g.setInterval!;
   const origClearInterval = g.clearInterval!;
-  const pending = new Set<unknown>();
-  g.setTimeout = ((fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
-    const id: unknown = origSet(
+
+  const makeTimeout = (handle: TimerHandle, id: unknown) => {
+    const timeout = {
+      __id: id,
+      unref() {
+        handle.refed = false;
+        return this;
+      },
+      ref() {
+        handle.refed = true;
+        return this;
+      },
+      hasRef() {
+        return handle.refed;
+      },
+    };
+    handle.timeout = timeout;
+    return timeout;
+  };
+
+  const trackedSetTimeout = (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
+    const handle: TimerHandle = { refed: true, timeout: undefined as never };
+    const id = origSet(
       (...a: unknown[]) => {
-        pending.delete(id);
+        timerHandles.delete(id);
         fn(...a);
       },
       ms,
       ...rest,
     );
-    pending.add(id);
-    return id;
-  }) as never;
-  g.clearTimeout = ((id: unknown) => {
-    pending.delete(id);
+    timerHandles.set(id, handle);
+    return makeTimeout(handle, id);
+  };
+  const timerId = (t: unknown): unknown =>
+    t && typeof t === "object" && "__id" in t ? (t as { __id: unknown }).__id : t;
+  const trackedClearTimeout = (t: unknown) => {
+    const id = timerId(t);
+    timerHandles.delete(id);
     return origClear(id);
-  }) as never;
-  g.setInterval = ((fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
+  };
+  const trackedSetInterval = (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
+    const handle: TimerHandle = { refed: true, timeout: undefined as never };
     const id = origSetInterval(fn, ms, ...rest);
-    pending.add(id);
-    return id;
-  }) as never;
-  g.clearInterval = ((id: unknown) => {
-    pending.delete(id);
+    timerHandles.set(id, handle);
+    return makeTimeout(handle, id);
+  };
+  const trackedClearInterval = (t: unknown) => {
+    const id = timerId(t);
+    timerHandles.delete(id);
     return origClearInterval(id);
-  }) as never;
+  };
+
+  const trackedTimers = {
+    setTimeout: trackedSetTimeout,
+    clearTimeout: trackedClearTimeout,
+    setInterval: trackedSetInterval,
+    clearInterval: trackedClearInterval,
+  };
+  globalThis.__browserContainers!.timers = trackedTimers;
+  // `require('node:timers')` sees the same tracked implementation.
+  const timersShim = shims.timers as Record<string, unknown> | undefined;
+  if (timersShim) Object.assign(timersShim, trackedTimers);
+
+  const hasRefedTimers = () => {
+    for (const h of timerHandles.values()) if (h.refed) return true;
+    return false;
+  };
 
   const sleep = (ms: number) => new Promise<void>((r) => origSet(r, ms));
   // A registered fetch handler means a server is listening — a live handle
@@ -237,25 +296,34 @@ const runProcess = async (msg: ProcRunMessage) => {
     return;
   }
 
-  // Quiescence: bounded wait for tracked timers unless a server is serving.
-  const cap = msg.quiescenceCapMs ?? 5000;
-  const deadline = Date.now() + cap;
+  // Event-loop liveness: keep running while refed handles exist. A serving
+  // server or a live interval keeps the process alive indefinitely (matches
+  // Node — kill() is the reclaim, not a quiescence cap). beforeExit may
+  // itself schedule work, so it re-enters the drain loop.
   await sleep(0);
-  while (!exited && !serving() && pending.size > 0 && Date.now() < deadline) {
-    await sleep(5);
-  }
-  await sleep(0);
-
-  // A listening server keeps the process alive indefinitely — the worker
-  // must not emit exit (main would terminate it and kill the server).
-  // Exit can still arrive later via process.exit() in a timer or handler.
-  if (!exited && serving()) {
-    await new Promise<void>(() => {});
+  for (;;) {
+    while (!exited && hasRefedTimers()) {
+      await sleep(5);
+    }
+    if (exited) return;
+    // A listening server keeps the process alive indefinitely — the worker
+    // must not emit exit (main would terminate it and kill the server).
+    if (serving()) {
+      await new Promise<void>(() => {});
+    }
+    try {
+      processShim.emit("beforeExit", processShim.exitCode ?? 0);
+    } catch (err) {
+      finish(err instanceof ProcessExit ? err.code : 1);
+      return;
+    }
+    // beforeExit scheduled new work — drain again before exiting.
+    if (hasRefedTimers()) continue;
+    break;
   }
 
   if (exited) return;
   try {
-    processShim.emit("beforeExit", processShim.exitCode ?? 0);
     processShim.emit("exit", processShim.exitCode ?? 0);
   } catch (err) {
     finish(err instanceof ProcessExit ? err.code : 1);
