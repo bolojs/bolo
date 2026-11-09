@@ -35,7 +35,7 @@ wiring (see below).
 ## Quickstart
 
 ```ts
-import { boot } from 'bolojs';
+import { boot } from '@bolojs/runtime';
 
 const container = await boot({ workdirName: '/home/web' });
 
@@ -93,7 +93,7 @@ agent run /untrusted.js
 import { VfsBus } from '@bolojs/fs';
 import { SWSandbox } from '@bolojs/sandbox';
 import { PackageManager } from '@bolojs/pm';
-import { RuntimeWorker, IframeSandbox, ShellService } from 'bolojs';
+import { RuntimeWorker, IframeSandbox, ShellService } from '@bolojs/runtime';
 
 const vfs = new VfsBus();
 const swSandbox = await SWSandbox.create({ origin: 'https://sandbox.local/', swPath: '/sw.js' });

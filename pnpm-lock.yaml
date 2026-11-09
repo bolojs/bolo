@@ -70,7 +70,7 @@ importers:
       '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../../packages/node-web-shims
-      bolojs:
+      '@bolojs/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
     devDependencies:
@@ -193,6 +193,9 @@ importers:
       '@bolojs/pm':
         specifier: workspace:*
         version: link:../../../packages/npm
+      '@bolojs/runtime':
+        specifier: workspace:*
+        version: link:../../../packages/runtime
       '@bolojs/sandbox':
         specifier: workspace:*
         version: link:../../../packages/sw-sandbox
@@ -238,9 +241,6 @@ importers:
       astro:
         specifier: ^7.1.0
         version: 7.1.0(@astrojs/markdown-remark@7.2.1)(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@types/node@26.1.1)(jiti@2.7.0)(rollup@4.60.1)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)
-      bolojs:
-        specifier: workspace:*
-        version: link:../../../packages/runtime
       motion:
         specifier: ^12.42.2
         version: 12.42.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -317,6 +317,9 @@ importers:
       '@bolojs/log':
         specifier: workspace:*
         version: link:../../packages/log
+      '@bolojs/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
       '@codemirror/commands':
         specifier: ^6.10.4
         version: 6.10.4
@@ -356,9 +359,6 @@ importers:
       ai:
         specifier: 7.0.31
         version: 7.0.31(zod@4.4.3)
-      bolojs:
-        specifier: workspace:*
-        version: link:../../packages/runtime
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

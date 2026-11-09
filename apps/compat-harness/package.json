@@ -19,7 +19,7 @@
   "dependencies": {
     "@bolojs/log": "workspace:*",
     "@bolojs/node-web-shims": "workspace:*",
-    "bolojs": "workspace:*"
+    "@bolojs/runtime": "workspace:*"
   },
   "devDependencies": {
     "@stryker-mutator/core": "^10.1.1",

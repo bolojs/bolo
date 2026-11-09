@@ -1,5 +1,5 @@
 {
-  "name": "bolojs",
+  "name": "@bolojs/runtime",
   "version": "0.3.0-rc.0",
   "description": "Core container API for bolo — boot a browser-native Node.js runtime with a pluggable sandbox backend.",
   "type": "module",

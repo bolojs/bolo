@@ -13,7 +13,7 @@ This package is bundler-only ESM: `dist` uses extensionless relative imports, so
 ## Usage
 
 ```ts
-import { boot } from "bolojs";
+import { boot } from "@bolojs/runtime";
 
 const container = await boot({ workdirName: "/home/web" });
 

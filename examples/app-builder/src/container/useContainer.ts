@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { boot, type BrowserContainer } from "bolojs";
+import { boot, type BrowserContainer } from "@bolojs/runtime";
 import { starterTree } from "./scaffold";
 import { loadProjectSnapshot, restoreProjectSnapshot, saveProjectSnapshot } from "./persist";
 

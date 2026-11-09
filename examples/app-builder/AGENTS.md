@@ -39,7 +39,7 @@ This package consumes `bolojs`, `@bolojs/fs`, and
 before app-builder will see the change:
 
 ```bash
-pnpm --filter bolojs --filter @bolojs/fs --filter @bolojs/vite-preset build
+pnpm --filter @bolojs/runtime --filter @bolojs/fs --filter @bolojs/vite-preset build
 ```
 
 Symptom if you skip this: TS errors like "has no exported member" for

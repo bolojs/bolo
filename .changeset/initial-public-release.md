@@ -1,5 +1,5 @@
 ---
-"bolojs": minor
+"@bolojs/runtime": minor
 "@bolojs/fs": minor
 "@bolojs/lockfile": minor
 "@bolojs/log": minor
