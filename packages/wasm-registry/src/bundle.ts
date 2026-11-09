@@ -439,30 +439,14 @@ var setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
 var clearTimeout = __bcTimers?.clearTimeout ?? globalThis.clearTimeout;
 var setInterval = __bcTimers?.setInterval ?? globalThis.setInterval;
 var clearInterval = __bcTimers?.clearInterval ?? globalThis.clearInterval;
-// Macrotask (not a microtask): runs after pending promise jobs, and is a
-// tracked handle in process workers so it keeps the process alive until it fires.
-// The extra MessageChannel hop orders it after the browser's unhandledrejection
-// task, matching Node (rejections are processed before the check phase).
-var __bcHop = (() => {
-  try {
-    const c = new MessageChannel();
-    const q = [];
-    c.port1.onmessage = () => { const f = q.shift(); if (f) f(); };
-    return (f) => { q.push(f); c.port2.postMessage(0); };
-  } catch { return (f) => globalThis.setTimeout(f, 0); }
-})();
-var setImmediate = (fn, ...args) => {
-  const imm = { cancelled: false, timer: undefined, ref() { imm.timer?.ref?.(); return imm; }, unref() { imm.timer?.unref?.(); return imm; }, hasRef() { return imm.timer?.hasRef?.() ?? true; } };
-  imm.timer = setTimeout(() => {
-    __bcHop(() => {
-      if (imm.cancelled) return;
-      fn(...args);
-      process?.drainTicks?.();
-    });
-  }, 0);
+// Process workers own a Node-style loop (check phase, ref-counted handles);
+// elsewhere fall back to a plain macrotask hop.
+var setImmediate = __bcTimers?.setImmediate ?? ((fn, ...args) => {
+  const imm = { cancelled: false, ref() { return imm; }, unref() { return imm; }, hasRef() { return true; } };
+  globalThis.setTimeout(() => { if (!imm.cancelled) { fn(...args); process?.drainTicks?.(); } }, 0);
   return imm;
-};
-var clearImmediate = (imm) => { if (imm) { imm.cancelled = true; clearTimeout(imm.timer); } };
+});
+var clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm.cancelled = true; });
 
 var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;

@@ -33,6 +33,8 @@ declare global {
           clearTimeout: (t: unknown) => unknown;
           setInterval: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
           clearInterval: (t: unknown) => unknown;
+          setImmediate: (fn: (...a: unknown[]) => void, ...rest: unknown[]) => unknown;
+          clearImmediate: (t: unknown) => unknown;
         };
       }
     | undefined;
@@ -96,10 +98,10 @@ export class ShellService {
     const stdoutChunks: string[] = [];
     const stderrChunks: string[] = [];
     const callbacks: OutputCallbacks = {
-      stdout: (data: string) => {
-        stdoutChunks.push(data);
       // Carried through so runNodeAppInWorker can register the process for kill(tag).
       tag: output?.tag,
+      stdout: (data: string) => {
+        stdoutChunks.push(data);
         output?.stdout?.(data);
       },
       stderr: (data: string) => {

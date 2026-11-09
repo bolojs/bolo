@@ -6,6 +6,7 @@ import type { ProcessShim } from "@bolojs/node-runtime-shims";
 import { createRpcPeer } from "./rpc.js";
 import { createRemoteDeps } from "./remote-objects.js";
 import { createSyncCaller } from "./sync-channel.js";
+import { createEventLoop } from "./event-loop.js";
 
 // ponytail: see worker-script.ts — fire-and-forget to stay TLA-free.
 configureBrowserLogging().catch(() => {});
@@ -62,6 +63,8 @@ declare global {
           clearTimeout: (t: unknown) => unknown;
           setInterval: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
           clearInterval: (t: unknown) => unknown;
+          setImmediate: (fn: (...a: unknown[]) => void, ...rest: unknown[]) => unknown;
+          clearImmediate: (t: unknown) => unknown;
         };
       }
     | undefined;
@@ -101,19 +104,23 @@ const finish = (code: number) => {
 
 // Uncaught errors inside the worker realm: hand to the process's
 // 'uncaughtException' listeners when present, else Node-formatted exit 1.
-self.addEventListener("error", (ev: ErrorEvent) => {
-  if (exited) return;
-  const err = ev.error ?? ev.message;
+const handleUncaught = (err: unknown): boolean => {
+  if (exited) return true;
   if (err instanceof ProcessExit) {
     finish(err.code);
-    return;
+    return true;
   }
   if (processShim && processShim.listenerCount("uncaughtException") > 0) {
     processShim.emit("uncaughtException", err, "uncaughtException");
-    ev.preventDefault();
-    return;
+    return true;
   }
   crash(err);
+  return true;
+};
+self.addEventListener("error", (ev: ErrorEvent) => {
+  if (exited) return;
+  handleUncaught(ev.error ?? ev.message);
+  ev.preventDefault();
 });
 
 self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
@@ -185,99 +192,30 @@ const runProcess = async (msg: ProcRunMessage) => {
     rpc.handle(ev.data);
   });
 
-  // libuv-style handle table: each timer the *program* creates is a
-  // ref-counted handle; `unref()` drops it out of the liveness count.
-  // Tracked timers are injected into the bundle's globals via
-  // `__browserContainers.timers` (see GLOBALS_BANNER) and into the
-  // `node:timers` shim — infrastructure timers (logtape flushers, rpc)
-  // use the realm's real globals and never count as handles.
-  interface TimerHandle {
-    refed: boolean;
-    timeout: { unref(): unknown; ref(): unknown; hasRef(): boolean; __id: unknown };
-  }
-  const timerHandles = new Map<unknown, TimerHandle>();
-  const g = globalThis as unknown as Record<string, (...a: unknown[]) => unknown>;
-  const origSet = g.setTimeout!;
-  const origClear = g.clearTimeout!;
-  const origSetInterval = g.setInterval!;
-  const origClearInterval = g.clearInterval!;
-
-  const makeTimeout = (handle: TimerHandle, id: unknown) => {
-    const timeout = {
-      __id: id,
-      unref() {
-        handle.refed = false;
-        return this;
-      },
-      ref() {
-        handle.refed = true;
-        return this;
-      },
-      hasRef() {
-        return handle.refed;
-      },
-    };
-    handle.timeout = timeout;
-    return timeout;
-  };
-
-  const trackedSetTimeout = (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
-    const handle: TimerHandle = { refed: true, timeout: undefined as never };
-    const id = origSet(
-      (...a: unknown[]) => {
-        timerHandles.delete(id);
-        fn(...a);
-        // Node runs the tick queue right after each macrotask callback,
-        // before promise jobs.
-        processShim?.drainTicks();
-      },
-      ms,
-      ...rest,
-    );
-    timerHandles.set(id, handle);
-    return makeTimeout(handle, id);
-  };
-  const timerId = (t: unknown): unknown =>
-    t && typeof t === "object" && "__id" in t ? (t as { __id: unknown }).__id : t;
-  const trackedClearTimeout = (t: unknown) => {
-    const id = timerId(t);
-    timerHandles.delete(id);
-    return origClear(id);
-  };
-  const trackedSetInterval = (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => {
-    const handle: TimerHandle = { refed: true, timeout: undefined as never };
-    const id = origSetInterval(
-      (...a: unknown[]) => {
-        fn(...a);
-        processShim?.drainTicks();
-      },
-      ms,
-      ...rest,
-    );
-    timerHandles.set(id, handle);
-    return makeTimeout(handle, id);
-  };
-  const trackedClearInterval = (t: unknown) => {
-    const id = timerId(t);
-    timerHandles.delete(id);
-    return origClearInterval(id);
-  };
-
+  // Node-style event loop owned by the worker (see event-loop.ts). Injected
+  // into the bundle's globals via `__browserContainers.timers` (GLOBALS_BANNER)
+  // and the `node:timers` shim; infrastructure timers (logtape, rpc) use the
+  // realm's real globals and never count as handles.
+  const loop = createEventLoop({
+    drainTicks: () => processShim?.drainTicks(),
+    onUncaught: handleUncaught,
+    isExited: () => exited,
+  });
   const trackedTimers = {
-    setTimeout: trackedSetTimeout,
-    clearTimeout: trackedClearTimeout,
-    setInterval: trackedSetInterval,
-    clearInterval: trackedClearInterval,
+    setTimeout: loop.setTimeout,
+    clearTimeout: loop.clearTimeout,
+    setInterval: loop.setInterval,
+    clearInterval: loop.clearInterval,
+    setImmediate: loop.setImmediate,
+    clearImmediate: loop.clearImmediate,
   };
-  globalThis.__browserContainers!.timers = trackedTimers;
-  // `require('node:timers')` sees the same tracked implementation.
+  globalThis.__browserContainers!.timers = trackedTimers as never;
+  // `require('node:timers')` sees the same implementation.
   const timersShim = shims.timers as Record<string, unknown> | undefined;
   if (timersShim) Object.assign(timersShim, trackedTimers);
 
-  const hasRefedTimers = () => {
-    for (const h of timerHandles.values()) if (h.refed) return true;
-    return false;
-  };
+  const hasRefedTimers = () => loop.hasRefed();
+  const origSet = globalThis.setTimeout.bind(globalThis);
 
   const sleep = (ms: number) => new Promise<void>((r) => origSet(r, ms));
   // A registered fetch handler means a server is listening — a live handle
@@ -334,11 +272,9 @@ const runProcess = async (msg: ProcRunMessage) => {
   // server or a live interval keeps the process alive indefinitely (matches
   // Node — kill() is the reclaim, not a quiescence cap). beforeExit may
   // itself schedule work, so it re-enters the drain loop.
-  await sleep(0);
+  await loop.yieldTask();
   for (;;) {
-    while (!exited && hasRefedTimers()) {
-      await sleep(5);
-    }
+    await loop.run();
     // Grace period: unhandledrejection events and just-posted messages are
     // delivered as tasks after the last timer; quiescence must not race them.
     await sleep(10);
