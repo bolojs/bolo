@@ -7,7 +7,7 @@ import {
   type WasmTool,
   type WasmToolResult,
   type WasmToolLoader,
-} from "./registry";
+} from "./registry.js";
 
 export {
   registerWasmTool,
@@ -16,7 +16,7 @@ export {
   clearCache,
   getRegisteredToolNames,
 };
-export { loadBinary, precacheAll, isInstalled, pruneCache, BINARY_MANIFEST } from "./binary-loader";
+export { loadBinary, precacheAll, isInstalled, pruneCache, BINARY_MANIFEST } from "./binary-loader.js";
 export type { WasmTool, WasmToolResult, WasmToolLoader };
 export { createWasiTool } from "./wasi-executor.js";
 export type { WasiToolOptions, WasiPreopen } from "./wasi-executor.js";
