@@ -44,6 +44,13 @@ export interface EventLoopDeps {
 
 /** Lateness above this is real (busy loop), below is our own scheduling slop. */
 const LATE_MS = 20;
+/**
+ * libuv wakes a timer on the first millisecond tick at or after its expiry, so timers
+ * and interval re-arms made inside a callback start ~1ms after the nominal expiry
+ * (it accumulates along an interval chain). Without it, a re-armed interval ties
+ * exactly with older timers and an unref'd interval sneaks in before exit.
+ */
+const WAKE_LATENESS_MS = 1;
 
 export const createEventLoop = (deps: EventLoopDeps) => {
   const now = deps.now ?? (() => performance.now());
@@ -182,7 +189,11 @@ export const createEventLoop = (deps: EventLoopDeps) => {
     } catch (err) {
       deps.onUncaught(err);
     }
+    setClock(clock()); // fold program time spent in the callback into the virtual clock
     await yieldTask();
+    // Our own task yield is not program time: re-anchor so it does not make
+    // later timers look overdue (Node fixes `now` for the whole timers phase).
+    realBase = now();
   };
 
   const nextExpiry = () => {
@@ -198,7 +209,7 @@ export const createEventLoop = (deps: EventLoopDeps) => {
       const real = clock();
       // Only groups the real clock has reached (Node re-checks `now` between lists).
       if (t === Infinity || t > real) return;
-      setClock(real - t > LATE_MS ? real : t);
+      setClock(real - t > LATE_MS ? real : t + WAKE_LATENESS_MS);
       const due = [...timers]
         .filter((e) => e.expiry === t && !e.running)
         .sort((a, b) => a.seq - b.seq);
@@ -246,6 +257,9 @@ export const createEventLoop = (deps: EventLoopDeps) => {
 
   /** Runs until no ref'd handle remains (or the process exits). */
   const run = async () => {
+    // Entering the loop takes ~1ms after the main script (bootstrap -> first
+    // iteration): timers made in the first check phase start after main-script timers.
+    setClock(clock() + 1);
     while (!deps.isExited() && hasRefed()) {
       await runTimersPhase();
       await runImmediatesPhase();

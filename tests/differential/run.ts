@@ -28,6 +28,21 @@ const node = (source: string) => {
   return { code: r.status ?? -1, markers: markerLines(r.stdout) };
 };
 
+/**
+ * BOLO-DIV-005: some programs race inside Node itself (equal-deadline timers across a
+ * millisecond boundary). When bolo disagrees with the first oracle run, run Node more
+ * times; if bolo matches any outcome Node produces, the program is oracle-unstable,
+ * not a bolo divergence.
+ */
+const nodeOutcomes = (source: string, runs: number) => {
+  const outcomes = new Set<string>();
+  for (let i = 0; i < runs; i++) {
+    const o = node(source);
+    outcomes.add(JSON.stringify({ code: o.code, markers: o.markers }));
+  }
+  return outcomes;
+};
+
 const main = async () => {
   const programs = fc.sample(programArb, { numRuns: count, seed });
   const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME || undefined });
@@ -37,6 +52,7 @@ const main = async () => {
   await page.evaluate(() => (window as any).__compatHarness.boot());
 
   const divergences: unknown[] = [];
+  let unstable = 0;
   for (const [i, program] of programs.entries()) {
     const source = renderProgram(program);
     const oracle = node(source);
@@ -63,13 +79,22 @@ const main = async () => {
       got = await runBolo(attempt);
       markers = markerLines(got.output);
     }
-    const same = matches();
+    let same = matches();
+    let oracleUnstable = false;
+    if (!same) {
+      const seen = nodeOutcomes(source, 8);
+      if (seen.has(JSON.stringify({ code: got.exitCode, markers }))) {
+        same = true;
+        oracleUnstable = true;
+      }
+    }
+    if (oracleUnstable) unstable++;
     if (!same) {
       divergences.push({ i, source, oracle, bolo: { code: got.exitCode, markers, output: got.output.slice(0, 500) } });
     }
   }
   await browser.close();
-  const summary = { seed, count, agree: count - divergences.length, divergent: divergences.length };
+  const summary = { seed, count, agree: count - divergences.length, divergent: divergences.length, oracleUnstable: unstable };
   console.log(JSON.stringify(summary));
   if (out) writeFileSync(out, JSON.stringify({ summary, divergences }, null, 2));
   process.exit(divergences.length ? 1 : 0);

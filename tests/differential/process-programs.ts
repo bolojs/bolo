@@ -128,7 +128,11 @@ export const renderProgram = (program: Program): string => {
         return `try { process.exit(${s.code}); } catch (e) { ${log()} }`;
     }
   };
-  return `${block(program.body)}\n`;
+  // BOLO-DIV-004: Node's first console.log lazily initializes stdout (7-40ms,
+  // varies per run), which shifts the start of every timer created after it.
+  // A warm-up line pays that cost before any program timer exists; it is not an
+  // `L<n>` marker so it never enters the comparison.
+  return `console.log("warmup");\n${block(program.body)}\n`;
 };
 
 /** Keeps only the deterministic `L<n>` marker lines of combined output. */
