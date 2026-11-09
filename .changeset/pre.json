@@ -1,0 +1,27 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "@bolojs/compat-harness": "0.1.0",
+    "@bolojs/site-compat": "0.1.0",
+    "@bolojs/site-docs": "0.2.0",
+    "@bolojs/site-landing": "0.1.0",
+    "@bolojs/tcp-relay": "0.0.0",
+    "@bolojs/example-app-builder": "0.1.0",
+    "@bolojs/lockfile": "0.1.0",
+    "@bolojs/log": "0.1.0",
+    "@bolojs/node-runtime-shims": "0.1.0",
+    "@bolojs/node-web-shims": "0.1.0",
+    "@bolojs/pm": "0.1.0",
+    "bolojs": "0.1.0",
+    "@bolojs/sandbox": "0.1.0",
+    "@bolojs/fs": "0.1.0",
+    "@bolojs/vite-preset": "0.1.0",
+    "@bolojs/vite-server": "0.1.0",
+    "@bolojs/registry": "0.1.0",
+    "@bolojs/spikes-r0-de": "0.0.0",
+    "@bolojs/tests": "0.2.0",
+    "@bolojs/e2e": "0.0.1"
+  },
+  "changesets": []
+}
