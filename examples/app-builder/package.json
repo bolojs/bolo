@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@bolojs/log": "workspace:*",
-    "bolojs": "workspace:*",
+    "@bolojs/runtime": "workspace:*",
     "@bolojs/fs": "workspace:*",
     "@codemirror/commands": "^6.10.4",
     "@codemirror/lang-javascript": "^6.2.2",

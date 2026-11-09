@@ -1,4 +1,4 @@
-import { boot, type BrowserContainer } from "bolojs";
+import { boot, type BrowserContainer } from "@bolojs/runtime";
 import { NodeTestRunner, type ModuleManifest, type TestResult } from "./runner.js";
 import { runCanaries, type CanaryResult } from "./canaries.js";
 import { commonIndexSource } from "./test-common.js";

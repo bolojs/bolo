@@ -2,7 +2,7 @@
 import "./client-globals";
 import { createSignal, onMount } from "solid-js";
 import { Shimmer } from "@shimmer-from-structure/solid";
-import { boot, type BrowserContainer, type ReplResult } from "bolojs";
+import { boot, type BrowserContainer, type ReplResult } from "@bolojs/runtime";
 import { getLogger } from "@bolojs/log/browser";
 import { createE2eBridge } from "./e2e-bridge";
 import Terminal from "./Terminal";

@@ -13,7 +13,7 @@
     "@bolojs/node-runtime-shims": "0.1.0",
     "@bolojs/node-web-shims": "0.1.0",
     "@bolojs/pm": "0.1.0",
-    "bolojs": "0.1.0",
+    "@bolojs/runtime": "0.1.0",
     "@bolojs/sandbox": "0.1.0",
     "@bolojs/fs": "0.1.0",
     "@bolojs/vite-preset": "0.1.0",

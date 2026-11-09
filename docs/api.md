@@ -53,7 +53,7 @@ vfs.on('rename', ({ path }) => { /* file renamed */ });
 Routes shell commands to the appropriate execution tier.
 
 ```ts
-import { ShellService } from 'bolojs';
+import { ShellService } from '@bolojs/runtime';
 
 const shell = new ShellService({ vfs, packageManager, runtimeWorker, sandbox });
 ```
@@ -115,7 +115,7 @@ The default implementation is `IframeSandbox`: a cross-origin, opaque-origin ifr
 (browser-native isolation, no WASM runtime to load):
 
 ```ts
-import { IframeSandbox } from 'bolojs';
+import { IframeSandbox } from '@bolojs/runtime';
 const sandbox = new IframeSandbox();
 const { result, error } = await sandbox.run('2 + 2');
 // result: '4', error: undefined
@@ -136,7 +136,7 @@ pass it as `sandbox`: it's opt-in and not a dependency of `bolojs`.
 Trusted code execution tier. Runs scripts in a dedicated Web Worker.
 
 ```ts
-import { RuntimeWorker } from 'bolojs';
+import { RuntimeWorker } from '@bolojs/runtime';
 const worker = new RuntimeWorker(vfs, sandbox);
 ```
 

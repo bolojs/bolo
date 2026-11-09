@@ -105,7 +105,12 @@ export function bolojsAlias(): Array<{ find: string | RegExp; replacement: strin
 /** `optimizeDeps` config so esbuild's dependency pre-bundling scan also resolves bare builtins to shims. */
 export function bolojsOptimizeDeps(): UserConfig["optimizeDeps"] {
   return {
-    exclude: ["bolojs", "@rolldown/browser", "oxc-transform", "@oxc-transform/binding-wasm32-wasi"],
+    exclude: [
+      "@bolojs/runtime",
+      "@rolldown/browser",
+      "oxc-transform",
+      "@oxc-transform/binding-wasm32-wasi",
+    ],
     esbuildOptions: {
       plugins: [
         {

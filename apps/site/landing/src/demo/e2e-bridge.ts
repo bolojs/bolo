@@ -1,4 +1,4 @@
-import { boot as runtimeBoot, type BootOptions, type BrowserContainer, type Process } from "bolojs";
+import { boot as runtimeBoot, type BootOptions, type BrowserContainer, type Process } from "@bolojs/runtime";
 import { BrowserViteServer } from "@bolojs/vite-server";
 
 type SpawnOptions = Parameters<BrowserContainer["spawn"]>[2];

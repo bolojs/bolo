@@ -16,7 +16,7 @@
     "@astrojs/solid-js": "^7.0.1",
     "@bolojs/log": "workspace:*",
     "@bolojs/pm": "workspace:*",
-    "bolojs": "workspace:*",
+    "@bolojs/runtime": "workspace:*",
     "@bolojs/sandbox": "workspace:*",
     "@bolojs/fs": "workspace:*",
     "@bolojs/vite-preset": "workspace:*",

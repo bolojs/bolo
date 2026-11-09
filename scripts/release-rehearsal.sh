@@ -38,7 +38,7 @@ const fs=require("fs"),path=require("path");
 const dir=process.argv[1];const o={};
 for(const f of fs.readdirSync(dir).filter(f=>f.endsWith(".tgz"))){
   const name=f.replace(/-\d+\.\d+\.\d+.*\.tgz$/,"").replace(/^bolojs-(?=.)/,"@bolojs/");
-  o[name==="bolojs"?"bolojs":name]="file:"+path.join(dir,f);
+  o[name==="@bolojs/runtime"?"@bolojs/runtime":name]="file:"+path.join(dir,f);
 }
 console.log(JSON.stringify(o));' "$TARBALLS")"
 node -e '

@@ -1,5 +1,5 @@
 ---
-"bolojs": minor
+"@bolojs/runtime": minor
 "@bolojs/node-runtime-shims": minor
 "@bolojs/node-web-shims": minor
 "@bolojs/sandbox": minor
