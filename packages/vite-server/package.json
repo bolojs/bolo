@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/vite-server",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "BrowserViteServer — a Vite dev server that runs on the main thread inside a bolo container.",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,6 +17,7 @@
     "@bolojs/fs": "workspace:*",
     "@bolojs/registry": "workspace:*",
     "@sebastianwessel/quickjs": "^3.1.0",
+    "@oxc-transform/binding-wasm32-wasi": "0.140.0",
     "oxc-transform": "^0.140.0"
   },
   "devDependencies": {
@@ -24,6 +25,7 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bolojs/bolo.git",
@@ -34,7 +36,10 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
   ],
   "engines": {
     "node": ">=24.0.0"

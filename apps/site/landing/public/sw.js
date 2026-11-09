@@ -25,12 +25,19 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  // Intercept the vite preview prefix AND the virtual sandbox hostname
-  // (cross-origin user servers like Hono/Express).
-  if (!url.pathname.startsWith('/__preview/') && url.hostname !== 'sandbox.local') {
+  const isSync = url.pathname.includes('/__bolo_sync/');
+  // Intercept the vite preview prefix, the virtual sandbox hostname
+  // (cross-origin user servers like Hono/Express) and the sync channel
+  // prefix used by process workers for synchronous syscalls.
+  if (!isSync && !url.pathname.startsWith('/__preview/') && url.hostname !== 'sandbox.local') {
     return;
   }
   if (!isReady || !mainPort) {
+    // A sync XHR cannot wait for the port handshake — fail fast.
+    if (isSync) {
+      event.respondWith(new Response('Sync channel not ready', { status: 503 }));
+      return;
+    }
     event.respondWith(
       new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -44,10 +51,10 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-  event.respondWith(handleFetchEvent(event.request));
+  event.respondWith(handleFetchEvent(event.request, isSync));
 });
 
-async function handleFetchEvent(req) {
+async function handleFetchEvent(req, isSync = false) {
   if (!mainPort) {
     return new Response('ServiceWorker not ready', { status: 503 });
   }
@@ -56,14 +63,20 @@ async function handleFetchEvent(req) {
   req.headers.forEach((value, key) => {
     headers[key] = value;
   });
-  const body = await req.text().catch(() => undefined);
+  // Sync payloads are raw bytes; preview fetches stay text for compatibility.
+  const body = isSync
+    ? await req.arrayBuffer().catch(() => undefined)
+    : await req.text().catch(() => undefined);
   return new Promise((resolve, reject) => {
     pendingRequests.set(requestId, { resolve, reject });
-    mainPort.postMessage({
-      type: 'FETCH_REQUEST',
-      requestId,
-      request: { url: req.url, method: req.method, headers, body },
-    });
+    mainPort.postMessage(
+      {
+        type: isSync ? 'SYNC_REQUEST' : 'FETCH_REQUEST',
+        requestId,
+        request: { url: req.url, method: req.method, headers, body },
+      },
+      body instanceof ArrayBuffer ? [body] : [],
+    );
   });
 }
 
@@ -72,7 +85,7 @@ self.addEventListener('message', (event) => {
     mainPort = event.ports[0];
     mainPort.onmessage = (e) => {
       const { type, requestId, response, error } = e.data;
-      if (type === 'FETCH_RESPONSE') {
+      if (type === 'FETCH_RESPONSE' || type === 'SYNC_RESPONSE') {
         const pending = pendingRequests.get(requestId);
         if (!pending) return;
         pendingRequests.delete(requestId);

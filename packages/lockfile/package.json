@@ -1,6 +1,7 @@
 {
-  "name": "@unjs/lockfile",
+  "name": "@bolojs/lockfile",
   "version": "0.1.0",
+  "description": "Parse npm, yarn, yarn-berry, pnpm, and bun lockfiles into a unified dependency graph.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -25,7 +26,23 @@
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/lockfile"
+  },
+  "homepage": "https://bolojs.dev/docs/api/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
+  ],
   "engines": {
     "node": ">=24.0.0"
   }

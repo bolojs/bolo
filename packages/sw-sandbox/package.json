@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/sandbox",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "ServiceWorker-based network proxy that gives bolo containers a virtual localhost.",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,6 +20,7 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bolojs/bolo.git",
@@ -30,7 +31,10 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
   ],
   "engines": {
     "node": ">=24.0.0"

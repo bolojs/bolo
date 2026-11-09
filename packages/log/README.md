@@ -1,8 +1,6 @@
 # @bolojs/log
 
-Internal diagnostics for [bolo](https://github.com/bolojs/bolo). A thin [logtape](https://logtape.org)
-wrapper with Node and browser entrypoints, plus an error-hint registry for translating common
-failure signatures into actionable messages.
+Internal diagnostics for [bolo](https://github.com/bolojs/bolo). A thin [logtape](https://logtape.org) wrapper with Node and browser entrypoints, plus an error-hint registry for translating common failure signatures into actionable messages.
 
 ## Install
 
@@ -22,8 +20,7 @@ const logger = getLogger(["myapp"]);
 logger.info("started");
 ```
 
-Used internally by every bolo package for consistent, structured logging across the main thread,
-workers, and the ServiceWorker.
+Used internally by every bolo package for consistent, structured logging across the main thread, workers, and the ServiceWorker.
 
 ## Docs
 

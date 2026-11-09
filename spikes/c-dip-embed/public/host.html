@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>spike c: plain host embedding DIP iframe</title>
+<body>
+  <h1>Plain host (no isolation headers)</h1>
+  <pre id="out"></pre>
+  <script>
+    // Served with NO special headers — the real bolo embed scenario: an
+    // arbitrary host page embedding the DIP-served bolo document cross-site.
+    const report = {
+      host: location.host,
+      crossOriginIsolated: self.crossOriginIsolated,
+      sharedArrayBuffer: typeof SharedArrayBuffer,
+      frame: "pending",
+      frameReport: null,
+    };
+    const other = location.hostname === "127.0.0.1" ? "localhost" : "127.0.0.1";
+    const frame = document.createElement("iframe");
+    frame.src = `${location.protocol}//${other}:${location.port}/c/embed.html`;
+    frame.onload = () => {
+      if (report.frame === "pending") report.frame = "load-event";
+    };
+    frame.onerror = () => (report.frame = "error-event");
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.from === "dip-embed") report.frameReport = e.data.report;
+    });
+    document.body.appendChild(frame);
+    setTimeout(() => {
+      if (report.frameReport) report.frame = "postMessage";
+      document.getElementById("out").textContent = JSON.stringify(report, null, 2);
+      window.__spikeResult = report;
+    }, 4500);
+  </script>
+</body>

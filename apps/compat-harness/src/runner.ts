@@ -1,7 +1,10 @@
 /// <reference types="vite/client" />
 
 import type { CompatHarness } from "./main.js";
-import { commonIndexSource } from "./test-common.js";
+import { commonIndexSource, countdownSource } from "./test-common.js";
+import { assertCanariesFail, runCanaries } from "./canaries.js";
+import { classifyNodeTest } from "./classify.js";
+import expectations from "./expectations.json";
 
 export interface ModuleManifest {
   version: string;
@@ -16,14 +19,28 @@ export interface TestResult {
   exitCode: number;
   output: string;
   duration?: number;
+  /** One-line reason this test cannot pass in a browser (src/expectations.json). */
+  expectedFail?: string;
 }
+
+const expectedFailOf = (file: string, status: TestResult["status"]) => {
+  const reason = (expectations as Record<string, string>)[file];
+  return reason && status !== "pass" ? { expectedFail: reason } : {};
+};
 
 export class NodeTestRunner {
   private manifest: ModuleManifest;
   private harness: CompatHarness;
   private inlineFiles: Record<string, string>;
+  private readonly testTimeoutMs: number;
+  private readonly isolation: "fresh-boot" | "shared";
 
-  constructor(manifest: ModuleManifest) {
+  constructor(
+    manifest: ModuleManifest,
+    options: { testTimeoutMs?: number; isolation?: "fresh-boot" | "shared" } = {},
+  ) {
+    this.testTimeoutMs = options.testTimeoutMs ?? 30_000;
+    this.isolation = options.isolation ?? "fresh-boot";
     this.manifest = manifest;
     this.harness = window.__compatHarness;
     this.inlineFiles = import.meta.glob("/node-tests/**/*", {
@@ -37,25 +54,80 @@ export class NodeTestRunner {
     await this.harness.boot();
   }
 
-  async runAll(): Promise<{ module: string; results: TestResult[] }[]> {
+  /** Runs the canary suite; throws if any canary is scored as a pass (invalid run). */
+  async verifyCanaries(): Promise<void> {
     await this.harness.write("/test/common/index.js", commonIndexSource);
+    assertCanariesFail(await runCanaries(this.harness));
+  }
+
+  async runAll(filter?: RegExp): Promise<{ module: string; results: TestResult[] }[]> {
+    await this.verifyCanaries();
 
     const moduleResults: { module: string; results: TestResult[] }[] = [];
 
     for (const [moduleName, { files }] of Object.entries(this.manifest.modules)) {
       const results: TestResult[] = [];
       for (const file of files) {
-        const source = await this.loadSource(file, this.manifest.nodeVersion);
-        const filePath = `/${file}`;
-        await this.harness.write(filePath, source);
-        const { exitCode, output, duration } = await this.harness.exec(filePath);
-        const status = this.classify(exitCode, output);
-        results.push({ file, module: moduleName, status, exitCode, output, duration });
+        if (filter && !filter.test(file)) continue;
+        results.push(await this.runOne(moduleName, file));
       }
-      moduleResults.push({ module: moduleName, results });
+      if (results.length > 0) moduleResults.push({ module: moduleName, results });
     }
 
     return moduleResults;
+  }
+
+  private async runOne(moduleName: string, file: string): Promise<TestResult> {
+    if (this.isolation === "fresh-boot") await this.reboot();
+    const source = await this.loadSource(file, this.manifest.nodeVersion);
+    const filePath = `/${file}`;
+    await this.harness.write("/test/common/index.js", commonIndexSource);
+    await this.harness.write("/test/common/countdown.js", countdownSource);
+    await this.harness.write(filePath, source);
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const start = performance.now();
+    const outcome = await Promise.race([
+      this.harness.exec(filePath),
+      new Promise<"timeout">((resolve) => {
+        timer = setTimeout(() => resolve("timeout"), this.testTimeoutMs);
+      }),
+    ]);
+    clearTimeout(timer);
+
+    if (outcome === "timeout") {
+      // The hung program cannot be reclaimed on the main thread (v0.2.0);
+      // a fresh boot for the next test keeps it from poisoning the run.
+      return {
+        file,
+        module: moduleName,
+        status: "fail",
+        exitCode: -1,
+        output: `TIMEOUT after ${this.testTimeoutMs}ms`,
+        duration: performance.now() - start,
+      };
+    }
+    const { exitCode, output, duration } = outcome;
+    const status = classifyNodeTest(exitCode, output);
+    return {
+      file,
+      module: moduleName,
+      status,
+      exitCode,
+      output,
+      duration,
+      ...expectedFailOf(file, status),
+    };
+  }
+
+  private async reboot(): Promise<void> {
+    // Teardown of a wedged container may itself hang; never wait on it forever.
+    await Promise.race([
+      this.harness.teardown().catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, 10_000)),
+    ]);
+    this.harness.ready = false;
+    await this.harness.boot();
   }
 
   async teardown(): Promise<void> {
@@ -75,11 +147,5 @@ export class NodeTestRunner {
       throw new Error(`Failed to fetch ${url}: ${response.status}`);
     }
     return response.text();
-  }
-
-  private classify(exitCode: number, output: string): TestResult["status"] {
-    if (exitCode === 0) return "pass";
-    if (output.includes("SKIP") || output.includes("# skip")) return "skip";
-    return "fail";
   }
 }

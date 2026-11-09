@@ -61,9 +61,13 @@ export function initSW(swGlobal: SWGlobal): void {
 
   swGlobal.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
-    // Intercept the vite preview prefix (same origin) AND the virtual sandbox
-    // hostname (cross-origin user servers like Hono/Express).
+    const isSync = url.pathname.includes("/__bolo_sync/");
+    // Intercept the vite preview prefix (same origin), the virtual sandbox
+    // hostname (cross-origin user servers like Hono/Express), and the sync
+    // channel prefix used by process workers for synchronous syscalls
+    // (sync-XHR fallback when SharedArrayBuffer is unavailable).
     if (
+      !isSync &&
       !url.pathname.startsWith("/__preview/") &&
       !url.pathname.startsWith("/__virtual__/") &&
       url.hostname !== "sandbox.local"
@@ -71,6 +75,12 @@ export function initSW(swGlobal: SWGlobal): void {
       return;
     }
     if (!isReady || !mainPort) {
+      // A sync XHR cannot wait for the port handshake to complete — the
+      // worker thread is blocked — so fail fast rather than queue.
+      if (isSync) {
+        event.respondWith(new Response("Sync channel not ready", { status: 503 }));
+        return;
+      }
       event.respondWith(
         new Promise<Response>((resolve, reject) => {
           const timeout = setTimeout(() => {
@@ -84,7 +94,7 @@ export function initSW(swGlobal: SWGlobal): void {
       );
       return;
     }
-    event.respondWith(handleFetchEvent(event.request));
+    event.respondWith(handleFetchEvent(event.request, isSync));
   });
 
   swGlobal.addEventListener("message", (event) => {
@@ -97,7 +107,7 @@ export function initSW(swGlobal: SWGlobal): void {
           response?: { status: number; body: ArrayBuffer; headers: Record<string, string> };
           error?: string;
         };
-        if (type === "FETCH_RESPONSE") {
+        if (type === "FETCH_RESPONSE" || type === "SYNC_RESPONSE") {
           const pending = pendingRequests.get(requestId);
           if (!pending) return;
           pendingRequests.delete(requestId);
@@ -144,7 +154,7 @@ export function initSW(swGlobal: SWGlobal): void {
   });
 }
 
-async function handleFetchEvent(req: Request): Promise<Response> {
+async function handleFetchEvent(req: Request, isSync = false): Promise<Response> {
   if (!mainPort) {
     return new Response("ServiceWorker not ready", { status: 503 });
   }
@@ -158,7 +168,7 @@ async function handleFetchEvent(req: Request): Promise<Response> {
     pendingRequests.set(requestId, { resolve, reject });
     mainPort!.postMessage(
       {
-        type: "FETCH_REQUEST",
+        type: isSync ? "SYNC_REQUEST" : "FETCH_REQUEST",
         requestId,
         request: { url: req.url, method: req.method, headers, body },
       },

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { serializeNpmLockfile } from "./lockfile-writer.js";
-import type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
+import type { ResolvedGraph, ResolvedGraphPackage } from "@bolojs/lockfile";
 
 const makePkg = (overrides: Partial<ResolvedGraphPackage> = {}): ResolvedGraphPackage => ({
   name: "lodash",

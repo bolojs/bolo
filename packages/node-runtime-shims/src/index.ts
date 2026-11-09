@@ -12,7 +12,7 @@ export { createNetShim, Socket, Server, WebSocketTransport, NoopTransport } from
 export type { ByteTransport, AcceptedConnection } from "./net-shim.js";
 export { createChildProcessShim } from "./child-process-shim.js";
 export type { WasmRegistry, ShellService, ChildProcess } from "./child-process-shim.js";
-export { createProcessShim } from "./process-shim.js";
+export { createProcessShim, ProcessExit } from "./process-shim.js";
 export type { ProcessShim, ProcessShimOptions } from "./process-shim.js";
 export { createModuleShim } from "./module-shim.js";
 export type { ModuleShim, ModuleShimOptions } from "./module-shim.js";

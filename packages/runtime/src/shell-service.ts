@@ -13,6 +13,10 @@ import type { RuntimeWorker } from "./runtime-worker.js";
 import type { SandboxBackend } from "./sandbox-backend.js";
 import type { ContainerEvents } from "./events.js";
 import { VfsBashFileSystem } from "./vfs-bash-fs.js";
+import { superviseRun } from "./supervise-run.js";
+import { NodeProcess } from "./node-process.js";
+import { DEFAULT_SAB_BYTES } from "./sync-channel.js";
+import type { SyncServer } from "./sync-channel.js";
 
 declare global {
   // Populated just before executing a bundled node app so its aliased `node:*`
@@ -20,7 +24,19 @@ declare global {
   // container's live `VfsBus`/`SWSandbox` instead of a fresh one per bundle.
   // eslint-disable-next-line no-var
   var __browserContainers:
-    | { vfs: VfsBus; sandbox?: SWSandbox; shims: Record<string, unknown> }
+    | {
+        vfs: VfsBus;
+        sandbox?: SWSandbox;
+        shims: Record<string, unknown>;
+        timers?: {
+          setTimeout: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
+          clearTimeout: (t: unknown) => unknown;
+          setInterval: (fn: (...a: unknown[]) => void, ms?: number, ...rest: unknown[]) => unknown;
+          clearInterval: (t: unknown) => unknown;
+          setImmediate?: (fn: (...a: unknown[]) => void, ...rest: unknown[]) => unknown;
+          clearImmediate?: (t: unknown) => unknown;
+        };
+      }
     | undefined;
 }
 
@@ -32,6 +48,12 @@ export interface ShellServiceDeps {
   runtimeWorker: RuntimeWorker;
   sandbox?: SandboxBackend;
   workdir?: string;
+  /** Max ms to wait for pending timers before reporting a node app's exit. Default 5000. */
+  quiescenceCapMs?: number;
+  /** Sync-channel server for process workers. When present (and `Worker`
+   * exists), node apps run in a dedicated worker process instead of on the
+   * main thread. */
+  syncServer?: SyncServer;
 }
 
 export interface ShellResult {
@@ -43,6 +65,9 @@ export interface ShellResult {
 interface OutputCallbacks {
   stdout: (data: string) => void;
   stderr: (data: string) => void;
+  /** Opaque tag identifying this execution; `kill(tag)` terminates a process
+   * worker started under it. */
+  tag?: unknown;
 }
 
 export interface ShellDeps {
@@ -54,11 +79,14 @@ export interface ShellDeps {
 
 export type { OutputCallbacks };
 
+let runCounter = 0;
+
 export class ShellService {
   private deps: ShellServiceDeps;
   private cwd: string;
   private bash: Bash;
   private viteWatcher?: ReturnType<VfsBus["watch"]>;
+  private processes = new Map<unknown, NodeProcess>();
 
   constructor(deps: ShellServiceDeps) {
     this.deps = deps;
@@ -70,6 +98,8 @@ export class ShellService {
     const stdoutChunks: string[] = [];
     const stderrChunks: string[] = [];
     const callbacks: OutputCallbacks = {
+      // Carried through so runNodeAppInWorker can register the process for kill(tag).
+      tag: output?.tag,
       stdout: (data: string) => {
         stdoutChunks.push(data);
         output?.stdout?.(data);
@@ -82,12 +112,14 @@ export class ShellService {
 
     try {
       const exitCode = await this.route(command, callbacks);
+      if (output?.tag !== undefined) this.processes.delete(output.tag);
       return {
         stdout: stdoutChunks.join(""),
         stderr: stderrChunks.join(""),
         exitCode,
       };
     } catch (err) {
+      if (output?.tag !== undefined) this.processes.delete(output.tag);
       const message = err instanceof Error ? err.message : String(err);
       callbacks.stderr(message);
       return {
@@ -96,6 +128,16 @@ export class ShellService {
         exitCode: 1,
       };
     }
+  }
+
+  /** Terminate a process worker started under `tag`, if one is running.
+   * Returns true when a process was killed. */
+  kill(tag: unknown): boolean {
+    const proc = this.processes.get(tag);
+    if (!proc) return false;
+    this.processes.delete(tag);
+    proc.kill();
+    return true;
   }
 
   /** Resolve a user-supplied path against the workdir. */
@@ -218,12 +260,64 @@ export class ShellService {
    * (`routeNpmRun`, above) uses, so a node server drives the preview iframe
    * identically to `npm run dev`.
    */
-  private async runNodeApp(filePath: string, output: OutputCallbacks): Promise<number> {
+  /**
+   * Runs a bundled node app in a dedicated process worker: real exit codes,
+   * globals isolated per spawn, and `kill()`/`terminate()` that reclaims even
+   * synchronous infinite loops. Used whenever `Worker` is available and a
+   * sync server is configured; otherwise falls back to `runNodeAppMainThread`.
+   */
+  private runNodeAppInWorker(
+    entry: string,
+    code: string,
+    output: OutputCallbacks,
+    onPortEvent: (event: string, data: { port: number; url?: string }) => void,
+  ): NodeProcess {
+    const pid = `p${++runCounter}`;
+    const scope = this.deps.swSandbox?.scope ?? "/";
+    const proc = new NodeProcess({
+      pid,
+      vfs: this.deps.vfs,
+      sandbox: this.deps.swSandbox,
+      syncServer: this.deps.syncServer!,
+      xhrUrl: `${scope}__bolo_sync/${pid}`,
+      shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+      quiescenceCapMs: this.deps.quiescenceCapMs,
+      sabBytes:
+        typeof crossOriginIsolated !== "undefined" && crossOriginIsolated ? DEFAULT_SAB_BYTES : 0,
+    });
+    proc.onStdout = output.stdout;
+    proc.onStderr = output.stderr;
+    proc.onPortEvent = onPortEvent;
+    if (output.tag !== undefined) this.processes.set(output.tag, proc);
+    void proc.exit.finally(() => {
+      if (output.tag !== undefined) this.processes.delete(output.tag);
+    });
+    proc.run({ code, filename: entry, cwd: this.cwd });
+    return proc;
+  }
+
+  private async runNodeApp(filePath: string, rawOutput: OutputCallbacks): Promise<number> {
+    // Drop output after the program has terminated (e.g. code following
+    // process.exit() that already started running).
+    let terminated = false;
+    const output: OutputCallbacks = {
+      ...rawOutput,
+      stdout: (d) => {
+        if (!terminated) rawOutput.stdout(d);
+      },
+      stderr: (d) => {
+        if (!terminated) rawOutput.stderr(d);
+      },
+    };
     try {
+      let serving = false;
       const onPortEvent = (event: string, data: { port: number; url?: string }) => {
         const url = data.url ?? "";
         if (event === "server-ready") this.deps.events?.emit("server-ready", data.port, url);
-        if (event === "port-open") this.deps.events?.emit("port", data.port, "open", url);
+        if (event === "port-open") {
+          serving = true;
+          this.deps.events?.emit("port", data.port, "open", url);
+        }
         if (event === "port-close") this.deps.events?.emit("port", data.port, "close", url);
       };
 
@@ -231,19 +325,20 @@ export class ShellService {
       // relative to it (e.g. '/server.ts' → '/home/web/server.ts').
       const entry = this.resolvePath(filePath);
 
+      const shims = createLiveShimRegistry({
+        vfs: this.deps.vfs,
+        sandbox: this.deps.swSandbox,
+        onPortEvent,
+        shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+        cwd: this.cwd,
+        argv: ["node", entry],
+        onStdout: output.stdout,
+        onStderr: output.stderr,
+      });
       globalThis.__browserContainers = {
         vfs: this.deps.vfs,
         sandbox: this.deps.swSandbox,
-        shims: createLiveShimRegistry({
-          vfs: this.deps.vfs,
-          sandbox: this.deps.swSandbox,
-          onPortEvent,
-          shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
-          cwd: this.cwd,
-          argv: ["node", entry],
-          onStdout: output.stdout,
-          onStderr: output.stderr,
-        }),
+        shims,
       };
 
       const { code, warnings } = await bundleEntry(entry, {
@@ -254,22 +349,41 @@ export class ShellService {
       });
       for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
 
-      const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
-      const mod = (await import(/* @vite-ignore */ moduleUrl)) as {
-        default?: { fetch?: (req: Request) => Promise<Response> };
-      };
-      // Hono/workers-style: if the module exports a default with a `.fetch`
-      // method, auto-register it as a fetch handler so the server starts
-      // without an explicit http.createServer().listen() call.
-      const exportedApp = mod?.default;
-      if (exportedApp && typeof exportedApp.fetch === "function" && this.deps.swSandbox) {
-        this.deps.swSandbox.onFetch(exportedApp.fetch.bind(exportedApp));
-        onPortEvent("server-ready", { port: 3000, url: "https://sandbox.local" });
-        onPortEvent("port-open", { port: 3000, url: "https://sandbox.local" });
+      if (this.deps.syncServer && typeof Worker === "function") {
+        const proc = this.runNodeAppInWorker(entry, code, output, onPortEvent);
+        const exitCode = await proc.exit;
+        terminated = true;
+        return exitCode;
       }
-      return 0;
+
+      const result = await superviseRun({
+        process: shims.process as Parameters<typeof superviseRun>[0]["process"],
+        stderr: output.stderr,
+        isServing: () => serving,
+        quiescenceCapMs: this.deps.quiescenceCapMs,
+        run: async () => {
+          // Identical source would hit the module cache and never re-execute.
+          const unique = `\n//# bolo-run=${++runCounter}`;
+          const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code + unique)}`;
+          const mod = (await import(/* @vite-ignore */ moduleUrl)) as {
+            default?: { fetch?: (req: Request) => Promise<Response> };
+          };
+          // Hono/workers-style: if the module exports a default with a `.fetch`
+          // method, auto-register it as a fetch handler so the server starts
+          // without an explicit http.createServer().listen() call.
+          const exportedApp = mod?.default;
+          if (exportedApp && typeof exportedApp.fetch === "function" && this.deps.swSandbox) {
+            this.deps.swSandbox.onFetch(exportedApp.fetch.bind(exportedApp));
+            onPortEvent("server-ready", { port: 3000, url: "https://sandbox.local" });
+            onPortEvent("port-open", { port: 3000, url: "https://sandbox.local" });
+          }
+        },
+      });
+      terminated = result.terminated;
+      return result.exitCode;
     } catch (err) {
-      output.stderr(err instanceof Error ? err.message : String(err));
+      terminated = false;
+      rawOutput.stderr(err instanceof Error ? err.message : String(err));
       return 1;
     }
   }

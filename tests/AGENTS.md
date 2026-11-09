@@ -21,6 +21,8 @@ Revisit upstream in 2-3 months; if `wait-for-element` lands, drop the documented
 ```
 tests/
   unit/              Vitest, no browser
+  unit/property/     fast-check differential PBTs vs node:* (seeds via FC_SEED/FC_NUM_RUNS, see unit/property/fc-config.ts)
+  unit/regressions/  it.fails records of PBT counterexamples (convention: unit/regressions/README.md)
   integration/       Vitest + happy-dom
   e2e/               Gauge + Playwright specs. Use `playwright-cli` skill for QA, Gauge for suite work
 ```

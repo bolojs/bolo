@@ -1,4 +1,4 @@
-import type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
+import type { ResolvedGraph, ResolvedGraphPackage } from "@bolojs/lockfile";
 import {
   resolvePackage,
   type NpmPackument,

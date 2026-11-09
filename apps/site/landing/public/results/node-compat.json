@@ -1,73 +1,87 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-07-13T00:00:00Z",
+  "generatedAt": "2026-11-08T08:31:47.430Z",
+  "validated": true,
+  "total": 98,
+  "pass": 9,
+  "fail": 88,
+  "skip": 1,
   "modules": [
     {
       "name": "path",
-      "passed": 3,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-path-basename.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: '' strictEqual 'bbb'"
         },
         {
           "file": "test-path-dirname.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: '//' strictEqual '/'"
         },
         {
           "file": "test-path-extname.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError:"
         }
       ]
     },
     {
       "name": "buffer",
-      "passed": 2,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-buffer-alloc.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         },
         {
           "file": "test-buffer-concat.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: common.invalidArgTypeHelper is not a function"
         },
         {
           "file": "test-buffer-from.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         }
       ]
     },
     {
       "name": "events",
-      "passed": 3,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-events-once.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "[bundle warning] \"internal/event_target\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/event_target"
         },
         {
           "file": "test-events-listener-count-with-listener.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: EventEmitter is not a constructor"
         },
         {
           "file": "test-events-getmaxlisteners.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: EventEmitter is not a constructor"
         }
       ]
     },
     {
       "name": "url",
-      "passed": 3,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-url-format.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: import_browser_external_node_querystring.stringify is not a function"
         },
         {
           "file": "test-url-relative.js",
@@ -75,18 +89,20 @@
         },
         {
           "file": "test-url-parse-query.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: import_browser_external_node_querystring.parse is not a function"
         }
       ]
     },
     {
       "name": "querystring",
-      "passed": 2,
+      "passed": 1,
       "total": 2,
       "tests": [
         {
           "file": "test-querystring.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         },
         {
           "file": "test-querystring-escape.js",
@@ -96,74 +112,79 @@
     },
     {
       "name": "zlib",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-zlib-close-in-ondata.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught Error: [unenv] zlib is not implemented yet! is not implemented yet!"
         },
         {
           "file": "test-zlib-create-raw.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught Error: [unenv] zlib is not implemented yet! is not implemented yet!"
         },
         {
           "file": "test-zlib-no-stream.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught Error: [unenv] zlib.gzipSync is not implemented yet!"
         }
       ]
     },
     {
       "name": "os",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-os-eol.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: Cannot redefine property: EOL"
         },
         {
           "file": "test-os-checked-function.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
         },
         {
           "file": "test-os-homedir-no-envvar.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         }
       ]
     },
     {
       "name": "util",
-      "passed": 2,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-util-format.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'replace')"
         },
         {
           "file": "test-util-inspect.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         },
         {
           "file": "test-util-types.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
     {
       "name": "assert",
-      "passed": 3,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-assert.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         },
         {
           "file": "test-assert-fail.js",
@@ -171,28 +192,30 @@
         },
         {
           "file": "test-assert-async.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: {} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\"}"
         }
       ]
     },
     {
       "name": "stream",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-stream-pipe-event.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: Class constructors cannot be invoked without 'new'"
         },
         {
           "file": "test-stream-readable-event.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'reading')"
         },
         {
           "file": "test-stream-writable-finished.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: assert is not a function"
         }
       ]
     },
@@ -204,38 +227,39 @@
         {
           "file": "test-fs-mkdir.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-fs-write-file.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-fs-readfile.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         }
       ]
     },
     {
       "name": "crypto",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-crypto-hash.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-crypto-hmac.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: Class constructors cannot be invoked without 'new'"
         },
         {
           "file": "test-crypto-randomuuid.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: assert is not a function"
         }
       ]
     },
@@ -247,44 +271,45 @@
         {
           "file": "test-http-status-code.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-http-methods.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught AssertionError: undefined deepStrictEqual [\"ACL\",\"BIND\",\"CHECKOUT\",\"CONNECT\",\"COPY\",\"DELETE\",\"GET\",\"HEAD\",\"LINK\",\"LOCK\",\"M-SEARCH\",\"MERGE\",\"MKACTIVITY\",\"MKCALENDAR\",\"MKCOL\",\"MOVE\",\"NOTIFY\",\"OPTIONS\",\"PATCH\",\"POST\",\"PROPFIND\",\"PROPPATCH\",\"PURGE\",\"PUT\",\"QUERY\",\"REBIND\",\"REPORT\",\"SEARCH\",\"SOUR..."
         },
         {
           "file": "test-http-write-head.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         }
       ]
     },
     {
       "name": "process",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-process-env.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: 42 strictEqual '42'"
         },
         {
           "file": "test-process-next-tick.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught Error"
         },
         {
           "file": "test-process-hrtime.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: assert is not a function"
         }
       ]
     },
     {
       "name": "timers",
-      "passed": 2,
+      "passed": 1,
       "total": 2,
       "tests": [
         {
@@ -293,26 +318,30 @@
         },
         {
           "file": "test-timers-immediate.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: function should not have been called"
         }
       ]
     },
     {
       "name": "console",
-      "passed": 3,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-console-clear.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: console.clear is not a function"
         },
         {
           "file": "test-console-count.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: console.count is not a function"
         },
         {
           "file": "test-console-methods.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: Console is not a constructor"
         }
       ]
     },
@@ -324,33 +353,34 @@
         {
           "file": "test-child-process-spawnsync.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-child-process-execsync-maxbuf.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught AssertionError: undefined strictEqual 'ENOBUFS'"
         }
       ]
     },
     {
       "name": "worker_threads",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-worker-message-port-constructor.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: MessageChannel is not a constructor"
         },
         {
           "file": "test-worker-exit-event-error.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Mismatched noop function calls. Expected 1, actual 0."
         },
         {
           "file": "test-worker-load-file-with-extension-other-than-js.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         }
       ]
     },
@@ -362,7 +392,7 @@
         {
           "file": "test-performanceobserver.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
@@ -374,7 +404,7 @@
         {
           "file": "test-net-connect-buffer.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: Class constructor Server cannot be invoked without 'new'"
         }
       ]
     },
@@ -386,12 +416,12 @@
         {
           "file": "test-dns-set-default-order.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"dns\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dns"
         },
         {
           "file": "test-dns-setlocaladdress.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"dns\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dns"
         }
       ]
     },
@@ -403,17 +433,17 @@
         {
           "file": "test-https-agent-constructor.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: Class constructor Agent cannot be invoked without 'new'"
         },
         {
           "file": "test-https-request-arguments.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-https-close.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         }
       ]
     },
@@ -425,17 +455,17 @@
         {
           "file": "test-tls-legacy-deprecated.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"tls\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/tls"
         },
         {
           "file": "test-tls-ticket-12.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-tls-wrap-no-abort.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
@@ -447,17 +477,17 @@
         {
           "file": "test-dgram-abort-closed.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dgram"
         },
         {
           "file": "test-dgram-send-callback-buffer-empty-address.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dgram"
         },
         {
           "file": "test-dgram-bind.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dgram"
         }
       ]
     },
@@ -469,38 +499,39 @@
         {
           "file": "test-cluster-basic.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"node:cluster\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/node:cluster"
         },
         {
           "file": "test-cluster-call-and-destroy.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/cluster"
         },
         {
           "file": "test-cluster-invalid-message.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/cluster"
         }
       ]
     },
     {
       "name": "vm",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-vm-script-throw-in-tostring.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         },
         {
           "file": "test-vm-indexed-properties.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         },
         {
           "file": "test-vm-deleting-property.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
         }
       ]
     },
@@ -512,38 +543,39 @@
         {
           "file": "test-repl-no-terminal.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/repl"
         },
         {
           "file": "test-repl-stdin-push-null.js",
-          "status": "fail",
-          "error": "Not supported in browser"
+          "status": "skip",
+          "error": "skipped"
         },
         {
           "file": "test-repl-throw-null-or-undefined.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/repl"
         }
       ]
     },
     {
       "name": "readline",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-readline-interface-no-trailing-newline.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-readline-carriage-return-between-chunks.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         },
         {
           "file": "test-readline-interface-recursive-writes.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         }
       ]
     },
@@ -559,29 +591,28 @@
         {
           "file": "test-tty-backwards-api.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
     {
       "name": "inspector",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-inspector-stops-no-file.js",
-          "status": "fail",
-          "error": "Not supported in browser"
+          "status": "pass"
         },
         {
           "file": "test-inspector-already-activated-cli.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/inspector"
         },
         {
           "file": "test-inspector-open-port-integer-overflow.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/inspector"
         }
       ]
     },
@@ -592,54 +623,56 @@
       "tests": [
         {
           "file": "test-async-hooks-constructor.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
         },
         {
           "file": "test-async-hooks-enable-during-promise.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: mustCall: first argument must be a function (got a number)"
         },
         {
           "file": "test-async-hooks-run-in-async-scope-caught-exception.js",
-          "status": "fail",
-          "error": "Not supported in browser"
+          "status": "pass"
         }
       ]
     },
     {
       "name": "module",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-module-wrap.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-module-wrapper.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-module-main-extension-lookup.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         }
       ]
     },
     {
       "name": "string_decoder",
-      "passed": 1,
+      "passed": 0,
       "total": 2,
       "tests": [
         {
           "file": "test-string-decoder-end.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught Error: [unenv] string_decoder.StringDecoder is not implemented yet!"
         },
         {
           "file": "test-string-decoder-fuzz.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught Error: [unenv] string_decoder.StringDecoder is not implemented yet!"
         }
       ]
     },
@@ -651,23 +684,23 @@
         {
           "file": "test-v8-deserialize-buffer.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"v8\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/v8"
         },
         {
           "file": "test-v8-flag-pool-size-0.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: globalThis.gc is not a function"
         },
         {
           "file": "test-v8-getheapsnapshot-twice.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "[bundle warning] \"v8\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/v8"
         }
       ]
     },
     {
       "name": "diagnostics_channel",
-      "passed": 1,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
@@ -676,34 +709,34 @@
         },
         {
           "file": "test-diagnostics-channel-sync-unsubscribe.js",
-          "status": "fail",
-          "error": "Not supported in browser"
+          "status": "pass"
         },
         {
           "file": "test-diagnostics-channel-object-channel-pub-sub.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught AssertionError: <null>"
         }
       ]
     },
     {
       "name": "fs/promises",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-fs-promises-exists.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "[bundle warning] \"fs/promises\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/fs/promises"
         },
         {
           "file": "test-fs-promises-readfile-empty.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Build failed with 1 error:"
         },
         {
           "file": "test-fs-promises-file-handle-dispose.js",
           "status": "fail",
-          "error": "Not supported in browser"
+          "error": "Uncaught TypeError: fs.open is not a function"
         }
       ]
     }

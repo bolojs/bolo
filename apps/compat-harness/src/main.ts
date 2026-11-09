@@ -1,6 +1,9 @@
 import { boot, type BrowserContainer } from "bolojs";
 import { NodeTestRunner, type ModuleManifest, type TestResult } from "./runner.js";
+import { runCanaries, type CanaryResult } from "./canaries.js";
+import { commonIndexSource } from "./test-common.js";
 import { PackageMatrixRunner, type PackageResult } from "./package-runner.js";
+import { PARTIAL_CHANNEL, PARTIAL_CHANNEL_NAME_GLOBAL } from "./partial-channel.js";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -30,6 +33,13 @@ export interface CompatHarness {
   /** Runs `node <path>` and returns the combined stdout+stderr text, exit code, and elapsed time. */
   exec(path: string): Promise<ExecResult>;
   /**
+   * Spawns `node <path>`, waits until it prints its first output (so the program
+   * is running), kills it, and reports how long `exit` took to resolve.
+   */
+  spawnAndKill(path: string): Promise<{ killMs: number; exitCode: number; output: string }>;
+  /** Installs npm packages into the container VFS via the container's own package manager. */
+  install(names: string[]): Promise<ExecResult>;
+  /**
    * Writes `source` to `path` and runs it via `node <path>`, returning the combined
    * stdout+stderr text and exit code. Kept for backwards compatibility.
    */
@@ -42,8 +52,17 @@ declare global {
     __compatHarness: CompatHarness;
     __testResults: { module: string; results: TestResult[] }[] | null;
     __packageResults: PackageResult[] | null;
-    __runNodeTests(): Promise<{ module: string; results: TestResult[] }[]>;
-    __runPackageMatrix(): Promise<PackageResult[]>;
+    /** Liveness + incremental-result channel for the CLI watchdog. */
+    __packageProgress: { current: string | null; startedAt: number; last?: string } | null;
+    /** Called by the runner after each package; the CLI forwards it to the partial JSONL. */
+    [PARTIAL_CHANNEL]?: (result: PackageResult) => void;
+    /** Publishes PARTIAL_CHANNEL so the CLI can discover it instead of hardcoding it. */
+    [PARTIAL_CHANNEL_NAME_GLOBAL]?: string;
+    /** Packages a resumed run should skip (already completed by an earlier run). */
+    __packageSkip: string[] | null;
+    __runCanaries(): Promise<CanaryResult[]>;
+    __runNodeTests(filter?: string): Promise<{ module: string; results: TestResult[] }[]>;
+    __runPackageMatrix(options?: { skip?: string[] }): Promise<PackageResult[]>;
   }
 }
 
@@ -89,6 +108,25 @@ window.__compatHarness = {
     return { exitCode, output, duration };
   },
 
+  spawnAndKill: async (path) => {
+    if (!container) throw new Error("CompatHarness: boot() must resolve before spawnAndKill()");
+    const proc = container.spawn("node", [normalize(path)]);
+    const reader = proc.output.getReader();
+    const first = await reader.read();
+    const killedAt = performance.now();
+    proc.kill();
+    const exitCode = await proc.exit;
+    return { killMs: performance.now() - killedAt, exitCode, output: first.value ?? "" };
+  },
+
+  install: async (names) => {
+    if (!container) throw new Error("CompatHarness: boot() must resolve before install()");
+    const start = performance.now();
+    const proc = container.spawn("npm", ["install", ...names]);
+    const [output, exitCode] = await Promise.all([readAll(proc.output), proc.exit]);
+    return { exitCode, output, duration: performance.now() - start };
+  },
+
   run: async (path, source) => {
     await window.__compatHarness.write(path, source);
     const { exitCode, output } = await window.__compatHarness.exec(path);
@@ -96,21 +134,31 @@ window.__compatHarness = {
   },
 
   teardown: async () => {
-    await container?.teardown();
+    const closing = container;
     container = undefined;
     window.__compatHarness.ready = false;
+    await closing?.teardown();
   },
 };
 
 window.__testResults = null;
 window.__packageResults = null;
+window.__packageProgress = null;
+window.__packageSkip = null;
+window[PARTIAL_CHANNEL_NAME_GLOBAL] = PARTIAL_CHANNEL;
 
-window.__runNodeTests = async () => {
+window.__runCanaries = async () => {
+  await window.__compatHarness.boot();
+  await window.__compatHarness.write("/test/common/index.js", commonIndexSource);
+  return runCanaries(window.__compatHarness);
+};
+
+window.__runNodeTests = async (filter?: string) => {
   const response = await fetch("/src/manifest.json");
   const manifest = (await response.json()) as ModuleManifest;
   const runner = new NodeTestRunner(manifest);
   await runner.boot();
-  const results = await runner.runAll();
+  const results = await runner.runAll(filter ? new RegExp(filter) : undefined);
   await runner.teardown();
   window.__testResults = results;
   console.table(
@@ -126,12 +174,21 @@ window.__runNodeTests = async () => {
   return results;
 };
 
-window.__runPackageMatrix = async () => {
-  const runner = new PackageMatrixRunner();
-  await runner.boot();
+window.__runPackageMatrix = async (options?: { skip?: string[] }) => {
+  const runner = new PackageMatrixRunner({
+    skip: options?.skip ?? window.__packageSkip ?? undefined,
+    onPackageStart: (name) => {
+      window.__packageProgress = { current: name, startedAt: Date.now() };
+    },
+    onResult: (result) => {
+      window.__packageProgress = { current: null, startedAt: Date.now(), last: result.name };
+      window[PARTIAL_CHANNEL]?.(result);
+    },
+  });
   const results = await runner.runAll();
   await runner.teardown();
   window.__packageResults = results;
+  window.__packageProgress = null;
   console.table(
     results.map((r) => ({
       name: r.name,

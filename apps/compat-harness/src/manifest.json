@@ -97,7 +97,62 @@
       ]
     },
     "timers": {
-      "files": ["test/parallel/test-timers-args.js", "test/parallel/test-timers-immediate.js"]
+      "files": [
+        "test/parallel/test-timers-reset-process-domain-on-throw.js",
+        "test/parallel/test-timers-active.js",
+        "test/parallel/test-timers-api-refs.js",
+        "test/parallel/test-timers-args.js",
+        "test/parallel/test-timers-clear-null-does-not-throw-error.js",
+        "test/parallel/test-timers-clear-object-does-not-throw-error.js",
+        "test/parallel/test-timers-clear-timeout-interval-equivalent.js",
+        "test/parallel/test-timers-clearImmediate-als.js",
+        "test/parallel/test-timers-clearImmediate.js",
+        "test/parallel/test-timers-destroyed.js",
+        "test/parallel/test-timers-dispose.js",
+        "test/parallel/test-timers-enroll-invalid-msecs.js",
+        "test/parallel/test-timers-enroll-second-time.js",
+        "test/parallel/test-timers-immediate-promisified.js",
+        "test/parallel/test-timers-immediate-queue-throw.js",
+        "test/parallel/test-timers-immediate-queue.js",
+        "test/parallel/test-timers-immediate-unref-nested-once.js",
+        "test/parallel/test-timers-immediate-unref-simple.js",
+        "test/parallel/test-timers-immediate-unref.js",
+        "test/parallel/test-timers-immediate.js",
+        "test/parallel/test-timers-interval-promisified.js",
+        "test/parallel/test-timers-interval-throw.js",
+        "test/parallel/test-timers-linked-list.js",
+        "test/parallel/test-timers-max-duration-warning.js",
+        "test/parallel/test-timers-nested.js",
+        "test/parallel/test-timers-next-tick.js",
+        "test/parallel/test-timers-non-integer-delay.js",
+        "test/parallel/test-timers-now.js",
+        "test/parallel/test-timers-ordering.js",
+        "test/parallel/test-timers-promises-scheduler.js",
+        "test/parallel/test-timers-promises.js",
+        "test/parallel/test-timers-refresh-in-callback.js",
+        "test/parallel/test-timers-refresh.js",
+        "test/parallel/test-timers-same-timeout-wrong-list-deleted.js",
+        "test/parallel/test-timers-setimmediate-infinite-loop.js",
+        "test/parallel/test-timers-socket-timeout-removes-other-socket-unref-timer.js",
+        "test/parallel/test-timers-this.js",
+        "test/parallel/test-timers-throw-when-cb-not-function.js",
+        "test/parallel/test-timers-timeout-promisified.js",
+        "test/parallel/test-timers-timeout-to-interval.js",
+        "test/parallel/test-timers-timeout-with-non-integer.js",
+        "test/parallel/test-timers-to-primitive.js",
+        "test/parallel/test-timers-uncaught-exception.js",
+        "test/parallel/test-timers-unenroll-unref-interval.js",
+        "test/parallel/test-timers-unref-active.js",
+        "test/parallel/test-timers-unref-remove-other-unref-timers-only-one-fires.js",
+        "test/parallel/test-timers-unref-remove-other-unref-timers.js",
+        "test/parallel/test-timers-unref-throw-then-ref.js",
+        "test/parallel/test-timers-unref.js",
+        "test/parallel/test-timers-unrefd-interval-still-fires.js",
+        "test/parallel/test-timers-unrefed-in-beforeexit.js",
+        "test/parallel/test-timers-unrefed-in-callback.js",
+        "test/parallel/test-timers-user-call.js",
+        "test/parallel/test-timers-zero-timeout.js"
+      ]
     },
     "console": {
       "files": [
@@ -229,6 +284,31 @@
         "test/parallel/test-fs-promises-exists.js",
         "test/parallel/test-fs-promises-readfile-empty.js",
         "test/parallel/test-fs-promises-file-handle-dispose.js"
+      ]
+    },
+    "process-exit": {
+      "files": [
+        "test/parallel/test-process-beforeexit-throw-exit.js",
+        "test/parallel/test-process-beforeexit.js",
+        "test/parallel/test-process-exit-code-validation.js",
+        "test/parallel/test-process-exit-code.js",
+        "test/parallel/test-process-exit-from-before-exit.js",
+        "test/parallel/test-process-exit-handler.js",
+        "test/parallel/test-process-exit-recursive.js",
+        "test/parallel/test-process-exit.js",
+        "test/parallel/test-process-really-exit.js"
+      ]
+    },
+    "next-tick": {
+      "files": [
+        "test/parallel/test-next-tick-doesnt-hang.js",
+        "test/parallel/test-next-tick-domain.js",
+        "test/parallel/test-next-tick-errors.js",
+        "test/parallel/test-next-tick-fixed-queue-regression.js",
+        "test/parallel/test-next-tick-intentional-starvation.js",
+        "test/parallel/test-next-tick-ordering.js",
+        "test/parallel/test-next-tick-ordering2.js",
+        "test/parallel/test-next-tick-when-exiting.js"
       ]
     }
   }

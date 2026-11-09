@@ -1,6 +1,6 @@
 import { maxSatisfying, satisfies } from "semver";
 import type { VfsBus } from "@bolojs/fs";
-import type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
+import type { ResolvedGraph, ResolvedGraphPackage } from "@bolojs/lockfile";
 
 export interface MaterializeOptions {
   vfs: VfsBus;

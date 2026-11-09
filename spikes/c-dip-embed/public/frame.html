@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>dip frame</title>
+<script>
+  parent.postMessage(
+    {
+      from: "dip-frame",
+      host: location.host,
+      crossOriginIsolated: self.crossOriginIsolated,
+      sharedArrayBuffer: typeof SharedArrayBuffer,
+    },
+    "*",
+  );
+</script>
+frame ok

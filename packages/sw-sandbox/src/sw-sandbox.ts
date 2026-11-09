@@ -4,10 +4,29 @@ const logger = getLogger(["bolo", "sw-sandbox"]);
 
 export type FetchHandler = (req: Request) => Promise<Response>;
 
+/** A synchronous syscall from a process worker, relayed by the SW (sync XHR)
+ * or served via SharedArrayBuffer. `url` carries the `__bolo_sync/<pid>` path;
+ * `body` is the raw request payload. The handler returns raw response bytes. */
+export interface SyncRequest {
+  url: string;
+  method: string;
+  body?: ArrayBuffer;
+}
+
+export interface SyncResponse {
+  status?: number;
+  body: ArrayBuffer;
+}
+
+export type SyncHandler = (
+  req: SyncRequest,
+) => Promise<SyncResponse | undefined> | SyncResponse | undefined;
+
 export class SWSandbox {
   private origin: string;
   private swPath: string;
   private fetchHandlers: FetchHandler[] = [];
+  private syncHandlers: SyncHandler[] = [];
   private policyRegistry?: Map<string, unknown>;
   private messagePort?: MessagePort;
   private pendingRequests = new Map<
@@ -96,6 +115,14 @@ export class SWSandbox {
         });
         return;
       }
+      if (type === "SYNC_REQUEST" && request) {
+        this.handleSyncRequest(requestId, request).catch((err) => {
+          const message = err instanceof Error ? err.message : String(err);
+          logger.error("handleSyncRequest failed", { error: message });
+          this.messagePort?.postMessage({ type: "SYNC_RESPONSE", requestId, error: message });
+        });
+        return;
+      }
       const pending = this.pendingRequests.get(requestId);
       if (!pending) return;
       this.pendingRequests.delete(requestId);
@@ -118,6 +145,56 @@ export class SWSandbox {
 
   onFetch(handler: FetchHandler): void {
     this.fetchHandlers.push(handler);
+  }
+
+  /** Register a handler for synchronous syscalls arriving over `/__bolo_sync/`.
+   * Handlers are tried in registration order; the first to return wins. */
+  onSyncRequest(handler: SyncHandler): void {
+    this.syncHandlers.push(handler);
+  }
+
+  /** Scope the SW controls (directory of `swPath`), e.g. "/" or "/demo/". */
+  get scope(): string {
+    return this.swPath.slice(0, this.swPath.lastIndexOf("/") + 1);
+  }
+
+  private async handleSyncRequest(
+    requestId: number,
+    requestData: {
+      url: string;
+      method: string;
+      headers: Record<string, string>;
+      body?: ArrayBuffer;
+    },
+  ): Promise<void> {
+    for (const handler of this.syncHandlers) {
+      try {
+        const result = await handler({
+          url: requestData.url,
+          method: requestData.method,
+          body: requestData.body,
+        });
+        if (!result) continue;
+        this.messagePort?.postMessage(
+          {
+            type: "SYNC_RESPONSE",
+            requestId,
+            response: { status: result.status ?? 200, body: result.body, headers: {} },
+          },
+          [result.body],
+        );
+        return;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        this.messagePort?.postMessage({ type: "SYNC_RESPONSE", requestId, error: message });
+        return;
+      }
+    }
+    this.messagePort?.postMessage({
+      type: "SYNC_RESPONSE",
+      requestId,
+      error: "no sync handler registered",
+    });
   }
 
   setPolicyRegistry(registry: Map<string, unknown>): void {

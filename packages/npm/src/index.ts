@@ -13,4 +13,4 @@ export { walkDependencies } from "./graph-walker.js";
 export { serializeNpmLockfile } from "./lockfile-writer.js";
 export { materializeVirtualStore } from "./virtual-store.js";
 export type { MaterializeOptions } from "./virtual-store.js";
-export type { ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
+export type { ResolvedGraph, ResolvedGraphPackage } from "@bolojs/lockfile";

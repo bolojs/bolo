@@ -17,6 +17,7 @@ const STATUS_LABEL: Record<string, string> = {
   pass: 'pass',
   partial: 'partial',
   fail: 'fail',
+  pending: 'pending',
   unknown: 'unknown',
 };
 
@@ -124,7 +125,7 @@ const REMAINING_COUNT = remainingAll.length;
   const expandBlock = document.querySelector('.search-command-expand-block');
   const expandToggle = document.getElementById('search-command-expand-toggle');
 
-  const STATUS_LABEL = { pass: 'pass', partial: 'partial', fail: 'fail', unknown: 'unknown' };
+  const STATUS_LABEL = { pass: 'pass', partial: 'partial', fail: 'fail', pending: 'pending', unknown: 'unknown' };
 
   function makeItem(pkg) {
     const li = document.createElement('li');

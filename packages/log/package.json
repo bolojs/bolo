@@ -36,6 +36,7 @@
     "vitest": "^4.1.10"
   },
   "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bolojs/bolo.git",
@@ -46,7 +47,10 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
   ],
   "engines": {
     "node": ">=24.0.0"

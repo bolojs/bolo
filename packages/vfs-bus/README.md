@@ -1,8 +1,6 @@
 # @bolojs/fs
 
-Single-owner observable virtual filesystem (memfs + OPFS) for [bolo](https://github.com/bolojs/bolo)
-containers. Used internally by `bolojs`; usable standalone if you need the VFS without the rest of
-the runtime.
+Single-owner observable virtual filesystem (memfs + OPFS) for [bolo](https://github.com/bolojs/bolo) containers. Used internally by `bolojs`; usable standalone if you need the VFS without the rest of the runtime.
 
 ## Install
 

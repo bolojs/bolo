@@ -10,6 +10,8 @@ export interface ProcessDeps {
   httpShimOptions?: { onPortEvent?: (event: string, data: { port: number; url?: string }) => void };
 }
 
+let processCounter = 0;
+
 export function createProcess(
   command: string,
   args: string[] = [],
@@ -18,6 +20,7 @@ export function createProcess(
 ): Process {
   let closed = false;
   let aborted = false;
+  const tag = `proc-${++processCounter}`;
   let resolveExit: (code: number) => void;
   const exit = new Promise<number>((resolve) => {
     resolveExit = resolve;
@@ -45,6 +48,7 @@ export function createProcess(
         .execute(fullCommand, {
           stdout: enqueue,
           stderr: enqueue,
+          tag,
         })
         .then((result) => {
           if (!aborted) {
@@ -63,12 +67,12 @@ export function createProcess(
   });
 
   const kill = (): void => {
-    // deps.runtimeWorker is shared across every process in the container
-    // (created once in boot.ts); disposing it here would tear down unrelated
-    // in-flight processes (e.g. a live dev server) and the active REPL
-    // session. Killing a process only needs to stop listening to *this*
-    // process's output and resolve its own exit.
     aborted = true;
+    // Terminates this process's dedicated worker when the command is a node
+    // app running under the process model — a real reclaim, including
+    // synchronous infinite loops. Other commands share the shell and only
+    // stop reporting output.
+    deps.shell.kill(tag);
     if (!closed) {
       resolveExit(1);
     }

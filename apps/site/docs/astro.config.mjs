@@ -1,12 +1,13 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightLlmsTxt from 'starlight-llms-txt';
+import { searchForWorkspaceRoot } from 'vite';
 
 export default defineConfig({
   site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : 'https://bolojs.dev',
   base: '/docs',
   vite: {
-    server: { fs: { allow: ['../../../docs'] } },
+    server: { fs: { allow: [searchForWorkspaceRoot(process.cwd())] } },
   },
   integrations: [
     starlight({

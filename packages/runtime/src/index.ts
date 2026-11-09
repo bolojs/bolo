@@ -1,4 +1,15 @@
 export { RuntimeWorker, type RuntimeMessage, type RunScriptOptions } from "./runtime-worker.js";
+export { NodeProcess, type NodeProcessDeps } from "./node-process.js";
+export {
+  createSyncServer,
+  createSyncCaller,
+  createSyncBuffer,
+  SyncCallError,
+  DEFAULT_SAB_BYTES,
+  type SyncServer,
+  type SyncCaller,
+  type SyncRequestHandler,
+} from "./sync-channel.js";
 export { ShellService, type ShellServiceDeps, type ShellResult } from "./shell-service.js";
 export {
   type BootOptions,

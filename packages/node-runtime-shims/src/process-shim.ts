@@ -10,6 +10,22 @@ export interface ProcessShimOptions {
   readonly onStderr?: (data: string) => void;
 }
 
+/**
+ * Thrown by `process.exit()` to unwind the caller's stack, since the main
+ * thread cannot be terminated. Embedders (ShellService.runNodeApp) catch it and
+ * report `code` as the exit status. Scripts that swallow it with a bare
+ * try/catch will keep running: a limit of the main-thread stopgap, resolved by
+ * the worker-per-process model (v0.2.0).
+ */
+export class ProcessExit extends Error {
+  readonly code: number;
+  constructor(code: number) {
+    super(`process.exit(${code})`);
+    this.name = "ProcessExit";
+    this.code = code;
+  }
+}
+
 const toText = (chunk: unknown): string =>
   typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk as ArrayBufferView);
 
@@ -75,7 +91,27 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     { bigint: () => BigInt(Math.round((performance.now() - startedAt) * 1e6)) },
   );
 
+  let exiting = false;
+
+  // nextTick queue: drained after the microtasks already queued when the first
+  // tick is scheduled, and nested ticks join the same drain (Node runs the
+  // whole tick queue before returning to promise jobs).
+  const tickQueue: Array<() => void> = [];
+  let tickScheduled = false;
+  const drainTicks = () => {
+    try {
+      while (tickQueue.length > 0) tickQueue.shift()!();
+    } finally {
+      tickScheduled = false;
+      if (tickQueue.length > 0) {
+        tickScheduled = true;
+        queueMicrotask(drainTicks);
+      }
+    }
+  };
+
   const process = Object.assign(new EventEmitter(), {
+    exitCode: undefined as number | undefined,
     env: options.env ?? {},
     platform: "browser" as const,
     argv: options.argv ?? ["node", "/entry.js"],
@@ -87,13 +123,40 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     pid: 1,
     ppid: 0,
     title: "bolo",
-    nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) =>
-      queueMicrotask(() => fn(...args)),
+    /** Runs queued nextTick callbacks now; the host calls it after each macrotask callback. */
+    drainTicks: () => drainTicks(),
+    /** True once 'exit' has begun; Node ignores nextTick callbacks scheduled after that. */
+    _exiting: false,
+    nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) => {
+      if (typeof fn !== "function") {
+        const err = new TypeError(
+          `The "callback" argument must be of type function. Received ${
+            fn === null || fn === undefined ? String(fn) : `type ${typeof fn}`
+          }`,
+        ) as TypeError & { code: string };
+        err.code = "ERR_INVALID_ARG_TYPE";
+        throw err;
+      }
+      if (process._exiting) return;
+      tickQueue.push(() => fn(...args));
+      if (!tickScheduled) {
+        tickScheduled = true;
+        queueMicrotask(drainTicks);
+      }
+    },
     cwd: () => cwd,
     chdir: (dir: string) => {
       cwd = dir;
     },
-    exit: (_code?: number) => {},
+    exit: (code?: number): never => {
+      if (code !== undefined) process.exitCode = code;
+      try {
+        process.emit("exit", process.exitCode ?? 0);
+      } catch (err) {
+        if (!(err instanceof ProcessExit)) throw err;
+      }
+      throw new ProcessExit(process.exitCode ?? 0);
+    },
     hrtime,
     stdout: createStdioStream(options.onStdout),
     stderr: createStdioStream(options.onStderr),
@@ -104,6 +167,18 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
       rss: () => (performance as any).memory?.totalHeapSize ?? 0,
     }),
   });
+
+  // 'exit' fires at most once, whether triggered by process.exit() or by the
+  // embedder at natural completion.
+  const emit = process.emit.bind(process) as (event: string, ...args: unknown[]) => boolean;
+  process.emit = ((event: string, ...args: unknown[]) => {
+    if (event === "exit") {
+      if (exiting) return false;
+      exiting = true;
+      process._exiting = true;
+    }
+    return emit(event, ...args);
+  }) as typeof process.emit;
 
   return process;
 };

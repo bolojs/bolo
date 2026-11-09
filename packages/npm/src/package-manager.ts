@@ -1,8 +1,8 @@
 import type { VfsBus } from "@bolojs/fs";
 import { getLogger } from "@bolojs/log/browser";
 import { createFsFromVolume } from "memfs";
-import { parse, resolveGraph } from "@unjs/lockfile";
-import type { LockfileGraph, ResolvedGraph, ResolvedGraphPackage } from "@unjs/lockfile";
+import { parse, resolveGraph } from "@bolojs/lockfile";
+import type { LockfileGraph, ResolvedGraph, ResolvedGraphPackage } from "@bolojs/lockfile";
 import { buildEsmShUrl } from "./esm-sh.js";
 import { readPackageJsonWithMeta, writePackageJsonWithMeta } from "./json-edit.js";
 import type { PackageJson } from "./json-edit.js";
@@ -77,7 +77,7 @@ const LOCKFILE_CANDIDATES = [
  * - `browser-native` (default): resolves from the npm registry, walks the
  *   dependency graph, fetches tarballs, and extracts them into `node_modules/`.
  *   Uses a lockfile if present for deterministic installs.
- * - `lockfile-only`: parses a lockfile with `@unjs/lockfile`, fetches tarballs
+ * - `lockfile-only`: parses a lockfile with `@bolojs/lockfile`, fetches tarballs
  *   via `fetch`, and extracts them into `node_modules/`.
  * A custom function can also be provided as the strategy.
  */

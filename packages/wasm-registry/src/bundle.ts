@@ -426,13 +426,36 @@ const resolveBarePackage = (
   );
 };
 
+const TIMER_GLOBALS = [
+  "setTimeout",
+  "clearTimeout",
+  "setInterval",
+  "clearInterval",
+  "setImmediate",
+  "clearImmediate",
+] as const;
+
 const GLOBALS_BANNER = `
 var __bcGlobals = () => globalThis.__browserContainers;
 var process = __bcGlobals()?.shims?.process;
 var Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
 var global = globalThis;
-var setImmediate = (fn, ...args) => { queueMicrotask(() => fn(...args)); return 0; };
-var clearImmediate = () => {};
+// Process workers inject handle-tracked timers so only the *program's*
+// timers keep the process alive — infrastructure (logging, rpc) uses real
+// globals and is invisible to liveness. Main-thread path: real globals.
+var __bcTimers = __bcGlobals()?.timers;
+var __bc_setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
+var __bc_clearTimeout = __bcTimers?.clearTimeout ?? globalThis.clearTimeout;
+var __bc_setInterval = __bcTimers?.setInterval ?? globalThis.setInterval;
+var __bc_clearInterval = __bcTimers?.clearInterval ?? globalThis.clearInterval;
+// Process workers own a Node-style loop (check phase, ref-counted handles);
+// elsewhere fall back to a plain macrotask hop.
+var __bc_setImmediate = __bcTimers?.setImmediate ?? ((fn, ...args) => {
+  const imm = { cancelled: false, ref() { return imm; }, unref() { return imm; }, hasRef() { return true; } };
+  globalThis.setTimeout(() => { if (!imm.cancelled) { fn(...args); process?.drainTicks?.(); } }, 0);
+  return imm;
+});
+var __bc_clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm.cancelled = true; });
 
 var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;
@@ -565,14 +588,21 @@ const nodeAliasPlugin = (
       };
     }
     const keys = Object.keys(shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
-    const contents = [
-      `const __shim = globalThis.__browserContainers.shims[${JSON.stringify(builtin)}];`,
-      "export default __shim;",
-      ...keys.map((k) => `export const ${k} = __shim[${JSON.stringify(k)}];`),
-    ].join("\n");
+    const contents = shimModuleSource(builtin, keys);
     return { code: contents, map: null };
   },
 });
+
+/** Source of the virtual module that re-exports a container's live builtin shim. */
+export const shimModuleSource = (builtin: string, keys: string[]): string =>
+  [
+    `const __shim = globalThis.__browserContainers.shims[${JSON.stringify(builtin)}];`,
+    "export default __shim;",
+    // Node's CJS interop: require('assert') is the shim itself, so callable
+    // builtins (assert, ...) work as `assert(cond)`.
+    'export { __shim as "module.exports" };',
+    ...keys.map((k) => `export const ${k} = __shim[${JSON.stringify(k)}];`),
+  ].join("\n");
 
 const jsrAliasPlugin = (): Plugin => ({
   name: "bolo-jsr-alias",
@@ -607,6 +637,10 @@ export const bundleEntry = async (
       define: {
         "process.env.NODE_ENV": JSON.stringify("development"),
         "process.browser": "true",
+        // Free references to the timer globals resolve to the banner's injected
+        // bindings. They are renamed (and only unbound references rewritten) so a
+        // program's own top-level `const { setTimeout } = ...` cannot collide.
+        ...Object.fromEntries(TIMER_GLOBALS.map((n) => [n, `__bc_${n}`])),
       },
     },
     onLog(level, log, _logger) {
@@ -617,6 +651,9 @@ export const bundleEntry = async (
   const result = await bundle.generate({
     format: "es",
     banner: GLOBALS_BANNER,
+    // The bundle executes from a single data:/blob: URL — relative chunk
+    // imports (dynamic import() splitting) would be unresolvable.
+    inlineDynamicImports: true,
   });
 
   const chunk = result.output.find((o) => o.type === "chunk");
