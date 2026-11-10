@@ -223,6 +223,103 @@ describe('wasm-registry: bundleEntry', () => {
     expect(code).not.toMatch(/from\s+["']jsr:/);
   });
 
+  it('bundles a .json import via rolldown native json handling (default + named)', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/data.json', JSON.stringify({ a: 1, name: 'pkg' }));
+    seed(vfs, '/src/entry.ts', "import data, { name } from './data.json'; console.log(data.a, name);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('"pkg"');
+  });
+
+  it('degrades a .json file whose contents are not valid JSON instead of failing the build', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/empty.json', '');
+    seed(vfs, '/src/entry.ts', "import data from './empty.json'; console.log(data);");
+
+    const { warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings.some((w) => w.includes('empty.json'))).toBe(true);
+  });
+
+  it('strips a shebang line before parsing a module', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/cli.js', '#!/usr/bin/env node\nexport const main = "ran";');
+    seed(vfs, '/src/entry.ts', "import { main } from './cli.js'; console.log(main);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('"ran"');
+  });
+
+  it('does not redeclare __dirname when the module declares its own', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/self.js', 'const __dirname = "/self";\nexport const dir = __dirname;');
+    seed(vfs, '/src/entry.ts', "import { dir } from './self.js'; console.log(dir);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('"/self"');
+  });
+
+  it('synthesizes a namespace default export for ESM modules without one', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', main: 'index.mjs' }));
+    seed(vfs, '/node_modules/pkg/index.mjs', 'export const load = () => 1;\nexport const dump = () => 2;');
+    seed(vfs, '/src/entry.ts', "import pkg, { load } from 'pkg'; console.log(typeof pkg.load, load());");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    // The wrapper materializes a namespace object carrying the named exports.
+    expect(code).toContain('load');
+    expect(code).not.toMatch(/from\s+["']pkg["']/);
+  });
+
+  it('routes subpath builtins to the parent shim property (fs.promises, path.posix)', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/entry.ts', "import fsp from 'node:fs/promises'; import posix from 'node:path/posix'; void fsp; void posix;");
+
+    const fsShim = { promises: { readFile: () => {} } };
+    const pathShim = { posix: { join: () => {} } };
+    const { code, warnings } = await bundleEntry('/src/entry.ts', {
+      vfs,
+      getShim: (builtin) => (builtin === 'fs' ? fsShim : builtin === 'path' ? pathShim : undefined),
+    });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('shims["fs"]["promises"]');
+    expect(code).toContain('shims["path"]["posix"]');
+  });
+
+  it('aliases dns/promises to the already-promise-based dns shim', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/entry.ts', "import dns from 'node:dns/promises'; void dns;");
+
+    const dnsShim = { lookup: () => Promise.resolve([]) };
+    const { code, warnings } = await bundleEntry('/src/entry.ts', {
+      vfs,
+      getShim: (builtin) => (builtin === 'dns' ? dnsShim : undefined),
+    });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain('shims["dns"]');
+  });
+
+  it('routes node:console to the banner console instead of esm.sh', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/entry.ts', "import console from 'node:console'; console.log('hi');");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).not.toContain('esm.sh/console');
+  });
+
   it('rewrites a jsr: unscoped specifier to the installed @jsr mirror package', async () => {
     const vfs = new VfsBus();
     seed(

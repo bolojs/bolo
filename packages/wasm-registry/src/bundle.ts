@@ -105,24 +105,29 @@ const RESOLVE_EXTENSIONS = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".
 // package only knows the builtin's name, not its implementation.
 const NODE_BUILTIN_NAMES = new Set([
   "fs",
+  "fs/promises",
   "http",
   "https",
   "net",
   "child_process",
   "path",
+  "path/posix",
   "buffer",
   "url",
   "crypto",
   "os",
   "events",
   "stream",
+  "stream/promises",
   "util",
+  "util/types",
   "async_hooks",
   "querystring",
   "worker_threads",
   "string_decoder",
   "tty",
   "assert",
+  "assert/strict",
   "zlib",
   "constants",
   "perf_hooks",
@@ -133,7 +138,34 @@ const NODE_BUILTIN_NAMES = new Set([
   "module",
   "diagnostics_channel",
   "readline",
+  "vm",
+  "dns",
+  "dns/promises",
+  "console",
 ]);
+
+// Subpath builtins that have no dedicated shim object because the parent
+// already IS the requested variant — our `dns` shim's methods all return
+// promises, so `node:dns/promises` is the `dns` object itself.
+const SUBPATH_SELF_ALIASES: Record<string, string> = {
+  "dns/promises": "dns",
+};
+
+// Export names of the `console` object GLOBALS_BANNER injects — kept in sync
+// with the banner literal below so `import console from "node:console"`
+// resolves to the same stdout/stderr-routed surface.
+const BANNER_CONSOLE_KEYS = [
+  "log",
+  "info",
+  "debug",
+  "table",
+  "warn",
+  "error",
+  "trace",
+  "assert",
+  "group",
+  "groupEnd",
+];
 
 const VALID_JS_IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
@@ -478,14 +510,60 @@ var console = {
 };
 `.trim();
 
-const vfsPlugin = (vfs: VfsBus): Plugin => ({
+// Emits a `const <name>=<literal>;` prelude declaration for a CJS implicit
+// global only when the module actually references it and doesn't declare its
+// own — unconditional injection collides with dist files that compute the
+// binding themselves (jest does `const __dirname = dirname(fileURLToPath(
+// import.meta.url))`, and a second `const` in the same module scope is a
+// parse-time redeclare error).
+const implicitGlobalDecl = (name: string, literal: string, contents: string): string => {
+  const declared =
+    new RegExp(`\\b(?:const|let|var|function|class)\\s+${name}\\b`).test(contents) ||
+    new RegExp(`\\b(?:const|let|var)\\s*\\{[^}\\n]*\\b${name}\\b`).test(contents) ||
+    new RegExp(`\\bimport\\b[^;\\n]*\\b${name}\\b`).test(contents);
+  if (declared || !new RegExp(`\\b${name}\\b`).test(contents)) return "";
+  return `const ${name}=${literal};`;
+};
+
+// Virtual-id prefix for ESM modules that have named exports but no
+// `export default` — see load() below.
+const NS_DEFAULT_PREFIX = "bolo-ns-default:";
+
+// `export default`, `export {x as default}`, and `export {default} from` all
+// provide a default export; `export *` never does.
+const HAS_DEFAULT_EXPORT = /\bexport\s+default\b|\bexport\s*\{[^}]*\bdefault\b/;
+const LOOKS_ESM = /^\s*(?:import|export)\s/m;
+
+// Bundler convention (vite/webpack/esm.sh): `import x from "pkg"` on a module
+// with only named exports yields the namespace object, matching what Node's
+// CJS interop does for require()-shaped packages. Without it, `import yaml
+// from "js-yaml"` is a build-time MISSING_EXPORT (js-yaml's .mjs, h3, mkdirp,
+// sass all ship named-only entries). Only applied to real ESM — a CJS file
+// already gets `default = module.exports` from rolldown's commonjs wrapper.
+const maybeWrapNamespaceDefault = (vfs: VfsBus, file: string): string => {
+  const ext = extname(file);
+  if (ext === ".json" || ext === ".cjs") return file;
+  const contents = vfs.hot.readFileSync(file, "utf8") as string;
+  if (!LOOKS_ESM.test(contents) || HAS_DEFAULT_EXPORT.test(contents)) return file;
+  return `${NS_DEFAULT_PREFIX}${file}`;
+};
+
+const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
   name: "bolo-vfs",
   async resolveId(id, importer) {
     const importerDir = importer ? dirname(importer) : "/";
 
+    // Wrap resolved ESM files that lack a default export — except files
+    // imported *by* a wrapper itself, whose target must stay the raw module
+    // or the wrapper would import itself in a cycle.
+    const finish = (resolved: string | undefined | null) =>
+      resolved && importer && resolved.startsWith("/") && !importer.startsWith(NS_DEFAULT_PREFIX)
+        ? maybeWrapNamespaceDefault(vfs, resolved)
+        : (resolved ?? null);
+
     if (id.startsWith("#") && importer) {
       const resolved = resolvePackageImportsSubpath(vfs, importer, id);
-      if (resolved) return resolved;
+      if (resolved) return finish(resolved);
     }
 
     const remap = importer ? applyBrowserFieldRemap(vfs, importer, id) : undefined;
@@ -500,23 +578,61 @@ const vfsPlugin = (vfs: VfsBus): Plugin => ({
     if (!resolved && isRelative) {
       throw new Error(`Cannot resolve module "${id}" from "${importer || "<entry>"}"`);
     }
-    return resolved ?? null;
+    return finish(resolved);
   },
   async load(id) {
     if (id.startsWith("bolo-empty-stub:")) {
       return { code: "export default {};", map: null };
     }
+    if (id.startsWith(NS_DEFAULT_PREFIX)) {
+      // `export *` never re-exports a default, so the synthesized default is
+      // the module namespace itself — the bundler-convention interop value.
+      const target = JSON.stringify(id.slice(NS_DEFAULT_PREFIX.length));
+      return {
+        code: `import * as __ns from ${target};\nexport * from ${target};\nexport default __ns;`,
+        map: null,
+      };
+    }
     // Only handle VFS paths; let other plugins (e.g. node-shim) handle their own virtual schemes.
     if (!id.startsWith("/")) return null;
     const ext = extname(id);
-    const contents = vfs.hot.readFileSync(id, "utf8") as string;
+    let contents = vfs.hot.readFileSync(id, "utf8") as string;
     const resolveDir = dirname(id);
     if (ext === ".json") {
-      return { code: `export default ${contents};`, map: null, moduleSideEffects: "no-treeshake" };
+      try {
+        JSON.parse(contents);
+        // Valid JSON goes to rolldown's native JSON module handling — feeding
+        // it a pre-wrapped `export default` makes its serde_json parser fail
+        // with "expected value at line 1 column 1" on every .json import
+        // (express, body-parser, koa, ajv, ...).
+        return { code: contents, map: null, moduleType: "json", moduleSideEffects: "no-treeshake" };
+      } catch {
+        // Not actually JSON — empty tarball file, JSONC, or a non-JSON file
+        // reached via the .json extension guess. Degrade to an empty object
+        // rather than failing the whole bundle.
+        warnings?.push(`"${id}" has a .json extension but is not valid JSON — exporting {}`);
+        // moduleType must be pinned — rolldown otherwise re-infers "json" from
+        // the extension and feeds this JS back to its JSON parser.
+        return {
+          code: "export default {};",
+          map: null,
+          moduleType: "js",
+          moduleSideEffects: "no-treeshake",
+        };
+      }
     }
+    // Strip shebangs — `#!/usr/bin/env node` bin entries (dotenv, parcel) are
+    // not parseable JS.
+    if (contents.startsWith("#!")) contents = contents.replace(/^#![^\n]*(\n|$)/, "");
     // Prepend __dirname/__filename for CJS-style implicit globals
-    const prelude = `const __filename=${JSON.stringify(id)};const __dirname=${JSON.stringify(resolveDir)};\n`;
-    return { code: prelude + contents, map: null, moduleSideEffects: "no-treeshake" };
+    const prelude =
+      implicitGlobalDecl("__filename", JSON.stringify(id), contents) +
+      implicitGlobalDecl("__dirname", JSON.stringify(resolveDir), contents);
+    return {
+      code: (prelude ? prelude + "\n" : "") + contents,
+      map: null,
+      moduleSideEffects: "no-treeshake",
+    };
   },
 });
 
@@ -560,6 +676,51 @@ const esmShFallbackPlugin = (vfs: VfsBus, warnings: string[]): Plugin => ({
   },
 });
 
+const registryShimExpr = (name: string): string =>
+  `globalThis.__browserContainers.shims[${JSON.stringify(name)}]`;
+
+/**
+ * Locates the live shim backing a builtin, along with the bundle-runtime
+ * expression that re-reads it from `globalThis.__browserContainers.shims`.
+ * Subpath builtins (`fs/promises`, `assert/strict`, `util/types`, ...) try
+ * three shapes in order: a registry key of their own (e.g. `timers/promises`),
+ * a property on the parent shim (`fs.promises`, `path.posix`), and — for the
+ * entries in SUBPATH_SELF_ALIASES — the parent object itself.
+ */
+const resolveShim = (
+  builtin: string,
+  getShim?: (builtin: string) => Record<string, unknown> | undefined,
+): { expr: string; shim: Record<string, unknown> } | undefined => {
+  const direct = getShim?.(builtin);
+  if (direct) return { expr: registryShimExpr(builtin), shim: direct };
+
+  const slash = builtin.indexOf("/");
+  if (slash !== -1) {
+    const parentName = builtin.slice(0, slash);
+    const sub = builtin.slice(slash + 1);
+    const selfAlias = SUBPATH_SELF_ALIASES[builtin];
+    const lookupName = selfAlias ?? parentName;
+    const parent = getShim?.(lookupName);
+    if (parent) {
+      if (selfAlias) return { expr: registryShimExpr(lookupName), shim: parent };
+      const child = parent[sub];
+      // `assert.strict` is a callable function-object, so accept functions too.
+      if (child && (typeof child === "object" || typeof child === "function")) {
+        return {
+          expr: `${registryShimExpr(lookupName)}[${JSON.stringify(sub)}]`,
+          shim: child as Record<string, unknown>,
+        };
+      }
+    }
+  }
+
+  // `node:console` resolves to the banner's process-routed console — there is
+  // no registry shim for it. The bare `console` reference binds to the
+  // banner's `var console` inside the single-file bundle scope.
+  if (builtin === "console") return { expr: "console", shim: {} };
+  return undefined;
+};
+
 const nodeAliasPlugin = (
   getShim?: (builtin: string) => Record<string, unknown> | undefined,
   warnings?: string[],
@@ -569,8 +730,8 @@ const nodeAliasPlugin = (
     const builtin = id.startsWith("node:") ? id.slice(5) : id;
     if (!NODE_BUILTIN_NAMES.has(builtin)) return null;
 
-    const shim = getShim?.(builtin);
-    if (!shim) {
+    const resolved = resolveShim(builtin, getShim);
+    if (!resolved) {
       warnings?.push(`no browser shim registered for node builtin "node:${builtin}"`);
       return { id, external: true };
     }
@@ -579,24 +740,33 @@ const nodeAliasPlugin = (
   async load(id) {
     if (!id.startsWith("bolo-node-shim:")) return null;
     const builtin = id.slice("bolo-node-shim:".length);
-    const shim = getShim?.(builtin);
-    if (!shim) {
+    const resolved = resolveShim(builtin, getShim);
+    if (!resolved) {
       // Unsupported builtins are left external in resolveId; this branch is defensive.
       return {
         code: `throw new Error("Unsupported node builtin \\"node:${builtin}\\" — no browser shim is registered for it.");`,
         map: null,
       };
     }
-    const keys = Object.keys(shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
-    const contents = shimModuleSource(builtin, keys);
+    const keys =
+      builtin === "console" && !getShim?.("console")
+        ? BANNER_CONSOLE_KEYS
+        : Object.keys(resolved.shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
+    const contents = shimModuleSource(builtin, keys, resolved.expr);
     return { code: contents, map: null };
   },
 });
 
-/** Source of the virtual module that re-exports a container's live builtin shim. */
-export const shimModuleSource = (builtin: string, keys: string[]): string =>
+/**
+ * Source of the virtual module that re-exports a container's live builtin
+ * shim. `shimExpr` is the bundle-scope expression yielding the shim object —
+ * normally a `__browserContainers.shims[...]` lookup, but subpath aliases read
+ * one level deeper (`shims["fs"]["promises"]`) and `console` binds to the
+ * banner global.
+ */
+export const shimModuleSource = (builtin: string, keys: string[], shimExpr?: string): string =>
   [
-    `const __shim = globalThis.__browserContainers.shims[${JSON.stringify(builtin)}];`,
+    `const __shim = ${shimExpr ?? registryShimExpr(builtin)};`,
     "export default __shim;",
     // Node's CJS interop: require('assert') is the shim itself, so callable
     // builtins (assert, ...) work as `assert(cond)`.
@@ -629,7 +799,7 @@ export const bundleEntry = async (
     treeshake: false,
     plugins: [
       jsrAliasPlugin(),
-      vfsPlugin(options.vfs),
+      vfsPlugin(options.vfs, warnings),
       nodeAliasPlugin(options.getShim, warnings),
       esmShFallbackPlugin(options.vfs, warnings),
     ],
