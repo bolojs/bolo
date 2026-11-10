@@ -48,7 +48,7 @@ vfs.on('rename', ({ path }) => { /* file renamed */ });
 
 ---
 
-## ShellService (`bolojs`)
+## ShellService (`@bolojs/runtime`)
 
 Routes shell commands to the appropriate execution tier.
 
@@ -95,7 +95,7 @@ Unknown commands return exit code `127`.
 
 ---
 
-## SandboxBackend / IframeSandbox (`bolojs`)
+## SandboxBackend / IframeSandbox (`@bolojs/runtime`)
 
 Untrusted-code execution is pluggable behind a small interface:
 
@@ -142,10 +142,10 @@ const { result, error } = await sandbox.run('2 + 2');
 `fs.readFileSync(path)` is available read-only inside the sandbox; write operations
 (`writeFileSync`, `mkdirSync`, `rmSync`) throw immediately.
 
-For hard, C-level memory/CPU/stack caps (not just origin isolation), implement
-`SandboxBackend` with the QuickJS-based `SandboxPool` from the separate
-[`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox) package and
-pass it as `sandbox`: it's opt-in and not a dependency of `bolojs`.
+For hard, C-level memory/CPU/stack caps (not just origin isolation), use
+`QuickJSSandbox` — a `SandboxBackend` implementation from the separate
+[`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox) repo — and
+pass it as `sandbox`: it's opt-in and not a dependency of `@bolojs/runtime`.
 
 ### Container checkpoints
 
@@ -176,7 +176,7 @@ low-risk, but a tampered sandbox snapshot is attacker bytecode.
 
 ---
 
-## RuntimeWorker (`bolojs`)
+## RuntimeWorker (`@bolojs/runtime`)
 
 Trusted code execution tier. Runs scripts in a dedicated Web Worker.
 
@@ -232,7 +232,8 @@ sandbox.onFetch(async (req) => {
 
 ### `setPolicyRegistry(registry)`
 
-Attach a `Map<string, unknown>` of sandbox policies. Used by `@bolojs/sandbox-policy`.
+Attach a `Map<string, unknown>` of sandbox policies. Used by `@bolojs/sandbox-policy`
+(in the separate [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox) repo).
 
 ---
 

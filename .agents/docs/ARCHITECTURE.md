@@ -2,7 +2,7 @@
 
 ## 1. System overview
 
-bolo runs Node.js entirely inside the browser. The main thread owns the container API, shell, REPL, package installer, and dev server. A dedicated Web Worker runs user code against a live shim registry. The virtual filesystem, ServiceWorker proxy, and an optional self-hosted TCP relay bridge the browser to real registries and network listeners.
+bolo runs Node.js entirely inside the browser. The main thread owns the container API, shell, REPL, package installer, and dev server. Dedicated Web Workers — one per spawned process — run user code against a live shim registry. The virtual filesystem, ServiceWorker proxy, and an optional self-hosted TCP relay bridge the browser to real registries and network listeners.
 
 Code falls into three compatibility tiers: T1 Web-Standard (no shims), T2 WinterTC/ECMA-429 (node-web-shims), and T3 Node-API (node-runtime-shims). Tier 4 capabilities, including POSIX fork, raw UDP, and inbound TLS termination, are explicitly unsupported.
 
@@ -18,17 +18,18 @@ flowchart TD
         PM[PackageManager]
     end
 
-    RW[RuntimeWorker<br/>V8 worker + worker-script]
+    RW[NodeProcess workers<br/>V8 worker-per-process]
+    REPL[RuntimeWorker<br/>persistent REPL eval]
     VB[VfsBus<br/>memfs hot + OPFS cold]
     SW[ServiceWorker<br/>sw-sandbox virtual origin]
     NW[Network<br/>real registries / virtual localhost]
     IF[IframeSandbox<br/>untrusted AI agent]
     TR[tcp-relay<br/>WS or WebTransport to raw TCP]
 
-    BC -->|postMessage| RW
+    BC -->|spawn via shell| SS
     SS -->|postMessage| RW
-    RS -->|postMessage| RW
-    RW -->|createLiveShimRegistry| VB
+    RS -->|postMessage| REPL
+    RW -->|sync channel / remote ops| VB
     SS --> VB
     PM --> VB
     VS --> VB
@@ -39,13 +40,13 @@ flowchart TD
     TR <--> NW
 ```
 
-A typical flow: a user runs `node server.ts` in the shell. `ShellService` calls `bundleEntry` from `@bolojs/wasm-registry`, maps `node:*` imports to the container's live shims via `globalThis.__browserContainers`, and executes the resulting bundle as a blob import. If the app calls `http.createServer().listen()`, the `http-shim` registers a fetch handler on `SWSandbox` and emits a `server-ready` event so the preview UI can load the virtual origin.
+A typical flow: a user runs `node server.ts` in the shell. `ShellService` calls `bundleEntry` from `@bolojs/registry`, maps `node:*` imports to the container's live shims via `globalThis.__browserContainers`, and executes the resulting bundle as a blob import. If the app calls `http.createServer().listen()`, the `http-shim` registers a fetch handler on `SWSandbox` and emits a `server-ready` event so the preview UI can load the virtual origin.
 
 ## 2. Two-tier runtime
 
-**Trusted tier** runs in a `RuntimeWorker` Web Worker using the browser's V8 engine. It executes user scripts via `worker-script.ts`, which sets up a `process` shim, patches `console.log` to emit STDOUT messages, and evaluates code with `(0, eval)`. The REPL uses the same persistent worker context; `REPL_EVAL` buffers input until `isComplete` reports balanced brackets or a valid `Function` parse, giving multi-line continuation. A 5-second heartbeat watchdog terminates the worker if it misses two beats.
+**Trusted tier** runs user code in the browser's JS engine inside dedicated Web Workers, worker-per-process. Each `node` execution (`runtime run`, `container.spawn('node', …)`) gets its own `NodeProcess` worker (`node-process-worker.ts`): the bundled entry is imported as a blob module, globals are isolated per spawn, and `kill()` terminates the worker outright — a real reclaim, including synchronous infinite loops. The worker reaches main-thread services (VfsBus, sw-sandbox, shell) over a synchronous channel (`sync-channel.ts`): a SharedArrayBuffer + `Atomics.wait`/`notify` fast path under cross-origin isolation, with a synchronous-XHR fallback relayed through the ServiceWorker when SAB is unavailable. Exit semantics match Node: `process.exit()` is uncatchable, and uncaught crashes run `exit` handlers and report a non-zero code. Liveness is handle-tracked — a Node-style event loop (`event-loop.ts`) keeps a process alive while ref'd timers/servers are active, with `process.nextTick` queue and macrotask `setImmediate` semantics. A 5-second heartbeat watchdog terminates a worker that misses two beats. The persistent `RuntimeWorker` (`worker-script.ts`) now backs the REPL only: `REPL_EVAL` buffers input until `isComplete` reports balanced brackets or a valid `Function` parse (multi-line continuation), then evaluates it with `(0, eval)`.
 
-**Untrusted tier** is `IframeSandbox`, which implements the `SandboxBackend` seam from `sandbox-backend.ts`. It generates a blob HTML page, creates a `sandbox="allow-scripts"` cross-origin iframe, transfers a `MessageChannel`, and sends a text snapshot of the workdir (excluding `node_modules`). Code is stripped by `transformScript` from `@bolojs/wasm-registry` and executed inside the iframe with `eval`. File writes and deletes from the iframe propagate back to the VfsBus hot layer via `postMessage`. Hard resource caps are delegated to the optional QuickJS community backend; the default sandbox relies on the browser same-origin policy (see ADR-0006).
+**Untrusted tier** is `IframeSandbox`, which implements the `SandboxBackend` seam from `sandbox-backend.ts`. It generates a blob HTML page, creates a `sandbox="allow-scripts"` cross-origin iframe, transfers a `MessageChannel`, and sends a text snapshot of the workdir (excluding `node_modules`). Code is stripped by `transformScript` from `@bolojs/registry` and executed inside the iframe with `eval`. File writes and deletes from the iframe propagate back to the VfsBus hot layer via `postMessage`. Hard resource caps are delegated to the optional QuickJS community backend; the default sandbox relies on the browser same-origin policy (see ADR-0006).
 
 The iframe runs with an opaque origin, so it cannot access the parent DOM, storage, cookies, IndexedDB, or OPFS.
 
@@ -62,7 +63,7 @@ Node `child_process.fork()` is emulated by `WorkerChildProcessImpl` in `packages
 
 ## 3. Virtual filesystem
 
-`@bolojs/vfs-bus` provides a single-owner VFS shared through `vfsRegistry`.
+`@bolojs/fs` provides a single-owner VFS shared through `vfsRegistry`.
 
 | Layer | Storage | Semantics |
 |-------|---------|-----------|
@@ -98,9 +99,9 @@ Both support `connect` (outbound TCP) and `listen` (inbound TCP). The reference 
 
 ## 5. Package management and build tools
 
-`@bolojs/npm` implements a browser-native package manager. It uses `@unjs/lockfile` to parse npm, yarn, pnpm, and bun lockfiles, then fetches tarballs directly with `fetch`. Decompression uses the native `DecompressionStream` API and integrity is checked with `crypto.subtle`. Two strategies exist in `PackageManager`: `browser-native` (resolve from registry when no lockfile is present) and `lockfile-only` (use the lockfile's resolved URLs). Both strategies produce a `ResolvedGraph` (from `@unjs/lockfile`'s `resolveGraph()` or the registry-walk path) and hand it to `materializeVirtualStore` (ADR-0008), which lays out a pnpm-style virtual store — `node_modules/.bolo/<name>@<version>/node_modules/<name>` per resolved package, symlinked into place — so multiple versions of the same dependency (diamond deps) coexist correctly instead of collapsing to one. Peer dependencies are linked on a best-effort, graph-wide semver match; `.bin` entries are linked per-package and at the root; optional dependencies that fail to fetch are skipped with a warning rather than failing the install. After install it writes a `package-lock.json` (nested per conflicting version, flat otherwise) and an `importmap.json` with esm.sh fallback URLs. JSR `jsr:` specifiers install through the `npm.jsr.io` mirror. Packument cache lives in `.npm-cache/` with a seven-day TTL. Hardlinks are permanently unsupported because OPFS and the Filesystem Access API have no `link` concept; the VFS handles the virtual store's symlinks by forwarding memfs internals. Cold-layer storage in `@bolojs/vfs-bus` is content-addressed (`CasStore` in `cas.ts`, mirrored inline in `opfs-worker-script.ts`): files are stored once per unique `sha256` hash with per-hash refcounting, so byte-identical files across packages are deduped without needing hardlinks; pre-CAS path-keyed data is migrated lazily on first read.
+`@bolojs/pm` implements a browser-native package manager. It uses `@bolojs/lockfile` to parse npm, yarn, pnpm, and bun lockfiles, then fetches tarballs directly with `fetch`. Decompression uses the native `DecompressionStream` API and integrity is checked with `crypto.subtle`. Two strategies exist in `PackageManager`: `browser-native` (resolve from registry when no lockfile is present) and `lockfile-only` (use the lockfile's resolved URLs). Both strategies produce a `ResolvedGraph` (from `@bolojs/lockfile`'s `resolveGraph()` or the registry-walk path) and hand it to `materializeVirtualStore` (ADR-0008), which lays out a pnpm-style virtual store — `node_modules/.bolo/<name>@<version>/node_modules/<name>` per resolved package, symlinked into place — so multiple versions of the same dependency (diamond deps) coexist correctly instead of collapsing to one. Peer dependencies are linked on a best-effort, graph-wide semver match; `.bin` entries are linked per-package and at the root; optional dependencies that fail to fetch are skipped with a warning rather than failing the install. After install it writes a `package-lock.json` (nested per conflicting version, flat otherwise) and an `importmap.json` with esm.sh fallback URLs. JSR `jsr:` specifiers install through the `npm.jsr.io` mirror. Packument cache lives in `.npm-cache/` with a seven-day TTL. Hardlinks are permanently unsupported because OPFS and the Filesystem Access API have no `link` concept; the VFS handles the virtual store's symlinks by forwarding memfs internals. Cold-layer storage in `@bolojs/fs` is content-addressed (`CasStore` in `cas.ts`, mirrored inline in `opfs-worker-script.ts`): files are stored once per unique `sha256` hash with per-hash refcounting, so byte-identical files across packages are deduped without needing hardlinks; pre-CAS path-keyed data is migrated lazily on first read.
 
-`@bolojs/wasm-registry` is the WASM tool loader and bundler. It exposes `registerWasmTool` and `resolveWasmTool`, bundles user entries with `rolldown` and `oxc-transform`, and provides `transformScript` (TS strip) used by the iframe sandbox. It also supports WASI tool execution via `createWasiTool` for compilers and formatters that expose a command-line interface.
+`@bolojs/registry` is the WASM tool loader and bundler. It exposes `registerWasmTool` and `resolveWasmTool`, bundles user entries with `rolldown` and `oxc-transform`, and provides `transformScript` (TS strip) used by the iframe sandbox. It also supports WASI tool execution via `createWasiTool` for compilers and formatters that expose a command-line interface.
 
 `@bolojs/vite-server` runs a Vite dev server on the main thread. HMR events are broadcast over `BroadcastChannel` and are triggered by VfsBus `watch` callbacks.
 
@@ -108,12 +109,12 @@ Both support `connect` (outbound TCP) and `listen` (inbound TCP). The reference 
 
 ```mermaid
 flowchart LR
-    vfs["@bolojs/vfs-bus"] --> nrs["@bolojs/node-runtime-shims"]
-    sw["@bolojs/sw-sandbox"] --> nrs
+    vfs["@bolojs/fs"] --> nrs["@bolojs/node-runtime-shims"]
+    sw["@bolojs/sandbox"] --> nrs
     nws["@bolojs/node-web-shims"] --> nrs
     nrs --> runtime["@bolojs/runtime"]
     nws --> runtime
-    runtime --> npm["@bolojs/npm"]
+    runtime --> npm["@bolojs/pm"]
     runtime --> vs["@bolojs/vite-server"]
     runtime --> apps["site demo / landing apps"]
     log["@bolojs/log"] --> vfs
@@ -139,7 +140,7 @@ flowchart LR
 | [0002](.agents/docs/adr/0002-vfs-bus-single-owner.md) | One shared `VfsBus` instance with single write authority, two-layer storage, observable events, and ACL middleware. |
 | [0003](.agents/docs/adr/0003-no-webpack-nextjs.md) | Exclude Webpack and Next.js from v1 scope; support Vite and edge-first frameworks. |
 | [0004](.agents/docs/adr/0004-package-manager-strategy.md) | Original strategy: npm-in-browser, JSR mirror, and lockfile translation for yarn/pnpm. |
-| [0005](.agents/docs/adr/0005-package-manager-strategy.md) | Unified multi-format lockfile compatibility via `@unjs/lockfile`; npm-in-browser removed. |
+| [0005](.agents/docs/adr/0005-package-manager-strategy.md) | Unified multi-format lockfile compatibility via `@bolojs/lockfile`; npm-in-browser removed. |
 | [0006](.agents/docs/adr/0006-sandbox-pivot-iframe.md) | Replace the default QuickJS sandbox with a cross-origin iframe; QuickJS becomes an opt-in community package. |
 | [0007](.agents/docs/adr/0007-posix-fork-vs-node-fork.md) | POSIX `fork` is unsupported; Node `child_process.fork()` is emulated via Worker + IPC. |
 | [0008](.agents/docs/adr/0008-virtual-store-resolver-and-cas.md) | pnpm-style symlinked virtual store for correct multi-version/diamond-dependency installs, plus content-addressed cold storage for cross-package dedup without hardlinks. |
