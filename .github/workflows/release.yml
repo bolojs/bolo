@@ -29,7 +29,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '24', cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
-      - uses: changesets/action@v1
+      - id: changesets
+        uses: changesets/action@v1
         with:
           version: pnpm version-packages
           publish: pnpm release
@@ -39,6 +40,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+      - name: Umbrella GitHub Release
+        # Per-package releases come from changesets/action; this adds one release per bolo version.
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./packages/runtime/package.json').version")
+          TAG="v$VERSION"
+          if gh release view "$TAG" >/dev/null 2>&1; then exit 0; fi
+          FLAGS=""
+          case "$VERSION" in *-*) FLAGS="--prerelease" ;; esac
+          node scripts/root-changelog.mjs --notes > /tmp/notes.md
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "bolo $VERSION" --notes-file /tmp/notes.md $FLAGS
 
   dry-run:
     # Manual rehearsal. No NPM_TOKEN, no changesets/action, so it cannot publish.
