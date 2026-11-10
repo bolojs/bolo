@@ -67,16 +67,11 @@ const fields = (u: nodeUrl.Url): UrlFields => ({
   slashes: u.slashes,
 });
 
-describe("differential property: node:url vs url shim (unenv)", () => {
-  // unenv's url.parse is more permissive than node's: it returns an object for
-  // inputs where node throws ERR_INVALID_URL (DEP0170 class). Divergence is
-  // recorded in tests/unit/regressions/url-unenv-divergences.test.ts, so we
-  // only compare outputs on inputs node accepts.
+describe("differential property: node:url vs url shim (vendored lib/url.js)", () => {
   it("parse (query as string) matches node:url.parse", () => {
     fc.assert(
       fc.property(urlStr, (s) => {
         const b = outcome(() => fields(nodeUrl.parse(s)));
-        fc.pre(!b.threw);
         const a = outcome(() => fields(shim.parse(s)));
         expectSameOutcome(a, b);
       }),
@@ -88,7 +83,6 @@ describe("differential property: node:url vs url shim (unenv)", () => {
     fc.assert(
       fc.property(urlStr, (s) => {
         const b = outcome(() => fields(nodeUrl.parse(s, true)));
-        fc.pre(!b.threw);
         const a = outcome(() => fields(shim.parse(s, true)));
         expectSameOutcome(a, b);
       }),
@@ -112,10 +106,7 @@ describe("differential property: node:url vs url shim (unenv)", () => {
   it("resolve matches node:url.resolve", () => {
     fc.assert(
       fc.property(urlStr, urlStr, (from, to) => {
-        // Same leniency divergence as parse: node throws on invalid inputs
-        // unenv resolves anyway — see regression file.
         const b = outcome(() => nodeUrl.resolve(from, to));
-        fc.pre(!b.threw);
         const a = outcome(() => shim.resolve(from, to));
         expectSameOutcome(a, b);
       }),
@@ -156,9 +147,9 @@ describe("differential property: node:url vs url shim (unenv)", () => {
   it("pathToFileURL matches node:url.pathToFileURL", () => {
     fc.assert(
       fc.property(messyUrl, (p) => {
-        // node %-encodes [, ] and | in the path; unenv emits them literally.
-        // unenv also trims trailing whitespace off the path where node
-        // encodes it as %20. See regressions file.
+        // node %-encodes [, ] and | in the path; the shim emits them
+        // literally. The shim also trims trailing whitespace off the path
+        // where node encodes it as %20. See regressions file.
         fc.pre(!/[\[\]|]/.test(p) && !/\s$/.test(p));
         const a = outcome(() => shim.pathToFileURL(p).href);
         const b = outcome(() => nodeUrl.pathToFileURL(p).href);

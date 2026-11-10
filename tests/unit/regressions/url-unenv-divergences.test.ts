@@ -5,17 +5,21 @@ import { createUrlShim } from "../../../packages/node-web-shims/src/url.ts";
 const shim = createUrlShim();
 
 // Counterexamples found by tests/unit/property/url.prop.test.ts.
-describe("known unenv node:url vs node:url divergences", () => {
-  it.fails("[seed 1498418356] parse accepts invalid URLs node rejects (DEP0170)", () => {
+describe("unenv url.parse/resolve divergences (fixed by vendored lib/url.js)", () => {
+  it("[seed 1498418356] parse matches node's DEP0170 leniency on invalid hosts", () => {
     const s = "user:passuser:passhttp";
-    expect(() => shim.parse(s)).toThrow(); // node throws ERR_INVALID_URL, shim parses
+    // node warns (DEP0170) but still parses — hostname "passuser", rest becomes path.
+    expect({ ...shim.parse(s) }).toEqual({ ...nodeUrl.parse(s) });
   });
 
-  it.fails("[seed 1300371642] resolve accepts invalid base URLs node rejects", () => {
-    expect(() => shim.resolve("user:passuser:passhttp", "http://a.aa")).toThrow();
-    // node throws ERR_INVALID_ARG_TYPE/URL, shim returns "http://a.aa/"
+  it("[seed 1300371642] resolve matches node on invalid base URLs", () => {
+    expect(shim.resolve("user:passuser:passhttp", "http://a.aa")).toBe(
+      nodeUrl.resolve("user:passuser:passhttp", "http://a.aa"),
+    ); // "http://a.aa/"
   });
+});
 
+describe("known node:url shim vs node:url divergences", () => {
   it.fails("[seed -1943976771] pathToFileURL does not %-encode [] | in paths", () => {
     expect(shim.pathToFileURL("[::1]http").href).toBe(nodeUrl.pathToFileURL("[::1]http").href); // shim ".../[::1]http", node ".../%5B::1%5Dhttp"
   });
