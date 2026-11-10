@@ -34,7 +34,18 @@ export { createProcess, type ProcessDeps } from "./process.js";
 export { BrowserContainer, type BrowserContainerDeps } from "./container.js";
 export { boot } from "./boot.js";
 export { RuntimeBuilder } from "./runtime-builder.js";
-export { type SandboxBackend, type SandboxRunResult } from "./sandbox-backend.js";
+export {
+  type SandboxBackend,
+  type SandboxRunResult,
+  type SandboxSnapshot,
+  supportsSnapshots,
+} from "./sandbox-backend.js";
+export {
+  CHECKPOINT_FORMAT,
+  type ContainerCheckpoint,
+  createContainerCheckpoint,
+  validateCheckpoint,
+} from "./checkpoint.js";
 export { IframeSandbox } from "./iframe-sandbox.js";
 export { GitService, type GitServiceDeps } from "./git/git-service.js";
 export {

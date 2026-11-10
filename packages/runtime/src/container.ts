@@ -5,6 +5,8 @@ import type {
   SpawnOptions,
   Unsubscribe,
 } from "./container-types.js";
+import type { ContainerCheckpoint } from "./checkpoint.js";
+import { createContainerCheckpoint } from "./checkpoint.js";
 import type { ContainerEvents } from "./events.js";
 import type { VfsBus } from "@bolojs/fs";
 import type { MountAPI } from "./mount.js";
@@ -12,6 +14,7 @@ import type { ExportAPI } from "./export.js";
 import type { ProcessDeps } from "./process.js";
 import { createProcess } from "./process.js";
 import type { ReplService, ReplResult } from "./repl-service.js";
+import type { SandboxBackend } from "./sandbox-backend.js";
 
 export interface BrowserContainerDeps {
   vfs: VfsBus;
@@ -22,6 +25,7 @@ export interface BrowserContainerDeps {
   processDeps: ProcessDeps;
   workdir: string;
   replService: ReplService;
+  sandbox?: SandboxBackend;
 }
 
 export class BrowserContainer {
@@ -69,6 +73,13 @@ export class BrowserContainer {
       throw new Error("Container has been torn down");
     }
     return this.deps.exportApi.exportTree(this.workdir);
+  }
+
+  async checkpoint(): Promise<ContainerCheckpoint> {
+    if (this.tornDown) {
+      throw new Error("Container has been torn down");
+    }
+    return createContainerCheckpoint(this.deps.vfs, this.deps.sandbox, this.workdir);
   }
 
   async startRepl(): Promise<void> {

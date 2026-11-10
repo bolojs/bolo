@@ -49,7 +49,7 @@ A typical flow: a user runs `node server.ts` in the shell. `ShellService` calls 
 
 The iframe runs with an opaque origin, so it cannot access the parent DOM, storage, cookies, IndexedDB, or OPFS.
 
-The `SandboxBackend` interface is intentionally small (`run`, `dispose`) so the trusted tier can switch sandbox implementations. The current default is `IframeSandbox`; an opt-in QuickJS backend remains possible via `@bolojs/quickjs-sandbox`.
+The `SandboxBackend` interface is intentionally small (`run`, `dispose`, plus optional `snapshot`/`restore` detected via `supportsSnapshots()`) so the trusted tier can switch sandbox implementations. The current default is `IframeSandbox`; an opt-in QuickJS backend remains possible via `@bolojs/quickjs-sandbox`. Backends that snapshot follow the durable-execution rule that policy (limits, interrupt handler, module loader, ACLs) is host config — re-applied on restore, never serialized — and treat snapshots as trusted input only. `container.checkpoint()` + `boot({ resume })` pair a `VfsBus.snapshot()` with an optional backend snapshot for session-local hibernation/warm start; persisting checkpoints to user-writable storage requires an integrity mechanism that is not yet implemented.
 
 Node `child_process.fork()` is emulated by `WorkerChildProcessImpl` in `packages/node-runtime-shims/src/child-process-shim.ts`; a true POSIX `fork` is impossible (ADR-0007).
 

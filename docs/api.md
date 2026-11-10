@@ -105,11 +105,29 @@ interface SandboxRunResult {
   error?: string;
 }
 
+interface SandboxSnapshot {
+  bytes: Uint8Array;  // opaque, backend-defined, locked to the producing build
+  format: string;     // e.g. "quickjs-sandbox@1" — restore must reject mismatches
+}
+
 interface SandboxBackend {
   run(code: string): Promise<SandboxRunResult>;
   dispose(): void;
+  // Optional capabilities — absent means unsupported:
+  snapshot?(): Promise<SandboxSnapshot>;
+  restore?(snapshot: SandboxSnapshot): Promise<void>;
 }
+
+// Type guard: true when both optional methods are implemented.
+import { supportsSnapshots } from '@bolojs/runtime';
 ```
+
+Backends that implement `snapshot`/`restore` follow two rules borrowed from
+durable-execution engines: policy (memory/stack limits, interrupt handler,
+module loader, ACLs) is host configuration — it is re-applied after restore and
+never serialized into the snapshot — and snapshots are trusted input only.
+Restoring bytes that a sandboxed party could write is equivalent to loading its
+bytecode into the engine.
 
 The default implementation is `IframeSandbox`: a cross-origin, opaque-origin iframe
 (browser-native isolation, no WASM runtime to load):
@@ -128,6 +146,33 @@ For hard, C-level memory/CPU/stack caps (not just origin isolation), implement
 `SandboxBackend` with the QuickJS-based `SandboxPool` from the separate
 [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox) package and
 pass it as `sandbox`: it's opt-in and not a dependency of `bolojs`.
+
+### Container checkpoints
+
+`container.checkpoint()` captures the container's VFS hot layer plus the
+sandbox backend's state (when the backend supports snapshots) into one
+`ContainerCheckpoint`. `boot({ resume: checkpoint })` restores it — VFS always;
+backend state only when the configured backend implements `restore`, and boot
+fails if a checkpoint carries sandbox state the backend cannot restore.
+
+```ts
+const first = await boot({ sandbox });
+await first.fs.writeFile('/home/web/state.txt', '...');
+const cp = await first.checkpoint();
+await first.teardown();
+
+const second = await boot({ sandbox: newBackend, resume: cp });
+// second.fs sees state.txt; newBackend.restore() ran during boot.
+```
+
+Warm start: keep a base checkpoint taken after `mount()` and boot repeated
+instances with `resume` to skip setup. When `workdirName` is omitted, the
+checkpoint's workdir is used; when set it must equal the checkpoint's workdir.
+
+Security: checkpoints are trusted input, session-local only in v1. Persisting
+them to user-writable storage (OPFS, IndexedDB) is unsafe until an integrity
+mechanism (format + version + MAC/signature) lands — a tampered VFS snapshot is
+low-risk, but a tampered sandbox snapshot is attacker bytecode.
 
 ---
 
