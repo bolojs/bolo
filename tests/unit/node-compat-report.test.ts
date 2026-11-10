@@ -73,4 +73,24 @@ describe("toNodeCompatReport", () => {
     });
     expect(buffer.tests[1].error).toBe("exit code 1");
   });
+
+  it("skips data: URL location lines from container crashes", () => {
+    const report = toNodeCompatReport(
+      [
+        {
+          module: "m",
+          results: [
+            {
+              file: "test/parallel/test-x.js",
+              status: "fail",
+              exitCode: 1,
+              output: `data:text/javascript,${"x".repeat(1000)}:3:1\nUncaught TypeError: boom\nNode.js v22.0.0`,
+            },
+          ],
+        },
+      ],
+      { nodeVersion: "22.0.0" },
+    );
+    expect(report.modules[0].tests[0].error).toBe("Uncaught TypeError: boom");
+  });
 });

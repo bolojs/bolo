@@ -8,6 +8,7 @@ import {
   extractInstallSpecs,
   PackageMatrixRunner,
   rewriteEsmImports,
+  tail,
   type PackageMatrix,
 } from "../../apps/compat-harness/src/package-runner.ts";
 import type { CompatHarness } from "../../apps/compat-harness/src/main.ts";
@@ -300,6 +301,30 @@ describe("buildProbeSource", () => {
     });
     expect(out).toContain("import swc from '@swc/wasm-web';");
     expect(out).not.toContain("esm.sh");
+  });
+});
+
+describe("tail", () => {
+  it("returns short output verbatim", () => {
+    expect(tail("some error\n")).toBe("some error");
+  });
+
+  it("elides the giant data: URL frame a container crash prints", () => {
+    const url = `data:text/javascript,${"x".repeat(2000)}`;
+    const output = `TypeError: boom\n    at ${url}:10:5\nNode.js v22.0.0`;
+    const result = tail(output);
+    expect(result).toContain("TypeError: boom");
+    expect(result).toContain("chars elided");
+    expect(result).toContain("Node.js v22.0.0");
+    expect(result).not.toContain("x".repeat(500));
+  });
+
+  it("keeps both ends of long output so the head error survives", () => {
+    const output = `Error: first\n${"filler\n".repeat(200)}last line`;
+    const result = tail(output);
+    expect(result.length).toBeLessThanOrEqual(520);
+    expect(result).toContain("Error: first");
+    expect(result).toContain("last line");
   });
 });
 

@@ -278,7 +278,23 @@ export class PackageMatrixRunner {
   }
 }
 
-const tail = (output: string): string => {
-  const trimmed = output.trim();
-  return trimmed.length > 500 ? `…${trimmed.slice(-500)}` : trimmed;
+const MAX_ERROR_LENGTH = 500;
+const MAX_LINE_LENGTH = 300;
+
+// Uncaught crashes in the container print `at data:text/javascript,<encoded
+// bundle>:line:col` frames — a single multi-KB line that pushes the real
+// error out of a plain tail window (this is why site knownIssues used to show
+// URL-encoded probe sources). Elide overlong lines first, then keep both ends
+// of what remains: Node puts `ErrorName: message` at the head and
+// `Node.js vX` / assertion detail at the tail.
+const elideLine = (line: string): string =>
+  line.length > MAX_LINE_LENGTH
+    ? `${line.slice(0, 120)}… <${line.length - 120} chars elided>`
+    : line;
+
+export const tail = (output: string): string => {
+  const cleaned = output.trim().split("\n").map(elideLine).join("\n");
+  if (cleaned.length <= MAX_ERROR_LENGTH) return cleaned;
+  const half = Math.floor((MAX_ERROR_LENGTH - 20) / 2);
+  return `${cleaned.slice(0, half)}\n…\n${cleaned.slice(-half)}`;
 };
