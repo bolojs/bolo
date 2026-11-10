@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/node-runtime-shims",
-  "version": "0.3.0-rc.0",
+  "version": "0.3.0",
   "description": "node:* to VfsBus/ServiceWorker bridges (fs, http createServer, net, child_process) for bolo containers.",
   "type": "module",
   "main": "./dist/index.js",
