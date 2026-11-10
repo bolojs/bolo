@@ -107,7 +107,12 @@ export const createLiveShimRegistry = (
     zlib: nodeWebShims.zlib,
     constants: nodeWebShims.constants,
     perf_hooks: nodeWebShims.perf_hooks,
-    timers: nodeWebShims.timers,
+    // Per-registry copy, not the module-level unenv singleton: the process
+    // worker patches this object with its loop-backed tracked timers via
+    // `Object.assign(shims.timers, trackedTimers)` (node-process-worker.ts).
+    // Assigning onto the shared singleton would leak one process's timers
+    // into every other container in this realm (last-process-wins).
+    timers: { ...nodeWebShims.timers },
     "timers/promises": nodeWebShims.timers_promises,
     punycode: nodeWebShims.punycode,
     diagnostics_channel: nodeWebShims.diagnostics_channel,
@@ -123,6 +128,22 @@ export const createLiveShimRegistry = (
     argv: options.argv,
     onStdout: options.onStdout,
     onStderr: options.onStderr,
+    // `process.getBuiltinModule("fs/promises")` and friends: try the
+    // registry key first ("timers/promises" is a real key), then walk the
+    // "<top>/<sub>" path off the top-level shim ("fs/promises" → fs.promises,
+    // "path/posix" → path.posix), falling back to the top-level shim —
+    // closest analogue of Node's builtin-module table.
+    getBuiltinModule: (name) => {
+      const bare = name.startsWith("node:") ? name.slice("node:".length) : name;
+      if (registry[bare] !== undefined) return registry[bare];
+      const [top, ...sub] = bare.split("/");
+      let mod = registry[top] as Record<string, unknown> | undefined;
+      for (const key of sub) {
+        mod = mod?.[key] as Record<string, unknown> | undefined;
+        if (mod === undefined) return registry[top];
+      }
+      return mod;
+    },
   }) as ProcessShim;
 
   registry.process = processShim;

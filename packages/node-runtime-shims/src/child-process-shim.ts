@@ -124,15 +124,34 @@ class ChildProcessImpl extends EventEmitter implements ChildProcess {
   readonly stderr: StdioReadable = new StdioReadable();
   readonly pid: number | undefined = undefined;
   exitCode: number | null = null;
+  signalCode: string | null = null;
   killed = false;
+  connected = false;
+  /** argv as passed to the OS-level spawn — the dispatched command itself. */
+  spawnfile = "";
+  spawnargs: readonly string[] = [];
+  /** Node exposes stdio as [stdin, stdout, stderr, ...extra fds]. */
+  get stdio() {
+    return [this.stdin, this.stdout, this.stderr] as const;
+  }
+  // ref()/unref() are real hold-process-open handles in Node; here liveness is
+  // owned by the process worker's handle table, so they're no-ops returning
+  // `this` like Node's ChildProcess does.
+  ref(): this {
+    return this;
+  }
+  unref(): this {
+    return this;
+  }
 
   constructor(stdin?: InstanceType<typeof Writable>) {
     super();
     this.stdin = stdin ?? new StdinWritable();
   }
 
-  kill(): boolean {
+  kill(signal?: string | number): boolean {
     this.killed = true;
+    this.signalCode = typeof signal === "string" ? signal : "SIGTERM";
     return true;
   }
 }
@@ -195,6 +214,7 @@ class WorkerChildProcessImpl extends ChildProcessImpl {
 
   override kill(signal?: string | number): boolean {
     this.killed = true;
+    this.signalCode = typeof signal === "string" ? signal : "SIGTERM";
     this.worker.terminate();
     this.stdout.end();
     this.stderr.end();
@@ -212,6 +232,8 @@ const runChild = (
   shell?: ShellService,
 ): ChildProcessImpl => {
   const child = new ChildProcessImpl();
+  child.spawnfile = command;
+  child.spawnargs = [command, ...args];
 
   (async () => {
     let result: { stdout: string; stderr: string; exitCode: number };
@@ -264,7 +286,10 @@ export const createChildProcessShim = (
     const workerArgs = args.slice(1);
     const worker = createWorker(scriptPath, workerArgs, envFrom(options), cwdFrom(options));
     if (!worker) return undefined;
-    return new WorkerChildProcessImpl(worker);
+    const child = new WorkerChildProcessImpl(worker);
+    child.spawnfile = command;
+    child.spawnargs = [command, ...args];
+    return child;
   };
 
   const spawn = (
@@ -288,7 +313,10 @@ export const createChildProcessShim = (
     const forkOptions = args && !Array.isArray(args) ? args : options;
     const worker = createWorker(modulePath, argv, envFrom(forkOptions), cwdFrom(forkOptions));
     if (!worker) throw new Error(`createWorker returned no worker for ${modulePath}`);
-    return new WorkerChildProcessImpl(worker);
+    const child = new WorkerChildProcessImpl(worker);
+    child.spawnfile = "node";
+    child.spawnargs = ["node", modulePath, ...argv];
+    return child;
   };
 
   const exec = (command: string, options?: any, callback?: any) => {
@@ -314,7 +342,54 @@ export const createChildProcessShim = (
     return child;
   };
 
+  /**
+   * `execFile(file[, args][, opts][, cb])` — same dispatch as `exec` but takes
+   * the executable and its argument vector separately (no shell splitting).
+   * globby/del import this named export, so it must exist for the bundle to
+   * link even where callers only reach it on fallback paths.
+   */
+  const execFile = (
+    file: string,
+    argsOrOptions?: string[] | Record<string, unknown> | ((...cbArgs: any[]) => void),
+    optionsOrCallback?: Record<string, unknown> | ((...cbArgs: any[]) => void),
+    callback?: (...cbArgs: any[]) => void,
+  ): ChildProcess => {
+    const argv = Array.isArray(argsOrOptions) ? argsOrOptions : [];
+    const cb = [argsOrOptions, optionsOrCallback, callback].find(
+      (arg) => typeof arg === "function",
+    ) as ((...cbArgs: any[]) => void) | undefined;
+    const options = [argsOrOptions, optionsOrCallback].find(
+      (arg) => typeof arg === "object" && arg !== null,
+    ) as Record<string, unknown> | undefined;
+    const child = spawn(file, argv, options);
+
+    if (cb) {
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (chunk: Buffer) => {
+        stdout += chunk.toString();
+      });
+      child.stderr.on("data", (chunk: Buffer) => {
+        stderr += chunk.toString();
+      });
+      child.on("close", (code: number) => {
+        const error =
+          code === 0
+            ? null
+            : Object.assign(new Error(`Command failed: ${file}\n${stderr}`), { code });
+        cb(error, stdout, stderr);
+      });
+      child.on("error", (error: Error) => cb(error, "", ""));
+    }
+
+    return child;
+  };
+
   const execSync = (): never => {
+    throw new Error(SYNC_NOT_SUPPORTED);
+  };
+
+  const execFileSync = (): never => {
     throw new Error(SYNC_NOT_SUPPORTED);
   };
 
@@ -322,7 +397,16 @@ export const createChildProcessShim = (
     throw new Error(SYNC_NOT_SUPPORTED);
   };
 
-  return { spawn, exec, fork, execSync, spawnSync };
+  return {
+    spawn,
+    exec,
+    execFile,
+    fork,
+    execSync,
+    execFileSync,
+    spawnSync,
+    ChildProcess: ChildProcessImpl,
+  };
 };
 
 const envFrom = (options?: Record<string, unknown>): Record<string, string> | undefined => {
@@ -344,10 +428,17 @@ export interface ChildProcess {
   readonly stdin: InstanceType<typeof Writable>;
   readonly stdout: InstanceType<typeof Readable>;
   readonly stderr: InstanceType<typeof Readable>;
+  readonly stdio: readonly unknown[];
   readonly pid: number | undefined;
+  readonly spawnfile: string;
+  readonly spawnargs: readonly string[];
   exitCode: number | null;
+  signalCode: string | null;
   killed: boolean;
+  connected: boolean;
   kill(signal?: string | number): boolean;
+  ref(): this;
+  unref(): this;
   send?(message: unknown): boolean;
   disconnect?: () => void;
   on(event: string, handler: (...args: any[]) => void): this;

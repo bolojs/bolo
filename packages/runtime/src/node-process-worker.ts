@@ -112,7 +112,11 @@ const handleUncaught = (err: unknown): boolean => {
     finish(err.code);
     return true;
   }
-  if (processShim && processShim.listenerCount("uncaughtException") > 0) {
+  if (
+    processShim &&
+    (processShim.listenerCount("uncaughtException") > 0 ||
+      processShim.hasUncaughtExceptionCaptureCallback())
+  ) {
     processShim.emit("uncaughtException", err, "uncaughtException");
     return true;
   }

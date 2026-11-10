@@ -14,9 +14,10 @@ import { fcParams } from "../../../tests/unit/property/fc-config.ts";
  * (threw-ness, entries, stat flags, contents) must agree, and at the end of
  * each sequence the whole trees must be identical.
  *
- * The fs shim exposes no appendFile/rename — those two commands drive the
- * same backing layer directly (vfs.hot.appendFileSync, vfs.rename), which is
- * still inside the SUT (VfsBus surfaced through createFsShim).
+ * append/rename drive the shim's own appendFile/rename surface (memfs-backed).
+ * Rename targets that already exist stay filtered out: memfs performs
+ * cross-type renames (file↔dir) where node throws EISDIR/ENOTDIR — recorded
+ * in tests/unit/regressions/vfs-fs-shim-divergences.
  */
 
 interface Model {
@@ -103,11 +104,9 @@ class AppendFileCommand implements fc.AsyncCommand<Model, Real> {
     readonly path: string,
     readonly data: string,
   ) {}
-  // The shim has no appendFile — vfs.hot.appendFileSync is the exact layer a
-  // real appendFile shim would delegate to.
   check = (m: Model): boolean => !m.dirs.has(this.path);
   run = async (m: Model, r: Real): Promise<void> => {
-    const shimThrew = await threw(() => r.vfs.hot.appendFileSync(this.path, this.data));
+    const shimThrew = await threw(() => r.shim.appendFileSync(this.path, this.data));
     const nodeThrew = await threw(() =>
       nodeFs.appendFileSync(realPath(r.tmp, this.path), this.data),
     );
@@ -158,16 +157,16 @@ class RenameCommand implements fc.AsyncCommand<Model, Real> {
     readonly to: string,
   ) {}
   check = (m: Model): boolean =>
-    // VfsBus.rename refuses to overwrite an existing target (EEXIST) where
-    // node:fs.rename replaces files — see regression file. Renaming a dir
-    // into its own subtree is also excluded (EINVAL on both, but error codes
-    // differ in kind).
+    // Existing targets stay out: memfs rename performs cross-type renames
+    // (file↔dir) where node throws EISDIR/ENOTDIR — see regression file.
+    // Renaming a dir into its own subtree is also excluded (EINVAL on both,
+    // but error codes differ in kind).
     this.from !== this.to &&
     !m.files.has(this.to) &&
     !m.dirs.has(this.to) &&
     !this.to.startsWith(`${this.from}/`);
   run = async (m: Model, r: Real): Promise<void> => {
-    const shimThrew = await threw(() => r.vfs.rename(this.from, this.to));
+    const shimThrew = await threw(() => r.shim.renameSync(this.from, this.to));
     const nodeThrew = await threw(() =>
       nodeFs.renameSync(realPath(r.tmp, this.from), realPath(r.tmp, this.to)),
     );

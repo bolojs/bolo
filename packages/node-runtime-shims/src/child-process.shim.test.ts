@@ -124,4 +124,88 @@ describe("child_process shim", () => {
     expect(() => shim.execSync()).toThrow(/not supported/);
     expect(() => shim.spawnSync()).toThrow(/not supported/);
   });
+
+  it("execFile dispatches file + argv and reports stdout via callback", async () => {
+    const calls: Array<{ cmd: string; args: string[] }> = [];
+    const registry = {
+      dispatch: async (cmd: string, args: string[]) => {
+        calls.push({ cmd, args });
+        return { stdout: "listed", stderr: "", exitCode: 0 };
+      },
+    };
+    const shim = createChildProcessShim(registry);
+
+    const result = await new Promise<{ error: Error | null; stdout: string; stderr: string }>(
+      (resolve) => {
+        shim.execFile(
+          "tool",
+          ["--flag", "x"],
+          (error: Error | null, stdout: string, stderr: string) =>
+            resolve({ error, stdout, stderr }),
+        );
+      },
+    );
+
+    expect(calls).toEqual([{ cmd: "tool", args: ["--flag", "x"] }]);
+    expect(result.error).toBeNull();
+    expect(result.stdout).toBe("listed");
+    expect(result.stderr).toBe("");
+  });
+
+  it("execFile callback receives an error with code on non-zero exit", async () => {
+    const registry = {
+      dispatch: async () => ({ stdout: "", stderr: "nope", exitCode: 2 }),
+    };
+    const shim = createChildProcessShim(registry);
+
+    const result = await new Promise<{ error: (Error & { code?: number }) | null }>((resolve) => {
+      shim.execFile("fail", [], (error: Error & { code?: number }) => resolve({ error }));
+    });
+
+    expect(result.error).toBeInstanceOf(Error);
+    expect(result.error?.code).toBe(2);
+  });
+
+  it("execFileSync throws the same unsupported-environment error", () => {
+    const shim = createChildProcessShim();
+    expect(() => shim.execFileSync()).toThrow(/not supported/);
+  });
+
+  it("exports every named key Node's child_process exposes (globby/del link check)", () => {
+    const shim = createChildProcessShim();
+    for (const name of [
+      "spawn",
+      "exec",
+      "execFile",
+      "fork",
+      "execSync",
+      "execFileSync",
+      "spawnSync",
+      "ChildProcess",
+    ]) {
+      expect(typeof (shim as Record<string, unknown>)[name], `child_process.${name}`).toBe(
+        "function",
+      );
+    }
+  });
+
+  it("spawned children carry Node's spawn metadata fields", async () => {
+    const registry = {
+      dispatch: async () => ({ stdout: "", stderr: "", exitCode: 0 }),
+    };
+    const shim = createChildProcessShim(registry);
+    const child = shim.spawn("tool", ["a", "b"]) as unknown as Record<string, unknown>;
+
+    expect(child.spawnfile).toBe("tool");
+    expect(child.spawnargs).toEqual(["tool", "a", "b"]);
+    expect(child.signalCode).toBeNull();
+    expect(Array.isArray(child.stdio)).toBe(true);
+    expect((child.stdio as unknown[]).length).toBe(3);
+    expect(typeof child.ref).toBe("function");
+    expect(typeof child.unref).toBe("function");
+
+    (child.kill as (signal?: string) => boolean)("SIGKILL");
+    expect(child.killed).toBe(true);
+    expect(child.signalCode).toBe("SIGKILL");
+  });
 });
