@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/fs",
-  "version": "0.3.0-rc.0",
+  "version": "0.3.0",
   "description": "Single-owner observable virtual filesystem (memfs + OPFS) for bolo containers.",
   "type": "module",
   "main": "./dist/index.js",
