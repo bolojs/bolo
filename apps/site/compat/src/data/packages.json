@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-11-09T10:23:10.434Z",
+    "generatedAt": "2026-11-10T21:47:51.418Z",
     "source": "apps/site/landing/public/results",
     "validated": true
   },
@@ -249,12 +249,12 @@
           "Class: HTTP client"
         ],
         "knownIssues": [
-          "B%0A%09__result%20%3D%20await%20(typeof%20import_undici.request%20%3D%3D%3D%20%22function%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D10:28316:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: deep CJS interop + stream/http shim gaps."
         ],
         "links": [
           "https://www.npmjs.com/package/undici"
         ],
-        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 476.1599999666214,\n  \"error\": \"B%0A%09__result%20%3D%20await%20(typeof%20import_undici.request%20%3D%3D%3D%20%22function%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D10:28316:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 476.1599999666214,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: deep CJS interop + stream/http shim gaps.\"\n}"
       }
     },
     {
@@ -477,12 +477,12 @@
           "Class: File system"
         ],
         "knownIssues": [
-          "st%20file%20%3D%20%22%2Ftmp%2Fharness-fs-extra.txt%22%3B%0A%09await%20import_lib.default.outputFile(file%2C%20%22ok%22)%3B%0A%09if%20(await%20import_lib.default.readFile(file%2C%20%22utf8%22)%20!%3D%3D%20%22ok%22)%20throw%20new%20Error(%22content%20mismatch%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D11:2800:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: fs shim breadth (missing methods such as realpathSync used by outputFile/mkdirp chain)."
         ],
         "links": [
           "https://www.npmjs.com/package/fs-extra"
         ],
-        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 626.5899999141693,\n  \"error\": \"st%20file%20%3D%20%22%2Ftmp%2Fharness-fs-extra.txt%22%3B%0A%09await%20import_lib.default.outputFile(file%2C%20%22ok%22)%3B%0A%09if%20(await%20import_lib.default.readFile(file%2C%20%22utf8%22)%20!%3D%3D%20%22ok%22)%20throw%20new%20Error(%22content%20mismatch%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D11:2800:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 626.5899999141693,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: fs shim breadth (missing methods such as realpathSync used by outputFile/mkdirp chain).\"\n}"
       }
     },
     {
@@ -799,12 +799,12 @@
           "Class: File system"
         ],
         "knownIssues": [
-          "0%7B%0A%09const%20vol%20%3D%20new%20import_lib.Volume()%3B%0A%09const%20fs%20%3D%20(0%2C%20import_lib.createFsFromVolume)(vol)%3B%0A%09fs.writeFileSync(%22%2Fa%22%2C%20%22x%22)%3B%0A%09if%20(fs.readFileSync(%22%2Fa%22%2C%20%22utf8%22)%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22memfs%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D54:10897:5\n\nNode.js v22.0.0"
+          "Result carried over from an interrupted run (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)); needs a re-run."
         ],
         "links": [
           "https://www.npmjs.com/package/memfs"
         ],
-        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"skip\",\n  \"duration\": 2118.935000061989,\n  \"error\": \"0%7B%0A%09const%20vol%20%3D%20new%20import_lib.Volume()%3B%0A%09const%20fs%20%3D%20(0%2C%20import_lib.createFsFromVolume)(vol)%3B%0A%09fs.writeFileSync(%22%2Fa%22%2C%20%22x%22)%3B%0A%09if%20(fs.readFileSync(%22%2Fa%22%2C%20%22utf8%22)%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22memfs%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D54:10897:5\\n\\nNode.js v22.0.0\"\n}"
+        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"skip\",\n  \"duration\": 2118.935000061989,\n  \"error\": \"Result carried over from an interrupted run (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)); needs a re-run.\"\n}"
       }
     },
     {
@@ -2660,12 +2660,12 @@
           "Class: Crypto"
         ],
         "knownIssues": [
-          "%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20import_bcrypt.default.hashSync(%22abc%22%2C%2010)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D17:702:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-pre-gyp); pure-JS fallback path not reached. Needs nativeAddonLoader or a WASM build."
         ],
         "links": [
           "https://www.npmjs.com/package/bcrypt"
         ],
-        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 559.2699999809265,\n  \"error\": \"%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20import_bcrypt.default.hashSync(%22abc%22%2C%2010)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D17:702:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 559.2699999809265,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-pre-gyp); pure-JS fallback path not reached. Needs nativeAddonLoader or a WASM build.\"\n}"
       }
     },
     {
@@ -2706,12 +2706,12 @@
           "Class: Crypto"
         ],
         "knownIssues": [
-          "t%20__result%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20await%20import_argon2.hash(%22abc%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D18:917:5\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-gyp); the npm package ships no WASM build (argon2-browser is a separate package). Needs nativeAddonLoader."
         ],
         "links": [
           "https://www.npmjs.com/package/argon2"
         ],
-        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 756.1750000715256,\n  \"error\": \"t%20__result%3B%0Atry%20%7B%0A%09__result%20%3D%20await%20await%20import_argon2.hash(%22abc%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e%20instanceof%20Error%20%3F%20e.message%20%3A%20String(e))%3B%0A%09process.exit(1)%3B%0A%7D%0Aif%20(!__result)%20%7B%0A%09console.error(%22probe%20returned%20a%20falsy%20value%22)%3B%0A%09process.exit(1)%3B%0A%7D%0Aconsole.log(%22PASS%22)%3B%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D18:917:5\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 756.1750000715256,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-gyp); the npm package ships no WASM build (argon2-browser is a separate package). Needs nativeAddonLoader.\"\n}"
       }
     },
     {
@@ -2886,12 +2886,12 @@
           "Class: Crypto"
         ],
         "knownIssues": [
-          "60()%3B%0A%09%09return%20new%20Hash(sha(alg))%3B%0A%09%7D%3B%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20((0%2C%20import_browser.default)(%22sha256%22).update(%22hello%22).digest(%22hex%22).length%20!%3D%3D%2064)%20throw%20new%20Error(%22create-hash%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D65:45:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented sync node:crypto primitives."
         ],
         "links": [
           "https://www.npmjs.com/package/create-hash"
         ],
-        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2977.2050000429153,\n  \"error\": \"60()%3B%0A%09%09return%20new%20Hash(sha(alg))%3B%0A%09%7D%3B%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20((0%2C%20import_browser.default)(%22sha256%22).update(%22hello%22).digest(%22hex%22).length%20!%3D%3D%2064)%20throw%20new%20Error(%22create-hash%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D65:45:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2977.2050000429153,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented sync node:crypto primitives.\"\n}"
       }
     },
     {
@@ -2976,12 +2976,12 @@
           "Class: Crypto"
         ],
         "knownIssues": [
-          "0%7B%0A%09const%20token%20%3D%20import_jsonwebtoken.default.sign(%7B%20sub%3A%20%22x%22%20%7D%2C%20%22secret%22)%3B%0A%09if%20(import_jsonwebtoken.default.verify(token%2C%20%22secret%22).sub%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22jsonwebtoken%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D67:44:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: node:crypto sign/HMAC stubs (unenv 'not implemented') used by jws."
         ],
         "links": [
           "https://www.npmjs.com/package/jsonwebtoken"
         ],
-        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2254.3300000429153,\n  \"error\": \"0%7B%0A%09const%20token%20%3D%20import_jsonwebtoken.default.sign(%7B%20sub%3A%20%22x%22%20%7D%2C%20%22secret%22)%3B%0A%09if%20(import_jsonwebtoken.default.verify(token%2C%20%22secret%22).sub%20!%3D%3D%20%22x%22)%20throw%20new%20Error(%22jsonwebtoken%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D67:44:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2254.3300000429153,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: node:crypto sign/HMAC stubs (unenv 'not implemented') used by jws.\"\n}"
       }
     },
     {
@@ -3022,12 +3022,12 @@
           "Class: Crypto"
         ],
         "knownIssues": [
-          "exports.pbkdf2Sync%20%3D%20nativePBKDF2Sync%3B%0A%09%09exports.pbkdf2%20%3D%20nativePBKDF2%3B%0A%09%7D%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20(typeof%20import_pbkdf2.default.pbkdf2Sync%20!%3D%3D%20%22function%22)%20throw%20new%20Error(%22pbkdf2%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D68:45:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented node:crypto pbkdf2."
         ],
         "links": [
           "https://www.npmjs.com/package/pbkdf2"
         ],
-        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 687.3949999809265,\n  \"error\": \"exports.pbkdf2Sync%20%3D%20nativePBKDF2Sync%3B%0A%09%09exports.pbkdf2%20%3D%20nativePBKDF2%3B%0A%09%7D%0A%7D)))()%2C%201)%3B%0Atry%20%7B%0A%09if%20(typeof%20import_pbkdf2.default.pbkdf2Sync%20!%3D%3D%20%22function%22)%20throw%20new%20Error(%22pbkdf2%20failed%22)%3B%0A%09console.log(%22PASS%22)%3B%0A%7D%20catch%20(e)%20%7B%0A%09console.error(e.message)%3B%0A%09process.exit(1)%3B%0A%7D%0A%2F%2F%23endregion%0A%0A%2F%2F%23%20bolo-run%3D68:45:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 687.3949999809265,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented node:crypto pbkdf2.\"\n}"
       }
     },
     {

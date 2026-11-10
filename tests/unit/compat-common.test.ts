@@ -14,6 +14,12 @@ const load = () => {
     fail: (m: string) => {
       throw new Error(m);
     },
+    strictEqual: (a: unknown, b: unknown) => {
+      if (a !== b) throw new Error(`${String(a)} !== ${String(b)}`);
+    },
+    match: (s: string, re: RegExp) => {
+      if (!re.test(s)) throw new Error(`${s} did not match ${re}`);
+    },
   });
   new Function("module", "require", "process", "console", commonIndexSource)(
     mod,
@@ -91,5 +97,57 @@ describe("faithful test common stub", () => {
     const { common } = load();
     expect(common.platformTimeout(100)).toBe(100);
     expect(common.platformTimeout(100n)).toBe(100n);
+  });
+
+  it("invalidArgTypeHelper formats received-value suffixes like Node", () => {
+    const { common } = load();
+    expect(common.invalidArgTypeHelper(null)).toBe(" Received null");
+    expect(common.invalidArgTypeHelper(undefined)).toBe(" Received undefined");
+    function named() {}
+    expect(common.invalidArgTypeHelper(named)).toBe(" Received function named");
+    expect(common.invalidArgTypeHelper(new Date())).toBe(" Received an instance of Date");
+    expect(common.invalidArgTypeHelper(5)).toBe(" Received type number (5)");
+    // The unit stub has no util.inspect; the fallback renders String(v).
+    expect(common.invalidArgTypeHelper("x")).toBe(" Received type string (x)");
+  });
+
+  it("mustNotMutateObjectDeep fails on writes but allows reads", () => {
+    const { common } = load();
+    const proxied = common.mustNotMutateObjectDeep({ nested: { a: 1 } });
+    expect(proxied.nested.a).toBe(1);
+    expect(() => {
+      proxied.b = 2;
+    }).toThrow(/Expected no side effects/);
+    expect(() => {
+      proxied.nested.a = 2;
+    }).toThrow(/Expected no side effects/);
+  });
+
+  it("expectWarning registers a mustCall'd checker satisfied by matching warnings", () => {
+    const { common, proc, finish } = load();
+    common.expectWarning("DeprecationWarning", "msg", "DEP0001");
+    proc.emit("warning", { name: "DeprecationWarning", message: "msg", code: "DEP0001" });
+    expect(finish()).toBe(0);
+  });
+
+  it("expectWarning fails at exit when the warning never fires", () => {
+    const { common, finish } = load();
+    common.expectWarning("DeprecationWarning", "msg", "DEP0001");
+    expect(finish()).toBe(1);
+  });
+
+  it("printSkipMessage emits a TAP skip line without exiting", () => {
+    const { common, logs } = load();
+    common.printSkipMessage("why");
+    expect(logs).toEqual(["1..0 # Skipped: why"]);
+  });
+
+  it("exposes the breadth helpers tests destructure", () => {
+    const { common } = load();
+    expect(common.pwdCommand).toEqual(["pwd", []]);
+    expect(common.isDumbTerminal).toBe(false);
+    expect(common.hasFipsCrypto).toBe(false);
+    expect(typeof common.spawnPromisified).toBe("function");
+    expect(typeof common.skipIfDumbTerminal).toBe("function");
   });
 });

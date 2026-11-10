@@ -6,6 +6,16 @@
 // false passes (see .agents/plans/2026-11-07-release-mechanics-and-verification.md).
 export const commonIndexSource = String.raw`'use strict';
 const assert = require('assert');
+// util.inspect is partial in the web shim; degrade to String() rather than
+// letting error-formatting helpers throw TypeErrors of their own.
+const utilInspect = (() => {
+  try {
+    const { inspect } = require('util');
+    return typeof inspect === 'function' ? inspect : (v) => String(v);
+  } catch {
+    return (v) => String(v);
+  }
+})();
 
 const noop = () => {};
 const mustCallChecks = [];
@@ -82,6 +92,154 @@ const isWindows = process.platform === 'win32';
 const isAIX = process.platform === 'aix';
 const isIBMi = process.platform === 'os400';
 
+// The helpers below mirror Node's test/common verbatim where the semantics are
+// implementable in a browser container.
+
+const _mustNotMutateObjectDeepProxies = new WeakMap();
+function mustNotMutateObjectDeep(original) {
+  if (original === null || typeof original !== 'object') {
+    return original;
+  }
+  const cachedProxy = _mustNotMutateObjectDeepProxies.get(original);
+  if (cachedProxy) {
+    return cachedProxy;
+  }
+  const handler = {
+    __proto__: null,
+    defineProperty(target, property, descriptor) {
+      assert.fail('Expected no side effects, got ' + utilInspect(property) + ' defined');
+    },
+    deleteProperty(target, property) {
+      assert.fail('Expected no side effects, got ' + utilInspect(property) + ' deleted');
+    },
+    get(target, prop, receiver) {
+      return mustNotMutateObjectDeep(Reflect.get(target, prop, receiver));
+    },
+    preventExtensions(target) {
+      assert.fail('Expected no side effects, got extensions prevented on ' + utilInspect(target));
+    },
+    set(target, property, value, receiver) {
+      assert.fail('Expected no side effects, got ' + utilInspect(value) +
+                  ' assigned to ' + utilInspect(property));
+    },
+    setPrototypeOf(target, prototype) {
+      assert.fail('Expected no side effects, got set prototype to ' + prototype);
+    },
+  };
+  const proxy = new Proxy(original, handler);
+  _mustNotMutateObjectDeepProxies.set(original, proxy);
+  return proxy;
+}
+
+function invalidArgTypeHelper(input) {
+  if (input == null) {
+    return ' Received ' + input;
+  }
+  if (typeof input === 'function') {
+    return ' Received function ' + input.name;
+  }
+  if (typeof input === 'object') {
+    if (input.constructor?.name) {
+      return ' Received an instance of ' + input.constructor.name;
+    }
+    return ' Received ' + utilInspect(input, { depth: -1 });
+  }
+
+  let inspected = utilInspect(input, { colors: false });
+  if (inspected.length > 28) { inspected = inspected.slice(inspected, 0, 25) + '...'; }
+
+  return ' Received type ' + typeof input + ' (' + inspected + ')';
+}
+
+const pwdCommand = isWindows ? ['cmd.exe', ['/d', '/c', 'cd']] : ['pwd', []];
+
+function spawnPromisified(...args) {
+  let stderr = '';
+  let stdout = '';
+  const { spawn } = require('child_process');
+  const child = spawn(...args);
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (data) => { stderr += data; });
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', (data) => { stdout += data; });
+  return new Promise((resolve, reject) => {
+    child.on('close', (code, signal) => {
+      resolve({ code, signal, stderr, stdout });
+    });
+    child.on('error', (code, signal) => {
+      reject({ code, signal, stderr, stdout });
+    });
+  });
+}
+
+let catchWarning;
+function _expectWarning(name, expected, code) {
+  if (typeof expected === 'string') {
+    expected = [[expected, code]];
+  } else if (!Array.isArray(expected)) {
+    expected = Object.entries(expected).map(([a, b]) => [b, a]);
+  } else if (expected.length !== 0 && !Array.isArray(expected[0])) {
+    expected = [[expected[0], expected[1]]];
+  }
+  if (name === 'DeprecationWarning') {
+    expected.forEach(([, code]) => assert(code, 'Missing deprecation code: ' + expected));
+  }
+  return mustCall((warning) => {
+    const expectedProperties = expected.shift();
+    if (!expectedProperties) {
+      assert.fail('Unexpected extra warning received: ' + warning);
+    }
+    const [message, code] = expectedProperties;
+    assert.strictEqual(warning.name, name);
+    if (typeof message === 'string') {
+      assert.strictEqual(warning.message, message);
+    } else {
+      assert.match(warning.message, message);
+    }
+    assert.strictEqual(warning.code, code);
+  }, expected.length);
+}
+
+function expectWarning(nameOrMap, expected, code) {
+  if (catchWarning === undefined) {
+    catchWarning = {};
+    process.on('warning', (warning) => {
+      if (!catchWarning[warning.name]) {
+        throw new TypeError(
+          '"' + warning.name + '" was triggered without being expected.\n' + utilInspect(warning),
+        );
+      }
+      catchWarning[warning.name](warning);
+    });
+  }
+  if (typeof nameOrMap === 'string') {
+    catchWarning[nameOrMap] = _expectWarning(nameOrMap, expected, code);
+  } else {
+    Object.keys(nameOrMap).forEach((name) => {
+      catchWarning[name] = _expectWarning(name, nameOrMap[name]);
+    });
+  }
+}
+
+const isDumbTerminal = !!(process.env && process.env.TERM === 'dumb');
+
+const printSkipMessage = (msg) => {
+  console.log('1..0 # Skipped: ' + msg);
+};
+
+const skipIfDumbTerminal = () => {
+  if (isDumbTerminal) skip('skipping - dumb terminal');
+};
+
+const hasFipsCrypto = (() => {
+  try {
+    const c = typeof crypto !== 'undefined' && require('crypto');
+    return !!(c && typeof c.getFips === 'function' && c.getFips());
+  } catch {
+    return false;
+  }
+})();
+
 // Mirrors Node's test/common platformTimeout for the platforms we can detect.
 const platformTimeout = (ms) => {
   const big = typeof ms === 'bigint';
@@ -127,6 +285,15 @@ module.exports = {
   skipIfInspectorDisabled: noop,
   skipIf32Bits: noop,
   getArrayBufferViews: (buf) => [buf],
+  mustNotMutateObjectDeep,
+  invalidArgTypeHelper,
+  pwdCommand,
+  spawnPromisified,
+  expectWarning,
+  isDumbTerminal,
+  skipIfDumbTerminal,
+  printSkipMessage,
+  hasFipsCrypto,
 };
 `;
 
@@ -152,3 +319,49 @@ class Countdown {
 }
 module.exports = Countdown;
 `;
+
+// CJS sources written under /test/node_modules/internal/ so Node test files
+// that `require('internal/<name>')` (the --expose-internals surface) resolve
+// through plain node_modules lookup. Only modules with a browser-faithful
+// subset are shimmed; genuinely native internals (internal/test/binding,
+// internal/linkedlist, internal/timers) stay unresolved so those tests fail
+// with honest expected-fail reasons instead of silently degraded behavior.
+export const internalShimSources: Record<string, string> = {
+  // internal/event_target: NodeEventTarget keeps its listener registry in a
+  // kEvents-keyed Map so tests can inspect it (test-events-once,
+  // test-timers-*-promisified).
+  "internal/event_target": String.raw`'use strict';
+const kEvents = Symbol('kEvents');
+
+class NodeEventTarget extends EventTarget {
+  constructor() {
+    super();
+    this[kEvents] = new Map();
+  }
+  addEventListener(type, listener, options) {
+    if (listener != null) {
+      let set = this[kEvents].get(type);
+      if (!set) {
+        set = new Set();
+        this[kEvents].set(type, set);
+      }
+      set.add(listener);
+    }
+    return super.addEventListener(type, listener, options);
+  }
+  removeEventListener(type, listener, options) {
+    const set = this[kEvents].get(type);
+    if (set) set.delete(listener);
+    return super.removeEventListener(type, listener, options);
+  }
+}
+
+module.exports = { NodeEventTarget, kEvents };
+`,
+
+  // internal/util: the manifest's tests only need promisified sleep.
+  "internal/util": String.raw`'use strict';
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+module.exports = { sleep };
+`,
+};

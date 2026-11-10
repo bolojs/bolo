@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import type { CompatHarness } from "./main.js";
-import { commonIndexSource, countdownSource } from "./test-common.js";
+import { commonIndexSource, countdownSource, internalShimSources } from "./test-common.js";
 import { assertCanariesFail, runCanaries } from "./canaries.js";
 import { classifyNodeTest } from "./classify.js";
 import expectations from "./expectations.json";
@@ -32,6 +32,10 @@ export class NodeTestRunner {
   private manifest: ModuleManifest;
   private harness: CompatHarness;
   private inlineFiles: Record<string, string>;
+  private binaryFiles: Record<string, string>;
+  private binaryCache = new Map<string, Uint8Array>();
+  /** VFS paths of vendored non-manifest files (common helpers, fixtures, test siblings). */
+  private supportTextFiles: { path: string; contents: string }[];
   private readonly testTimeoutMs: number;
   private readonly isolation: "fresh-boot" | "shared";
 
@@ -48,6 +52,21 @@ export class NodeTestRunner {
       import: "default",
       eager: true,
     }) as Record<string, string>;
+    // Binary fixtures cannot be inlined as ?raw text (UTF-8 decoding would
+    // corrupt them); Vite serves them by URL and the bytes are fetched on use.
+    this.binaryFiles = import.meta.glob(
+      "/node-tests/**/*.{png,gif,jpg,jpeg,webp,ico,bin,dat,der,p12,pfx,wasm}",
+      { query: "?url", import: "default", eager: true },
+    ) as Record<string, string>;
+
+    const manifestFiles = new Set(Object.values(manifest.modules).flatMap((m) => m.files));
+    this.supportTextFiles = Object.entries(this.inlineFiles)
+      .filter(([key]) => !(key in this.binaryFiles))
+      .map(([key, contents]) => ({ path: key.slice("/node-tests".length), contents }))
+      .filter(
+        ({ path }) =>
+          path.startsWith("/test/") && !path.endsWith(".md") && !manifestFiles.has(path.slice(1)),
+      );
   }
 
   async boot(): Promise<void> {
@@ -81,8 +100,7 @@ export class NodeTestRunner {
     if (this.isolation === "fresh-boot") await this.reboot();
     const source = await this.loadSource(file, this.manifest.nodeVersion);
     const filePath = `/${file}`;
-    await this.harness.write("/test/common/index.js", commonIndexSource);
-    await this.harness.write("/test/common/countdown.js", countdownSource);
+    await this.writeSupportFiles();
     await this.harness.write(filePath, source);
 
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -118,6 +136,42 @@ export class NodeTestRunner {
       duration,
       ...expectedFailOf(file, status),
     };
+  }
+
+  /**
+   * Materializes the test support tree the manifest's files require:
+   * `test/common` helpers, `test/fixtures`, non-manifest sibling files
+   * (e.g. test-tls-ticket.js), and the `internal/*` shim modules that resolve
+   * through plain node_modules lookup. A fresh boot wipes the VFS, so this
+   * runs once per test.
+   */
+  private async writeSupportFiles(): Promise<void> {
+    await this.harness.write("/test/common/index.js", commonIndexSource);
+    await this.harness.write("/test/common/countdown.js", countdownSource);
+    for (const { path, contents } of this.supportTextFiles) {
+      await this.harness.write(path, contents);
+    }
+    for (const [key, url] of Object.entries(this.binaryFiles)) {
+      await this.harness.write(key.slice("/node-tests".length), await this.loadBinary(url));
+    }
+    for (const specifier of Object.keys(internalShimSources)) {
+      await this.harness.write(
+        `/test/node_modules/${specifier}.js`,
+        internalShimSources[specifier],
+      );
+    }
+  }
+
+  private async loadBinary(url: string): Promise<Uint8Array> {
+    const cached = this.binaryCache.get(url);
+    if (cached) return cached;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch binary fixture ${url}: ${response.status}`);
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    this.binaryCache.set(url, bytes);
+    return bytes;
   }
 
   private async reboot(): Promise<void> {

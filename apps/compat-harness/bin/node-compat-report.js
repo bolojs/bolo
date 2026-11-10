@@ -6,11 +6,14 @@
 
 const MAX_ERROR_LENGTH = 300;
 
+// Uncaught crashes inside the container's data: module URLs print the whole
+// URL-encoded bundle as a stack-frame location line — skip those so the real
+// error line surfaces instead.
 const firstLine = (text) => {
   const line = String(text ?? "")
     .split("\n")
     .map((l) => l.trim())
-    .find((l) => l.length > 0);
+    .find((l) => l.length > 0 && !l.startsWith("data:"));
   if (!line) return undefined;
   return line.length > MAX_ERROR_LENGTH ? `${line.slice(0, MAX_ERROR_LENGTH)}...` : line;
 };
