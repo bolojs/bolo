@@ -765,6 +765,9 @@ importers:
       '@bolojs/node-web-shims':
         specifier: workspace:*
         version: link:../packages/node-web-shims
+      '@bolojs/runtime':
+        specifier: workspace:*
+        version: link:../packages/runtime
     devDependencies:
       elysia:
         specifier: ^1.4.29

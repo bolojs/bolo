@@ -1,4 +1,5 @@
 import type { SandboxBackend } from "./sandbox-backend.js";
+import type { ContainerCheckpoint } from "./checkpoint.js";
 import type { ShellService } from "./shell-service.js";
 import type { VfsBus } from "@bolojs/fs";
 import type { ReplResult } from "./repl-service.js";
@@ -24,6 +25,14 @@ export interface BootOptions {
   shellService?: ShellService;
   /** Override VfsBus construction (e.g. seed from a pre-warmed OPFS snapshot). */
   vfsFactory?: () => VfsBus;
+  /**
+   * Resume from a ContainerCheckpoint produced by container.checkpoint().
+   * Session-local trusted input only — persisting checkpoints to
+   * user-writable storage (OPFS, IndexedDB) requires integrity checks that
+   * are not implemented yet. When workdirName is also set it must equal the
+   * checkpoint's workdir; when unset, the checkpoint's workdir is used.
+   */
+  resume?: ContainerCheckpoint;
   /**
    * Absolute URL path to the ServiceWorker script (e.g. "/sw.js" for root
    * deploys, "/demo/sw.js" when mounted under a sub-path). Default: "/sw.js".
@@ -54,6 +63,7 @@ export interface BrowserContainer {
   on(event: "port", listener: PortListener): Unsubscribe;
   on(event: "server-ready", listener: ServerReadyListener): Unsubscribe;
   export(): Promise<FileSystemTree>;
+  checkpoint(): Promise<ContainerCheckpoint>;
   teardown(): Promise<void>;
   startRepl(): Promise<void>;
   evalRepl(code: string): Promise<ReplResult>;

@@ -7,6 +7,8 @@ import { RuntimeWorker } from "./runtime-worker.js";
 import { ReplService } from "./repl-service.js";
 import { IframeSandbox } from "./iframe-sandbox.js";
 import type { SandboxBackend } from "./sandbox-backend.js";
+import { supportsSnapshots } from "./sandbox-backend.js";
+import { validateCheckpoint } from "./checkpoint.js";
 import { ShellService, type ShellServiceDeps } from "./shell-service.js";
 import { createFileSystem } from "./fs-adapter.js";
 import { createEventEmitter } from "./events.js";
@@ -85,11 +87,23 @@ export class RuntimeBuilder {
       });
     }
 
-    const workdir = this.options.workdirName ?? "/home/web";
+    const resume = this.options.resume;
+    if (resume) {
+      validateCheckpoint(resume);
+      if (this.options.workdirName && this.options.workdirName !== resume.workdir) {
+        throw new Error(
+          `workdirName "${this.options.workdirName}" does not match checkpoint workdir "${resume.workdir}"`,
+        );
+      }
+    }
+    const workdir = this.options.workdirName ?? resume?.workdir ?? "/home/web";
     let vfs: VfsBus | null = null;
 
     try {
       vfs = this.createVfs();
+      if (resume) {
+        vfs.restore(resume.vfs);
+      }
       // IframeSandbox.init() snapshots the workdir via readdirSync before any
       // file is ever written to it — the dir must exist in the VFS up front.
       await vfs.mkdir(workdir, { recursive: true });
@@ -108,6 +122,15 @@ export class RuntimeBuilder {
         const iframeSandbox = this.createIframeSandbox(vfs);
         await iframeSandbox.init();
         agentSandbox = iframeSandbox;
+      }
+
+      if (resume?.sandbox) {
+        if (!agentSandbox || !supportsSnapshots(agentSandbox)) {
+          throw new Error(
+            "Checkpoint contains sandbox state but the configured backend cannot restore it",
+          );
+        }
+        await agentSandbox.restore(resume.sandbox);
       }
 
       globalThis.__vfsBus = vfs;
@@ -159,6 +182,7 @@ export class RuntimeBuilder {
         },
         workdir,
         replService,
+        sandbox: agentSandbox ?? undefined,
       };
 
       const container = this.createContainer(deps);
