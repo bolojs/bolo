@@ -28,8 +28,8 @@ export interface CompatHarness {
   /** True once `boot()` has resolved and `run()`/`exec()` are safe to call. */
   ready: boolean;
   boot(): Promise<void>;
-  /** Writes `source` to `path` under the container workdir. */
-  write(path: string, source: string): Promise<void>;
+  /** Writes `source` to `path` under the container workdir. Accepts bytes for binary fixtures. */
+  write(path: string, source: string | Uint8Array): Promise<void>;
   /** Runs `node <path>` and returns the combined stdout+stderr text, exit code, and elapsed time. */
   exec(path: string): Promise<ExecResult>;
   /**
