@@ -13,7 +13,7 @@ description: Moving from WebContainers or Nodebox to bolo.
 | Streaming output | `execute(cmd, { stdout, stderr })` callbacks | `process.output.pipeTo(writable)` | shell output stream |
 | npm install | `shell.execute('npm install')` | `.spawn('npm', ['install'])` | `shell.runCommand('npm', ['install'])` |
 | Preview URL | `SWSandbox` virtual origin via iframe | `.on('server-ready', handler)` | port forwarding |
-| Untrusted sandbox | `shell.execute('agent run file.js')` (QuickJS tier) | n/a | n/a |
+| Untrusted sandbox | `shell.execute('agent run file.js')` (iframe tier; opt-in QuickJS caps via separate repo) | n/a | n/a |
 | Trusted user code | `shell.execute('runtime run file.js')` (V8 Web Worker) | Native (full Node.js) | Native (polyfills) |
 
 ## Coming from WebContainers
@@ -57,7 +57,7 @@ await proc.exit;
   `readFile`/`writeFile`/`mkdir`/`rm`/`readdir`/`rename`/`watch` (`fs.promises`-style, no
   `stat`/`lstat`/symlinks in v1.0)
 - The lower-level primitives (`VfsBus`, `SWSandbox`, `ShellService`, `RuntimeWorker`,
-  `SandboxPool`) are still available directly for callers who want manual wiring instead
+  `IframeSandbox`) are still available directly for callers who want manual wiring instead
   of `boot()`
 
 ## Coming from Nodebox
@@ -107,4 +107,4 @@ These features exist in WebContainers or Nodebox but are not yet implemented:
 | Feature | Status |
 |---------|--------|
 | Full Node.js native package support (NAPI) | Not planned (WASM/JS only) |
-| `fork()` / `cluster` | Not planned |
+| Real POSIX `fork()` / `cluster` | Not planned (`child_process.fork()` is emulated via Worker + IPC) |

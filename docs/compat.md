@@ -56,11 +56,11 @@ depend on raw sockets, native addons, or server-only clustering run here.
 |--------|---------|--------|-------|
 | `fs`, `fs/promises` | node-runtime-shims | Real | Backed by VfsBus (memfs + OPFS): `*Sync`, async, symlink/readlink/lstat |
 | `http` (createServer) | node-runtime-shims | Real | VirtualServer via `@bolojs/sandbox` |
-| `http` (client) | node-web-shims | Stub | fetch adapter only, no `ClientRequest`/`Agent` |
-| `net` (createServer) | node-runtime-shims | Real (server) | Delegates to the http shim |
-| `child_process` | node-runtime-shims | Partial | spawn/exec via WASM, no sync variants, stdio no-op |
+| `http` (client) | node-runtime-shims | Real | `ClientRequest`/`Agent`/`request`/`get` — fetch-backed (no real socket semantics; keep-alive pooling is simulated) |
+| `net` | node-runtime-shims | Real (with relay) | `connect`/`listen` via `ByteTransport` (WS/WebTransport → self-hosted TCP relay); throws without a relay configured |
+| `child_process` | node-runtime-shims | Partial | `spawn`/`exec` via shell/WASM dispatch, `fork` via Worker + IPC; sync variants throw, stdin is a no-op for `spawn`/`exec` |
 | `fs.watch` | node-runtime-shims | Real | `VfsBus.watch()`; also backs `chokidar` |
-| `process` | node-runtime-shims | Partial | cwd/hrtime/nextTick/stdout real, exit no-op, `memoryUsage()` returns zeros |
+| `process` | node-runtime-shims | Partial | cwd/hrtime/nextTick/stdout real, `exit()` uncatchable with faithful codes, `memoryUsage()` best-effort via `performance.memory` (zeros elsewhere) |
 | `module` | node-runtime-shims | Partial | `createRequire` for builtins + `.json` only |
 | `crypto` | node-web-shims | Real | WebCrypto via unenv |
 | `stream` | node-web-shims | Real | WebStreams via unenv |
@@ -74,12 +74,19 @@ depend on raw sockets, native addons, or server-only clustering run here.
 | `querystring` | node-web-shims | Real | `parse`/`stringify`/`escape`/`unescape` via unenv |
 | `async_hooks` | node-web-shims | Real | `AsyncLocalStorage`/`AsyncResource` via unenv |
 | `diagnostics_channel`, `tty` | node-web-shims | Stub | No-op implementations |
-| Shell commands (pipes, redirection, quoting) | bolojs | Real | `just-bash` interpreter backed by VfsBus |
+| Shell commands (pipes, redirection, quoting) | @bolojs/runtime | Real | `just-bash` interpreter backed by VfsBus |
 | `wasm32-wasip1` CLI binaries | @bolojs/registry | Real | Generic WASI loader, filesystem + args/env only, no sockets/threads/fork |
 
-Gaps that rarely block mainstream packages: `http.request()`/`http.get()`/`ClientRequest`/`Agent`
-(client HTTP is `fetch`-only), `child_process` sync variants (`execSync`/`spawnSync`/`execFile`/
-`fork`), `fs.watch` firing bogus self-closing events in edge cases.
+Gaps that rarely block mainstream packages: client HTTP is fetch-backed
+(`ClientRequest`/`Agent`/`request`/`get` exist, but with no real socket semantics —
+no true keep-alive sockets, and request-body streaming is limited by fetch duplex),
+`child_process` sync variants (`execSync`/`spawnSync`/`execFile` throw), and
+`fs.watch` firing bogus self-closing events in edge cases.
+
+Note: `vm`, `dns`, and `fs/promises` shims exist (`vm-shim.ts`, `dns-shim.ts`, and
+the `promises` surface in `fs-shim.ts`) but are not yet reachable through the
+bundler's `node:` alias table — routing is tracked in
+[#90](https://github.com/bolojs/bolo/issues/90).
 
 ### T4: Pluggable / unsupported (intentional)
 
@@ -88,8 +95,9 @@ Builtins that require capabilities a browser cannot provide safely or at all. Ca
 
 - `cluster`, `dgram`, `tls`: raw sockets, TLS, clustering. `dgram` and `tls` can be back-ended via
   `createLiveShimRegistry`; `cluster` has no browser mapping.
-- `dns`, `http2`, `inspector`, `v8`, `wasi`, `test`, `repl`, `trace_events`, `domain`: not yet
-  provided, most out of scope for a browser runtime.
+- `http2`, `inspector`, `v8`, `wasi`, `test`, `repl`, `trace_events`, `domain`: not yet
+  provided, most out of scope for a browser runtime. (`dns` exists as a shim but is
+  not yet routed — see the note above.)
 - `https`: aliases the `http` shim in the browser context.
 - Native addons (NAPI) are pluggable via `nativeAddonLoader`; otherwise they throw.
 

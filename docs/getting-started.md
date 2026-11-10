@@ -10,7 +10,7 @@ you, headers included:
 
 ```
 Set up bolo (https://bolojs.dev) in this project. Read
-https://bolojs.dev/docs/llms.txt for the full docs, then install `bolojs`,
+https://bolojs.dev/docs/llms.txt for the full docs, then install `@bolojs/runtime`,
 boot a container, and configure the COOP/COEP/CORP headers it needs to run.
 ```
 
@@ -25,7 +25,7 @@ machine-readable version of these docs, meant for exactly this.
 ## Install
 
 ```bash
-npm i bolojs
+npm i @bolojs/runtime
 ```
 
 `boot()` alone is enough to get started. Sub-packages (`@bolojs/fs`, `@bolojs/sandbox`, `@bolojs/pm`,
@@ -132,9 +132,10 @@ console.log(result.stdout); // 'processed: ...'
 ```
 
 Write access to the VFS is blocked from inside the sandbox. If you need hard, C-level
-memory/CPU/stack caps instead of origin isolation, use the QuickJS-based `SandboxPool`
-from the separate [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox)
-package: it implements `SandboxBackend`, so it drops in as the same `sandbox` dep. See
+memory/CPU/stack caps instead of origin isolation, use `QuickJSSandbox` from the
+separate [`quickjs-sandbox`](https://github.com/bolojs/quickjs-sandbox)
+repo: it implements `SandboxBackend`, so it drops in as the same `sandbox` dep. See
+[ADR-0006](https://github.com/bolojs/bolo/blob/main/.agents/docs/adr/0006-sandbox-pivot-iframe.md)
 for the design rationale.
 
 ## Install packages

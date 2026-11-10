@@ -29,7 +29,7 @@ The [WinterCG](https://wintertc.org/) minimum common Web platform API standard, 
 
 Packages that import `node:*` builtins. Covered by:
 - `node-web-shims`: 22 Web-API bridges (`path`, `buffer`, `url`, `crypto`, `os`, `events`, `stream`, `util`, `async_hooks`, `querystring`, `worker_threads`, `string_decoder`, `tty`, `assert`, `zlib`, `constants`, `perf_hooks`, `timers`, `punycode`, `diagnostics_channel`, `readline`)
-- `node-runtime-shims`: 6 runtime-backed factories (`fs` → VfsBus, `child_process` → just-bash/WASM, `process` → process shim, `module` → createRequire, `http` → VirtualServer via sw-sandbox, `net` → StreamBackend: WS relay for outbound `connect`, `http.createServer` alias for inbound)
+- `node-runtime-shims`: 6 runtime-backed factories (`fs` → VfsBus, `child_process` → just-bash/WASM, `process` → process shim, `module` → createRequire, `http` → VirtualServer via sw-sandbox, `net` → `ByteTransport`: WS/WebTransport relay for outbound `connect` and inbound `listen`)
 
 ### Tier 4: Intentionally Unsupported
 
@@ -64,7 +64,7 @@ The full architecture is documented in `.agents/docs/ARCHITECTURE.md`. In brief:
 
 ### Package management
 
-- **Install strategies:** `PackageManager` supports `browser-native` (resolve from the npm registry when no lockfile is present) and `lockfile-only` (parse the existing lockfile with `@unjs/lockfile` and fetch the resolved tarball URLs). Both read npm, yarn, pnpm, and bun lockfiles and install entirely in the browser with `fetch()`.
+- **Install strategies:** `PackageManager` supports `browser-native` (resolve from the npm registry when no lockfile is present) and `lockfile-only` (parse the existing lockfile with `@bolojs/lockfile` and fetch the resolved tarball URLs). Both read npm, yarn, pnpm, and bun lockfiles and install entirely in the browser with `fetch()`.
 - **Virtual store (ADR-0008):** installs materialize a pnpm-style symlinked virtual store rather than a flat `node_modules`, so diamond dependencies (two packages needing different versions of the same dependency) resolve correctly instead of silently collapsing to one version. Peer dependencies are linked on a best-effort graph-wide semver match; `.bin` entries are linked per-package and at the root; a failing optional dependency is skipped with a warning instead of failing the install.
 - **Decompression and integrity:** Tarballs are decompressed with the native `DecompressionStream` API and integrity is verified with `crypto.subtle`.
 - **Cache:** Packument responses are cached in `.npm-cache/` inside the VFS with a 7-day TTL.
@@ -80,7 +80,7 @@ The full architecture is documented in `.agents/docs/ARCHITECTURE.md`. In brief:
 - `node:fs`, `node:crypto`, `node:stream`, `node:http`, `node:path`, `node:buffer`, `node:url`, `node:events`, `node:os`, `node:child_process`, `node:worker_threads`, `node:module`, `node:process`, `node:net`, plus 20+ more via `node-web-shims`
 - just-bash POSIX shell running against the VFS hot tier, with extra builtin commands `curl`, `nc`, `tcping`
 - Interactive REPL via `ReplService` (persistent eval context, VFS-backed history, multi-line continuation); the `node:repl` builtin module remains unsupported
-- Multi-format lockfile compatibility (npm, yarn, pnpm, bun) via `@unjs/lockfile`
+- Multi-format lockfile compatibility (npm, yarn, pnpm, bun) via `@bolojs/lockfile`
 - Virtual filesystem backed by memfs (hot) + OPFS (cold)
 - ServiceWorker-based network proxy for virtual localhost
 - WASM-based tool registry (esbuild, tsc, sass, swc)
@@ -100,7 +100,7 @@ The full architecture is documented in `.agents/docs/ARCHITECTURE.md`. In brief:
 - `dgram` / raw UDP sockets (no browser API; future: WebTransport datagrams)
 - `tls.createServer()` / `https.createServer()` (no inbound TLS without raw sockets)
 - Native `.node` addons (no native binary execution)
-- ShadowRealm / sandboxed iframe as a third isolation tier (V8 + QuickJS dual-tier is sufficient)
+- ShadowRealm as a third isolation tier (V8 worker + iframe sandbox dual-tier is sufficient)
 - `inspector` module (Chrome DevTools protocol server — requires TCP)
 - `test` runner (requires PTY + `child_process`)
 - SSR / Server Components
@@ -118,9 +118,9 @@ The full architecture is documented in `.agents/docs/ARCHITECTURE.md`. In brief:
 | Package manager | Lockfile read | CLI runnable | Strategy |
 |----------------|---------------|--------------|----------|
 | **npm** | ✅ `package-lock.json` | ✅ | browser-native |
-| **yarn v1** | ✅ `yarn.lock` | ❌ | `@unjs/lockfile` → fetch tarballs |
-| **pnpm** | ✅ `pnpm-lock.yaml` | ❌ | `@unjs/lockfile` → fetch tarballs |
-| **bun** | ✅ `bun.lock` / `bun.lockb` | ❌ | `@unjs/lockfile` → fetch tarballs |
+| **yarn v1** | ✅ `yarn.lock` | ❌ | `@bolojs/lockfile` → fetch tarballs |
+| **pnpm** | ✅ `pnpm-lock.yaml` | ❌ | `@bolojs/lockfile` → fetch tarballs |
+| **bun** | ✅ `bun.lock` / `bun.lockb` | ❌ | `@bolojs/lockfile` → fetch tarballs |
 | **JSR** | N/A | N/A | `npm.jsr.io` mirror + `jsr:` alias |
 
 **Note:** All four lockfile formats produce an identical install graph. A project with a `yarn.lock` or `pnpm-lock.yaml` works in bolo without any conversion — the lockfile is read, resolved, and tarballs are fetched directly from the `resolved:` URLs already in the lockfile.
@@ -129,13 +129,14 @@ The full architecture is documented in `.agents/docs/ARCHITECTURE.md`. In brief:
 
 The project is structured as a pnpm monorepo. Each package is independently consumable:
 
-- `@bolojs/vfs-bus` — standalone VFS (memfs + OPFS)
+- `@bolojs/fs` — standalone VFS (memfs + OPFS)
 - `@bolojs/node-web-shims` — 22 `node:*` → Web API bridges (unenv-backed, works in any project)
 - `@bolojs/node-runtime-shims` — runtime-backed shim factories
-- `@bolojs/sandbox-policy` — ACL-based sandbox policy
-- `@bolojs/wasm-registry` — WASM tool loader (esbuild, tsc, sass, swc)
-- `@bolojs/runtime` — container API (RuntimeWorker + SandboxPool)
-- **`@unjs/lockfile`** — standalone, framework-agnostic multi-format lockfile parser (published to npm, MIT, zero bolo deps)
+- `@bolojs/sandbox` — ServiceWorker network proxy for the virtual origin
+- `@bolojs/registry` — WASM tool loader and bundler (rolldown + oxc-transform)
+- `@bolojs/pm` — browser-native package installer
+- `@bolojs/runtime` — container API (`boot()`, worker-per-process `NodeProcess`, `SandboxBackend` seam)
+- **`@bolojs/lockfile`** — standalone, framework-agnostic multi-format lockfile parser (published to npm, no bolo deps)
 
 ## License
 
