@@ -125,7 +125,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          # No cache: 'pnpm' — this job never installs deps, so the post-job
+          # cache save fails with "Path Validation Error" whenever the
+          # lockfile hash changes and misses the cache.
 
       - name: Detect affected packages
         id: detect
