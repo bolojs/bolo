@@ -1,0 +1,3 @@
+# Node test fixtures ship public test-only keys (*.pem is in many
+# global gitignores — these are required by the https/tls tests).
+!test/fixtures/keys/*.pem
