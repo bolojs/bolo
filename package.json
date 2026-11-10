@@ -18,7 +18,7 @@
     "compat:refresh": "bash apps/compat-harness/bin/run-local.sh",
     "prepare": "lefthook install",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "version-packages": "changeset version && node scripts/root-changelog.mjs",
     "release": "turbo run build --filter='./packages/*' && changeset publish",
     "release:build": "turbo run build --filter='./packages/*'"
   },
