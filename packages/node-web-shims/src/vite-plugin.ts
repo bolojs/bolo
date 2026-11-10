@@ -36,6 +36,11 @@ const SHIMMED_BUILTINS = new Set([
 const UNENV_BACKED_BUILTINS = new Set(SHIMMED_BUILTINS);
 UNENV_BACKED_BUILTINS.delete("worker_threads");
 
+// Builtin subpaths with a first-party wrapper — these take precedence over
+// the UNENV_BACKED_BUILTINS fallback so e.g. `node:path/win32` gets the real
+// win32 implementation and `node:assert/strict` gets the strict facade.
+const SHIMMED_SUBPATHS = new Set(["assert/strict", "path/posix", "path/win32", "util/types"]);
+
 /**
  * Creates a Vite plugin that aliases node:* modules to browser-compatible shims.
  *
@@ -55,7 +60,7 @@ export const nodeWebShims = (): Plugin => {
     async resolveId(id, importer, options) {
       const bareName = id.startsWith("node:") ? id.slice("node:".length) : id;
 
-      if (SHIMMED_BUILTINS.has(bareName)) {
+      if (SHIMMED_BUILTINS.has(bareName) || SHIMMED_SUBPATHS.has(bareName)) {
         return `${pkgRoot}/dist/${bareName}.js`;
       }
 

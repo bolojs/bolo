@@ -1,0 +1,5 @@
+---
+"@bolojs/node-web-shims": patch
+---
+
+Namespace/export breadth batch: `events` shim is now the EventEmitter class itself with every module-level name (`EventEmitter`, `once`, `on`, `getEventListeners`, `setMaxListeners`, `defaultMaxListeners`, `init`, `EventEmitterAsyncResource`, …) attached as enumerable statics so the bundler's `Object.keys` re-export works; real `StringDecoder` (partial multibyte utf8/utf16le/base64); `os.EOL` configurable + `networkInterfaces`/`cpus`/`tmpdir`/`hostname` fidelity; `util.format`/`inspect` reimplemented (non-string fmt args, circular refs, `inspect.custom`) with `types` wired to the real `util/types`; `assert` argument-validation error codes (`ERR_MISSING_ARGS`/`ERR_INVALID_ARG_TYPE`) + `strict` facade; `path` replaced with a vendored port of Node's `lib/path.js` for correct posix/win32 semantics; `url` reimplemented self-contained so `parse`/`format` no longer hit the dead `node:querystring` external inside unenv. Adds `path/posix`, `path/win32`, `assert/strict`, `util/types` subpath routing to the vite plugin.

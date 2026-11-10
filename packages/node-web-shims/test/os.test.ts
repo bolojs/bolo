@@ -8,28 +8,40 @@ describe("node-web-shims: os", () => {
     expect(_nodeOs).toBeDefined();
   });
 
-  it("should export platform", () => {
+  it("exposes EOL as a configurable property like Node", () => {
     const shim = createOsShim();
-    expect(typeof shim.platform).toBe("function");
+    const desc = Object.getOwnPropertyDescriptor(shim, "EOL");
+    expect(desc?.configurable).toBe(true);
+    // The compat suite redefines EOL on the module object.
+    Object.defineProperty(shim, "EOL", { value: "\r\n" });
+    expect(shim.EOL).toBe("\r\n");
+    Object.defineProperty(shim, "EOL", {
+      enumerable: true,
+      configurable: true,
+      get: () => "\n",
+    });
+    expect(shim.EOL).toBe("\n");
   });
 
-  it("should export arch", () => {
+  it("returns loopback networkInterfaces", () => {
     const shim = createOsShim();
-    expect(typeof shim.arch).toBe("function");
+    const interfaces = shim.networkInterfaces();
+    expect(interfaces).toBeTypeOf("object");
+    expect(Object.keys(interfaces).length).toBeGreaterThan(0);
   });
 
-  it("should export tmpdir", () => {
+  it("returns a non-empty cpus() list", () => {
     const shim = createOsShim();
-    expect(typeof shim.tmpdir).toBe("function");
+    const cpus = shim.cpus();
+    expect(cpus.length).toBeGreaterThan(0);
+    expect(cpus[0]).toHaveProperty("times");
   });
 
-  it("should export homedir", () => {
+  it("returns tmpdir and hostname strings", () => {
     const shim = createOsShim();
-    expect(typeof shim.homedir).toBe("function");
-  });
-
-  it("should export EOL", () => {
-    const shim = createOsShim();
-    expect(shim.EOL).toBeDefined();
+    expect(shim.tmpdir()).toBe("/tmp");
+    expect(typeof shim.hostname()).toBe("string");
+    expect(typeof shim.platform()).toBe("string");
+    expect(typeof shim.homedir()).toBe("string");
   });
 });

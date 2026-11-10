@@ -39,4 +39,39 @@ describe("node-web-shims: assert", () => {
     expect(error?.name).toBe("AssertionError");
     expect(error?.stack).toContain("AssertionError");
   });
+
+  it("AssertionError carries code ERR_ASSERTION", () => {
+    try {
+      assert.deepStrictEqual({ a: 1 }, { a: 2 });
+      expect.unreachable();
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe("ERR_ASSERTION");
+    }
+  });
+
+  it("missing arguments throw ERR_MISSING_ARGS coded errors", () => {
+    expect(() => assert.deepStrictEqual(1)).toThrowError(
+      expect.objectContaining({ code: "ERR_MISSING_ARGS" }),
+    );
+    expect(() => assert.strictEqual()).toThrowError(
+      expect.objectContaining({ code: "ERR_MISSING_ARGS" }),
+    );
+  });
+
+  it("a non-string/non-Error message throws ERR_INVALID_ARG_TYPE", () => {
+    expect(() => assert.deepStrictEqual(1, 2, {} as unknown as string)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+  });
+
+  it("assert.strict is the strict facade", () => {
+    expect(typeof assert.strict).toBe("function");
+    expect(assert.strict.strict).toBe(assert.strict);
+    expect(() => assert.strict.equal("1", 1)).toThrowError(
+      expect.objectContaining({ code: "ERR_ASSERTION" }),
+    );
+    expect(() => assert.strict.deepEqual({ a: 1 }, { a: 2 })).toThrowError(
+      expect.objectContaining({ code: "ERR_ASSERTION" }),
+    );
+  });
 });

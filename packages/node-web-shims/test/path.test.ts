@@ -8,23 +8,60 @@ describe("node-web-shims: path", () => {
     expect(_nodePath).toBeDefined();
   });
 
-  it("should export join", () => {
+  it("exposes posix and win32 as separate implementations", () => {
     const shim = createPathShim();
-    expect(typeof shim.join).toBe("function");
+    expect(shim.posix.sep).toBe("/");
+    expect(shim.win32.sep).toBe("\\");
+    expect(shim.sep).toBe("/");
+    expect(shim.delimiter).toBe(":");
+    expect(shim.win32.delimiter).toBe(";");
   });
 
-  it("should export resolve", () => {
+  it("posix does not treat backslashes as separators", () => {
     const shim = createPathShim();
-    expect(typeof shim.resolve).toBe("function");
+    // pathe got this wrong — it normalized `a\b` to `a/b`.
+    expect(shim.posix.basename("a\\b")).toBe("a\\b");
+    expect(shim.posix.dirname("a\\b")).toBe(".");
+    expect(shim.posix.normalize("a\\b")).toBe("a\\b");
   });
 
-  it("should export basename", () => {
+  it("win32 treats both slash kinds as separators", () => {
     const shim = createPathShim();
-    expect(typeof shim.basename).toBe("function");
+    expect(shim.win32.basename("aaa\\bbb")).toBe("bbb");
+    expect(shim.win32.basename("aaa/bbb")).toBe("bbb");
+    expect(shim.win32.normalize("//")).toBe("\\");
+    expect(shim.win32.isAbsolute("/")).toBe(true);
+    expect(shim.win32.isAbsolute("C:\\foo")).toBe(true);
+    expect(shim.win32.isAbsolute("foo")).toBe(false);
   });
 
-  it("should export dirname", () => {
+  it("posix edge cases match Node", () => {
     const shim = createPathShim();
-    expect(typeof shim.dirname).toBe("function");
+    expect(shim.posix.normalize("//")).toBe("/");
+    expect(shim.posix.normalize("///")).toBe("/");
+    expect(shim.posix.normalize("a//b")).toBe("a/b");
+    expect(shim.posix.basename("//a")).toBe("a");
+    expect(shim.basename("aaa/bbb", "bbb")).toBe("bbb");
+    expect(shim.basename("aaa/bbb", "bb")).toBe("b");
+    expect(shim.basename("aaa/bbb", "b")).toBe("bb");
+    expect(shim.join("a", "b")).toBe("a/b");
+    expect(shim.dirname("/a/b")).toBe("/a");
+    expect(shim.extname("file.tar.gz")).toBe(".gz");
+    expect(shim.parse("/a/b/c.txt")).toEqual({
+      root: "/",
+      dir: "/a/b",
+      base: "c.txt",
+      ext: ".txt",
+      name: "c",
+    });
+    expect(shim.format({ dir: "/a/b", base: "c.txt" })).toBe("/a/b/c.txt");
+    expect(shim.relative("/a/b/c", "/a/d")).toBe("../../d");
+  });
+
+  it("win32 join/resolve produce backslash paths", () => {
+    const shim = createPathShim();
+    expect(shim.win32.join("a", "b")).toBe("a\\b");
+    expect(shim.win32.basename("aaa\\bbb", "bbb")).toBe("bbb");
+    expect(shim.win32.extname("file.txt")).toBe(".txt");
   });
 });
