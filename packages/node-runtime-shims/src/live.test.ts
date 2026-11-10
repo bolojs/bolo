@@ -96,4 +96,46 @@ describe("createLiveShimRegistry", () => {
     expect(registry.tls).toEqual(tlsShim);
     expect(registry.worker_threads).toBe(workerThreadsShim);
   });
+
+  it("gives each registry its own timers object — patching one leaks nowhere", () => {
+    const vfs = new VfsBus();
+    const regA = createLiveShimRegistry({ vfs });
+    const regB = createLiveShimRegistry({ vfs: new VfsBus() });
+
+    const timersA = regA.timers as Record<string, unknown>;
+    const timersB = regB.timers as Record<string, unknown>;
+    expect(timersA).not.toBe(timersB);
+    // Same surface — the copy preserves every unenv export.
+    expect(Object.keys(timersA).sort()).toEqual(Object.keys(timersB).sort());
+    expect(typeof timersA.setTimeout).toBe("function");
+
+    // What the process worker does: Object.assign(shims.timers, trackedTimers).
+    const trackedSetTimeout = () => "tracked";
+    Object.assign(timersA, { setTimeout: trackedSetTimeout });
+
+    // Other containers — and the shared unenv singleton behind them — keep
+    // the original implementation (no cross-process contamination).
+    expect(timersA.setTimeout).toBe(trackedSetTimeout);
+    expect(timersB.setTimeout).not.toBe(trackedSetTimeout);
+  });
+
+  it("process.getBuiltinModule resolves builtins from the live registry", () => {
+    const vfs = new VfsBus();
+    const registry = createLiveShimRegistry({ vfs });
+    const proc = registry.process as {
+      getBuiltinModule: (name: string) => unknown;
+    };
+
+    expect(proc.getBuiltinModule("fs")).toBe(registry.fs);
+    expect(proc.getBuiltinModule("node:fs")).toBe(registry.fs);
+    expect(proc.getBuiltinModule("node:timers")).toBe(registry.timers);
+    expect(proc.getBuiltinModule("process")).toBe(registry.process);
+    // Subpath builtins: "fs/promises" → fs.promises; "timers/promises" is its
+    // own registry key.
+    expect(proc.getBuiltinModule("fs/promises")).toBe(
+      (registry.fs as { promises: unknown }).promises,
+    );
+    expect(proc.getBuiltinModule("timers/promises")).toBe(registry["timers/promises"]);
+    expect(proc.getBuiltinModule("not_a_builtin")).toBeUndefined();
+  });
 });

@@ -8,6 +8,11 @@ export interface ProcessShimOptions {
   readonly env?: Record<string, string | undefined>;
   readonly onStdout?: (data: string) => void;
   readonly onStderr?: (data: string) => void;
+  /**
+   * Resolves a `node:*` builtin name (with or without the `node:` prefix)
+   * to its live shim — the backing for `process.getBuiltinModule`.
+   */
+  readonly getBuiltinModule?: (name: string) => unknown;
 }
 
 /**
@@ -28,6 +33,58 @@ export class ProcessExit extends Error {
 
 const toText = (chunk: unknown): string =>
   typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk as ArrayBufferView);
+
+/**
+ * Node coerces every env write through ToString — `process.env.N = 42` reads
+ * back "42" (test-process-env). A Proxy over a plain backing map also keeps
+ * `delete process.env.X`, `'X' in process.env` and Object.keys/spread
+ * enumeration working with no extra traps.
+ */
+const createEnv = (initial: Record<string, string | undefined> = {}) => {
+  const backing: Record<string, string> = {};
+  for (const [key, value] of Object.entries(initial)) {
+    if (value !== undefined) backing[key] = String(value);
+  }
+  return new Proxy(backing, {
+    set: (target, key, value) => {
+      target[key as string] = String(value);
+      return true;
+    },
+  });
+};
+
+// There is no real host CPU to report; browsers mask architecture anyway.
+// UA sniffing catches the arm64 case (Apple Silicon reports "arm" in some
+// engines); everything else defaults to x64 like the wasm-era baseline.
+const detectArch = (): string => {
+  const nav = typeof navigator === "undefined" ? undefined : navigator;
+  const hint = `${nav?.userAgent ?? ""} ${nav?.platform ?? ""}`;
+  return /arm|aarch64/i.test(hint) ? "arm64" : "x64";
+};
+
+const stripNodePrefix = (name: string): string =>
+  name.startsWith("node:") ? name.slice("node:".length) : name;
+
+interface EmitWarningOptions {
+  type?: string;
+  code?: string;
+  ctor?: new (message: string) => Error;
+  detail?: string;
+}
+
+// Mirrors Node's ERR_INVALID_ARG_TYPE phrasing ("Received type string ('x')").
+const describeReceived = (value: unknown): string => {
+  if (value == null) return ` Received ${value}`;
+  if (typeof value === "function") return ` Received function ${value.name}`;
+  if (typeof value === "object") {
+    const name = (value as object).constructor?.name;
+    return name ? ` Received an instance of ${name}` : " Received [Object: null prototype]";
+  }
+  let shown = String(typeof value === "symbol" ? value.toString() : value);
+  if (typeof value === "string") shown = `'${value}'`;
+  if (typeof value === "bigint") shown = `${value}n`;
+  return ` Received type ${typeof value} (${shown})`;
+};
 
 const createStdioStream = (onWrite?: (data: string) => void) => {
   const stream = new EventEmitter() as unknown as {
@@ -92,6 +149,10 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
   );
 
   let exiting = false;
+  // Node's setUncaughtExceptionCaptureCallback: when set, it *replaces* the
+  // 'uncaughtException' emit (listeners are not called and the default crash
+  // is skipped). Wired into the emit() override below.
+  let uncaughtExceptionCapture: ((err: unknown) => void) | null = null;
 
   // nextTick queue: drained after the microtasks already queued when the first
   // tick is scheduled, and nested ticks join the same drain (Node runs the
@@ -112,13 +173,33 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
 
   const process = Object.assign(new EventEmitter(), {
     exitCode: undefined as number | undefined,
-    env: options.env ?? {},
+    env: createEnv(options.env),
     platform: "browser" as const,
+    arch: detectArch(),
     argv: options.argv ?? ["node", "/entry.js"],
     argv0: "node",
     execArgv: [] as string[],
+    // Best-effort executable path — there is no real node binary on disk,
+    // but tools read execPath for re-spawn/shebang logic.
+    execPath: "/usr/local/bin/node",
     version: "v22.0.0",
     versions: { node: "22.0.0" },
+    release: { name: "node", version: "22.0.0" },
+    features: {
+      inspector: false,
+      debug: false,
+      uv: false,
+      ipv6: false,
+      tls: false,
+      tls_alpn: false,
+      tls_sni: false,
+      tls_ocsp: false,
+      cached_builtins: true,
+    },
+    config: {
+      target_defaults: {} as Record<string, unknown>,
+      variables: {} as Record<string, unknown>,
+    },
     browser: true,
     pid: 1,
     ppid: 0,
@@ -166,6 +247,51 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     memoryUsage: Object.assign(memoryUsage, {
       rss: () => (performance as any).memory?.totalHeapSize ?? 0,
     }),
+    emitWarning: (
+      warning: string | Error,
+      optsOrType?: EmitWarningOptions | string,
+      code?: string,
+      ctor?: new (message: string) => Error,
+    ) => {
+      let type = "Warning";
+      let warnCode: string | undefined;
+      let WarnCtor = ctor;
+      let detail: string | undefined;
+      if (typeof optsOrType === "string") {
+        type = optsOrType;
+        warnCode = code;
+      } else if (optsOrType && typeof optsOrType === "object") {
+        type = optsOrType.type ?? type;
+        warnCode = optsOrType.code;
+        WarnCtor = optsOrType.ctor;
+        detail = optsOrType.detail;
+      }
+      const err =
+        warning instanceof Error
+          ? warning
+          : WarnCtor
+            ? new WarnCtor(String(warning))
+            : new Error(String(warning));
+      if (type !== "Warning" || !(warning instanceof Error)) err.name = type;
+      if (warnCode !== undefined) (err as Error & { code?: string }).code = warnCode;
+      if (detail !== undefined) (err as Error & { detail?: string }).detail = detail;
+      process.emit("warning", err);
+      // Node prints warnings to stderr by default (no --no-warnings flag here).
+      const detailSuffix = detail ? `\n${detail}` : "";
+      process.stderr.write(`(node:${process.pid}) ${type}: ${err.message}${detailSuffix}\n`);
+    },
+    setUncaughtExceptionCaptureCallback: (cb: ((err: unknown) => void) | null) => {
+      if (cb !== null && typeof cb !== "function") {
+        const err = new TypeError(
+          `The "fn" argument must be of type function or null.${describeReceived(cb)}`,
+        ) as TypeError & { code: string };
+        err.code = "ERR_INVALID_ARG_TYPE";
+        throw err;
+      }
+      uncaughtExceptionCapture = cb;
+    },
+    hasUncaughtExceptionCaptureCallback: () => uncaughtExceptionCapture !== null,
+    getBuiltinModule: (name: string): unknown => options.getBuiltinModule?.(stripNodePrefix(name)),
   });
 
   // 'exit' fires at most once, whether triggered by process.exit() or by the
@@ -176,6 +302,12 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
       if (exiting) return false;
       exiting = true;
       process._exiting = true;
+    }
+    // The capture callback replaces the 'uncaughtException' emit entirely —
+    // listeners are not invoked and the host's default crash path is skipped.
+    if (event === "uncaughtException" && uncaughtExceptionCapture) {
+      uncaughtExceptionCapture(args[0]);
+      return true;
     }
     return emit(event, ...args);
   }) as typeof process.emit;

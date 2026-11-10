@@ -56,9 +56,14 @@ describe("known VfsBus/fs-shim vs node:fs divergences", () => {
     // node mkdirSync(path,{recursive:true}) throws EEXIST on a file
   });
 
-  it.fails("[seed any] fs shim exposes appendFile and rename like node:fs", () => {
-    const shim = createFsShim(new VfsBus()) as unknown as Record<string, unknown>;
-    expect(typeof shim.appendFile).toBe("function"); // shim lacks appendFile
-    expect(typeof shim.rename).toBe("function"); // shim lacks rename
+  it.fails("[seed any] memfs rename allows cross-type targets node rejects", () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+    vfs.hot.writeFileSync("/f.txt", "x");
+    vfs.hot.mkdirSync("/d");
+    // node: EISDIR renaming a file onto a dir, ENOTDIR a dir onto a file —
+    // memfs happily performs both.
+    expect(() => shim.renameSync("/f.txt", "/d")).toThrow();
+    expect(() => shim.renameSync("/d", "/f.txt")).toThrow();
   });
 });
