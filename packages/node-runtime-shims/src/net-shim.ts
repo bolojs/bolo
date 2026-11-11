@@ -339,9 +339,19 @@ export class WebSocketTransport implements ByteTransport {
         }
       >();
 
+      // Closing a released/cancelled controller throws — `conn.onError` may
+      // destroy the socket (cancelling its reader) before we get to close.
+      const safeClose = (controller?: ReadableStreamDefaultController<Uint8Array>) => {
+        try {
+          controller?.close();
+        } catch {
+          /* already released */
+        }
+      };
+
       const cleanup = () => {
         for (const { readableController } of connections.values()) {
-          readableController.close();
+          safeClose(readableController);
         }
         connections.clear();
       };
@@ -373,7 +383,7 @@ export class WebSocketTransport implements ByteTransport {
         }
         for (const [id, conn] of connections) {
           conn.accepted.onError?.(err);
-          conn.readableController.close();
+          safeClose(conn.readableController);
           connections.delete(id);
         }
         ws.close();
@@ -401,7 +411,7 @@ export class WebSocketTransport implements ByteTransport {
           const error = err instanceof Error ? err : new Error(String(err));
           for (const [id, conn] of connections) {
             conn.accepted.onError?.(error);
-            conn.readableController.close();
+            safeClose(conn.readableController);
             connections.delete(id);
           }
           ws.close();
@@ -463,14 +473,14 @@ export class WebSocketTransport implements ByteTransport {
           onConnection(accepted);
         } else if (type === FRAME_TYPE.DATA) {
           const conn = connections.get(connectionId);
-          if (conn?.readableController) {
-            conn.readableController.enqueue(payload);
+          try {
+            conn?.readableController?.enqueue(payload);
+          } catch {
+            /* reader already released (socket destroyed) — drop the chunk */
           }
         } else if (type === FRAME_TYPE.CLOSE) {
           const conn = connections.get(connectionId);
-          if (conn?.readableController) {
-            conn.readableController.close();
-          }
+          safeClose(conn?.readableController);
           if (connections.delete(connectionId)) {
             refCount--;
             maybeClose();
@@ -481,9 +491,7 @@ export class WebSocketTransport implements ByteTransport {
           err.code = meta.code;
           emitError(connectionId, err);
           const conn = connections.get(connectionId);
-          if (conn?.readableController) {
-            conn.readableController.close();
-          }
+          safeClose(conn?.readableController);
           if (connections.delete(connectionId)) {
             refCount--;
             maybeClose();
