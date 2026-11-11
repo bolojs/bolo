@@ -97,6 +97,21 @@ const getOxc = (): Promise<typeof import("oxc-transform")> => {
   return _oxc;
 };
 
+/**
+ * Drops the cached rolldown/oxc module promises so the next `bundleEntry` /
+ * `transformScript` re-enters the lazy-load path. Recovery for a wedged
+ * bundler: `@napi-rs/wasm-runtime` can throw `Atomics.wait cannot be called
+ * in this context` inside the WASM glue, which leaves the in-flight
+ * `rolldown()` promise unsettled forever. A caller-side deadline abandons
+ * the hung call; clearing the cache then lets the next call re-import the
+ * module (CDN path) or re-drive its lazy init instead of reusing the
+ * poisoned instance.
+ */
+export const resetBundler = (): void => {
+  _rolldown = undefined;
+  _oxc = undefined;
+};
+
 const RESOLVE_EXTENSIONS = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"];
 
 // Builtins with a browser shim available somewhere in the host realm (either

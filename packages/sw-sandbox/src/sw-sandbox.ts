@@ -22,6 +22,14 @@ export type SyncHandler = (
   req: SyncRequest,
 ) => Promise<SyncResponse | undefined> | SyncResponse | undefined;
 
+/**
+ * Bound on the INIT_PORT → PORT_READY handshake. A SW that registered but
+ * never answers (wedged on install, killed by the browser) would otherwise
+ * leave `init()` pending forever — and every caller of `SWSandbox.create`
+ * hanging with it. Fifteen seconds is generous for a same-origin handshake.
+ */
+const HANDSHAKE_TIMEOUT_MS = 15_000;
+
 export class SWSandbox {
   private origin: string;
   private swPath: string;
@@ -59,9 +67,18 @@ export class SWSandbox {
     const channel = new MessageChannel();
     this.messagePort = channel.port1;
 
-    const portReady = new Promise<void>((resolve) => {
+    const portReady = new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.messagePort!.removeEventListener("message", onPortMessage);
+        reject(
+          new Error(
+            `SWSandbox: service worker did not answer INIT_PORT within ${HANDSHAKE_TIMEOUT_MS}ms`,
+          ),
+        );
+      }, HANDSHAKE_TIMEOUT_MS);
       const onPortMessage = (event: MessageEvent) => {
         if (event.data?.type === "PORT_READY") {
+          clearTimeout(timer);
           this.messagePort!.removeEventListener("message", onPortMessage);
           resolve();
         }

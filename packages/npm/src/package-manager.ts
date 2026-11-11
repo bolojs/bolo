@@ -72,6 +72,13 @@ const DEFAULT_CWD = "/home/web/app";
 
 const DEFAULT_SCRIPT_TIMEOUT_MS = 60_000;
 
+/**
+ * Bound on a single tarball fetch. A registry (or proxy) that accepts the
+ * connection but never answers would otherwise stall `install()` forever —
+ * there is no other ceiling between the resolver and extraction.
+ */
+const FETCH_TIMEOUT_MS = 30_000;
+
 // ponytail: 7-day TTL is generous; packuments rarely change and the registry
 // is the source of truth for dist-tags. Reduce if stale-version bugs appear.
 const PACKUMENT_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
@@ -432,7 +439,7 @@ export class PackageManager {
     if (!pkg.resolvedUrl) {
       throw new Error(`No resolved URL for ${pkg.name}@${pkg.version}`);
     }
-    const res = await fetch(pkg.resolvedUrl);
+    const res = await fetch(pkg.resolvedUrl, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (!res.ok) {
       throw new Error(`Failed to fetch ${pkg.resolvedUrl}: ${res.status}`);
     }
