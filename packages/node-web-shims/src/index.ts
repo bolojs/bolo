@@ -6,7 +6,21 @@ export { createUrlShim, default as url } from "./url.js";
 export { createEventsShim, default as events } from "./events.js";
 export { createOsShim, default as os } from "./os.js";
 export { createHttpShim, default as http } from "./http.js";
-export { createWorkerThreadsShim, default as worker_threads } from "./worker_threads.js";
+export {
+  createWorkerThreadsShim,
+  createHostPort,
+  ShimMessagePort,
+  ShimMessageChannel,
+  SHARE_ENV,
+  default as worker_threads,
+} from "./worker_threads.js";
+export type {
+  WorkerThreadSpawnSpec,
+  WorkerThreadHandle,
+  WorkerThreadSpawner,
+  WorkerThreadContext,
+  WorkerThreadsShimOptions,
+} from "./worker_threads.js";
 export { createUtilShim, default as util } from "./util.js";
 export { createAsyncHooksShim, default as async_hooks } from "./async_hooks.js";
 export { createQuerystringShim, default as querystring } from "./querystring.js";

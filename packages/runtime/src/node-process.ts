@@ -31,6 +31,27 @@ export interface NodeProcessDeps {
   readonly quiescenceCapMs?: number;
   /** SharedArrayBuffer size for the sync channel; 0 disables the SAB path. */
   readonly sabBytes?: number;
+  /**
+   * Spawn a worker thread / forked child as a sibling process worker.
+   * Routed to the `thread.*` ops so code inside this process can call
+   * `new Worker(...)` / `child_process.fork(...)`. Threads spawned here are
+   * terminated when this process exits.
+   */
+  readonly spawnThread?: (
+    spec: {
+      filename?: string;
+      code?: string;
+      args?: readonly string[];
+      env?: Record<string, string>;
+      cwd?: string;
+      workerData?: unknown;
+      threadId?: number;
+    },
+    onMessage: (value: unknown) => void,
+    onExit: (code: number) => void,
+    onStdout?: (data: string) => void,
+    onStderr?: (data: string) => void,
+  ) => Promise<{ post(value: unknown): void; terminate(): void }>;
 }
 
 export interface NodeProcessRunOptions {
@@ -39,6 +60,8 @@ export interface NodeProcessRunOptions {
   args?: string[];
   env?: Record<string, string>;
   cwd?: string;
+  /** Present when this process runs a worker_threads thread. */
+  thread?: { workerData?: unknown; threadId?: number };
 }
 
 export interface NodeProcessCallbacks {
@@ -62,6 +85,11 @@ export class NodeProcess {
   onStdout: ((data: string) => void) | null = null;
   onStderr: ((data: string) => void) | null = null;
   onPortEvent: ((event: string, data: { port: number; url?: string }) => void) | null = null;
+  /** Values the process posts up via `parentPort.postMessage`/`process.send`. */
+  onThreadMessage: ((value: unknown) => void) | null = null;
+
+  /** Threads this process spawned via the `thread.*` ops — killed on exit. */
+  private readonly spawnedThreads = new Set<{ terminate(): void }>();
 
   readonly exit: Promise<number>;
 
@@ -76,6 +104,27 @@ export class NodeProcess {
       sandbox: deps.sandbox,
       wasmRegistry: deps.wasmRegistry,
       shellService: deps.shellService,
+      threads: deps.spawnThread
+        ? {
+            spawn: async (spec, onMessage, onExit, onStdout, onStderr) => {
+              const handle = await deps.spawnThread!(
+                spec,
+                onMessage,
+                onExit,
+                onStdout,
+                onStderr,
+              );
+              this.spawnedThreads.add(handle);
+              return {
+                post: (v) => handle.post(v),
+                terminate: () => {
+                  this.spawnedThreads.delete(handle);
+                  handle.terminate();
+                },
+              };
+            },
+          }
+        : undefined,
     });
   }
 
@@ -126,6 +175,8 @@ export class NodeProcess {
           return this.onStderr?.(msg.data);
         case "PORT_EVENT":
           return this.onPortEvent?.(msg.event, msg.data);
+        case "THREAD_MSG":
+          return this.onThreadMessage?.(msg.data);
         case "HEARTBEAT":
           this.missedHeartbeats = 0;
           return;
@@ -148,9 +199,16 @@ export class NodeProcess {
       hasWasmRegistry: deps.wasmRegistry !== undefined,
       sab,
       quiescenceCapMs: deps.quiescenceCapMs,
+      thread: opts.thread,
     };
     worker.postMessage(run);
     this.startWatchdog();
+  }
+
+  /** Deliver a value to the process's `parentPort`/IPC (`worker.postMessage`
+   * in worker_threads terms). */
+  postToThread(value: unknown): void {
+    this.worker?.postMessage({ type: "THREAD_MSG", data: value });
   }
 
   /** Terminate the worker. Resolves exit as 1 (SIGKILL has no numeric code in
@@ -177,6 +235,14 @@ export class NodeProcess {
   private finish(code: number): void {
     if (this.exited) return;
     this.exited = true;
+    for (const handle of this.spawnedThreads) {
+      try {
+        handle.terminate();
+      } catch {
+        /* a dead thread must not block teardown */
+      }
+    }
+    this.spawnedThreads.clear();
     if (this.heartbeatTimer) clearTimeout(this.heartbeatTimer);
     this.worker?.terminate();
     this.worker = null;

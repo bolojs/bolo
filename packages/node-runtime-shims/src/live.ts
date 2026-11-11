@@ -11,6 +11,12 @@ import {
   type ShellService,
 } from "./child-process-shim.js";
 import { createProcessShim, type ProcessShim } from "./process-shim.js";
+import {
+  createWorkerThreadsBackend,
+  spawnedProcessToWorkerLike,
+  type ProcessSpawner,
+  type WorkerThreadInfo,
+} from "./worker-threads-shim.js";
 import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
 import { createVmShim } from "./vm-shim.js";
@@ -72,6 +78,14 @@ export interface LiveShimRegistryOptions {
   readonly onStderr?: (data: string) => void;
   readonly tcpRelay?: { url: string };
   readonly dohEndpoint?: string;
+  /**
+   * Spawn a bundled-code process worker — backs both `worker_threads.Worker`
+   * and `child_process.fork`/worker-spawn. Supplied by the host that can
+   * reach a real Worker (main thread: NodeProcess; process worker: rpc).
+   */
+  readonly spawnProcess?: ProcessSpawner;
+  /** Present when this registry runs INSIDE a spawned worker thread. */
+  readonly workerThread?: WorkerThreadInfo;
   // Extension points
   readonly netBackend?: (deps: BackendDeps) => StreamBackend;
   readonly dgramBackend?: DgramBackend;
@@ -100,7 +114,12 @@ export const createLiveShimRegistry = (
     util: nodeWebShims.util,
     async_hooks: nodeWebShims.async_hooks,
     querystring: nodeWebShims.querystring,
-    worker_threads: nodeWebShims.worker_threads,
+    worker_threads: createWorkerThreadsBackend({
+      spawnProcess: options.spawnProcess,
+      thread: options.workerThread,
+      onStdout: options.onStdout,
+      onStderr: options.onStderr,
+    }),
     string_decoder: nodeWebShims.string_decoder,
     tty: nodeWebShims.tty,
     assert: nodeWebShims.assert,
@@ -120,7 +139,23 @@ export const createLiveShimRegistry = (
     vm: createVmShim(),
     dns: createDnsShim({ dohEndpoint: options.dohEndpoint }),
     fs: createFsShim(options.vfs),
-    child_process: createChildProcessShim(options.wasmRegistry, options.shellService),
+    child_process: createChildProcessShim(
+      options.wasmRegistry,
+      options.shellService,
+      options.spawnProcess
+        ? {
+            createWorker: (scriptPath, args, env, cwd) => {
+              const proc = options.spawnProcess!({
+                filename: scriptPath,
+                args,
+                env,
+                cwd,
+              });
+              return proc ? spawnedProcessToWorkerLike(proc) : undefined;
+            },
+          }
+        : undefined,
+    ),
   };
 
   const processShim = createProcessShim({

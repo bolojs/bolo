@@ -69,7 +69,7 @@ depend on raw sockets, native addons, or server-only clustering run here.
 | `url` | node-web-shims | Real | URL/URLSearchParams via unenv |
 | `events` | node-web-shims | Real | EventEmitter via unenv |
 | `os` | node-web-shims | Stub | Minimal stub via unenv |
-| `worker_threads` | node-web-shims | Real | Minimal wrapper around threads.js |
+| `worker_threads` | node-web-shims + node-runtime-shims | Real | Worker-per-process: real browser `Worker` running a bundled process worker; `parentPort`/`workerData`/`MessageChannel`/`receiveMessageOnPort`, `terminate()` → real kill. `resourceLimits` accepted-not-enforced, `getHeapSnapshot` unsupported |
 | `util` | node-web-shims | Real | `promisify`/`inherits`/`types`/format via unenv |
 | `querystring` | node-web-shims | Real | `parse`/`stringify`/`escape`/`unescape` via unenv |
 | `async_hooks` | node-web-shims | Real | `AsyncLocalStorage`/`AsyncResource` via unenv |

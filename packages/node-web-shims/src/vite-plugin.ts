@@ -27,8 +27,8 @@ const SHIMMED_BUILTINS = new Set([
   "readline",
 ]);
 
-// Subset of SHIMMED_BUILTINS actually backed by unenv (worker_threads uses a
-// bespoke threads.js wrapper instead). unenv's own runtime modules sometimes
+// Subset of SHIMMED_BUILTINS actually backed by unenv (worker_threads is a
+// bespoke implementation). unenv's own runtime modules sometimes
 // import their own deep subpaths directly (e.g. `stream.mjs` imports
 // `node:stream/promises`), expecting the consumer's bundler to alias those
 // too — so any subpath of one of these is routed to unenv's own module

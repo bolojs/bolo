@@ -1,8 +1,12 @@
 import { configureBrowserLogging, getLogger } from "@bolojs/log/browser";
 import type { VfsBus } from "@bolojs/fs";
 import type { SWSandbox } from "@bolojs/sandbox";
-import { createLiveShimRegistry, ProcessExit } from "@bolojs/node-runtime-shims";
-import type { ProcessShim } from "@bolojs/node-runtime-shims";
+import {
+  createLiveShimRegistry,
+  createParentPortBridge,
+  ProcessExit,
+} from "@bolojs/node-runtime-shims";
+import type { ProcessShim, SpawnedProcess } from "@bolojs/node-runtime-shims";
 import { createRpcPeer } from "./rpc.js";
 import { createRemoteDeps } from "./remote-objects.js";
 import { createSyncCaller } from "./sync-channel.js";
@@ -43,6 +47,8 @@ export interface ProcRunMessage {
   hasWasmRegistry: boolean;
   sab?: SharedArrayBuffer;
   quiescenceCapMs?: number;
+  /** Present when this process runs a worker_threads thread. */
+  thread?: { workerData?: unknown; threadId?: number };
 }
 
 export type ProcWorkerMessage =
@@ -50,6 +56,7 @@ export type ProcWorkerMessage =
   | { type: "STDERR"; data: string }
   | { type: "EXIT"; code: number }
   | { type: "PORT_EVENT"; event: string; data: { port: number; url?: string } }
+  | { type: "THREAD_MSG"; data: unknown }
   | { type: "HEARTBEAT" };
 
 declare global {
@@ -144,6 +151,66 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
 
 const runProcess = async (msg: ProcRunMessage) => {
   const rpc = createRpcPeer((m) => post(m));
+
+  // worker_threads: a thread is a spawned process worker. `spawnProcess`
+  // asks the main thread for one over rpc (`thread.*` ops — main bundles the
+  // file, spawns the NodeProcess, and relays messages both ways). Message
+  // values cross as rpc args: structured-clone fidelity minus transferables.
+  const spawnProcess = (spec: {
+    filename?: string;
+    code?: string;
+    args?: readonly string[];
+    env?: Record<string, string>;
+    cwd?: string;
+    workerData?: unknown;
+    threadId?: number;
+  }): SpawnedProcess | undefined => {
+    let onMessage: ((v: unknown) => void) | null = null;
+    let onExit: ((c: number) => void) | null = null;
+    let onError: ((e: unknown) => void) | null = null;
+    let onStdout: ((d: string) => void) | null = null;
+    let onStderr: ((d: string) => void) | null = null;
+    const idP = rpc
+      .call<number>(
+        "thread.spawn",
+        spec,
+        (v: unknown) => onMessage?.(v),
+        (c: number) => onExit?.(c),
+        (d: string) => onStdout?.(d),
+        (d: string) => onStderr?.(d),
+      )
+      .catch((err) => {
+        onError?.(err);
+        return -1;
+      });
+    return {
+      postMessage: (v) => {
+        void idP.then((id) => id >= 0 && rpc.call("thread.send", id, v));
+      },
+      terminate: () => {
+        void idP.then((id) => id >= 0 && rpc.call("thread.terminate", id));
+      },
+      setOnStdout: (cb) => {
+        onStdout = cb;
+      },
+      setOnStderr: (cb) => {
+        onStderr = cb;
+      },
+      setOnMessage: (cb) => {
+        onMessage = cb;
+      },
+      setOnExit: (cb) => {
+        onExit = cb;
+      },
+      setOnError: (cb) => {
+        onError = cb;
+      },
+    };
+  };
+
+  const thread = msg.thread
+    ? createParentPortBridge((v) => post({ type: "THREAD_MSG", data: v }))
+    : undefined;
   const caller = createSyncCaller({
     pid: msg.pid,
     xhrUrl: msg.xhrUrl,
@@ -171,8 +238,30 @@ const runProcess = async (msg: ProcRunMessage) => {
     onStdout: (data) => post({ type: "STDOUT", data }),
     onStderr: (data) => post({ type: "STDERR", data }),
     onPortEvent: (event, data) => post({ type: "PORT_EVENT", event, data }),
+    spawnProcess,
+    workerThread: thread
+      ? {
+          workerData: msg.thread!.workerData,
+          parentPort: thread.port,
+          threadId: msg.thread!.threadId,
+        }
+      : undefined,
   });
   processShim = shims.process as ProcessShim;
+  // child_process.fork IPC: `process.send`/`process.on('message')` ride the
+  // same THREAD_MSG transport as parentPort, wrapped in IPC envelopes.
+  const ipcProcess = processShim as ProcessShim & {
+    send?: (m: unknown) => boolean;
+    disconnect?: () => void;
+  };
+  ipcProcess.send = (m: unknown) => {
+    post({ type: "THREAD_MSG", data: { type: "IPC_MESSAGE", data: m } });
+    return true;
+  };
+  ipcProcess.disconnect = () => {
+    post({ type: "THREAD_MSG", data: { type: "IPC_DISCONNECT" } });
+    processShim.emit("disconnect");
+  };
   // process.exit must be uncatchable (Node semantics): run the shim's exit
   // handlers, tell the host, then stall until the host terminates this worker.
   const shimExit = processShim.exit;
@@ -193,9 +282,16 @@ const runProcess = async (msg: ProcRunMessage) => {
     shims,
   };
 
-  // Route worker-realm rpc-* messages arriving while running.
+  // Route worker-realm rpc-* and thread/IPC messages arriving while running.
   self.addEventListener("message", (ev: MessageEvent) => {
-    rpc.handle(ev.data);
+    if (rpc.handle(ev.data)) return;
+    const msg = ev.data as { type?: string; data?: unknown } | null;
+    if (msg?.type === "THREAD_MSG") {
+      const data = msg.data as { type?: string; data?: unknown } | null;
+      if (data?.type === "IPC_MESSAGE") processShim?.emit("message", data.data);
+      else if (data?.type === "IPC_DISCONNECT") processShim?.emit("disconnect");
+      else thread?.deliver(data);
+    }
   });
 
   // Node-style event loop owned by the worker (event-loop.ts) schedules and owns

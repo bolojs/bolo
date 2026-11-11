@@ -1,99 +1,613 @@
-import { Thread } from "threads.js";
+import { createEventsShim } from "./events.js";
+
+const { EventEmitter } = createEventsShim();
 
 /**
- * Creates a node:worker_threads shim using threads.js.
+ * node:worker_threads shim.
  *
- * This provides a minimal implementation of node:worker_threads using threads.js.
- * Note: This is a simplified implementation and may not cover all worker_threads features.
+ * The default configuration runs on the "main thread" of its realm and can
+ * spawn real browser Workers for `eval` code and absolute-URL scripts through
+ * an inline bootstrap (see `WORKER_BOOTSTRAP`). Hosts that can give a spawned
+ * worker the full node shim surface (bolo's worker-per-process model: one
+ * bundled `node-process-worker` per thread) inject `spawnWorker`; hosts that
+ * ARE a spawned worker inject `context` ({ workerData, parentPort, threadId })
+ * — `createWorkerThreadsShim` then reports `isMainThread === false` and
+ * exposes the bridge `parentPort`.
  *
- * @example
- * ```ts
- * const { Worker, isMainThread, parentPort, workerData } = createWorkerThreadsShim();
- * ```
+ * Protocol between a `Worker` object and its spawned realm is deliberately
+ * thin: `postMessage` payloads cross verbatim (host envelopes are the
+ * spawner's business), `setOnExit` reports the exit code, `setOnError`
+ * reports a startup/uncaught failure. Structured-clone fidelity (MessagePort
+ * transfer, SharedArrayBuffer) is whatever the underlying transport supports.
  */
-export const createWorkerThreadsShim = () => {
-  const isMainThread = true;
-  const parentPort = null;
-  const workerData = null;
 
-  class Worker {
-    readonly _worker: any;
-    readonly _listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
+// ── Spawn seam ──────────────────────────────────────────────────────
 
-    constructor(filename: string, options?: Record<string, unknown>) {
-      this._worker = filename;
-      this._listeners.set("message", new Set());
-      this._listeners.set("error", new Set());
+export interface WorkerThreadSpawnSpec {
+  /** Path/URL the user passed to `new Worker()` (absent for `eval`). */
+  readonly filename?: string;
+  /** Source to run when `new Worker(code, { eval: true })`. */
+  readonly code?: string;
+  readonly args?: readonly string[];
+  readonly env?: Record<string, string>;
+  readonly cwd?: string;
+  readonly workerData?: unknown;
+  /** Parent-assigned id — the spawned realm reports it as its `threadId`. */
+  readonly threadId?: number;
+}
+
+export interface WorkerThreadHandle {
+  postMessage(value: unknown, transfer?: readonly Transferable[]): void;
+  terminate(): void;
+  setOnMessage(cb: ((value: unknown) => void) | null): void;
+  setOnError(cb: ((error: unknown) => void) | null): void;
+  setOnExit(cb: ((code: number) => void) | null): void;
+}
+
+export type WorkerThreadSpawner = (spec: WorkerThreadSpawnSpec) => WorkerThreadHandle | undefined;
+
+/** Present when this realm is itself a spawned worker thread. */
+export interface WorkerThreadContext {
+  readonly workerData?: unknown;
+  /** Port-like bridge to the parent (`postMessage`/`on`/`close`). */
+  readonly parentPort?: unknown;
+  readonly threadId?: number;
+}
+
+export interface WorkerThreadsShimOptions {
+  readonly spawnWorker?: WorkerThreadSpawner;
+  readonly context?: WorkerThreadContext;
+}
+
+// ── Clone / transfer guards ─────────────────────────────────────────
+
+const uncloneable = new WeakSet<object>();
+const untransferable = new WeakSet<object>();
+
+export const markAsUncloneable = (value: unknown): void => {
+  if ((typeof value !== "object" && typeof value !== "function") || value === null) {
+    throw new TypeError('The "value" argument must be an object');
+  }
+  uncloneable.add(value as object);
+};
+
+export const markAsUntransferable = (value: unknown): void => {
+  if ((typeof value !== "object" && typeof value !== "function") || value === null) {
+    throw new TypeError('The "value" argument must be an object');
+  }
+  untransferable.add(value as object);
+};
+
+export const isMarkedAsUntransferable = (value: unknown): boolean =>
+  typeof value === "object" && value !== null && untransferable.has(value as object);
+
+const assertCloneable = (value: unknown, seen = new Set<unknown>()): void => {
+  if (typeof value !== "object" || value === null || seen.has(value)) return;
+  if (uncloneable.has(value)) {
+    const err = new Error("Object could not be cloned.") as Error & { code: string };
+    err.code = "ERR_INVALID_ARG_VALUE";
+    throw err;
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    for (const item of value) assertCloneable(item, seen);
+    return;
+  }
+  if (value instanceof Uint8Array || value instanceof ArrayBuffer || value instanceof Date)
+    return;
+  if (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null) {
+    for (const item of Object.values(value)) assertCloneable(item, seen);
+  }
+};
+
+// ── MessagePort ─────────────────────────────────────────────────────
+
+/** Transport behind a `ShimMessagePort`: native MessagePort, a same-realm
+ * linked peer, or a host-provided bridge (process-worker threads). */
+interface PortBackend {
+  post(value: unknown, transfer?: readonly Transferable[]): void;
+  close(): void;
+  start?(): void;
+  /** Deliver an inbound value; set exactly once. */
+  setOnMessage(cb: ((value: unknown) => void) | null): void;
+  /** Transferable representing this port when it crosses a real boundary. */
+  readonly transferable?: Transferable;
+}
+
+const unwrapTransferable = (value: unknown): Transferable => {
+  if (value instanceof ShimMessagePort) {
+    const t = value.backend.transferable;
+    if (!t) {
+      throw new Error(
+        "MessagePort cannot be transferred: this port is not backed by a transferable " +
+          "channel endpoint (same-realm linked port or host bridge)",
+      );
     }
+    return t;
+  }
+  if (isMarkedAsUntransferable(value)) {
+    throw new Error("Value marked as untransferable cannot be transferred");
+  }
+  return value as Transferable;
+};
 
-    postMessage(message: unknown, transfer?: unknown[]): void {
-      const listeners = this._listeners.get("message");
-      if (listeners) {
-        listeners.forEach((listener) => {
-          try {
-            listener(message);
-          } catch (error) {
-            const errorListeners = this._listeners.get("error");
-            if (errorListeners) {
-              errorListeners.forEach((errorListener) => {
-                errorListener(error);
-              });
-            }
-          }
-        });
-      }
-    }
+export class ShimMessagePort extends EventEmitter {
+  /** Inbound values buffered while no 'message' listener is attached —
+   * the queue `receiveMessageOnPort` drains. */
+  private readonly queue: unknown[] = [];
+  private closed = false;
+  /** @internal */
+  readonly backend: PortBackend;
 
-    on(event: string, listener: (...args: any[]) => void): this {
-      const listeners = this._listeners.get(event) || new Set();
-      listeners.add(listener);
-      this._listeners.set(event, listeners);
-      return this;
-    }
+  /** @internal */
+  constructor(backend: PortBackend) {
+    super();
+    this.backend = backend;
+    backend.setOnMessage((value) => this.deliver(value));
+  }
 
-    once(event: string, listener: (...args: any[]) => void): this {
-      const onceListener = (...args: unknown[]) => {
-        listener(...args);
-        this.off(event, onceListener);
-      };
-      return this.on(event, onceListener);
-    }
+  private deliver(value: unknown): void {
+    if (this.closed) return;
+    // Node semantics: with 'message' listeners the port flows; without them
+    // values queue for `receiveMessageOnPort`/`start()`.
+    if (this.listenerCount("message") > 0) this.emit("message", value);
+    else this.queue.push(value);
+  }
 
-    off(event: string, listener: (...args: any[]) => void): this {
-      const listeners = this._listeners.get(event);
-      if (listeners) {
-        listeners.delete(listener);
-      }
-      return this;
-    }
-
-    terminate(): Promise<number> {
-      return Promise.resolve(0);
+  private drain(): void {
+    while (this.queue.length > 0 && this.listenerCount("message") > 0) {
+      this.emit("message", this.queue.shift());
     }
   }
 
-  const receiveMessageOnPort = (port: unknown): unknown => {
-    return undefined;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
+    const ret = super.on(event, listener);
+    if (event === "message") queueMicrotask(() => this.drain());
+    return ret;
+  }
+
+  postMessage(value: unknown, transferList?: readonly unknown[]): void {
+    if (this.closed) {
+      const err = new Error("MessagePort is closed") as Error & { code: string };
+      err.code = "ERR_CLOSED_MESSAGE_PORT";
+      throw err;
+    }
+    assertCloneable(value);
+    const transfer = (transferList ?? []).map(unwrapTransferable);
+    this.backend.post(value, transfer);
+  }
+
+  /** Dequeue one buffered message — `receiveMessageOnPort` backend. */
+  dequeue(): unknown {
+    return this.queue.length > 0 ? { message: this.queue.shift() } : undefined;
+  }
+
+  start(): void {
+    this.backend.start?.();
+    this.drain();
+  }
+
+  close(): void {
+    if (this.closed) return;
+    this.closed = true;
+    this.backend.close();
+    this.emit("close");
+  }
+
+  ref(): this {
+    return this;
+  }
+  unref(): this {
+    return this;
+  }
+  hasRef(): boolean {
+    return true;
+  }
+}
+
+const wrapNativePort = (native: MessagePort): ShimMessagePort =>
+  new ShimMessagePort({
+    transferable: native,
+    post: (value, transfer) => native.postMessage(value, { transfer: [...(transfer ?? [])] }),
+    close: () => native.close(),
+    start: () => native.start(),
+    setOnMessage: (cb) => {
+      native.onmessage = cb ? (ev: MessageEvent) => cb(ev.data) : null;
+    },
+  });
+
+const createLinkedPair = (): [ShimMessagePort, ShimMessagePort] => {
+  let a: ((v: unknown) => void) | null = null;
+  let b: ((v: unknown) => void) | null = null;
+  const port1 = new ShimMessagePort({
+    post: (v) => queueMicrotask(() => b?.(v)),
+    close: () => {},
+    setOnMessage: (cb) => {
+      a = cb;
+    },
+  });
+  const port2 = new ShimMessagePort({
+    post: (v) => queueMicrotask(() => a?.(v)),
+    close: () => {},
+    setOnMessage: (cb) => {
+      b = cb;
+    },
+  });
+  return [port1, port2];
+};
+
+const NativeMessageChannel = (
+  globalThis as { MessageChannel?: typeof MessageChannel }
+).MessageChannel;
+
+export class ShimMessageChannel {
+  readonly port1: ShimMessagePort;
+  readonly port2: ShimMessagePort;
+  constructor() {
+    if (NativeMessageChannel) {
+      const channel = new NativeMessageChannel();
+      this.port1 = wrapNativePort(channel.port1);
+      this.port2 = wrapNativePort(channel.port2);
+    } else {
+      [this.port1, this.port2] = createLinkedPair();
+    }
+  }
+}
+
+/**
+ * Host-bridge port: `post` ships parentPort.postMessage payloads to the parent
+ * realm; call `deliver` with each inbound value. Used by the process-worker
+ * host to build a thread's `parentPort`.
+ */
+export const createHostPort = (post: (value: unknown) => void) => {
+  let deliverCb: ((v: unknown) => void) | null = null;
+  const port = new ShimMessagePort({
+    post: (value) => post(value),
+    close: () => {},
+    setOnMessage: (cb) => {
+      deliverCb = cb;
+    },
+  });
+  return {
+    port,
+    deliver: (value: unknown) => deliverCb?.(value),
+  };
+};
+
+// ── Default browser-Worker spawner ─────────────────────────────────
+
+const CTRL = "__bolo_wt__";
+
+/**
+ * Inline worker bootstrap: waits for the tagged init message (workerData +
+ * code/URL), publishes `__boloWorkerThread` for any shim instance created in
+ * that realm, exposes a minimal global `parentPort`, then runs the user code.
+ * Plain (untagged) messages are forwarded to `parentPort` listeners.
+ */
+const WORKER_BOOTSTRAP = `
+const CTRL = ${JSON.stringify(CTRL)};
+const pending = [];
+let inbound = null;
+globalThis.parentPort = {
+  postMessage: (v, t) => self.postMessage(v, t && t.length ? { transfer: t } : undefined),
+  on: (_e, f) => { inbound = f; for (const m of pending.splice(0)) queueMicrotask(() => f(m)); },
+  once: (_e, f) => { inbound = f; for (const m of pending.splice(0)) queueMicrotask(() => f(m)); },
+  close: () => self.close(),
+  start: () => {},
+  ref: () => globalThis.parentPort,
+  unref: () => globalThis.parentPort,
+};
+const run = (d) => {
+  globalThis.__boloWorkerThread = { workerData: d.workerData, port: globalThis.parentPort };
+  const report = (err) => self.postMessage({ [CTRL]: "error", message: String((err && err.stack) || err) });
+  try {
+    if (d.eval) { (0, eval)(d.code); self.postMessage({ [CTRL]: "exit", code: 0 }); }
+    else { import(d.url).then(() => self.postMessage({ [CTRL]: "exit", code: 0 }), report); }
+  } catch (err) { report(err); }
+};
+self.addEventListener("message", (e) => {
+  const d = e.data;
+  if (d && d[CTRL] === "init") { run(d); return; }
+  if (inbound) inbound(d); else pending.push(d);
+});
+`;
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __boloWorkerThread:
+    | { workerData?: unknown; port?: unknown }
+    | undefined;
+}
+
+const browserWorkerSpawner: WorkerThreadSpawner | undefined =
+  typeof Worker === "function" && typeof Blob === "function" && typeof URL === "function"
+    ? (spec) => {
+        const blob = new Blob([WORKER_BOOTSTRAP], { type: "text/javascript" });
+        const url = URL.createObjectURL(blob);
+        let worker: Worker;
+        try {
+          worker = new Worker(url);
+        } catch {
+          URL.revokeObjectURL(url);
+          return undefined;
+        }
+        let onMessage: ((v: unknown) => void) | null = null;
+        let onError: ((e: unknown) => void) | null = null;
+        let onExit: ((c: number) => void) | null = null;
+        worker.onmessage = (ev: MessageEvent) => {
+          const d = ev.data as Record<string, unknown> | null;
+          const ctrl = d?.[CTRL];
+          if (ctrl === "exit") return void onExit?.(typeof d.code === "number" ? d.code : 0);
+          if (ctrl === "error") return void onError?.(new Error(String(d.message)));
+          onMessage?.(d);
+        };
+        worker.onerror = (ev: ErrorEvent) => {
+          ev.preventDefault();
+          onError?.(ev.error ?? new Error(ev.message));
+        };
+        worker.postMessage({
+          [CTRL]: "init",
+          workerData: spec.workerData,
+          eval: spec.code !== undefined,
+          code: spec.code,
+          url: spec.filename,
+        });
+        return {
+          postMessage: (v, transfer) =>
+            worker.postMessage(v, transfer ? { transfer: [...transfer] } : undefined),
+          terminate: () => {
+            worker.terminate();
+            URL.revokeObjectURL(url);
+          },
+          setOnMessage: (cb) => {
+            onMessage = cb;
+          },
+          setOnError: (cb) => {
+            onError = cb;
+          },
+          setOnExit: (cb) => {
+            onExit = cb;
+          },
+        };
+      }
+    : undefined;
+
+// ── Shim factory ────────────────────────────────────────────────────
+
+let nextThreadId = 1;
+
+export const createWorkerThreadsShim = (options: WorkerThreadsShimOptions = {}) => {
+  const autoContext =
+    options.context ??
+    (globalThis.__boloWorkerThread
+      ? {
+          workerData: globalThis.__boloWorkerThread.workerData,
+          parentPort: globalThis.__boloWorkerThread.port,
+        }
+      : undefined);
+  const isMainThread = autoContext === undefined;
+  const threadId = isMainThread ? 0 : (autoContext.threadId ?? -1);
+
+  const spawner = options.spawnWorker ?? browserWorkerSpawner;
+
+  const liveWorkers = new Map<
+    number,
+    { postMessage(value: unknown, transferList?: readonly unknown[]): void }
+  >();
+
+  const envData = new Map<unknown, unknown>();
+
+  const workerData = isMainThread ? undefined : autoContext.workerData;
+
+  const parentPort = isMainThread
+    ? null
+    : autoContext.parentPort instanceof ShimMessagePort
+      ? autoContext.parentPort
+      : (autoContext.parentPort ?? null);
+
+  class Worker extends EventEmitter {
+    readonly threadId: number;
+    readonly resourceLimits: Required<Record<string, number>>;
+    private handle: WorkerThreadHandle | undefined;
+    private exitCode: number | null = null;
+    private refed = true;
+
+    constructor(filename: string | URL, opts: Record<string, unknown> = {}) {
+      super();
+      this.threadId = nextThreadId++;
+      this.resourceLimits = {
+        maxYoungGenerationSizeMb: 48,
+        maxOldGenerationSizeMb: 2048,
+        codeRangeSizeMb: 0,
+        stackSizeMb: 4,
+        ...(opts.resourceLimits as Record<string, number> | undefined),
+      };
+
+      const evalMode = opts.eval === true;
+      if (!evalMode && typeof filename !== "string" && !(filename instanceof URL)) {
+        throw new TypeError('The "filename" argument must be of type string or URL');
+      }
+      const spec: WorkerThreadSpawnSpec = {
+        filename: evalMode ? undefined : String(filename),
+        code: evalMode ? String(filename) : undefined,
+        args: Array.isArray(opts.argv) ? (opts.argv as string[]) : undefined,
+        env:
+          opts.env === SHARE_ENV || opts.env === undefined
+            ? undefined
+            : (opts.env as Record<string, string>),
+        workerData: opts.workerData,
+        threadId: this.threadId,
+      };
+
+      const handle = spawner?.(spec);
+      this.handle = handle;
+      if (!handle) {
+        queueMicrotask(() => {
+          this.emit(
+            "error",
+            new Error(
+              "worker_threads.Worker cannot spawn a thread in this realm: no spawnWorker " +
+                "backend was registered and no browser Worker is available",
+            ),
+          );
+          this.finish(1);
+        });
+        return;
+      }
+      liveWorkers.set(this.threadId, this);
+      handle.setOnMessage((value) => this.emit("message", value));
+      handle.setOnError((err) => {
+        this.emit("error", err instanceof Error ? err : new Error(String(err)));
+        this.finish(1);
+      });
+      handle.setOnExit((code) => this.finish(code));
+      queueMicrotask(() => this.emit("online"));
+    }
+
+    private finish(code: number): void {
+      if (this.exitCode !== null) return;
+      this.exitCode = code;
+      liveWorkers.delete(this.threadId);
+      this.handle?.setOnMessage(null);
+      this.handle?.setOnError(null);
+      this.handle?.setOnExit(null);
+      this.emit("exit", code);
+    }
+
+    postMessage(value: unknown, transferList?: readonly unknown[]): void {
+      assertCloneable(value);
+      const transfer = (transferList ?? []).map(unwrapTransferable);
+      this.handle?.postMessage(value, transfer);
+    }
+
+    terminate(): Promise<number> {
+      if (this.exitCode === null) {
+        this.handle?.terminate();
+        this.finish(1);
+      }
+      return Promise.resolve(this.exitCode ?? 1);
+    }
+
+    ref(): this {
+      this.refed = true;
+      return this;
+    }
+    unref(): this {
+      this.refed = false;
+      return this;
+    }
+    hasRef(): boolean {
+      return this.refed;
+    }
+
+    getHeapSnapshot(): Promise<never> {
+      return Promise.reject(
+        new Error("worker.getHeapSnapshot is not supported: no V8 heap access in this realm"),
+      );
+    }
+  }
+
+  const receiveMessageOnPort = (port: unknown): unknown =>
+    port instanceof ShimMessagePort ? port.dequeue() : undefined;
+
+  const moveMessagePortToContext = (port: unknown, _contextifiedSandbox?: unknown): unknown => {
+    // Realms here share one V8 heap (workers are separate globals bridged by
+    // postMessage, not vm contexts), so the port object is already usable —
+    // Node's context hop is a no-op for us.
+    if (!(port instanceof ShimMessagePort)) {
+      throw new TypeError('The "port" argument must be a MessagePort');
+    }
+    return port;
   };
 
-  const threadId = "0";
+  const setEnvironmentData = (key: unknown, value: unknown): void => {
+    envData.set(key, value);
+  };
+  const getEnvironmentData = (key: unknown): unknown => envData.get(key);
+
+  const postMessageToThread = (
+    targetThreadId: number,
+    value: unknown,
+    transferList?: readonly unknown[],
+    _timeout?: number,
+  ): Promise<unknown> => {
+    const target = liveWorkers.get(targetThreadId);
+    if (!target) {
+      const err = new Error(`No worker thread with threadId ${targetThreadId}`) as Error & {
+        code: string;
+      };
+      err.code = "ERR_WORKER_MESSAGING_FAILED";
+      return Promise.reject(err);
+    }
+    assertCloneable(value);
+    target.postMessage(value, transferList);
+    return Promise.resolve(undefined);
+  };
+
+  const BroadcastChannelShim =
+    (globalThis as { BroadcastChannel?: typeof BroadcastChannel }).BroadcastChannel ??
+    class BroadcastChannelShim extends EventTarget {
+      constructor(_name?: string) {
+        super();
+      }
+      postMessage(): void {}
+      close(): void {}
+    };
 
   return {
     Worker,
     isMainThread,
     parentPort,
     workerData,
-    receiveMessageOnPort,
     threadId,
     resourceLimits: {
-      maxYoungGenerationSizeMb: 0,
-      maxOldGenerationSizeMb: 0,
+      maxYoungGenerationSizeMb: 48,
+      maxOldGenerationSizeMb: 2048,
       codeRangeSizeMb: 0,
-      stackSizeMb: 0,
+      stackSizeMb: 4,
     },
-    setEnvironmentData: (key: number, value: unknown): void => {},
-    getEnvironmentData: (key: number): unknown => undefined,
+    MessageChannel: ShimMessageChannel,
+    MessagePort: ShimMessagePort,
+    BroadcastChannel: BroadcastChannelShim,
+    SHARE_ENV,
+    receiveMessageOnPort,
+    moveMessagePortToContext,
+    markAsUntransferable,
+    markAsUncloneable,
+    isMarkedAsUntransferable,
+    setEnvironmentData,
+    getEnvironmentData,
+    postMessageToThread,
   };
 };
 
-export default createWorkerThreadsShim();
+/** Node's `worker_threads.SHARE_ENV` — env-share sentinel for `new Worker`. */
+export const SHARE_ENV = Symbol.for("nodejs.worker_threads.SHARE_ENV");
+
+// Named top-level exports bound to this realm's default shim — the
+// vite-plugin aliases `node:worker_threads` straight to this module, so
+// `import { Worker } from "node:worker_threads"` must find them here. In a
+// spawned browser worker the bootstrap has already set `__boloWorkerThread`,
+// so the default instance reports the worker context correctly.
+const defaultShim = createWorkerThreadsShim();
+
+export const Worker = defaultShim.Worker;
+export const isMainThread = defaultShim.isMainThread;
+export const parentPort = defaultShim.parentPort;
+export const workerData = defaultShim.workerData;
+export const threadId = defaultShim.threadId;
+export const resourceLimits = defaultShim.resourceLimits;
+export const MessageChannel = defaultShim.MessageChannel;
+export const MessagePort = defaultShim.MessagePort;
+export const BroadcastChannel = defaultShim.BroadcastChannel;
+export const receiveMessageOnPort = defaultShim.receiveMessageOnPort;
+export const moveMessagePortToContext = defaultShim.moveMessagePortToContext;
+export const setEnvironmentData = defaultShim.setEnvironmentData;
+export const getEnvironmentData = defaultShim.getEnvironmentData;
+export const postMessageToThread = defaultShim.postMessageToThread;
+export const getHeapSnapshot = (): Promise<never> =>
+  Promise.reject(
+    new Error("getHeapSnapshot is not supported: no V8 heap access in this realm"),
+  );
+
+export default defaultShim;
