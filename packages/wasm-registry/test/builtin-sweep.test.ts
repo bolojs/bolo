@@ -17,7 +17,7 @@ describe('wasm-registry: builtin sweep (compat-matrix gaps)', () => {
       [
         'const Buffer = { isBuffer: () => true };',
         'function process() { return "own"; }',
-        'class global {}',
+        'const global = { name: "own" };',
         'console.log(Buffer.isBuffer(), process(), global.name);',
       ].join('\n'),
     );

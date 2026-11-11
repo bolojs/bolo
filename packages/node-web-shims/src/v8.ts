@@ -1,9 +1,14 @@
-import v8 from "unenv/node/v8";
-import buffer from "./buffer.js";
+import _v8 from "unenv/node/v8";
+import { Buffer as _BufferCtor } from "unenv/node/buffer";
 
 export * from "unenv/node/v8";
 
-const BufferCtor = buffer.Buffer;
+const v8 = _v8 as unknown as Record<string, unknown>;
+
+type BufferLike = { from: (v: string, enc: string) => Uint8Array };
+const BufferCtor = _BufferCtor as unknown as BufferLike;
+type BufferInstance = Uint8Array;
+
 
 /**
  * `v8.serialize` returns a `Buffer` whose contents are opaque to callers —
@@ -16,10 +21,10 @@ const BufferCtor = buffer.Buffer;
  * `deserialize` on a foreign buffer throws a Node-coded error instead of
  * silently returning garbage.
  */
-export const createV8Shim = (): typeof v8 => {
+export const createV8Shim = (): typeof v8 & { serialize: (v: unknown) => BufferInstance; deserialize: (b: unknown) => unknown } => {
   const serializedValues = new WeakMap<object, unknown>();
 
-  const serialize = (value: unknown): InstanceType<typeof BufferCtor> => {
+  const serialize = (value: unknown): BufferInstance => {
     let payload = "";
     try {
       payload = JSON.stringify(value) ?? "";
@@ -27,7 +32,7 @@ export const createV8Shim = (): typeof v8 => {
       // Cyclic / unserializable-to-JSON values still round-trip through the
       // side-table; the byte payload is best-effort only.
     }
-    const buf = BufferCtor.from(payload, "utf8") as InstanceType<typeof BufferCtor>;
+    const buf = BufferCtor.from(payload, "utf8") as BufferInstance;
     serializedValues.set(buf as unknown as object, value);
     return buf;
   };
@@ -61,8 +66,8 @@ export const createV8Shim = (): typeof v8 => {
   return { ...v8, serialize, deserialize };
 };
 
-export const serialize: typeof v8.serialize = (value) => defaultShim.serialize(value);
-export const deserialize: typeof v8.deserialize = (buf) => defaultShim.deserialize(buf);
+export const serialize = (value: unknown): BufferInstance => defaultShim.serialize(value);
+export const deserialize = (buf: unknown): unknown => defaultShim.deserialize(buf);
 
 const defaultShim = createV8Shim();
 

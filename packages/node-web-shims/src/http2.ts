@@ -1,6 +1,13 @@
-import http2 from "unenv/node/http2";
+import _http2 from "unenv/node/http2";
 
 export * from "unenv/node/http2";
+
+const http2 = _http2 as unknown as {
+  connect: () => unknown;
+  createServer: () => unknown;
+  createSecureServer: () => unknown;
+  performServerHandshake: () => unknown;
+};
 
 /**
  * HTTP/2 needs ALPN-negotiated TLS (h2 over cleartext TCP upgrade is not what
