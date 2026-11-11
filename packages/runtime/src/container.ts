@@ -100,6 +100,11 @@ export class BrowserContainer {
     }
     this.tornDown = true;
     this.deps.events.removeAllListeners();
+    // Reclaim every process worker this container started. A worker that is
+    // still running (a hung program, a server that never exits) keeps its
+    // realm alive until the page closes; leaking one per container teardown
+    // is what made the compat harness's renderer OOM and killed whole runs.
+    this.deps.processDeps.shell.killAll?.();
     this.deps.vfs.destroy?.();
     this.deps.processDeps.runtimeWorker.dispose();
   }

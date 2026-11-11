@@ -2,6 +2,13 @@ import { maxSatisfying } from "semver";
 
 export const DEFAULT_REGISTRY = "https://registry.npmjs.org";
 
+/**
+ * Bound on a single packument fetch. A registry that stalls without
+ * answering would otherwise hang the whole dependency walk — and the
+ * package install with it.
+ */
+export const REGISTRY_FETCH_TIMEOUT_MS = 30_000;
+
 export interface ResolvedPackage {
   name: string;
   version: string;
@@ -74,6 +81,7 @@ export const resolvePackage = async (
   if (!packument) {
     const res = await fetchFn(`${registry}/${name}`, {
       headers: { Accept: "application/vnd.npm.install-v1+json" },
+      signal: AbortSignal.timeout(REGISTRY_FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
       throw new Error(`Registry fetch failed for ${name}: ${res.status}`);

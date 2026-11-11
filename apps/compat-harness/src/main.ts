@@ -68,6 +68,15 @@ declare global {
 
 let container: BrowserContainer | undefined;
 
+/**
+ * Exec ceiling for every probe, slightly above the page-side runner's own
+ * 60s deadline so that deadline (not this kill) wins for honest timeouts.
+ * Reclaims never-exiting programs: a ref'd interval or a wedged worker keeps
+ * its heartbeat alive, so the missed-heartbeat watchdog never fires and
+ * nothing else would release `exec()`'s promise.
+ */
+const EXEC_TIMEOUT_MS = 65_000;
+
 const readAll = async (stream: ReadableStream<string>): Promise<string> => {
   const reader = stream.getReader();
   let output = "";
@@ -102,7 +111,14 @@ window.__compatHarness = {
     if (!container) throw new Error("CompatHarness: boot() must resolve before exec()");
     const rel = normalize(path);
     const start = performance.now();
-    const proc = container.spawn("node", [rel]);
+    // The ceiling lives on the runtime's Process handle (`SpawnOptions.timeout`
+    // → auto-kill), so a program that never exits is reclaimed instead of
+    // hanging this promise: the in-page 60s deadline is a setTimeout that
+    // cannot fire while the page's main thread is wedged (rolldown
+    // Atomics.wait poison), and a process worker that never posts EXIT would
+    // otherwise hang forever — the worker's heartbeat keeps the
+    // missed-heartbeat watchdog fed, so nothing else reclaims it.
+    const proc = container.spawn("node", [rel], { timeout: EXEC_TIMEOUT_MS });
     const [output, exitCode] = await Promise.all([readAll(proc.output), proc.exit]);
     const duration = performance.now() - start;
     return { exitCode, output, duration };

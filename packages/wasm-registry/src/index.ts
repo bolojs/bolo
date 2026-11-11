@@ -26,7 +26,7 @@ export {
 export type { WasmTool, WasmToolResult, WasmToolLoader };
 export { createWasiTool } from "./wasi-executor.js";
 export type { WasiToolOptions, WasiPreopen } from "./wasi-executor.js";
-export { bundleEntry, transformScript } from "./bundle.js";
+export { bundleEntry, transformScript, resetBundler } from "./bundle.js";
 export type {
   BundleEntryOptions,
   BundleEntryResult,
