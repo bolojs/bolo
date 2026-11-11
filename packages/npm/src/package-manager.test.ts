@@ -538,6 +538,156 @@ describe("lifecycle warnings", () => {
   });
 });
 
+describe("lifecycle script execution", () => {
+  const makePackument = (name: string) => ({
+    name,
+    "dist-tags": { latest: "1.0.0" },
+    versions: {
+      "1.0.0": {
+        version: "1.0.0",
+        dist: { tarball: `https://registry.npmjs.org/${name}/-/${name}-1.0.0.tgz` },
+      },
+    },
+  });
+
+  const makeScriptedTarball = async (name: string, scripts: Record<string, string>) =>
+    createTarball([
+      {
+        name: "package/package.json",
+        content: JSON.stringify({ name, version: "1.0.0", scripts }),
+      },
+      { name: "package/index.js", content: "module.exports = 1;" },
+    ]);
+
+  const stubRegistry = (name: string, packument: unknown, tarball: Uint8Array) => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL | Request) => {
+      const str = String(url);
+      if (str === `https://registry.npmjs.org/${name}`) {
+        return { ok: true, status: 200, json: async () => packument } as Response;
+      }
+      if (str.includes(`${name}-1.0.0.tgz`)) {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => tarball.slice().buffer,
+        } as Response;
+      }
+      return { ok: false, status: 404 } as Response;
+    }) as typeof fetch;
+    return originalFetch;
+  };
+
+  it("runs an opted-in postinstall script with the package dir as cwd", async () => {
+    const vfs = new VfsBus();
+    const pm = new PackageManager({
+      vfs,
+      cwd: "/",
+      runScripts: true,
+      scriptRunner: async (ctx) => {
+        // Marker written through the same VFS the package was extracted into —
+        // presence proves the runner ran with the extracted dir as cwd.
+        vfs.hot.writeFileSync(
+          `${ctx.cwd}/.postinstall-ran`,
+          `${ctx.event}:${ctx.env.npm_lifecycle_event}:${ctx.env.npm_package_name}`,
+        );
+        return { exitCode: 0 };
+      },
+    });
+
+    const packument = makePackument("scripted-pkg");
+    const tarball = await makeScriptedTarball("scripted-pkg", {
+      postinstall: "node -e \"require('fs').writeFileSync('.postinstall-ran','')\"",
+    });
+    const originalFetch = stubRegistry("scripted-pkg", packument, tarball);
+
+    try {
+      await pm.install(["scripted-pkg"]);
+      const marker = vfs.hot.readFileSync(
+        "/node_modules/.bolo/scripted-pkg@1.0.0/node_modules/scripted-pkg/.postinstall-ran",
+        "utf8",
+      );
+      expect(marker).toBe("postinstall:postinstall:scripted-pkg");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("does not invoke the runner when runScripts is unset (opt-out default)", async () => {
+    const vfs = new VfsBus();
+    const warnings: string[] = [];
+    let ran = 0;
+    const pm = new PackageManager({
+      vfs,
+      cwd: "/",
+      stderr: (m) => warnings.push(m),
+      scriptRunner: async () => {
+        ran++;
+        return { exitCode: 0 };
+      },
+    });
+
+    const packument = makePackument("scripted-pkg");
+    const tarball = await makeScriptedTarball("scripted-pkg", { postinstall: "node build.js" });
+    const originalFetch = stubRegistry("scripted-pkg", packument, tarball);
+
+    try {
+      await pm.install(["scripted-pkg"]);
+      expect(ran).toBe(0);
+      expect(warnings.some((w) => w.includes("postinstall"))).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("honors the per-install runScripts override and allowlist", async () => {
+    const vfs = new VfsBus();
+    const ran: string[] = [];
+    const pm = new PackageManager({
+      vfs,
+      cwd: "/",
+      scriptRunner: async (ctx) => {
+        ran.push(ctx.packageName);
+        return { exitCode: 0 };
+      },
+    });
+
+    const packument = makePackument("scripted-pkg");
+    const tarball = await makeScriptedTarball("scripted-pkg", { postinstall: "node build.js" });
+    const originalFetch = stubRegistry("scripted-pkg", packument, tarball);
+
+    try {
+      // Constructor had no runScripts — the install() call opts in via allowlist.
+      await pm.install(["scripted-pkg"], { runScripts: ["scripted-pkg"] });
+      expect(ran).toEqual(["scripted-pkg"]);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("fails the install with LifecycleScriptError on a non-zero exit", async () => {
+    const vfs = new VfsBus();
+    const pm = new PackageManager({
+      vfs,
+      cwd: "/",
+      runScripts: true,
+      scriptRunner: async () => ({ exitCode: 3 }),
+    });
+
+    const packument = makePackument("scripted-pkg");
+    const tarball = await makeScriptedTarball("scripted-pkg", { install: "exit 3" });
+    const originalFetch = stubRegistry("scripted-pkg", packument, tarball);
+
+    try {
+      await expect(pm.install(["scripted-pkg"])).rejects.toThrow(
+        /scripted-pkg@1\.0\.0 install script failed with exit code 3/,
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
 const digestToBase64 = async (subtle: string, data: Uint8Array): Promise<string> => {
   const hashBuffer = await crypto.subtle.digest(subtle, data as unknown as ArrayBuffer);
   const bytes = new Uint8Array(hashBuffer);
