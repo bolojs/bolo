@@ -138,9 +138,7 @@ describe("createModuleShim", () => {
     hot.writeFileSync("/pkg/sub/deep.js", "");
     const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
 
-    expect(moduleShim.findPackageJSON("./sub/deep.js", "/pkg/index.js")).toBe(
-      "/pkg/package.json",
-    );
+    expect(moduleShim.findPackageJSON("./sub/deep.js", "/pkg/index.js")).toBe("/pkg/package.json");
     expect(moduleShim.findPackageJSON("/pkg/sub/deep.js")).toBe("/pkg/package.json");
     expect(moduleShim.findPackageJSON("lodash")).toBeUndefined();
     expect(moduleShim.findPackageJSON("./nope.js", "/other/index.js")).toBeUndefined();
