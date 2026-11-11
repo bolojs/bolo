@@ -9,7 +9,6 @@ type BufferLike = { from: (v: string, enc: string) => Uint8Array };
 const BufferCtor = _BufferCtor as unknown as BufferLike;
 type BufferInstance = Uint8Array;
 
-
 /**
  * `v8.serialize` returns a `Buffer` whose contents are opaque to callers —
  * the only hard contract is the `deserialize(serialize(v))` round-trip. Node
@@ -21,7 +20,10 @@ type BufferInstance = Uint8Array;
  * `deserialize` on a foreign buffer throws a Node-coded error instead of
  * silently returning garbage.
  */
-export const createV8Shim = (): typeof v8 & { serialize: (v: unknown) => BufferInstance; deserialize: (b: unknown) => unknown } => {
+export const createV8Shim = (): typeof v8 & {
+  serialize: (v: unknown) => BufferInstance;
+  deserialize: (b: unknown) => unknown;
+} => {
   const serializedValues = new WeakMap<object, unknown>();
 
   const serialize = (value: unknown): BufferInstance => {
