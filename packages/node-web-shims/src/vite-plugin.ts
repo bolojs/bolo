@@ -39,7 +39,15 @@ UNENV_BACKED_BUILTINS.delete("worker_threads");
 // Builtin subpaths with a first-party wrapper — these take precedence over
 // the UNENV_BACKED_BUILTINS fallback so e.g. `node:path/win32` gets the real
 // win32 implementation and `node:assert/strict` gets the strict facade.
-const SHIMMED_SUBPATHS = new Set(["assert/strict", "path/posix", "path/win32", "util/types"]);
+const SHIMMED_SUBPATHS = new Set([
+  "assert/strict",
+  "path/posix",
+  "path/win32",
+  "util/types",
+  "stream/promises",
+  "stream/web",
+  "stream/consumers",
+]);
 
 /**
  * Creates a Vite plugin that aliases node:* modules to browser-compatible shims.

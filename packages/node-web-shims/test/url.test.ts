@@ -74,9 +74,7 @@ describe("node-web-shims: url", () => {
 
   it("formats Url-like objects", () => {
     const shim = createUrlShim();
-    expect(shim.format({ protocol: "http", host: "a.com", pathname: "/p" })).toBe(
-      "http://a.com/p",
-    );
+    expect(shim.format({ protocol: "http", host: "a.com", pathname: "/p" })).toBe("http://a.com/p");
     expect(
       shim.format({ protocol: "https:", hostname: "a.com", port: "8443", pathname: "/x" }),
     ).toBe("https://a.com:8443/x");
