@@ -24,6 +24,8 @@ export {
   default as diagnostics_channel,
 } from "./diagnostics_channel.js";
 export { createReadlineShim, default as readline } from "./readline.js";
+export { createV8Shim, default as v8 } from "./v8.js";
+export { createHttp2Shim, default as http2 } from "./http2.js";
 export {
   installNavigatorUserAgent,
   installUnhandledRejectionHandler,

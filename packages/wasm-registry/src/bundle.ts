@@ -159,6 +159,8 @@ const NODE_BUILTIN_NAMES = new Set([
   "dns",
   "dns/promises",
   "console",
+  "v8",
+  "http2",
 ]);
 
 // Subpath builtins that have no dedicated shim object because the parent
@@ -415,13 +417,36 @@ const applyBrowserFieldRemap = (
   const browserField = readPackageJson(vfs, owningDir).browser;
   if (!browserField || typeof browserField !== "object") return undefined;
   const map = browserField as Record<string, unknown>;
-  const candidates = specifier.startsWith(".")
-    ? [joinPath(dirname(importerFile), specifier), specifier]
+
+  // `browser` map keys are either bare specifiers ("fs", "graceful-fs") or
+  // package-root-relative paths ("./lib/util/process-browser.js"). A relative
+  // require must therefore be expressed as a `./`-key relative to the
+  // PACKAGE ROOT — not to the importer — before lookup, and with the usual
+  // extension guesses since keys are written with the extension on.
+  const candidates: string[] = specifier.startsWith(".")
+    ? (() => {
+        const abs = joinPath(dirname(importerFile), specifier);
+        if (!abs.startsWith(`${owningDir}/`)) return [specifier];
+        const rel = `.${abs.slice(owningDir.length)}`;
+        return [
+          rel,
+          ...RESOLVE_EXTENSIONS.filter((e) => e).map((e) => rel + e),
+          `${rel}/index.js`,
+          specifier,
+        ];
+      })()
     : [specifier];
   for (const candidate of candidates) {
     if (candidate in map) {
       const value = map[candidate];
-      return value === false ? false : typeof value === "string" ? value : undefined;
+      if (value === false) return false;
+      if (typeof value !== "string") return undefined;
+      // A relative replacement is rooted at the package directory, not the
+      // importer — resolve it eagerly to an absolute path so the caller's
+      // `isRelative` handling lands on the right file. This is what
+      // enhanced-resolve's `"process": "./lib/util/process-browser.js"`
+      // (a browser-field remap of a NODE BUILTIN) needs.
+      return value.startsWith(".") ? joinPath(owningDir, value) : value;
     }
   }
   return undefined;
@@ -484,11 +509,21 @@ const TIMER_GLOBALS = [
   "clearImmediate",
 ] as const;
 
+// Injected globals are bound to `__bc_*` names, never to the well-known
+// identifier itself: the banner is prepended AFTER bundling, so a `var
+// Buffer`/`var process` here would be a parse-time redeclare error against
+// any bundled module whose top-level `const`/`function`/`class`/`import`
+// binding rolldown hoisted into the shared chunk scope (the probe's
+// `Uncaught SyntaxError: Identifier 'Buffer' has already been declared`).
+// Free references in user code reach these bindings through
+// `transform.define` rewrites instead — same mechanism as the timer
+// globals below — which only rewrites UNBOUND references, so a module that
+// declares its own `Buffer`/`process`/`console` keeps it untouched.
 const GLOBALS_BANNER = `
 var __bcGlobals = () => globalThis.__browserContainers;
-var process = __bcGlobals()?.shims?.process;
-var Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
-var global = globalThis;
+var __bc_process = __bcGlobals()?.shims?.process;
+var __bc_Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
+var __bc_global = globalThis;
 // Process workers inject handle-tracked timers so only the *program's*
 // timers keep the process alive — infrastructure (logging, rpc) uses real
 // globals and is invisible to liveness. Main-thread path: real globals.
@@ -501,7 +536,7 @@ var __bc_clearInterval = __bcTimers?.clearInterval ?? globalThis.clearInterval;
 // elsewhere fall back to a plain macrotask hop.
 var __bc_setImmediate = __bcTimers?.setImmediate ?? ((fn, ...args) => {
   const imm = { cancelled: false, ref() { return imm; }, unref() { return imm; }, hasRef() { return true; } };
-  globalThis.setTimeout(() => { if (!imm.cancelled) { fn(...args); process?.drainTicks?.(); } }, 0);
+  globalThis.setTimeout(() => { if (!imm.cancelled) { fn(...args); __bc_process?.drainTicks?.(); } }, 0);
   return imm;
 });
 var __bc_clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm.cancelled = true; });
@@ -513,7 +548,7 @@ var __bcFormat = (args) => args.map((a) => {
   return String(a);
 }).join(' ');
 var __bcWrite = (stream, args) => __bcGlobals()?.shims?.process?.[stream]?.write(__bcFormat(args) + '\\n');
-var console = {
+var __bc_console = {
   log: (...args) => __bcWrite('stdout', args),
   info: (...args) => __bcWrite('stdout', args),
   debug: (...args) => __bcWrite('stdout', args),
@@ -732,9 +767,9 @@ const resolveShim = (
   }
 
   // `node:console` resolves to the banner's process-routed console — there is
-  // no registry shim for it. The bare `console` reference binds to the
-  // banner's `var console` inside the single-file bundle scope.
-  if (builtin === "console") return { expr: "console", shim: {} };
+  // no registry shim for it. The `__bc_console` reference binds to the
+  // banner's injected binding inside the single-file bundle scope.
+  if (builtin === "console") return { expr: "__bc_console", shim: {} };
   return undefined;
 };
 
@@ -828,6 +863,14 @@ export const bundleEntry = async (
         // bindings. They are renamed (and only unbound references rewritten) so a
         // program's own top-level `const { setTimeout } = ...` cannot collide.
         ...Object.fromEntries(TIMER_GLOBALS.map((n) => [n, `__bc_${n}`])),
+        // Same trick for the injected Node globals — a bundled module that
+        // declares its own `Buffer`/`process`/`console` binding is untouched
+        // (define only rewrites unbound references), and the banner never
+        // claims the well-known name, so no redeclare error is possible.
+        process: "__bc_process",
+        Buffer: "__bc_Buffer",
+        global: "__bc_global",
+        console: "__bc_console",
       },
     },
     onLog(level, log, _logger) {
