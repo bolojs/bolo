@@ -1,12 +1,23 @@
 export { createFsShim } from "./fs-shim.js";
 export type { FsShim, FsStat } from "./fs-shim.js";
-export { createHttpShim, createAgent } from "./http-shim.js";
+export {
+  createHttpShim,
+  createAgent,
+  METHODS,
+  STATUS_CODES,
+  maxHeaderSize,
+  validateHeaderName,
+  validateHeaderValue,
+  setMaxIdleHTTPParsers,
+  Server as HttpServerClass,
+} from "./http-shim.js";
 export type {
   IncomingMessage,
   ServerResponse,
   HttpServer,
   ClientRequest,
   RequestOptions,
+  OutgoingMessage,
 } from "./http-shim.js";
 export {
   createNetShim,

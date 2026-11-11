@@ -1,7 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { createVmShim, Script } from "./vm-shim.js";
+import { describe, it, expect, beforeAll } from "vitest";
+import { createVmShim, Script, initQuickJS } from "./vm-shim.js";
 
 describe("createVmShim", () => {
+  beforeAll(async () => {
+    await initQuickJS();
+  });
   it("runInNewContext evaluates code and returns the result", async () => {
     const vm = createVmShim();
     expect(await vm.runInNewContext("1 + 2")).toBe(3);
@@ -17,9 +20,9 @@ describe("createVmShim", () => {
     expect(await vm.runInThisContext("'ok'")).toBe("ok");
   });
 
-  it("throws when the evaluated code throws", async () => {
+  it("throws when the evaluated code throws", () => {
     const vm = createVmShim();
-    await expect(vm.runInNewContext("throw new Error('boom')")).rejects.toThrow("boom");
+    expect(() => vm.runInNewContext("throw new Error('boom')")).toThrow("boom");
   });
 
   it("runInContext preserves state across calls", async () => {
@@ -47,11 +50,9 @@ describe("createVmShim", () => {
     }
   });
 
-  it("times out an infinite loop", async () => {
+  it("times out an infinite loop", () => {
     const vm = createVmShim();
-    await expect(vm.runInNewContext("while(true){}", {}, { timeout: 50 })).rejects.toThrow(
-      "interrupted",
-    );
+    expect(() => vm.runInNewContext("while(true){}", {}, { timeout: 50 })).toThrow("interrupted");
   });
 
   it("Script runs twice against different contexts with isolated state", async () => {
@@ -83,15 +84,28 @@ describe("createVmShim", () => {
     expect(script.disposed).toBe(true);
   });
 
-  it("Script.runInContext rejects after disposal", async () => {
+  it("Script.runInContext throws after disposal", async () => {
     const vm = createVmShim();
     const script = new vm.Script("1");
     const ctx = await vm.createContext();
     try {
       script.dispose();
-      await expect(script.runInContext(ctx)).rejects.toThrow("Script has been disposed");
+      expect(() => script.runInContext(ctx)).toThrow("Script has been disposed");
     } finally {
       ctx.dispose();
     }
+  });
+
+  it("runInNewContext returns synchronously without await", () => {
+    const vm = createVmShim();
+    const res = vm.runInNewContext('({"foo": ["bar", "baz"]})');
+    expect(res).toEqual({ foo: ["bar", "baz"] });
+  });
+
+  it("isContext reports context status", () => {
+    const vm = createVmShim();
+    const ctx = vm.createContext({ a: 1 });
+    expect(vm.isContext(ctx)).toBe(true);
+    expect(vm.isContext({})).toBe(false);
   });
 });
