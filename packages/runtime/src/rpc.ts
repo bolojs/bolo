@@ -19,6 +19,10 @@ export type RpcSend = (msg: unknown, transfer?: Transferable[]) => void;
 const CB_KEY = "$cb";
 const U8_KEY = "$u8";
 const DATE_KEY = "$date";
+// `undefined` would silently become `null` in JSON arrays / drop out of
+// objects on the sync channel — changing semantics for optional args
+// (`openSync(path, flags)` must not arrive as `openSync(path, flags, null)`).
+const UNDEF_KEY = "$undef";
 
 const b64encode = (bytes: Uint8Array): string => {
   let bin = "";
@@ -55,6 +59,7 @@ export const createMarshaller = (opts: {
   makeRemoteCb: (cbId: number) => (...args: unknown[]) => unknown;
 }): Marshaller => {
   const marshal = (v: unknown): unknown => {
+    if (v === undefined) return { [UNDEF_KEY]: 1 };
     if (typeof v === "function") return { [CB_KEY]: opts.registerCb(v as never) };
     if (v instanceof Uint8Array) return { [U8_KEY]: b64encode(v) };
     if (v instanceof Date) return { [DATE_KEY]: v.toISOString() };
@@ -73,6 +78,7 @@ export const createMarshaller = (opts: {
       if (CB_KEY in v && typeof v[CB_KEY] === "number") return opts.makeRemoteCb(v[CB_KEY]);
       if (U8_KEY in v && typeof v[U8_KEY] === "string") return b64decode(v[U8_KEY]);
       if (DATE_KEY in v && typeof v[DATE_KEY] === "string") return new Date(v[DATE_KEY]);
+      if (UNDEF_KEY in v) return undefined;
       const out: Record<string, unknown> = {};
       for (const [k, val] of Object.entries(v)) out[k] = unmarshal(val);
       return out;

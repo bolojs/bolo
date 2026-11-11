@@ -157,7 +157,7 @@ describe("fs shim", () => {
     await shim.symlink("/real.txt", "/alias.txt");
 
     expect(shim.realpathSync("/alias.txt")).toBe("/real.txt");
-    expect(shim.realpathSync.native("/alias.txt")).toBe("/real.txt");
+    expect(shim.realpathSync.native?.("/alias.txt")).toBe("/real.txt");
     await expect(shim.realpath("/alias.txt")).resolves.toBe("/real.txt");
     await expect((shim.realpath as any).native("/alias.txt")).resolves.toBe("/real.txt");
     await expect(shim.promises.realpath("/alias.txt")).resolves.toBe("/real.txt");

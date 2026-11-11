@@ -1,0 +1,6 @@
+---
+"@bolojs/runtime": patch
+"@bolojs/node-runtime-shims": patch
+---
+
+Fix process workers crashing at fs-shim construction (`TypeError: Cannot read properties of undefined (reading 'native')`). The fs breadth surface added in the fs-shim expansion assumed `vfs.hot` was a real memfs `IFs`; inside process workers it is an RPC facade, so `hot.realpath.native`, `hot.promises`, `vfs.vol` and `hot.constants` were absent. The worker facade now proxies the full memfs surface the shim touches — `vfs.hot.*` sync ops (incl. the fd family with buffer round-trips), `vfs.hot.<m>` callback methods over async RPC, `vfs.hot.promises.<m>`, `vfs.hot.realpathNative`/`vfs.hot.realpathSyncNative`, `vfs.hot.constants` and `vfs.vol.cpSync`/`vfs.vol.statfsSync` — with the method lists shared between `remote-ops.ts` (main) and `remote-objects.ts` (worker) via `remote-vfs-surface.ts` so the two sides cannot drift again. The fs shim feature-detects the breadth surface at construction: absent members (live objects that cannot cross the boundary — FileHandle, Dir, streams, stat watchers) fail with a clear "not supported by this VFS backend" error at call time instead of a TypeError at construction. The shared RPC marshaller now encodes `undefined` explicitly so optional args no longer arrive as `null` over the sync channel.
