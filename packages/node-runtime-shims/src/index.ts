@@ -8,8 +8,27 @@ export type {
   ClientRequest,
   RequestOptions,
 } from "./http-shim.js";
-export { createNetShim, Socket, Server, WebSocketTransport, NoopTransport } from "./net-shim.js";
-export type { ByteTransport, AcceptedConnection } from "./net-shim.js";
+export {
+  createNetShim,
+  createNetHandleTracker,
+  Socket,
+  Server,
+  WebSocketTransport,
+  NoopTransport,
+  isIP,
+  isIPv4,
+  isIPv6,
+} from "./net-shim.js";
+export type {
+  ByteTransport,
+  AcceptedConnection,
+  NetHandleTracker,
+  NetLoopHandle,
+  NetShimOptions,
+  SocketOptions,
+  ServerListenOptions,
+  ServerAddress,
+} from "./net-shim.js";
 export { createChildProcessShim } from "./child-process-shim.js";
 export type { WasmRegistry, ShellService, ChildProcess } from "./child-process-shim.js";
 export { createProcessShim, ProcessExit } from "./process-shim.js";

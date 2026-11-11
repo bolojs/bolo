@@ -1,5 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { Socket, Server, WebSocketTransport, NoopTransport, createNetShim } from "./net-shim.js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import {
+  Socket,
+  Server,
+  WebSocketTransport,
+  NoopTransport,
+  createNetShim,
+  createNetHandleTracker,
+  isIP,
+  isIPv4,
+  isIPv6,
+  type AcceptedConnection,
+  type ByteTransport,
+} from "./net-shim.js";
+import { stream } from "@bolojs/node-web-shims";
 
 const FRAME_TYPE = {
   CONNECT: 0x01,
@@ -197,6 +210,8 @@ describe("net-shim", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     socket.write("hello");
+    // _write -> WritableStream writer.write -> sink write runs in microtasks.
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const sent = parseFrame(ws.sent[1]);
     expect(sent.type).toBe(FRAME_TYPE.DATA);
     expect(sent.connectionId).toBe("abc00000");
@@ -228,6 +243,7 @@ describe("net-shim", () => {
     expect(endFrame.connectionId).toBe("abc00000");
 
     socket.destroy();
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(closed).toBe(true);
   });
 
@@ -255,9 +271,9 @@ describe("net-shim", () => {
     );
   });
 
-  it("Server with no transport throws on listen", async () => {
+  it("Server with no transport throws on listen", () => {
     const server = new Server();
-    await expect(server.listen(0, "localhost")).rejects.toThrow(
+    expect(() => server.listen(0, "localhost")).toThrow(
       "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
     );
   });
@@ -288,7 +304,7 @@ describe("net-shim", () => {
     );
     await listenPromise;
     expect(listening).toBe(true);
-    expect(server.address()).toEqual({ port: 9001, host: "127.0.0.1", family: "IPv4" });
+    expect(server.address()).toEqual({ port: 9001, address: "127.0.0.1", family: "IPv4" });
   });
 
   it("Server emits connection when relay sends accept", async () => {
@@ -358,6 +374,7 @@ describe("net-shim", () => {
     expect(new TextDecoder().decode(chunks[0])).toBe("hello from relay");
 
     socket.write("hello from socket");
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const dataFrame = ws.sent
       .map((bytes) => parseFrame(bytes))
       .find((frame) => frame.type === FRAME_TYPE.DATA && frame.connectionId === "inbound1");
@@ -384,12 +401,13 @@ describe("net-shim", () => {
     );
     await listenPromise;
 
-    const closePromise = server.close();
+    const closeResult = server.close();
+    expect(closeResult).toBe(server);
     const unlistenFrame = parseFrame(ws.sent[ws.sent.length - 1]);
     expect(unlistenFrame.type).toBe(FRAME_TYPE.UNLISTEN);
     expect(unlistenFrame.connectionId).toBe(LISTENER_CONNECTION_ID);
     ws.simulateMessage(buildFrame(FRAME_TYPE.UNLISTENED, LISTENER_CONNECTION_ID, EMPTY_PAYLOAD));
-    await closePromise;
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(closed).toBe(true);
   });
 
@@ -630,5 +648,483 @@ describe("net-shim", () => {
     expect(errors.length).toBe(1);
     expect(errors[0].message).toBe("Connection reset");
     expect(errors[0].code).toBe("ECONNRESET");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Socket as stream.Duplex — fake ByteTransport (connect/write/close/events)
+// ---------------------------------------------------------------------------
+
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+class FakeTransport implements ByteTransport {
+  connectCalls: Array<{ host?: string; port: number }> = [];
+  connReadable!: ReadableStream<Uint8Array>;
+  connWritable!: WritableStream<Uint8Array>;
+  controller!: ReadableStreamDefaultController<Uint8Array>;
+  written: Uint8Array[] = [];
+  writerClosed = false;
+  writerAborted = false;
+  failConnectWith?: Error | string;
+  delayConnect = false;
+  private resolveConnect?: (v: {
+    readable: ReadableStream<Uint8Array>;
+    writable: WritableStream<Uint8Array>;
+  }) => void;
+  listenCalls: Array<{ port: number; host: string }> = [];
+  onConnection?: (conn: AcceptedConnection) => void;
+  closeListener?: () => Promise<void>;
+  listening = false;
+  failListenWith?: Error;
+
+  connect(options: { port: number; host?: string }) {
+    this.connectCalls.push(options);
+    this.connReadable = new ReadableStream<Uint8Array>({
+      start: (c) => {
+        this.controller = c;
+      },
+    });
+    this.connWritable = new WritableStream<Uint8Array>({
+      write: async (chunk) => {
+        if (this.writerAborted) throw new Error("abort");
+        this.written.push(chunk);
+      },
+      close: async () => {
+        this.writerClosed = true;
+      },
+      abort: async () => {
+        this.writerAborted = true;
+      },
+    });
+    return new Promise<{
+      readable: ReadableStream<Uint8Array>;
+      writable: WritableStream<Uint8Array>;
+    }>((resolve, reject) => {
+      if (this.failConnectWith) {
+        reject(
+          typeof this.failConnectWith === "string"
+            ? new Error(this.failConnectWith)
+            : this.failConnectWith,
+        );
+        return;
+      }
+      if (this.delayConnect) {
+        this.resolveConnect = resolve;
+      } else {
+        resolve({ readable: this.connReadable, writable: this.connWritable });
+      }
+    });
+  }
+
+  settleConnect() {
+    this.resolveConnect?.({ readable: this.connReadable, writable: this.connWritable });
+  }
+
+  async feed(bytes: Uint8Array) {
+    this.controller.enqueue(bytes);
+    await tick();
+  }
+
+  async feedEnd() {
+    this.controller.close();
+    await tick();
+  }
+
+  listen(port: number, host: string, onConnection: (conn: AcceptedConnection) => void) {
+    this.listenCalls.push({ port, host });
+    this.onConnection = onConnection;
+    return new Promise<{ port: number; host: string; close: () => Promise<void> }>(
+      (resolve, reject) => {
+        if (this.failListenWith) {
+          reject(this.failListenWith);
+          return;
+        }
+        this.listening = true;
+        resolve({
+          port: port === 0 ? 4321 : port,
+          host,
+          close: async () => {
+            this.listening = false;
+            this.closeListener?.();
+          },
+        });
+      },
+    );
+  }
+
+  accept(remoteAddress = "10.0.0.9", remotePort = 5150) {
+    let ctrl!: ReadableStreamDefaultController<Uint8Array>;
+    const readable = new ReadableStream<Uint8Array>({
+      start: (c) => {
+        ctrl = c;
+      },
+    });
+    const acceptedWrites: Uint8Array[] = [];
+    const writable = new WritableStream<Uint8Array>({
+      write: async (chunk) => {
+        acceptedWrites.push(chunk);
+      },
+    });
+    const conn: AcceptedConnection = {
+      connectionId: "acc1",
+      readable,
+      writable,
+      remoteAddress,
+      remotePort,
+      onError: undefined,
+    };
+    this.onConnection?.(conn);
+    return { conn, controller: ctrl, acceptedWrites };
+  }
+}
+
+describe("Socket as stream.Duplex", () => {
+  it("is an instance of stream.Duplex / Readable / Writable", () => {
+    const socket = new Socket(new FakeTransport(), { port: 1 });
+    expect(socket).toBeInstanceOf(stream.Duplex);
+    expect(socket).toBeInstanceOf(stream.Readable);
+    // Node's Duplex copies Writable's methods onto its prototype rather than
+    // chaining to Writable.prototype, so `instanceof stream.Writable` is false
+    // (as in Node). Check the writable surface instead.
+    expect(socket).toBeInstanceOf(stream.Stream);
+    expect(typeof socket.write).toBe("function");
+    expect(typeof socket.end).toBe("function");
+    socket.destroy();
+  });
+
+  it("is callable without new", () => {
+    const socket = (Socket as unknown as (t?: ByteTransport) => Socket)(new FakeTransport());
+    expect(socket).toBeInstanceOf(Socket);
+    socket.destroy();
+  });
+
+  it("connecting flag flips during connect; remoteAddress/remotePort are set", async () => {
+    const t = new FakeTransport();
+    t.delayConnect = true;
+    const socket = new Socket(t);
+    socket.connect(8080, "example.test");
+    expect(socket.connecting).toBe(true);
+    t.settleConnect();
+    await tick();
+    expect(socket.connecting).toBe(false);
+    expect(socket.remoteAddress).toBe("example.test");
+    expect(socket.remotePort).toBe(8080);
+    expect(socket.remoteFamily).toBe("IPv4");
+    socket.destroy();
+  });
+
+  it("connect(options, cb) emits connect via callback", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    const onConnect = vi.fn();
+    socket.connect({ port: 1234, host: "h" }, onConnect);
+    await tick();
+    expect(onConnect).toHaveBeenCalledOnce();
+    socket.destroy();
+  });
+
+  it("write() queues while connecting and counts bytesWritten after flush", async () => {
+    const t = new FakeTransport();
+    t.delayConnect = true;
+    const socket = new Socket(t, { port: 5 });
+    socket.connect({ port: 5 });
+    expect(socket.write("early")).toBe(true);
+    expect(t.written.length).toBe(0);
+    t.settleConnect();
+    await tick();
+    await tick();
+    expect(t.written.length).toBe(1);
+    expect(new TextDecoder().decode(t.written[0])).toBe("early");
+    await tick();
+    expect(socket.bytesWritten).toBe(5);
+    socket.destroy();
+  });
+
+  it("incoming data flows to 'data' listeners and counts bytesRead", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    socket.connect({ port: 5, host: "h" });
+    await tick();
+    const received: Uint8Array[] = [];
+    socket.on("data", (c: Uint8Array) => received.push(c));
+    await t.feed(new TextEncoder().encode("abc"));
+    expect(socket.bytesRead).toBe(3);
+    expect(new TextDecoder().decode(received[0])).toBe("abc");
+    socket.destroy();
+  });
+
+  it("pause() stops 'data', resume() re-arms the pump", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    socket.connect({ port: 5 });
+    await tick();
+    const received: Uint8Array[] = [];
+    socket.on("data", (c: Uint8Array) => received.push(c));
+    socket.pause();
+    await t.feed(new TextEncoder().encode("x"));
+    expect(received.length).toBe(0);
+    socket.resume();
+    await tick();
+    expect(received.length).toBe(1);
+    socket.destroy();
+  });
+
+  it("pipe() forwards chunks to a Writable", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    socket.connect({ port: 5 });
+    await tick();
+    const chunks: Uint8Array[] = [];
+    const dest = new stream.Writable({
+      write(chunk: unknown, _enc: string, cb: (e?: Error | null) => void) {
+        chunks.push(chunk as Uint8Array);
+        cb();
+      },
+    });
+    socket.pipe(dest as never);
+    await t.feed(new TextEncoder().encode("piped"));
+    expect(new TextDecoder().decode(chunks[0])).toBe("piped");
+    socket.destroy();
+  });
+
+  it("remote EOF emits 'end' then auto-end (allowHalfOpen=false)", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    const order: string[] = [];
+    socket.on("end", () => order.push("end"));
+    socket.on("close", () => order.push("close"));
+    socket.connect({ port: 5 });
+    await tick();
+    // 'end' is only emitted once the readable side is consumed (flowing) —
+    // faithful stream semantics: a paused stream buffers EOF indefinitely.
+    socket.resume();
+    await t.feedEnd();
+    expect(order[0]).toBe("end");
+    await tick();
+    expect(socket.writableEnded).toBe(true);
+    socket.destroy();
+    await tick();
+    expect(order).toContain("close");
+  });
+
+  it("end() emits finish and closes the transport writer (half-close)", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    socket.connect({ port: 5 });
+    await tick();
+    const finished = vi.fn();
+    socket.on("finish", finished);
+    socket.end();
+    await tick();
+    expect(finished).toHaveBeenCalledOnce();
+    expect(t.writerClosed).toBe(true);
+    expect(socket.destroyed).toBe(false);
+    socket.destroy();
+  });
+
+  it("destroy(err) emits error then close", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    const order: string[] = [];
+    socket.on("error", () => order.push("error"));
+    socket.on("close", () => order.push("close"));
+    socket.connect({ port: 5 });
+    await tick();
+    socket.destroy(new Error("boom"));
+    await tick();
+    expect(order).toEqual(["error", "close"]);
+    expect(socket.destroyed).toBe(true);
+  });
+
+  it("connect rejection maps to a coded ECONNREFUSED error event", async () => {
+    const t = new FakeTransport();
+    t.failConnectWith = "nope";
+    const socket = new Socket(t);
+    const errors: Array<Error & { code?: string; syscall?: string; port?: number }> = [];
+    socket.on("error", (e: Error & { code?: string; syscall?: string; port?: number }) =>
+      errors.push(e),
+    );
+    socket.connect(4444, "dead.host");
+    await tick();
+    expect(errors.length).toBe(1);
+    expect(errors[0].code).toBe("ECONNREFUSED");
+    expect(errors[0].syscall).toBe("connect");
+    expect(errors[0].message).toBe("connect ECONNREFUSED dead.host:4444");
+    expect(socket.connecting).toBe(false);
+  });
+
+  it("transport-coded errors keep their code", async () => {
+    const t = new FakeTransport();
+    const coded = new Error("getaddrinfo ENOTFOUND nope") as Error & { code: string };
+    coded.code = "ENOTFOUND";
+    t.failConnectWith = coded;
+    const socket = new Socket(t);
+    const errors: Array<Error & { code?: string }> = [];
+    socket.on("error", (e: Error & { code?: string }) => errors.push(e));
+    socket.connect({ port: 1, host: "nope" });
+    await tick();
+    expect(errors[0].code).toBe("ENOTFOUND");
+  });
+
+  it("setTimeout emits 'timeout' after idle msec", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    const onTimeout = vi.fn();
+    socket.connect({ port: 5 });
+    await tick();
+    socket.setTimeout(20, onTimeout);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(onTimeout).toHaveBeenCalledOnce();
+    socket.destroy();
+  });
+
+  it("setNoDelay/setKeepAlive/ref/unref are chainable", async () => {
+    const t = new FakeTransport();
+    const socket = new Socket(t);
+    socket.connect({ port: 5 });
+    await tick();
+    expect(socket.setNoDelay()).toBe(socket);
+    expect(socket.setNoDelay(true)).toBe(socket);
+    expect(socket.setKeepAlive(true, 1000)).toBe(socket);
+    expect(socket.ref()).toBe(socket);
+    expect(socket.unref()).toBe(socket);
+    socket.destroy();
+  });
+
+  it("ref/unref toggle the tracked loop handle; released on destroy", async () => {
+    const tracker = createNetHandleTracker();
+    const t = new FakeTransport();
+    const shim = createNetShim(undefined, { transport: t, handleTracker: tracker });
+    const socket = shim.connect({ port: 5, host: "h" });
+    await tick();
+    expect(tracker.hasRefed()).toBe(true);
+    socket.unref();
+    expect(tracker.hasRefed()).toBe(false);
+    socket.ref();
+    expect(tracker.hasRefed()).toBe(true);
+    socket.destroy();
+    expect(tracker.hasRefed()).toBe(false);
+  });
+});
+
+describe("Server shape", () => {
+  it("is callable without new", () => {
+    const s = (Server as unknown as (t?: ByteTransport) => Server)(new FakeTransport());
+    expect(s).toBeInstanceOf(Server);
+  });
+
+  it("listen returns the server synchronously and sets listening", async () => {
+    const t = new FakeTransport();
+    const server = new Server(t);
+    const ret = server.listen(0, "localhost");
+    expect(ret).toBe(server);
+    await tick();
+    expect(server.listening).toBe(true);
+    expect(t.listenCalls[0]).toEqual({ port: 0, host: "localhost" });
+    expect(server.address()).toEqual({ port: 4321, address: "localhost", family: "IPv4" });
+    server.close();
+  });
+
+  it("listen(options) honours backlog via maxConnections", async () => {
+    const t = new FakeTransport();
+    const server = new Server(t);
+    server.listen({ port: 9000, host: "h", backlog: 64 });
+    expect(server.maxConnections).toBe(64);
+    await tick();
+    expect(server.listening).toBe(true);
+    server.close();
+  });
+
+  it("emits 'connection' with a real Duplex Socket; getConnections counts", async () => {
+    const t = new FakeTransport();
+    const server = new Server(t);
+    const conns: Socket[] = [];
+    server.on("connection", (s: Socket) => conns.push(s));
+    server.listen(0);
+    await tick();
+    t.accept("1.2.3.4", 7777);
+    expect(conns.length).toBe(1);
+    expect(conns[0]).toBeInstanceOf(stream.Duplex);
+    expect(conns[0].remoteAddress).toBe("1.2.3.4");
+    expect(conns[0].remotePort).toBe(7777);
+    const count = await new Promise<number>((resolve) =>
+      server.getConnections((_e, n) => resolve(n)),
+    );
+    expect(count).toBe(1);
+    conns[0].destroy();
+    await tick();
+    const count2 = await new Promise<number>((resolve) =>
+      server.getConnections((_e, n) => resolve(n)),
+    );
+    expect(count2).toBe(0);
+    server.close();
+  });
+
+  it("close on a non-listening server reports ERR_SERVER_NOT_RUNNING to the callback", async () => {
+    const server = new Server(new FakeTransport());
+    const err = await new Promise<Error | undefined>((resolve) => server.close((e) => resolve(e)));
+    expect((err as Error & { code: string }).code).toBe("ERR_SERVER_NOT_RUNNING");
+  });
+
+  it("listen twice emits ERR_SERVER_ALREADY_LISTEN", async () => {
+    const t = new FakeTransport();
+    const server = new Server(t);
+    const errors: Array<Error & { code?: string }> = [];
+    server.on("error", (e: Error & { code?: string }) => errors.push(e));
+    server.listen(0);
+    await tick();
+    server.listen(0);
+    await tick();
+    expect(errors[0]?.code).toBe("ERR_SERVER_ALREADY_LISTEN");
+    server.close();
+  });
+
+  it("async listen failure maps to coded error event", async () => {
+    const t = new FakeTransport();
+    t.failListenWith = new Error("denied");
+    const server = new Server(t);
+    const errors: Array<Error & { code?: string; syscall?: string }> = [];
+    server.on("error", (e: Error & { code?: string; syscall?: string }) => errors.push(e));
+    server.listen(9999, "h");
+    await tick();
+    expect(errors[0].code).toBe("EADDRINUSE");
+    expect(errors[0].syscall).toBe("listen");
+    expect(server.listening).toBe(false);
+  });
+
+  it("listening server holds a ref'd handle until close", async () => {
+    const tracker = createNetHandleTracker();
+    const t = new FakeTransport();
+    const shim = createNetShim(undefined, { transport: t, handleTracker: tracker });
+    const server = shim.createServer();
+    server.listen(0);
+    await tick();
+    expect(tracker.hasRefed()).toBe(true);
+    server.unref();
+    expect(tracker.hasRefed()).toBe(false);
+    server.ref();
+    expect(tracker.hasRefed()).toBe(true);
+    server.close();
+    await tick();
+    expect(tracker.hasRefed()).toBe(false);
+  });
+});
+
+describe("isIP", () => {
+  it("classifies IPv4", () => {
+    expect(isIP("127.0.0.1")).toBe(4);
+    expect(isIPv4("255.255.255.255")).toBe(true);
+    expect(isIPv4("256.1.1.1")).toBe(false);
+    expect(isIP("1.2.3.4.5")).toBe(0);
+  });
+
+  it("classifies IPv6 incl. compressed and mapped forms", () => {
+    expect(isIP("::1")).toBe(6);
+    expect(isIP("fe80::1%eth0")).toBe(6);
+    expect(isIP("2001:db8::ff00:42:8329")).toBe(6);
+    expect(isIP("::ffff:127.0.0.1")).toBe(6);
+    expect(isIPv6("::")).toBe(true);
+    expect(isIP("not-an-ip")).toBe(0);
+    expect(isIP("")).toBe(0);
   });
 });
