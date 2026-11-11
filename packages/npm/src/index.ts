@@ -2,10 +2,31 @@ export { PackageManager } from "./package-manager.js";
 export type {
   ImportMap,
   PackageManagerOptions,
+  InstallOptions,
   InstallStrategy,
   InstallStrategyFn,
   InstallContext,
 } from "./package-manager.js";
+export {
+  LIFECYCLE_EVENTS,
+  LifecycleScriptError,
+  buildLifecycleEnv,
+  collectLifecycleScripts,
+  detectNativeBuild,
+  orderLifecycleQueue,
+  runLifecycleScripts,
+} from "./lifecycle.js";
+export type {
+  LifecycleEnvSpec,
+  LifecycleScriptContext,
+  LifecycleScriptErrorInit,
+  LifecycleScriptEvent,
+  LifecycleScriptResult,
+  LifecycleScriptRunner,
+  QueuedLifecyclePackage,
+  RunLifecycleScriptsOptions,
+  RunScriptsOption,
+} from "./lifecycle.js";
 export { buildEsmShUrl } from "./esm-sh.js";
 export { resolvePackage } from "./registry-resolver.js";
 export type { ResolvedPackage, ResolveCache, NpmPackument } from "./registry-resolver.js";
