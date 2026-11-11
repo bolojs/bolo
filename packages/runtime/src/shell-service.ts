@@ -1,9 +1,9 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { PackageManager } from "@bolojs/pm";
 import type { SWSandbox } from "@bolojs/sandbox";
-import { BrowserViteServer } from "@bolojs/vite-server";
 import { bundleEntry, resetBundler } from "@bolojs/registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
+import type { SpawnedProcess } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
 import { git } from "./commands/git.js";
 import { nc } from "./commands/nc.js";
@@ -80,6 +80,31 @@ export interface ShellDeps {
 export type { OutputCallbacks };
 
 let runCounter = 0;
+
+/**
+ * `new Worker(code, { eval: true })` runs raw source in a process worker —
+ * no bundler rewrite, so the node:* surface is reached through the container
+ * globals every bundled module sees (`__browserContainers.shims`).
+ */
+const WORKER_EVAL_PRELUDE = `const __wt = globalThis.__browserContainers.shims.worker_threads;
+const { parentPort, workerData, isMainThread, MessageChannel, BroadcastChannel } = __wt;
+const process = globalThis.__browserContainers.shims.process;
+`;
+
+export interface ThreadSpawnSpec {
+  filename?: string;
+  code?: string;
+  args?: readonly string[];
+  env?: Record<string, string>;
+  cwd?: string;
+  workerData?: unknown;
+  threadId?: number;
+}
+
+export interface SpawnedThreadHandle {
+  post(value: unknown): void;
+  terminate(): void;
+}
 
 /**
  * Deadline for one `bundleEntry` call. Rolldown's WASM glue
@@ -313,6 +338,8 @@ export class ShellService {
       syncServer: this.deps.syncServer!,
       xhrUrl: `${scope}__bolo_sync/${pid}`,
       shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+      spawnThread: (spec, onMessage, onExit, onStdout, onStderr) =>
+        this.spawnThreadProcess(spec, { onMessage, onExit, onStdout, onStderr }),
       quiescenceCapMs: this.deps.quiescenceCapMs,
       sabBytes:
         typeof crossOriginIsolated !== "undefined" && crossOriginIsolated ? DEFAULT_SAB_BYTES : 0,
@@ -327,6 +354,120 @@ export class ShellService {
     proc.run({ code, filename: entry, cwd: this.cwd });
     return proc;
   }
+
+  /**
+   * Worker-per-process worker_threads backend: a thread is a full
+   * NodeProcess (bundled file, or eval code behind `WORKER_EVAL_PRELUDE`)
+   * whose `parentPort`/`workerData` arrive via `PROC_RUN.thread`. Messages
+   * cross as THREAD_MSG payloads both ways; the thread's stdout/stderr ride
+   * the requester's streams.
+   */
+  private async spawnThreadProcess(
+    spec: ThreadSpawnSpec,
+    cbs: {
+      onMessage: (value: unknown) => void;
+      onExit: (code: number) => void;
+      onStdout?: (data: string) => void;
+      onStderr?: (data: string) => void;
+    },
+  ): Promise<SpawnedThreadHandle> {
+    let code: string;
+    let filename: string;
+    if (spec.code !== undefined) {
+      code = WORKER_EVAL_PRELUDE + spec.code;
+      filename = "<worker eval>";
+    } else {
+      filename = spec.filename ? this.resolvePath(spec.filename) : "<worker>";
+      const bundle = await bundleEntry(filename, {
+        vfs: this.deps.vfs,
+        cwd: spec.cwd ?? this.cwd,
+        getShim: (builtin) =>
+          globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
+      });
+      code = bundle.code;
+    }
+
+    const pid = `t${++runCounter}`;
+    const scope = this.deps.swSandbox?.scope ?? "/";
+    const proc = new NodeProcess({
+      pid,
+      vfs: this.deps.vfs,
+      sandbox: this.deps.swSandbox,
+      syncServer: this.deps.syncServer!,
+      xhrUrl: `${scope}__bolo_sync/${pid}`,
+      shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+      // Threads themselves can spawn threads — the same op path recurses.
+      spawnThread: (s, onMessage, onExit, onStdout, onStderr) =>
+        this.spawnThreadProcess(s, { onMessage, onExit, onStdout, onStderr }),
+      quiescenceCapMs: this.deps.quiescenceCapMs,
+      sabBytes:
+        typeof crossOriginIsolated !== "undefined" && crossOriginIsolated ? DEFAULT_SAB_BYTES : 0,
+    });
+    proc.onStdout = cbs.onStdout ?? null;
+    proc.onStderr = cbs.onStderr ?? null;
+    proc.onThreadMessage = cbs.onMessage;
+    const tag = `thread:${pid}`;
+    this.processes.set(tag, proc);
+    void proc.exit.then(cbs.onExit).finally(() => this.processes.delete(tag));
+    proc.run({
+      code,
+      filename,
+      args: [...(spec.args ?? [])],
+      env: spec.env,
+      cwd: spec.cwd ?? this.cwd,
+      thread: { workerData: spec.workerData, threadId: spec.threadId },
+    });
+    return {
+      post: (v) => proc.postToThread(v),
+      terminate: () => proc.kill(),
+    };
+  }
+
+  /**
+   * Synchronous-spawn facade for `createLiveShimRegistry`'s `spawnProcess`:
+   * thread spin-up (bundling, worker boot) is async behind the scenes, so
+   * messages posted before the process is live are queued and flushed.
+   */
+  private spawnProcessForShim = (spec: ThreadSpawnSpec): SpawnedProcess => {
+    let onMessage: ((v: unknown) => void) | null = null;
+    let onExit: ((c: number) => void) | null = null;
+    let onError: ((e: unknown) => void) | null = null;
+    let onStdout: ((d: string) => void) | null = null;
+    let onStderr: ((d: string) => void) | null = null;
+    let handle: SpawnedThreadHandle | null = null;
+    const queue: unknown[] = [];
+    void this.spawnThreadProcess(spec, {
+      onMessage: (v) => onMessage?.(v),
+      onExit: (c) => onExit?.(c),
+      onStdout: (d) => onStdout?.(d),
+      onStderr: (d) => onStderr?.(d),
+    }).then(
+      (h) => {
+        handle = h;
+        for (const m of queue.splice(0)) h.post(m);
+      },
+      (err) => onError?.(err),
+    );
+    return {
+      postMessage: (v) => (handle ? handle.post(v) : queue.push(v)),
+      terminate: () => handle?.terminate(),
+      setOnStdout: (cb) => {
+        onStdout = cb;
+      },
+      setOnStderr: (cb) => {
+        onStderr = cb;
+      },
+      setOnMessage: (cb) => {
+        onMessage = cb;
+      },
+      setOnExit: (cb) => {
+        onExit = cb;
+      },
+      setOnError: (cb) => {
+        onError = cb;
+      },
+    };
+  };
 
   private async runNodeApp(filePath: string, rawOutput: OutputCallbacks): Promise<number> {
     // Drop output after the program has terminated (e.g. code following
@@ -366,6 +507,12 @@ export class ShellService {
         argv: ["node", entry],
         onStdout: output.stdout,
         onStderr: output.stderr,
+        // worker_threads/fork on the main realm spawn real process workers —
+        // only where the process-worker infrastructure exists.
+        spawnProcess:
+          this.deps.syncServer && typeof Worker === "function"
+            ? this.spawnProcessForShim
+            : undefined,
       });
       globalThis.__browserContainers = {
         vfs: this.deps.vfs,

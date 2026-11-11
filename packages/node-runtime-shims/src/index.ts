@@ -28,3 +28,16 @@ export { createDnsShim } from "./dns-shim.js";
 export type { DnsShimOptions } from "./dns-shim.js";
 export { createVmShim } from "./vm-shim.js";
 export type { VmShimOptions, RunInContextOptions } from "./vm-shim.js";
+export {
+  createWorkerThreadsBackend,
+  createParentPortBridge,
+  spawnedProcessToWorkerLike,
+} from "./worker-threads-shim.js";
+export type {
+  ProcessSpawnSpec,
+  SpawnedProcess,
+  ProcessSpawner,
+  WorkerThreadInfo,
+  WorkerThreadsBackendDeps,
+  ShimMessagePort,
+} from "./worker-threads-shim.js";

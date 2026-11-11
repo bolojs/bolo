@@ -16,6 +16,28 @@ export interface ProcessOpsDeps {
   readonly sandbox?: SWSandbox;
   readonly wasmRegistry?: WasmRegistry;
   readonly shellService?: ShellService;
+  /**
+   * Worker-thread/fork spawn service. `spawn` receives the spec plus two
+   * remote callbacks (rpc `$cb`s arrive already unmarshal'd): `onMessage`
+   * for each value the thread posts up, `onExit` with the exit code.
+   */
+  readonly threads?: {
+    spawn(
+      spec: {
+        filename?: string;
+        code?: string;
+        args?: readonly string[];
+        env?: Record<string, string>;
+        cwd?: string;
+        workerData?: unknown;
+        threadId?: number;
+      },
+      onMessage: (value: unknown) => void,
+      onExit: (code: number) => void,
+      onStdout?: (data: string) => void,
+      onStderr?: (data: string) => void,
+    ): Promise<{ post(value: unknown): void; terminate(): void }>;
+  };
 }
 
 export type OpDispatch = (op: string, args: unknown[]) => Promise<unknown>;
@@ -245,6 +267,44 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
   }
   if (shellService) {
     ops["shell.exec"] = (command: string, args: string[]) => shellService.exec(command, args);
+  }
+
+  if (deps.threads) {
+    const threads = deps.threads;
+    const spawned = new Map<number, { post(v: unknown): void; terminate(): void }>();
+    let nextThreadHandle = 1;
+    ops["thread.spawn"] = async (
+      spec: Parameters<typeof threads.spawn>[0],
+      onMessage: (v: unknown) => void,
+      onExit: (code: number) => void,
+      onStdout?: (data: string) => void,
+      onStderr?: (data: string) => void,
+    ) => {
+      let id = 0;
+      const handle = await threads.spawn(
+        spec,
+        onMessage,
+        (code) => {
+          spawned.delete(id);
+          onExit(code);
+        },
+        onStdout,
+        onStderr,
+      );
+      id = nextThreadHandle++;
+      spawned.set(id, handle);
+      return id;
+    };
+    ops["thread.send"] = (id: number, value: unknown) => {
+      spawned.get(id)?.post(value);
+      return 0;
+    };
+    ops["thread.terminate"] = (id: number) => {
+      const handle = spawned.get(id);
+      spawned.delete(id);
+      handle?.terminate();
+      return 0;
+    };
   }
 
   return async (op, args) => {
