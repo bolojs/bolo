@@ -112,10 +112,7 @@ export interface WorkerThreadsShim {
   readonly BroadcastChannel: BroadcastChannelConstructor;
   readonly SHARE_ENV: symbol;
   readonly receiveMessageOnPort: (port: unknown) => unknown;
-  readonly moveMessagePortToContext: (
-    port: unknown,
-    contextifiedSandbox?: unknown,
-  ) => unknown;
+  readonly moveMessagePortToContext: (port: unknown, contextifiedSandbox?: unknown) => unknown;
   readonly markAsUntransferable: typeof markAsUntransferable;
   readonly markAsUncloneable: typeof markAsUncloneable;
   readonly isMarkedAsUntransferable: typeof isMarkedAsUntransferable;
@@ -163,8 +160,7 @@ const assertCloneable = (value: unknown, seen = new Set<unknown>()): void => {
     for (const item of value) assertCloneable(item, seen);
     return;
   }
-  if (value instanceof Uint8Array || value instanceof ArrayBuffer || value instanceof Date)
-    return;
+  if (value instanceof Uint8Array || value instanceof ArrayBuffer || value instanceof Date) return;
   if (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null) {
     for (const item of Object.values(value)) assertCloneable(item, seen);
   }
@@ -306,9 +302,8 @@ const createLinkedPair = (): [ShimMessagePort, ShimMessagePort] => {
   return [port1, port2];
 };
 
-const NativeMessageChannel = (
-  globalThis as { MessageChannel?: typeof MessageChannel }
-).MessageChannel;
+const NativeMessageChannel = (globalThis as { MessageChannel?: typeof globalThis.MessageChannel })
+  .MessageChannel;
 
 export class ShimMessageChannel {
   readonly port1: ShimMessagePort;
@@ -384,19 +379,17 @@ self.addEventListener("message", (e) => {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __boloWorkerThread:
-    | { workerData?: unknown; port?: unknown }
-    | undefined;
+  var __boloWorkerThread: { workerData?: unknown; port?: unknown } | undefined;
 }
 
 const browserWorkerSpawner: WorkerThreadSpawner | undefined =
-  typeof Worker === "function" && typeof Blob === "function" && typeof URL === "function"
+  typeof globalThis.Worker === "function" && typeof Blob === "function" && typeof URL === "function"
     ? (spec) => {
         const blob = new Blob([WORKER_BOOTSTRAP], { type: "text/javascript" });
         const url = URL.createObjectURL(blob);
-        let worker: Worker;
+        let worker: InstanceType<typeof globalThis.Worker>;
         try {
-          worker = new Worker(url);
+          worker = new globalThis.Worker(url);
         } catch {
           URL.revokeObjectURL(url);
           return undefined;
@@ -541,10 +534,14 @@ export const createWorkerThreadsShim = (
       if (this.exitCode !== null) return;
       this.exitCode = code;
       liveWorkers.delete(this.threadId);
-      this.handle?.setOnMessage(null);
       this.handle?.setOnError(null);
       this.handle?.setOnExit(null);
-      this.emit("exit", code);
+      // Leave onMessage attached: values already queued on the transport must
+      // still deliver (Node delivers messages posted before exit). 'exit'
+      // fires two microtask hops out so a value queued ahead of it delivers
+      // first AND the continuation that awaits it gets a chance to attach its
+      // 'exit' listener.
+      queueMicrotask(() => queueMicrotask(() => this.emit("exit", code)));
     }
 
     postMessage(value: unknown, transferList?: readonly unknown[]): void {
@@ -681,8 +678,6 @@ export const setEnvironmentData = defaultShim.setEnvironmentData;
 export const getEnvironmentData = defaultShim.getEnvironmentData;
 export const postMessageToThread = defaultShim.postMessageToThread;
 export const getHeapSnapshot = (): Promise<never> =>
-  Promise.reject(
-    new Error("getHeapSnapshot is not supported: no V8 heap access in this realm"),
-  );
+  Promise.reject(new Error("getHeapSnapshot is not supported: no V8 heap access in this realm"));
 
 export default defaultShim;

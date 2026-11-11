@@ -9,7 +9,10 @@ import {
 import type { ProcessSpawnSpec, SpawnedProcess } from "./worker-threads-shim.js";
 
 interface WorkerThreadsModule {
-  Worker: new (filename: string, opts?: Record<string, unknown>) => {
+  Worker: new (
+    filename: string,
+    opts?: Record<string, unknown>,
+  ) => {
     on(event: string, cb: (...args: any[]) => void): unknown;
     postMessage(v: unknown): void;
     terminate(): Promise<number>;
@@ -22,7 +25,11 @@ interface WorkerThreadsModule {
 }
 
 interface ChildProcessModule {
-  fork(modulePath: string, args?: string[], options?: Record<string, unknown>): {
+  fork(
+    modulePath: string,
+    args?: string[],
+    options?: Record<string, unknown>,
+  ): {
     on(event: string, cb: (...args: any[]) => void): unknown;
     send(m: unknown): boolean;
     kill(): boolean;
@@ -65,22 +72,17 @@ const fakeProcessSpawner = () => {
     spawned.push({ spec, proc, toParent: (v) => onMessage?.(v) });
     queueMicrotask(() => {
       try {
-        new Function(
+        const fn = new Function(
           "parentPort",
           "workerData",
           "isMainThread",
           "process",
           spec.code ?? "",
-        )(
-          parentPort,
-          spec.workerData,
-          false,
-          {
-            send: (m: unknown) =>
-              queueMicrotask(() => onMessage?.({ type: "IPC_MESSAGE", data: m })),
-            exit: (c?: number) => onExit?.(c ?? 0),
-          },
         );
+        fn(parentPort, spec.workerData, false, {
+          send: (m: unknown) => queueMicrotask(() => onMessage?.({ type: "IPC_MESSAGE", data: m })),
+          exit: (c?: number) => onExit?.(c ?? 0),
+        });
         if (spec.code !== undefined) onExit?.(0);
       } catch {
         onExit?.(1);

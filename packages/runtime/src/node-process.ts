@@ -107,13 +107,7 @@ export class NodeProcess {
       threads: deps.spawnThread
         ? {
             spawn: async (spec, onMessage, onExit, onStdout, onStderr) => {
-              const handle = await deps.spawnThread!(
-                spec,
-                onMessage,
-                onExit,
-                onStdout,
-                onStderr,
-              );
+              const handle = await deps.spawnThread!(spec, onMessage, onExit, onStdout, onStderr);
               this.spawnedThreads.add(handle);
               return {
                 post: (v) => handle.post(v),

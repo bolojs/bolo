@@ -215,7 +215,7 @@ const runProcess = async (msg: ProcRunMessage) => {
     pid: msg.pid,
     xhrUrl: msg.xhrUrl,
     sab: msg.sab,
-    postMessage: (m, transfer) => post(m),
+    postMessage: (m, _transfer) => post(m),
     timeoutMs: 30000,
   });
   void caller;

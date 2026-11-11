@@ -1,7 +1,6 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { PackageManager } from "@bolojs/pm";
 import type { SWSandbox } from "@bolojs/sandbox";
-import { BrowserViteServer } from "@bolojs/vite-server";
 import { bundleEntry, resetBundler } from "@bolojs/registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
 import type { SpawnedProcess } from "@bolojs/node-runtime-shims";

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import type { VfsBus } from "@bolojs/fs";
 import { createProcessOps } from "./remote-ops.js";
 
-const vfs = {} as VfsBus;
+const vfs = { hot: {} } as unknown as VfsBus;
 
 describe("createProcessOps thread.* ops", () => {
   it("spawns, relays send, and terminates a thread", async () => {
@@ -57,8 +57,6 @@ describe("createProcessOps thread.* ops", () => {
 
   it("rejects unknown ops without a threads dep", async () => {
     const dispatch = createProcessOps({ vfs });
-    await expect(dispatch("thread.spawn", [{}, () => {}, () => {}])).rejects.toThrow(
-      /unknown op/,
-    );
+    await expect(dispatch("thread.spawn", [{}, () => {}, () => {}])).rejects.toThrow(/unknown op/);
   });
 });
