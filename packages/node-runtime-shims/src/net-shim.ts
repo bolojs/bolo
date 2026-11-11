@@ -734,10 +734,7 @@ type SocketInternal = Socket;
 Object.setPrototypeOf(Socket.prototype, DuplexCtor.prototype);
 Object.setPrototypeOf(Socket, DuplexCtor);
 
-Socket.fromAcceptedConnection = (
-  conn: AcceptedConnection,
-  tracker?: NetHandleTracker,
-): Socket => {
+Socket.fromAcceptedConnection = (conn: AcceptedConnection, tracker?: NetHandleTracker): Socket => {
   const socket = new Socket(undefined, {
     port: conn.remotePort,
     host: conn.remoteAddress,
@@ -866,10 +863,7 @@ Socket.prototype.connect = function connect(
       self._releaseHandle();
       const e = err instanceof Error ? err : new Error(String(err));
       const code = (e as { code?: string }).code;
-      const mapped =
-        code !== undefined
-          ? e
-          : errnoException("ECONNREFUSED", "connect", host, port);
+      const mapped = code !== undefined ? e : errnoException("ECONNREFUSED", "connect", host, port);
       // destroy(err) emits 'error' (via the streams destroy path) then
       // 'close' — the Node ordering for a failed connect.
       self.destroy(mapped);
@@ -1101,10 +1095,7 @@ Socket.prototype.unref = function unref(this: SocketInternal): Socket {
   return this;
 } as Socket["unref"];
 
-Socket.prototype.setNoDelay = function setNoDelay(
-  this: SocketInternal,
-  noDelay = true,
-): Socket {
+Socket.prototype.setNoDelay = function setNoDelay(this: SocketInternal, noDelay = true): Socket {
   // TCP_NODELAY is applied relay-side; tracked for shape parity.
   this._noDelay = Boolean(noDelay);
   return this;
@@ -1257,7 +1248,11 @@ export const Server = function Server(
       ): Server;
     })(transport, options, connectionListener);
   }
-  (EventEmitter as unknown as { call(thisArg: unknown): void }).call(this);
+  // `events` is a class, not a function-style ctor — `EventEmitter.call(this)`
+  // throws "class constructor cannot be invoked without 'new'". Node's legacy
+  // `EventEmitter.init(this)` performs the same `_events`/`_eventsCount`
+  // initialization the stream port uses in `Stream`.
+  events.init(this);
   const self = this as unknown as ServerInternal;
   self._transport = transport ?? new NoopTransport();
   self._tracker = defaultHandleTracker;
@@ -1449,9 +1444,7 @@ export interface NetShimOptions {
   transport?: ByteTransport;
 }
 
-const normalizeConnectArgs = (
-  args: unknown[],
-): { options: NetConnectOptions; cb?: () => void } => {
+const normalizeConnectArgs = (args: unknown[]): { options: NetConnectOptions; cb?: () => void } => {
   const [a, b, c] = args;
   if (typeof a === "number") {
     return {

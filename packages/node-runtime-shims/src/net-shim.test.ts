@@ -210,6 +210,8 @@ describe("net-shim", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     socket.write("hello");
+    // _write -> WritableStream writer.write -> sink write runs in microtasks.
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const sent = parseFrame(ws.sent[1]);
     expect(sent.type).toBe(FRAME_TYPE.DATA);
     expect(sent.connectionId).toBe("abc00000");
@@ -372,6 +374,7 @@ describe("net-shim", () => {
     expect(new TextDecoder().decode(chunks[0])).toBe("hello from relay");
 
     socket.write("hello from socket");
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const dataFrame = ws.sent
       .map((bytes) => parseFrame(bytes))
       .find((frame) => frame.type === FRAME_TYPE.DATA && frame.connectionId === "inbound1");
@@ -676,7 +679,11 @@ class FakeTransport implements ByteTransport {
 
   connect(options: { port: number; host?: string }) {
     this.connectCalls.push(options);
-    this.connReadable = new ReadableStream<Uint8Array>((c) => (this.controller = c));
+    this.connReadable = new ReadableStream<Uint8Array>({
+      start: (c) => {
+        this.controller = c;
+      },
+    });
     this.connWritable = new WritableStream<Uint8Array>({
       write: async (chunk) => {
         if (this.writerAborted) throw new Error("abort");
@@ -689,7 +696,10 @@ class FakeTransport implements ByteTransport {
         this.writerAborted = true;
       },
     });
-    return new Promise((resolve, reject) => {
+    return new Promise<{
+      readable: ReadableStream<Uint8Array>;
+      writable: WritableStream<Uint8Array>;
+    }>((resolve, reject) => {
       if (this.failConnectWith) {
         reject(
           typeof this.failConnectWith === "string"
@@ -744,7 +754,11 @@ class FakeTransport implements ByteTransport {
 
   accept(remoteAddress = "10.0.0.9", remotePort = 5150) {
     let ctrl!: ReadableStreamDefaultController<Uint8Array>;
-    const readable = new ReadableStream<Uint8Array>((c) => (ctrl = c));
+    const readable = new ReadableStream<Uint8Array>({
+      start: (c) => {
+        ctrl = c;
+      },
+    });
     const acceptedWrites: Uint8Array[] = [];
     const writable = new WritableStream<Uint8Array>({
       write: async (chunk) => {
@@ -769,7 +783,12 @@ describe("Socket as stream.Duplex", () => {
     const socket = new Socket(new FakeTransport(), { port: 1 });
     expect(socket).toBeInstanceOf(stream.Duplex);
     expect(socket).toBeInstanceOf(stream.Readable);
-    expect(socket).toBeInstanceOf(stream.Writable);
+    // Node's Duplex copies Writable's methods onto its prototype rather than
+    // chaining to Writable.prototype, so `instanceof stream.Writable` is false
+    // (as in Node). Check the writable surface instead.
+    expect(socket).toBeInstanceOf(stream.Stream);
+    expect(typeof socket.write).toBe("function");
+    expect(typeof socket.end).toBe("function");
     socket.destroy();
   });
 
@@ -862,7 +881,7 @@ describe("Socket as stream.Duplex", () => {
         cb();
       },
     });
-    socket.pipe(dest);
+    socket.pipe(dest as never);
     await t.feed(new TextEncoder().encode("piped"));
     expect(new TextDecoder().decode(chunks[0])).toBe("piped");
     socket.destroy();
@@ -876,6 +895,9 @@ describe("Socket as stream.Duplex", () => {
     socket.on("close", () => order.push("close"));
     socket.connect({ port: 5 });
     await tick();
+    // 'end' is only emitted once the readable side is consumed (flowing) —
+    // faithful stream semantics: a paused stream buffers EOF indefinitely.
+    socket.resume();
     await t.feedEnd();
     expect(order[0]).toBe("end");
     await tick();
