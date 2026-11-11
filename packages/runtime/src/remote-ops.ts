@@ -2,6 +2,12 @@ import type { VfsBus } from "@bolojs/fs";
 import type { SWSandbox } from "@bolojs/sandbox";
 import type { WasmRegistry, ShellService } from "@bolojs/node-runtime-shims";
 import { getLogger } from "@bolojs/log/browser";
+import {
+  HOT_CALLBACK_METHODS,
+  HOT_PROMISE_METHODS,
+  HOT_SYNC_METHODS,
+  VOL_SYNC_METHODS,
+} from "./remote-vfs-surface.js";
 
 const logger = getLogger(["bolo", "runtime", "remote-ops"]);
 
@@ -102,32 +108,127 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
 
   // Synchronous volume ops — reachable over the sync channel as
   // `vfs.hot.<method>` (and over async RPC too; they're sync on main).
-  const hot = vfs.hot as unknown as Record<string, (...args: unknown[]) => unknown>;
-  for (const method of [
-    "readFileSync",
-    "writeFileSync",
-    "mkdirSync",
-    "rmSync",
-    "readdirSync",
-    "existsSync",
-    "statSync",
-    "lstatSync",
-    "symlinkSync",
-    "readlinkSync",
-    "renameSync",
-    "copyFileSync",
-    "chmodSync",
-    "appendFileSync",
-    "realpathSync",
-    "utimesSync",
-    "truncateSync",
-    "unlinkSync",
-    "rmdirSync",
-    "accessSync",
-    "mkdtempSync",
-  ]) {
+  const hot = vfs.hot as unknown as Record<string, (...args: any[]) => any>;
+  for (const method of HOT_SYNC_METHODS) {
     if (typeof hot[method] === "function") {
       ops[`vfs.hot.${method}`] = (...args: unknown[]) => hot[method](...args);
+    }
+  }
+
+  // Buffer-mutating sync ops: the result carries the bytes back so the
+  // facade can copy them into the caller's buffer (args arrive by value).
+  if (typeof hot.readSync === "function") {
+    ops["vfs.hot.readSync"] = (
+      fd: number,
+      buffer: Uint8Array,
+      offset: number,
+      length: number,
+      position: number | null,
+    ) => ({ bytesRead: hot.readSync(fd, buffer, offset, length, position), buffer });
+  }
+  if (typeof hot.readvSync === "function") {
+    ops["vfs.hot.readvSync"] = (fd: number, buffers: Uint8Array[], position?: number | null) => ({
+      bytesRead: hot.readvSync(fd, buffers, position),
+      buffers,
+    });
+  }
+
+  // Callback-style async ops — served over async RPC (`vfs.hot.<method>`).
+  // memfs requires the trailing Node callback, so each op injects one and
+  // resolves the single result (Node's extra result args — e.g. the buffer
+  // in read/write — are handled by the dedicated ops below or dropped;
+  // callers only use the scalar).
+  for (const method of HOT_CALLBACK_METHODS) {
+    if (typeof hot[method] === "function") {
+      ops[`vfs.hot.${method}`] = (...args: unknown[]) =>
+        new Promise((resolve, reject) => {
+          hot[method](...args, (err: unknown, ...results: unknown[]) => {
+            if (err) reject(err);
+            else resolve(results.length <= 1 ? results[0] : results);
+          });
+        });
+    }
+  }
+
+  // realpath's `.native` variants ship as flat-named ops. Call through the
+  // parent function object so any receiver binding survives.
+  const realpathFn = hot.realpath as { native?: (...args: any[]) => any } | undefined;
+  if (typeof realpathFn?.native === "function") {
+    ops["vfs.hot.realpathNative"] = (...args: unknown[]) =>
+      new Promise((resolve, reject) => {
+        realpathFn.native!(...args, (err: unknown, result: unknown) =>
+          err ? reject(err) : resolve(result),
+        );
+      });
+  }
+  const realpathSyncFn = hot.realpathSync as { native?: (...args: any[]) => any } | undefined;
+  if (typeof realpathSyncFn?.native === "function") {
+    ops["vfs.hot.realpathSyncNative"] = (...args: unknown[]) => realpathSyncFn.native!(...args);
+  }
+
+  // fd-family async ops with buffer results that must round-trip.
+  if (typeof hot.read === "function") {
+    ops["vfs.hot.read"] = (
+      fd: number,
+      buffer: Uint8Array,
+      offset: number,
+      length: number,
+      position: number | null,
+    ) =>
+      new Promise((resolve, reject) => {
+        hot.read(fd, buffer, offset, length, position, (err: unknown, n: number, b: unknown) =>
+          err ? reject(err) : resolve({ bytesRead: n, buffer: b }),
+        );
+      });
+  }
+  if (typeof hot.readv === "function") {
+    ops["vfs.hot.readv"] = (fd: number, buffers: Uint8Array[], position?: number | null) =>
+      new Promise((resolve, reject) => {
+        hot.readv(fd, buffers, position, (err: unknown, n: number, bufs: unknown) =>
+          err ? reject(err) : resolve({ bytesRead: n, buffers: bufs }),
+        );
+      });
+  }
+  if (typeof hot.write === "function") {
+    ops["vfs.hot.write"] = (...args: unknown[]) =>
+      new Promise((resolve, reject) => {
+        hot.write(...args, (err: unknown, n: number) =>
+          err ? reject(err) : resolve({ bytesWritten: n }),
+        );
+      });
+  }
+  if (typeof hot.writev === "function") {
+    ops["vfs.hot.writev"] = (fd: number, buffers: Uint8Array[], position?: number | null) =>
+      new Promise((resolve, reject) => {
+        hot.writev(fd, buffers, position, (err: unknown, n: number) =>
+          err ? reject(err) : resolve({ bytesWritten: n }),
+        );
+      });
+  }
+
+  // `hot.promises.*` — async RPC only. Methods returning live objects
+  // (FileHandle, Dir, AsyncIterator) are deliberately not served.
+  const hotPromises = vfs.hot.promises as unknown as
+    | Record<string, (...args: any[]) => Promise<unknown>>
+    | undefined;
+  if (hotPromises) {
+    for (const method of HOT_PROMISE_METHODS) {
+      if (typeof hotPromises[method] === "function") {
+        ops[`vfs.hot.promises.${method}`] = (...args: unknown[]) => hotPromises[method](...args);
+      }
+    }
+  }
+
+  // The full Node constants table is plain JSON — ship it verbatim.
+  ops["vfs.hot.constants"] = () => vfs.hot.constants;
+
+  // Volume-only methods the memfs IFs facade does not carry.
+  const vol = vfs.vol as unknown as Record<string, (...args: any[]) => any> | undefined;
+  if (vol) {
+    for (const method of VOL_SYNC_METHODS) {
+      if (typeof vol[method] === "function") {
+        ops[`vfs.vol.${method}`] = (...args: unknown[]) => vol[method](...args);
+      }
     }
   }
 

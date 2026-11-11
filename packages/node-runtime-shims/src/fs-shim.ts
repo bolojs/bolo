@@ -254,19 +254,81 @@ export const createFsShim = (vfs: VfsBus) => {
   // below is a direct delegation (with a promise fallback when the callback
   // is omitted). `cpSync`/`statfsSync` live on the Volume in memfs 4.56 but
   // are not copied onto the `IFs` facade, hence `vfs.vol`.
-  const hot = vfs.hot as unknown as Record<string, (...args: any[]) => any>;
-  const vol = vfs.vol as unknown as Record<string, (...args: any[]) => any>;
-  const hotPromises = vfs.hot.promises as unknown as Record<string, (...args: any[]) => any>;
+  //
+  // Inside a process worker `vfs.hot`/`vfs.vol`/`hot.promises` are RPC
+  // facades, not the real memfs objects: some members are proxied, some are
+  // absent (FileHandle, Dir, streams, stat-watchers — live objects cannot
+  // cross the boundary). Construction must therefore feature-detect instead
+  // of dereferencing — a member that is absent yields a clear error at call
+  // time rather than a TypeError here.
+  const hot = vfs.hot as unknown as Record<string, ((...args: any[]) => any) | undefined>;
+  const vol = vfs.vol as unknown as
+    | Record<string, ((...args: any[]) => any) | undefined>
+    | undefined;
+  const hotPromises = vfs.hot.promises as unknown as
+    | Record<string, ((...args: any[]) => any) | undefined>
+    | undefined;
 
-  const realpath = Object.assign(dual(hot.realpath), {
-    native: dual((hot.realpath as any).native),
-  });
+  const unsupported = (name: string): Error =>
+    new Error(`fs.${name} is not supported by this VFS backend`);
+
+  /** `dual(hot[name])` that degrades to a clear error when absent. */
+  const dualHot = (name: string) => {
+    const fn = hot[name];
+    if (typeof fn === "function") return dual(fn);
+    return (...args: any[]) => {
+      const cb =
+        typeof args[args.length - 1] === "function" ? (args.pop() as NodeCallback) : undefined;
+      const err = unsupported(name);
+      if (cb) {
+        cb(err);
+        return undefined;
+      }
+      return Promise.reject(err);
+    };
+  };
+
+  /** `hot[name]` passthrough that throws a clear error when absent. */
+  const syncHot = (name: string) => {
+    if (typeof hot[name] === "function") return (...args: any[]) => hot[name]!(...args);
+    return () => {
+      throw unsupported(name);
+    };
+  };
+
+  /** `hotPromises[name]` passthrough that rejects clearly when absent. */
+  const promiseHot = (name: string) => {
+    if (typeof hotPromises?.[name] === "function") {
+      return (...args: any[]) => hotPromises![name]!(...args);
+    }
+    return () => Promise.reject(unsupported(`promises.${name}`));
+  };
+
+  /** `vol[name]` passthrough that throws a clear error when absent.
+   * Receiver is preserved at call time — Volume methods use `this`. */
+  const syncVol = (name: string) => {
+    if (typeof vol?.[name] === "function") return (...args: any[]) => vol![name]!(...args);
+    return () => {
+      throw unsupported(name);
+    };
+  };
+
+  const realpathNativeFn = (hot.realpath as { native?: unknown } | undefined)?.native;
+  const realpath = Object.assign(
+    dualHot("realpath"),
+    typeof realpathNativeFn === "function"
+      ? { native: dual(realpathNativeFn as (...args: any[]) => any) }
+      : {},
+  );
+  const realpathSyncNativeFn = (hot.realpathSync as { native?: unknown } | undefined)?.native;
   const realpathSync = Object.assign(
     (path: string, opts?: unknown) => vfs.hot.realpathSync(path, opts as never) as string,
-    {
-      native: (path: string, opts?: unknown) =>
-        (hot.realpathSync as any).native(path, opts) as string,
-    },
+    typeof realpathSyncNativeFn === "function"
+      ? {
+          native: (path: string, opts?: unknown) =>
+            (realpathSyncNativeFn as (...args: any[]) => any)(path, opts) as string,
+        }
+      : {},
   );
 
   const promises = {
@@ -282,31 +344,33 @@ export const createFsShim = (vfs: VfsBus) => {
     symlink: symlinkImpl,
     readlink: readlinkImpl,
     lstat: lstatImpl,
-    // memfs FsPromises breadth — includes `open` returning a real FileHandle.
-    access: (...args: any[]) => hotPromises.access(...args),
-    appendFile: (...args: any[]) => hotPromises.appendFile(...args),
-    chmod: (...args: any[]) => hotPromises.chmod(...args),
-    chown: (...args: any[]) => hotPromises.chown(...args),
-    copyFile: (...args: any[]) => hotPromises.copyFile(...args),
-    cp: (...args: any[]) => hotPromises.cp(...args),
-    lchmod: (...args: any[]) => hotPromises.lchmod(...args),
-    lchown: (...args: any[]) => hotPromises.lchown(...args),
-    link: (...args: any[]) => hotPromises.link(...args),
-    lutimes: (...args: any[]) => hotPromises.lutimes(...args),
-    mkdtemp: (...args: any[]) => hotPromises.mkdtemp(...args),
-    open: (...args: any[]) => hotPromises.open(...args),
-    opendir: (...args: any[]) => hotPromises.opendir(...args),
-    realpath: (...args: any[]) => hotPromises.realpath(...args),
-    rename: (...args: any[]) => hotPromises.rename(...args),
-    rmdir: (...args: any[]) => hotPromises.rmdir(...args),
-    statfs: (...args: any[]) => hotPromises.statfs(...args),
-    truncate: (...args: any[]) => hotPromises.truncate(...args),
-    unlink: (...args: any[]) => hotPromises.unlink(...args),
-    utimes: (...args: any[]) => hotPromises.utimes(...args),
-    watch: (...args: any[]) => hotPromises.watch(...args),
-    glob: (...args: any[]) => hotPromises.glob(...args),
+    // memfs FsPromises breadth — includes `open` returning a real FileHandle
+    // (on a real VfsBus; on a worker facade `open`/`opendir`/`watch`/`glob`
+    // reject clearly — their results cannot cross the boundary).
+    access: promiseHot("access"),
+    appendFile: promiseHot("appendFile"),
+    chmod: promiseHot("chmod"),
+    chown: promiseHot("chown"),
+    copyFile: promiseHot("copyFile"),
+    cp: promiseHot("cp"),
+    lchmod: promiseHot("lchmod"),
+    lchown: promiseHot("lchown"),
+    link: promiseHot("link"),
+    lutimes: promiseHot("lutimes"),
+    mkdtemp: promiseHot("mkdtemp"),
+    open: promiseHot("open"),
+    opendir: promiseHot("opendir"),
+    realpath: promiseHot("realpath"),
+    rename: promiseHot("rename"),
+    rmdir: promiseHot("rmdir"),
+    statfs: promiseHot("statfs"),
+    truncate: promiseHot("truncate"),
+    unlink: promiseHot("unlink"),
+    utimes: promiseHot("utimes"),
+    watch: promiseHot("watch"),
+    glob: promiseHot("glob"),
     constants: vfs.hot.constants,
-    FileHandle: (vfs.hot.promises as unknown as { FileHandle: unknown }).FileHandle,
+    FileHandle: (vfs.hot.promises as unknown as { FileHandle?: unknown } | undefined)?.FileHandle,
   };
 
   return {
@@ -331,57 +395,58 @@ export const createFsShim = (vfs: VfsBus) => {
     lstat,
     lstatSync,
     watch,
-    // Callback/promise dual surface backed by memfs directly.
-    access: dual(hot.access),
+    // Callback/promise dual surface backed by memfs directly (or by the
+    // worker RPC facade, which presents the same callback contract).
+    access: dualHot("access"),
     accessSync: (path: string, mode?: number) => vfs.hot.accessSync(path, mode),
-    appendFile: dual(hot.appendFile),
+    appendFile: dualHot("appendFile"),
     appendFileSync: (path: string, data: string | Uint8Array, opts?: unknown) =>
       vfs.hot.appendFileSync(path, data, opts as never),
-    chmod: dual(hot.chmod),
+    chmod: dualHot("chmod"),
     chmodSync: (path: string, mode: string | number) => vfs.hot.chmodSync(path, mode as never),
-    chown: dual(hot.chown),
+    chown: dualHot("chown"),
     chownSync: (path: string, uid: number, gid: number) => vfs.hot.chownSync(path, uid, gid),
-    close: dual(hot.close),
+    close: dualHot("close"),
     closeSync: (fd: number) => vfs.hot.closeSync(fd),
-    copyFile: dual(hot.copyFile),
+    copyFile: dualHot("copyFile"),
     copyFileSync: (src: string, dest: string, mode?: number) =>
       vfs.hot.copyFileSync(src, dest, mode),
-    cp: dual(hot.cp),
-    cpSync: (src: string, dest: string, opts?: unknown) => vol.cpSync(src, dest, opts),
-    fchmod: dual(hot.fchmod),
+    cp: dualHot("cp"),
+    cpSync: (src: string, dest: string, opts?: unknown) => syncVol("cpSync")(src, dest, opts),
+    fchmod: dualHot("fchmod"),
     fchmodSync: (fd: number, mode: string | number) => vfs.hot.fchmodSync(fd, mode as never),
-    fchown: dual(hot.fchown),
+    fchown: dualHot("fchown"),
     fchownSync: (fd: number, uid: number, gid: number) => vfs.hot.fchownSync(fd, uid, gid),
-    fdatasync: dual(hot.fdatasync),
+    fdatasync: dualHot("fdatasync"),
     fdatasyncSync: (fd: number) => vfs.hot.fdatasyncSync(fd),
-    fstat: dual(hot.fstat),
+    fstat: dualHot("fstat"),
     fstatSync: (fd: number) => vfs.hot.fstatSync(fd) as unknown as FsStat,
-    fsync: dual(hot.fsync),
+    fsync: dualHot("fsync"),
     fsyncSync: (fd: number) => vfs.hot.fsyncSync(fd),
-    ftruncate: dual(hot.ftruncate),
+    ftruncate: dualHot("ftruncate"),
     ftruncateSync: (fd: number, len?: number) => vfs.hot.ftruncateSync(fd, len),
-    futimes: dual(hot.futimes),
+    futimes: dualHot("futimes"),
     futimesSync: (fd: number, atime: unknown, mtime: unknown) =>
       vfs.hot.futimesSync(fd, atime as never, mtime as never),
-    lchmod: dual(hot.lchmod),
+    lchmod: dualHot("lchmod"),
     lchmodSync: (path: string, mode: string | number) => vfs.hot.lchmodSync(path, mode as never),
-    lchown: dual(hot.lchown),
+    lchown: dualHot("lchown"),
     lchownSync: (path: string, uid: number, gid: number) => vfs.hot.lchownSync(path, uid, gid),
-    link: dual(hot.link),
+    link: dualHot("link"),
     linkSync: (existingPath: string, newPath: string) => vfs.hot.linkSync(existingPath, newPath),
-    lutimes: dual(hot.lutimes),
+    lutimes: dualHot("lutimes"),
     lutimesSync: (path: string, atime: unknown, mtime: unknown) =>
       vfs.hot.lutimesSync(path, atime as never, mtime as never),
-    mkdtemp: dual(hot.mkdtemp),
+    mkdtemp: dualHot("mkdtemp"),
     mkdtempSync: (prefix: string, opts?: unknown) =>
       vfs.hot.mkdtempSync(prefix, opts as never) as string,
-    open: dual(hot.open),
+    open: dualHot("open"),
     openSync: (path: string, flags?: string | number, mode?: string | number) =>
       vfs.hot.openSync(path, flags as never, mode as never),
-    opendir: dual(hot.opendir),
+    opendir: dualHot("opendir"),
     opendirSync: (path: string, opts?: unknown): FsDirShim =>
-      vfs.hot.opendirSync(path, opts as never) as unknown as FsDirShim,
-    read: dual(hot.read),
+      syncHot("opendirSync")(path, opts) as unknown as FsDirShim,
+    read: dualHot("read"),
     readSync: (
       fd: number,
       buffer: Uint8Array,
@@ -389,54 +454,65 @@ export const createFsShim = (vfs: VfsBus) => {
       length: number,
       position: number | null,
     ) => vfs.hot.readSync(fd, buffer as never, offset, length, position),
-    readv: dual(hot.readv),
+    readv: dualHot("readv"),
     readvSync: (fd: number, buffers: Uint8Array[], position?: number | null) =>
       vfs.hot.readvSync(fd, buffers as never[], position),
     realpath,
     realpathSync,
-    rename: dual(hot.rename),
+    rename: dualHot("rename"),
     renameSync: (oldPath: string, newPath: string) => vfs.hot.renameSync(oldPath, newPath),
-    rmdir: dual(hot.rmdir),
+    rmdir: dualHot("rmdir"),
     rmdirSync: (path: string, opts?: unknown) => vfs.hot.rmdirSync(path, opts as never),
-    statfs: dual(hot.statfs),
-    statfsSync: (path: string, opts?: unknown) => vol.statfsSync(path, opts),
-    truncate: dual(hot.truncate),
+    statfs: dualHot("statfs"),
+    statfsSync: (path: string, opts?: unknown) => syncVol("statfsSync")(path, opts),
+    truncate: dualHot("truncate"),
     truncateSync: (path: string, len?: number) => vfs.hot.truncateSync(path, len),
-    unlink: dual(hot.unlink),
+    unlink: dualHot("unlink"),
     unlinkSync: (path: string) => vfs.hot.unlinkSync(path),
-    utimes: dual(hot.utimes),
+    utimes: dualHot("utimes"),
     utimesSync: (path: string, atime: unknown, mtime: unknown) =>
       vfs.hot.utimesSync(path, atime as never, mtime as never),
-    write: dual(hot.write),
+    write: dualHot("write"),
     writeSync: (fd: number, buffer: Uint8Array | string, ...rest: any[]) =>
       vfs.hot.writeSync(fd, buffer as never, ...(rest as [number, number, number | null])),
-    writev: dual(hot.writev),
+    writev: dualHot("writev"),
     writevSync: (fd: number, buffers: Uint8Array[], position?: number | null) =>
       vfs.hot.writevSync(fd, buffers as never[], position),
-    // Stat polling watchers (Node semantics: listener gets (curr, prev) Stats).
-    watchFile: (path: string, ...args: any[]) => hot.watchFile(path, ...args),
-    unwatchFile: (path: string, listener?: (...args: any[]) => void) =>
-      hot.unwatchFile(path, listener),
-    StatWatcher: (vfs.hot as unknown as { StatWatcher: unknown }).StatWatcher,
+    // Stat polling watchers (Node semantics: listener gets (curr, prev)
+    // Stats). Stat watchers are main-realm objects — absent on a worker
+    // facade, so this degrades to a clear error there.
+    watchFile:
+      typeof hot.watchFile === "function"
+        ? (path: string, ...args: any[]) => (hot.watchFile as (...a: any[]) => any)(path, ...args)
+        : () => {
+            throw unsupported("watchFile");
+          },
+    unwatchFile: (path: string, listener?: (...args: any[]) => void) => {
+      if (typeof hot.unwatchFile === "function") hot.unwatchFile(path, listener);
+    },
+    StatWatcher: (vfs.hot as unknown as { StatWatcher?: unknown }).StatWatcher,
     // Streams backed by memfs' own stream classes (fs-node-builtins — no
-    // node:stream dependency, so they work in the browser realm).
+    // node:stream dependency, so they work in the browser realm). Live
+    // streams cannot cross the worker boundary — absent on the facade.
     createReadStream: (path: string, opts?: unknown): FsStreamShim =>
-      vfs.hot.createReadStream(path, opts as never) as unknown as FsStreamShim,
+      syncHot("createReadStream")(path, opts) as unknown as FsStreamShim,
     createWriteStream: (path: string, opts?: unknown): FsStreamShim =>
-      vfs.hot.createWriteStream(path, opts as never) as unknown as FsStreamShim,
-    ReadStream: (vfs.hot as unknown as { ReadStream: unknown }).ReadStream,
-    WriteStream: (vfs.hot as unknown as { WriteStream: unknown }).WriteStream,
-    FSWatcher: (vfs.hot as unknown as { FSWatcher: unknown }).FSWatcher,
-    Stats: (vfs.hot as unknown as { Stats: unknown }).Stats,
-    Dirent: (vfs.hot as unknown as { Dirent: unknown }).Dirent,
+      syncHot("createWriteStream")(path, opts) as unknown as FsStreamShim,
+    ReadStream: (vfs.hot as unknown as { ReadStream?: unknown }).ReadStream,
+    WriteStream: (vfs.hot as unknown as { WriteStream?: unknown }).WriteStream,
+    FSWatcher: (vfs.hot as unknown as { FSWatcher?: unknown }).FSWatcher,
+    Stats: (vfs.hot as unknown as { Stats?: unknown }).Stats,
+    Dirent: (vfs.hot as unknown as { Dirent?: unknown }).Dirent,
     // Full Node constants set (O_*, S_*, COPYFILE_*, access modes) — memfs
-    // ships the same table as real fs.constants.
+    // ships the same table as real fs.constants; the worker facade fetches
+    // it over the wire. Optional-chained so construction still survives a
+    // VFS backend without it.
     constants: vfs.hot.constants,
-    F_OK: vfs.hot.constants.F_OK,
-    R_OK: vfs.hot.constants.R_OK,
-    W_OK: vfs.hot.constants.W_OK,
-    X_OK: vfs.hot.constants.X_OK,
-    glob: dual(hot.glob),
+    F_OK: (vfs.hot as unknown as { constants?: { F_OK?: number } }).constants?.F_OK,
+    R_OK: (vfs.hot as unknown as { constants?: { R_OK?: number } }).constants?.R_OK,
+    W_OK: (vfs.hot as unknown as { constants?: { W_OK?: number } }).constants?.W_OK,
+    X_OK: (vfs.hot as unknown as { constants?: { X_OK?: number } }).constants?.X_OK,
+    glob: dualHot("glob"),
     promises,
   };
 };
