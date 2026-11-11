@@ -13,6 +13,21 @@ interface Dirent {
 
 const MAX_FILE_SIZE = 1024 * 1024;
 
+/**
+ * Bound on the iframe handshake (`sandbox-ready`, then `ready`). A sandboxed
+ * iframe that fails to load its blob document — or whose script never runs —
+ * would otherwise leave `init()` pending forever.
+ */
+const HANDSHAKE_TIMEOUT_MS = 10_000;
+
+const handshakeDeadline = (what: string): Promise<never> =>
+  new Promise((_resolve, reject) => {
+    setTimeout(
+      () => reject(new Error(`IframeSandbox: ${what} timed out after ${HANDSHAKE_TIMEOUT_MS}ms`)),
+      HANDSHAKE_TIMEOUT_MS,
+    );
+  });
+
 export function generateSandboxHtml(): string {
   return `<!DOCTYPE html>
 <html>
@@ -110,35 +125,41 @@ export class IframeSandbox implements SandboxBackend {
     this.port = channel.port1;
     this.port.onmessage = (event) => this.handleMessage(event.data);
 
-    await new Promise<void>((resolve) => {
-      const handler = (event: MessageEvent) => {
-        if (event.data?.type === "sandbox-ready" && iframe.contentWindow) {
-          window.removeEventListener("message", handler);
-          iframe.contentWindow.postMessage({ type: "init-port" }, "*", [channel.port2]);
-          resolve();
-        }
-      };
-      window.addEventListener("message", handler);
-    });
+    await Promise.race([
+      new Promise<void>((resolve) => {
+        const handler = (event: MessageEvent) => {
+          if (event.data?.type === "sandbox-ready" && iframe.contentWindow) {
+            window.removeEventListener("message", handler);
+            iframe.contentWindow.postMessage({ type: "init-port" }, "*", [channel.port2]);
+            resolve();
+          }
+        };
+        window.addEventListener("message", handler);
+      }),
+      handshakeDeadline("sandbox-ready handshake"),
+    ]);
 
     const snapshot = this.buildSnapshot();
     this.port.postMessage({ type: "init", snapshot });
 
-    await new Promise<void>((resolve) => {
-      const handler = (event: MessageEvent) => {
-        if (event.data?.type === "ready") {
-          this.port!.onmessage = (e) => this.handleMessage(e.data);
-          resolve();
-        }
-      };
-      const originalOnMessage = this.port!.onmessage;
-      this.port!.onmessage = (event) => {
-        handler(event);
-        if (originalOnMessage) {
-          originalOnMessage.call(this.port!, event);
-        }
-      };
-    });
+    await Promise.race([
+      new Promise<void>((resolve) => {
+        const handler = (event: MessageEvent) => {
+          if (event.data?.type === "ready") {
+            this.port!.onmessage = (e) => this.handleMessage(e.data);
+            resolve();
+          }
+        };
+        const originalOnMessage = this.port!.onmessage;
+        this.port!.onmessage = (event) => {
+          handler(event);
+          if (originalOnMessage) {
+            originalOnMessage.call(this.port!, event);
+          }
+        };
+      }),
+      handshakeDeadline("init handshake"),
+    ]);
 
     this.iframe = iframe;
   }

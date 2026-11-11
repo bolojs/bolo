@@ -2,7 +2,7 @@ import type { VfsBus } from "@bolojs/fs";
 import type { PackageManager } from "@bolojs/pm";
 import type { SWSandbox } from "@bolojs/sandbox";
 import { BrowserViteServer } from "@bolojs/vite-server";
-import { bundleEntry } from "@bolojs/registry";
+import { bundleEntry, resetBundler } from "@bolojs/registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
 import { git } from "./commands/git.js";
@@ -81,6 +81,16 @@ export type { OutputCallbacks };
 
 let runCounter = 0;
 
+/**
+ * Deadline for one `bundleEntry` call. Rolldown's WASM glue
+ * (`@napi-rs/wasm-runtime`) sporadically throws `Atomics.wait cannot be
+ * called in this context` on the page main thread; the thrown worker leaves
+ * the returned promise unsettled forever, so without a ceiling a wedged
+ * bundle hangs the spawn until the process-level timeout reclaims it. Well
+ * below that exec budget so a wedged bundle fails fast.
+ */
+const BUNDLE_TIMEOUT_MS = 30_000;
+
 export class ShellService {
   private deps: ShellServiceDeps;
   private cwd: string;
@@ -138,6 +148,28 @@ export class ShellService {
     this.processes.delete(tag);
     proc.kill();
     return true;
+  }
+
+  /**
+   * Terminate every process worker this shell started.
+   *
+   * A hung worker is a leaked worker: it keeps its own realm (and the whole
+   * WASM heap behind it) alive until the page is closed. The compat harness
+   * reboots the container between packages, so without this every wedged
+   * package leaks a worker and the renderer eventually OOMs — which kills the
+   * whole run, not just the package. Returns the number of workers killed.
+   */
+  killAll(): number {
+    const procs = [...this.processes.values()];
+    this.processes.clear();
+    for (const proc of procs) {
+      try {
+        proc.kill();
+      } catch {
+        /* a worker that already died must not block teardown */
+      }
+    }
+    return procs.length;
   }
 
   /** Resolve a user-supplied path against the workdir. */
@@ -341,12 +373,28 @@ export class ShellService {
         shims,
       };
 
-      const { code, warnings } = await bundleEntry(entry, {
-        vfs: this.deps.vfs,
-        cwd: this.cwd,
-        getShim: (builtin) =>
-          globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
-      });
+      let bundleTimer: ReturnType<typeof setTimeout> | undefined;
+      const { code, warnings } = await Promise.race([
+        bundleEntry(entry, {
+          vfs: this.deps.vfs,
+          cwd: this.cwd,
+          getShim: (builtin) =>
+            globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
+        }),
+        new Promise<never>((_resolve, reject) => {
+          bundleTimer = setTimeout(() => {
+            // The bundler's WASM instance may be poisoned (Atomics.wait
+            // poison) — drop the cached module handles so the next call
+            // re-initialises instead of reusing the wedged one.
+            resetBundler();
+            reject(
+              new Error(
+                `bundleEntry timed out after ${BUNDLE_TIMEOUT_MS}ms — bundler wedged, module cache reset`,
+              ),
+            );
+          }, BUNDLE_TIMEOUT_MS);
+        }),
+      ]).finally(() => clearTimeout(bundleTimer));
       for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
 
       if (this.deps.syncServer && typeof Worker === "function") {

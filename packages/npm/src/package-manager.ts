@@ -12,6 +12,12 @@ import type { NpmLockfileV3 } from "./lockfile-writer.js";
 import { syntheticPackuments } from "./lockfile-replay.js";
 import type { NpmPackument, ResolveCache } from "./registry-resolver.js";
 import { materializeVirtualStore } from "./virtual-store.js";
+import { collectLifecycleScripts, runLifecycleScripts } from "./lifecycle.js";
+import type {
+  LifecycleScriptRunner,
+  QueuedLifecyclePackage,
+  RunScriptsOption,
+} from "./lifecycle.js";
 
 const logger = getLogger(["bolo", "npm", "package-manager"]);
 
@@ -38,9 +44,40 @@ export interface PackageManagerOptions {
   stderr?: (chunk: string) => void;
   installStrategy?: InstallStrategy;
   registryBase?: string;
+  /**
+   * Opt-in gate for `preinstall`/`install`/`postinstall`/`prepare` scripts —
+   * they are untrusted code and never run by default. `true` runs them for
+   * every installed package; a `string[]` allowlist limits execution to the
+   * named packages. Requires `scriptRunner`; without one the scripts are
+   * skipped with a warning either way.
+   */
+  runScripts?: RunScriptsOption;
+  /**
+   * Executor for lifecycle commands — typically a spawned `NodeProcess`
+   * worker injected by the container layer (`@bolojs/runtime`). Runs the raw
+   * script string with the package dir as cwd.
+   */
+  scriptRunner?: LifecycleScriptRunner;
+  /** Per-script time budget passed to the runner. Default 60_000ms. */
+  scriptTimeoutMs?: number;
+}
+
+/** Per-call overrides for `install()`. */
+export interface InstallOptions {
+  /** Overrides the constructor's `runScripts` gate for this install. */
+  runScripts?: RunScriptsOption;
 }
 
 const DEFAULT_CWD = "/home/web/app";
+
+const DEFAULT_SCRIPT_TIMEOUT_MS = 60_000;
+
+/**
+ * Bound on a single tarball fetch. A registry (or proxy) that accepts the
+ * connection but never answers would otherwise stall `install()` forever —
+ * there is no other ceiling between the resolver and extraction.
+ */
+const FETCH_TIMEOUT_MS = 30_000;
 
 // ponytail: 7-day TTL is generous; packuments rarely change and the registry
 // is the source of truth for dist-tags. Reduce if stale-version bugs appear.
@@ -60,9 +97,6 @@ const EXTERNALIZED_PEER_DEPS: Record<string, string[]> = {
 
 // Build-only tooling that must be installed but has no browser-runtime import.
 const BUILD_TOOLING_PACKAGES = new Set(["vite", "typescript", "esbuild"]);
-
-// ponytail: warn-only stub; real lifecycle execution out of scope until WASM shell can run node scripts
-const LIFECYCLE_SCRIPTS = ["preinstall", "install", "postinstall", "prepare"] as const;
 
 const LOCKFILE_CANDIDATES = [
   "package-lock.json",
@@ -92,6 +126,11 @@ export class PackageManager {
   // ponytail: sidecar exec-bit map; lift into VfsBus metadata when more than two consumers need it
   private readonly execBits = new Map<string, number>();
   private registryBase?: string;
+  private runScripts?: RunScriptsOption;
+  private scriptRunner?: LifecycleScriptRunner;
+  private scriptTimeoutMs?: number;
+  /** Packages extracted during the in-flight install that declared lifecycle scripts. */
+  private lifecycleQueue: QueuedLifecyclePackage[] = [];
 
   constructor(options: PackageManagerOptions) {
     this.vfs = options.vfs;
@@ -101,15 +140,21 @@ export class PackageManager {
     this.fs = createFsFromVolume(this.vfs["vol"]) as ReturnType<typeof createFsFromVolume>;
     this.installStrategy = options.installStrategy ?? "browser-native";
     this.registryBase = options.registryBase;
+    this.runScripts = options.runScripts;
+    this.scriptRunner = options.scriptRunner;
+    this.scriptTimeoutMs = options.scriptTimeoutMs;
   }
 
   /**
    * Install packages. If no packages are specified, reads from package.json.
    * The `browser-native` strategy uses a lockfile if present, otherwise
-   * resolves from the registry.
+   * resolves from the registry. After materialization, queued lifecycle
+   * scripts run in dependency-first order when `runScripts` opts in and a
+   * `scriptRunner` is configured; otherwise they are skipped with a warning.
    */
-  async install(packages?: string[]): Promise<void> {
+  async install(packages?: string[], options?: InstallOptions): Promise<void> {
     this.execBits.clear();
+    this.lifecycleQueue = [];
     const strategy = this.installStrategy;
 
     if (typeof strategy === "function") {
@@ -121,6 +166,7 @@ export class PackageManager {
     }
 
     await this.writeImportMap();
+    await this.runLifecycle(options);
   }
 
   /**
@@ -393,7 +439,7 @@ export class PackageManager {
     if (!pkg.resolvedUrl) {
       throw new Error(`No resolved URL for ${pkg.name}@${pkg.version}`);
     }
-    const res = await fetch(pkg.resolvedUrl);
+    const res = await fetch(pkg.resolvedUrl, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (!res.ok) {
       throw new Error(`Failed to fetch ${pkg.resolvedUrl}: ${res.status}`);
     }
@@ -418,19 +464,44 @@ export class PackageManager {
     try {
       const pkgJsonContent = this.fs.readFileSync(`${targetDir}/package.json`, "utf8") as string;
       const { data: pkgJson } = readPackageJsonWithMeta(pkgJsonContent);
-      const scripts = pkgJson.scripts;
-      if (scripts) {
-        for (const script of LIFECYCLE_SCRIPTS) {
-          if (script in scripts) {
-            this.warn(
-              `${pkg.name}: skipping "${script}" lifecycle script (execution not supported in browser)`,
-            );
-          }
-        }
+      const { scripts, hasBindingGyp } = collectLifecycleScripts(
+        pkgJson.scripts,
+        this.vfs.hot.existsSync(`${targetDir}/binding.gyp`),
+      );
+      if (Object.keys(scripts).length > 0) {
+        this.lifecycleQueue.push({
+          depPath: pkg.depPath,
+          name: pkg.name,
+          version: pkg.version,
+          dir: targetDir,
+          optional: pkg.optional,
+          scripts,
+          hasBindingGyp,
+          resolvedDependencies: pkg.resolvedDependencies,
+        });
       }
     } catch {
       // ponytail: ignore missing/unreadable package.json after extraction
     }
+  }
+
+  /**
+   * Post-materialization lifecycle pass. `runScripts` is opt-in (lifecycle
+   * scripts are untrusted code) and requires a `scriptRunner`; without either,
+   * the queued scripts degrade to per-script warnings — the historical
+   * behavior for this package.
+   */
+  private async runLifecycle(options?: InstallOptions): Promise<void> {
+    await runLifecycleScripts({
+      queue: this.lifecycleQueue,
+      allow: options?.runScripts ?? this.runScripts ?? false,
+      runner: this.scriptRunner,
+      timeoutMs: this.scriptTimeoutMs ?? DEFAULT_SCRIPT_TIMEOUT_MS,
+      projectCwd: this.cwd,
+      stdout: this.stdout ?? (() => {}),
+      stderr: this.stderr ?? (() => {}),
+      onWarn: (msg) => this.warn(msg),
+    });
   }
 
   private warn(message: string): void {

@@ -44,6 +44,16 @@ const defaultSourcePath = join(
 const PACKAGE_TIMEOUT_MS = 60_000;
 const LOAD_TIMEOUT = 120_000;
 
+/**
+ * The matrix is imported as a static JSON module by the harness page
+ * (`import packageMatrix from "./package-matrix.json" with { type: "json" }`).
+ * Vite serves that import as `/src/package-matrix.json?import`, so a route
+ * registered for the bare path never matches and every filter flag
+ * (`--source`, `--packages`, `--shard-*`) was silently ignored. The glob must
+ * tolerate the query suffix Vite appends.
+ */
+const MATRIX_ROUTE_GLOB = "**/src/package-matrix.json*";
+
 const usage = () =>
   `Usage: compat-harness [options]\n\n` +
   `Options:\n` +
@@ -168,11 +178,25 @@ const makeSink = (results, seen, onResult) => async (result) => {
 };
 
 /**
+ * Attaches the observability hooks every harness page gets (console,
+ * pageerror, requestfailed). Pages are recreated after a renderer crash, so
+ * the wiring lives here instead of inline at the first page's creation.
+ */
+const attachPageHooks = (page) => {
+  page.on("console", (msg) => logger.info(`browser:${msg.type()}`, { text: msg.text() }));
+  page.on("pageerror", (err) => logger.error("browser pageerror", { error: err.message }));
+  page.on("requestfailed", (req) =>
+    logger.error("browser requestfailed", { url: req.url(), error: req.failure()?.errorText }),
+  );
+};
+
+/**
  * Brings the harness page up and starts the matrix run.
  *
  * The same page is reused across recoveries (a reload is `page.goto` again)
- * so the page-scoped route that serves a filtered matrix keeps working: a
- * route registered with `page.route` only applies to that page.
+ * unless the renderer crashed — then the caller swaps in a fresh page first.
+ * The filtered-matrix route is registered on the context, so it applies to
+ * both.
  *
  * Every page gets the same observability hooks (console, pageerror,
  * requestfailed). The hooks are attached once, on the page that is reused.
@@ -229,14 +253,28 @@ const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => 
   const seen = new Set();
   const sink = makeSink(results, seen, onResult);
   // exposeBinding installs window.__boloPartialPushBinding on every page of
-  // the context, so a reloaded page keeps the same channel.
+  // the context, so a reloaded or recreated page keeps the same channel.
   await context.exposeBinding("__boloPartialPushBinding", async (_source, result) => {
     await sink(result);
   });
+
+  // A wedged page is recovered by reload, but a *crashed* renderer cannot be
+  // re-navigated (every call on it rejects with "Page crashed") — it must be
+  // replaced with a fresh page in the same context. The context-scoped route
+  // and exposed binding both carry over.
+  let currentPage = page;
+  let crashed = false;
+  const watchForCrash = (p) => {
+    p.on("crash", () => {
+      crashed = true;
+    });
+  };
+  watchForCrash(currentPage);
+
   // The page is already booted (the canaries ran on it): start the matrix
   // without reloading, so the container that just passed the canaries is the
   // one that runs the packages.
-  await startMatrixRun(page, url, skip, log, { reload: false });
+  await startMatrixRun(currentPage, url, skip, log, { reload: false });
 
   let currentPackage = null;
   let packageStartedAt = Date.now();
@@ -256,19 +294,32 @@ const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => 
 
   const recover = async (reason) => {
     log.error("reloading wedged harness page", { reason });
-    // The same page is reused: a page-scoped route (the filtered matrix) only
-    // applies to the page it was registered on, and the exposed binding
-    // survives a reload.
     // The reloaded page must not redo the packages that already finished:
     // they are in `seen` and would be re-run (and re-reported) otherwise.
     const doneNames = [...seen];
-    await startMatrixRun(page, url, doneNames, log);
+    if (crashed || currentPage.isClosed()) {
+      // Crashed renderers are unrecoverable — goto() on them throws
+      // "Page crashed". Replace the page; the context route and binding
+      // apply to the new one automatically.
+      crashed = false;
+      const dead = currentPage;
+      currentPage = await context.newPage();
+      attachPageHooks(currentPage);
+      watchForCrash(currentPage);
+      await dead.close().catch(() => {});
+      log.info("recreated harness page after renderer crash");
+    }
+    await startMatrixRun(currentPage, url, doneNames, log);
     currentPackage = null;
     packageStartedAt = Date.now();
   };
 
   for (;;) {
-    const probe = await probeWithDeadline(page, HEARTBEAT_PROBE, DEFAULT_HEARTBEAT_INTERVAL_MS * 3);
+    const probe = await probeWithDeadline(
+      currentPage,
+      HEARTBEAT_PROBE,
+      DEFAULT_HEARTBEAT_INTERVAL_MS * 3,
+    );
 
     if (probe === "probe-hang") {
       const elapsed = Date.now() - packageStartedAt;
@@ -297,7 +348,7 @@ const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => 
     if (!currentPackage) {
       // Idle between packages, or the run is over.
       const finished = await probeWithDeadline(
-        page,
+        currentPage,
         () => window.__packageResults,
         DEFAULT_HEARTBEAT_INTERVAL_MS * 5,
       );
@@ -340,11 +391,7 @@ const main = async () => {
   });
   const context = await browser.newContext();
   const page = await context.newPage();
-  page.on("console", (msg) => logger.info(`browser:${msg.type()}`, { text: msg.text() }));
-  page.on("pageerror", (err) => logger.error("browser pageerror", { error: err.message }));
-  page.on("requestfailed", (req) =>
-    logger.error("browser requestfailed", { url: req.url(), error: req.failure()?.errorText }),
-  );
+  attachPageHooks(page);
 
   const matrix = JSON.parse(await readFile(sourcePath, "utf8"));
   let packages = matrix.packages;
@@ -357,11 +404,26 @@ const main = async () => {
     packages = packages.slice(options.shardIndex * shardSize, (options.shardIndex + 1) * shardSize);
   }
   if (options.source || allowed || options.shardTotal > 1) {
-    await page.route("**/src/package-matrix.json", async (route) => {
+    // Context-scoped (not page.route): the harness page is replaced after a
+    // renderer crash, and only a context route follows the new page.
+    await context.route(MATRIX_ROUTE_GLOB, async (route) => {
+      const filtered = { ...matrix, packages };
+      // Vite turns the page's static JSON import into a JS module request
+      // (`?import`, `Content-Type: application/javascript`): fulfilling with
+      // raw JSON fails the module fetch, so the page would fall back to its
+      // own bundled copy and the filter would be ignored again.
+      if (route.request().url().includes("?import")) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/javascript",
+          body: `export default ${JSON.stringify(filtered)};`,
+        });
+        return;
+      }
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ ...matrix, packages }),
+        body: JSON.stringify(filtered),
       });
     });
   }
