@@ -14,15 +14,15 @@ describe("net seam", () => {
     expect(() => net.connect({ port: 80 })).toThrow(EXPECTED_CONNECT_ERROR);
   });
 
-  it("throws the documented error when Server.listen() is called with no custom backend", async () => {
+  it("throws the documented error when Server.listen() is called with no custom backend", () => {
     const vfs = new VfsBus();
     const registry = createLiveShimRegistry({ vfs });
     const net = registry.net as {
-      createServer: () => { listen: (port: number) => Promise<unknown> };
+      createServer: () => { listen: (port: number) => unknown };
     };
 
     const server = net.createServer();
-    await expect(server.listen(0)).rejects.toThrow(
+    expect(() => server.listen(0)).toThrow(
       "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
     );
   });

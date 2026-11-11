@@ -55,7 +55,7 @@ describe("http shim", () => {
       "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
     );
     const server = netShim.createServer();
-    await expect(server.listen(0)).rejects.toThrow(
+    expect(() => server.listen(0)).toThrow(
       "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
     );
     expect(netShim.isIP("127.0.0.1")).toBe(4);
