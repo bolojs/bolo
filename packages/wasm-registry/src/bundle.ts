@@ -119,6 +119,8 @@ const NODE_BUILTIN_NAMES = new Set([
   "events",
   "stream",
   "stream/promises",
+  "stream/web",
+  "stream/consumers",
   "util",
   "util/types",
   "async_hooks",

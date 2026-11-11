@@ -10,7 +10,14 @@ describe("node-web-shims: util", () => {
 
   it("exposes the full format/inspect/types surface as enumerable keys", () => {
     const shim = createUtilShim();
-    for (const name of ["format", "formatWithOptions", "inspect", "types", "promisify", "inherits"]) {
+    for (const name of [
+      "format",
+      "formatWithOptions",
+      "inspect",
+      "types",
+      "promisify",
+      "inherits",
+    ]) {
       expect(Object.keys(shim), `missing ${name}`).toContain(name);
     }
   });

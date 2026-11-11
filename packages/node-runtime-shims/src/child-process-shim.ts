@@ -105,7 +105,10 @@ class StdinWritable extends Writable {
 
 class WorkerStdinWritable extends Writable {
   constructor(private readonly worker: WorkerLike) {
-    super();
+    // decodeStrings: false — forward the caller's chunk verbatim over the
+    // worker channel (the "stdin" message protocol predates Buffer-decoding
+    // Writable defaults and its consumers expect the original value).
+    super({ decodeStrings: false });
   }
 
   override _write(

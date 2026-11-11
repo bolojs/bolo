@@ -34,7 +34,10 @@ describe("node-web-shims: events", () => {
   it("is itself the EventEmitter class (require('events') === EventEmitter)", () => {
     const shim = createEventsShim();
     expect(shim).toBe(shim.EventEmitter);
-    const emitter = new (shim as unknown as new () => { on: (e: string, f: () => void) => void; emit: (e: string) => boolean })();
+    const emitter = new (shim as unknown as new () => {
+      on: (e: string, f: () => void) => void;
+      emit: (e: string) => boolean;
+    })();
     let fired = false;
     emitter.on("x", () => (fired = true));
     emitter.emit("x");
