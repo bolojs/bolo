@@ -85,7 +85,7 @@ importers:
         version: 1.59.1
       portless:
         specifier: latest
-        version: 0.16.0
+        version: 0.17.0
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -140,7 +140,7 @@ importers:
         version: 19.2.3(@types/react@19.2.17)
       portless:
         specifier: latest
-        version: 0.16.0
+        version: 0.17.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -289,7 +289,7 @@ importers:
         version: 3.0.1(@emnapi/core@2.0.0-alpha.6)(@emnapi/runtime@2.0.0-alpha.6)(@typescript-eslint/parser@8.63.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0))
       portless:
         specifier: latest
-        version: 0.16.0
+        version: 0.17.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -431,7 +431,7 @@ importers:
         version: 0.140.0
       portless:
         specifier: latest
-        version: 0.16.0
+        version: 0.17.0
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2
@@ -534,6 +534,18 @@ importers:
 
   packages/node-web-shims:
     dependencies:
+      '@noble/curves':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
+      brotli:
+        specifier: 2.1.0
+        version: 2.1.0
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
       pathe:
         specifier: ^2.0.0
         version: 2.0.3
@@ -728,6 +740,9 @@ importers:
         specifier: ^0.140.0
         version: 0.140.0
     devDependencies:
+      '@bolojs/node-web-shims':
+        specifier: workspace:*
+        version: link:../node-web-shims
       '@types/node':
         specifier: ^26.1.1
         version: 26.1.1
@@ -2423,6 +2438,14 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3
       '@emnapi/runtime': ^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3
+
+  '@noble/curves@2.4.0':
+    resolution: {integrity: sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==}
+    engines: {node: '>= 20.19.0'}
+
+  '@noble/hashes@2.4.0':
+    resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
+    engines: {node: '>= 20.19.0'}
 
   '@nodable/entities@2.2.0':
     resolution: {integrity: sha512-9uGyhaQavEUMC8AIddIjau4NsnsXhou+j5sBAGojCM1oxmQpVKTWR/9JxABD6UAv12vpIms55fPZKFQEhG6uBg==}
@@ -4680,6 +4703,9 @@ packages:
   brorand@1.1.0:
     resolution: {integrity: sha512-cKV8tMCEpQs4hK/ik71d6LrPOnpkpGBR0wzxqr68g2m/LB2GxVYQroAjMJZRVM1Y4BCjCKc3vAamxSzOY2RP+w==}
 
+  brotli@2.1.0:
+    resolution: {integrity: sha512-4KAtOr4Z3jaIQlXy9AeuaVz1vPWTyZ6eiQYu4SsSz6VcUsV6Epz6kA3Vf7eTGTaspaqlnQLBqvkozKP5WyQMZQ==}
+
   browser-resolve@2.0.0:
     resolution: {integrity: sha512-7sWsQlYL2rGLy2IWm8WL8DCTJvYLc/qlOnsakDac87SOoCd16WLsaAMdCiAqsTNHIe+SXfaqyxyo6THoWqs8WQ==}
 
@@ -6932,8 +6958,8 @@ packages:
   points-on-path@0.2.1:
     resolution: {integrity: sha512-25ClnWWuw7JbWZcgqY/gJ4FQWadKxGWk+3kR/7kD0tCaDtPPMj7oHu2ToLaVhfpnHrZzYby2w6tUA0eOIuUg8g==}
 
-  portless@0.16.0:
-    resolution: {integrity: sha512-qklO8w/OhLGLKYoeAi8HOFFnd2JQYenWzbev0rvDcyAZ3xDpMg9tqb/aKlz8qrd6NIEJB5bSiDxGURaq0+YLkA==}
+  portless@0.17.0:
+    resolution: {integrity: sha512-UJdy5sGmNSwi8ETvVniUTqULJht16qvBR9rvsFqsVekEyabMH2xJ5mwIEYBmSSHVCUmQvAmaYAhBcCs8PA7IBA==}
     engines: {node: '>=24'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -10184,6 +10210,12 @@ snapshots:
       '@emnapi/runtime': 2.0.0-alpha.6
       '@tybys/wasm-util': 0.10.3
 
+  '@noble/curves@2.4.0':
+    dependencies:
+      '@noble/hashes': 2.4.0
+
+  '@noble/hashes@2.4.0': {}
+
   '@nodable/entities@2.2.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -12347,6 +12379,10 @@ snapshots:
       fill-range: 7.1.1
 
   brorand@1.1.0: {}
+
+  brotli@2.1.0:
+    dependencies:
+      base64-js: 1.5.1
 
   browser-resolve@2.0.0:
     dependencies:
@@ -15127,7 +15163,7 @@ snapshots:
       path-data-parser: 0.1.0
       points-on-curve: 0.2.0
 
-  portless@0.16.0: {}
+  portless@0.17.0: {}
 
   possible-typed-array-names@1.1.0: {}
 
