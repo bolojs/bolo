@@ -16,6 +16,7 @@ const BUILTIN_MODULE_NAMES = [
   "fs",
   "fs/promises",
   "http",
+  "http2",
   "https",
   "os",
   "path",
@@ -34,6 +35,7 @@ const BUILTIN_MODULE_NAMES = [
   "tty",
   "url",
   "util",
+  "v8",
   "vm",
   "worker_threads",
   "zlib",
@@ -151,13 +153,132 @@ export const createModuleShim = (options: ModuleShimOptions) => {
     return require;
   };
 
+  const isBuiltin = (id: string): boolean =>
+    id.startsWith("node:") ||
+    BUILTIN_MODULE_NAMES.includes(id) ||
+    PLUGGABLE_BUILTIN_NAMES.includes(id);
+
+  /**
+   * `node:module.findPackageJSON(specifier[, base])` — Node ≥22. Resolution
+   * of bare specifiers is not available post-bundle (same limit as
+   * `require()` above), so only `./`/`../`/`/` specifiers are followed: the
+   * target path is located, then its nearest ancestor `package.json` is
+   * returned. `undefined` means "not found", matching Node's contract.
+   */
+  const findPackageJSON = (specifier: string, base?: string | URL): string | undefined => {
+    if (!specifier.startsWith(".") && !specifier.startsWith("/")) return undefined;
+    const basePath =
+      base === undefined
+        ? "/"
+        : base instanceof URL
+          ? base.pathname
+          : base.startsWith("file://")
+            ? new URL(base).pathname
+            : base;
+    const startDir = specifier.startsWith("/")
+      ? dirname(specifier)
+      : dirname(joinPath(dirname(basePath), specifier));
+    let dir = startDir;
+    for (;;) {
+      const candidate = joinPath(dir, "package.json");
+      if (vfs.hot.existsSync(candidate)) return candidate;
+      if (dir === "/") return undefined;
+      dir = dirname(dir);
+    }
+  };
+
+  /**
+   * The `Module` constructor itself — vite and other toolchain packages do
+   * `import { Module } from "node:module"` for `Module._nodeModulePaths` /
+   * `Module.createRequire` / `Module.builtinModules`. Instance state is a
+   * plain record; the statics mirror Node's surface. `syncBuiltinESMExports`
+   * is a no-op (our builtin shims are not a mutable require-cache), and
+   * `register` accepts arguments but cannot spawn a module-customization
+   * thread in the browser — it is a documented no-op.
+   */
+  const Module = function Module(this: Record<string, unknown>, id = "", parent?: unknown): void {
+    this.id = id;
+    this.path = dirname(id);
+    this.exports = {};
+    this.parent = parent;
+    this.filename = null;
+    this.loaded = false;
+    this.children = [];
+    this.paths = [];
+  } as unknown as {
+    new (id?: string, parent?: unknown): Record<string, unknown>;
+    _cache: Record<string, unknown>;
+    _pathCache: Record<string, unknown>;
+    _extensions: Record<string, unknown>;
+    _preloadModules: unknown[];
+    wrapper: string[];
+    globalPaths: string[];
+    builtinModules: string[];
+    createRequire: typeof createRequire;
+    findPackageJSON: typeof findPackageJSON;
+    isBuiltin: typeof isBuiltin;
+    _nodeModulePaths: (from: string) => string[];
+    syncBuiltinESMExports: () => void;
+    register: (...args: unknown[]) => void;
+    flushCompileCache: () => void;
+    getCompileCacheDir: () => undefined;
+    enableCompileCache: () => undefined;
+    wrap: (script: string) => string;
+    _compile: () => void;
+    runMain: () => void;
+    _initPaths: () => void;
+    _resolveFilename: (request: string) => string;
+    _load: () => void;
+    _resolveLookupPaths: () => null;
+    _findPath: () => false;
+    stripTypeScriptTypes: (code: string) => string;
+    constants: Record<string, unknown>;
+  };
+
+  Module._cache = Object.create(null);
+  Module._pathCache = Object.create(null);
+  Module._extensions = Object.create(null);
+  Module._preloadModules = [];
+  Module.wrapper = ["(function (exports, require, module, __filename, __dirname) {", "\n})"];
+  Module.globalPaths = [];
+  Module.builtinModules = BUILTIN_MODULE_NAMES;
+  Module.createRequire = createRequire;
+  Module.findPackageJSON = findPackageJSON;
+  Module.isBuiltin = isBuiltin;
+  Module._nodeModulePaths = (from: string): string[] => {
+    const paths: string[] = [];
+    let dir = joinPath("/", from);
+    for (;;) {
+      if (dir !== "/") paths.push(joinPath(dir, "node_modules"));
+      if (dir === "/") {
+        paths.push("/node_modules");
+        return paths;
+      }
+      dir = dirname(dir);
+    }
+  };
+  Module.syncBuiltinESMExports = () => {};
+  Module.register = () => {};
+  Module.flushCompileCache = () => {};
+  Module.getCompileCacheDir = () => undefined;
+  Module.enableCompileCache = () => undefined;
+  Module.wrap = (script: string): string => `${Module.wrapper[0]}${script}${Module.wrapper[1]}`;
+  Module._compile = () => {};
+  Module.runMain = () => {};
+  Module._initPaths = () => {};
+  Module._resolveFilename = (request: string): string => request;
+  Module._load = () => {};
+  Module._resolveLookupPaths = () => null;
+  Module._findPath = () => false;
+  Module.stripTypeScriptTypes = (code: string): string => code;
+  Module.constants = Object.create(null);
+
   return {
     createRequire,
     builtinModules: BUILTIN_MODULE_NAMES,
-    isBuiltin: (id: string): boolean =>
-      id.startsWith("node:") ||
-      BUILTIN_MODULE_NAMES.includes(id) ||
-      PLUGGABLE_BUILTIN_NAMES.includes(id),
+    isBuiltin,
+    findPackageJSON,
+    Module,
   };
 };
 

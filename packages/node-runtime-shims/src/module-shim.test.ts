@@ -99,4 +99,50 @@ describe("createModuleShim", () => {
     expect(moduleShim.isBuiltin("fs")).toBe(true);
     expect(moduleShim.isBuiltin("lodash")).toBe(false);
   });
+
+  it("exposes the Module constructor and statics (vite's named `Module` import)", () => {
+    const vfs = new VfsBus();
+    const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
+    const { Module } = moduleShim;
+
+    const m = new Module("/app/entry.js");
+    expect(m.id).toBe("/app/entry.js");
+    expect(m.exports).toEqual({});
+
+    expect(Module.builtinModules).toContain("fs");
+    expect(Module.builtinModules).toContain("v8");
+    expect(Module.builtinModules).toContain("http2");
+    expect(typeof Module.createRequire).toBe("function");
+    expect(Module._nodeModulePaths("/a/b/c")).toEqual([
+      "/a/b/c/node_modules",
+      "/a/b/node_modules",
+      "/a/node_modules",
+      "/node_modules",
+    ]);
+    // no-op-friendly statics
+    expect(() => Module.syncBuiltinESMExports()).not.toThrow();
+    expect(() => Module.register("./hooks.mjs")).not.toThrow();
+    expect(Module.wrap("x()")).toBe(
+      "(function (exports, require, module, __filename, __dirname) {x()\n})",
+    );
+  });
+
+  it("findPackageJSON walks up from a resolved relative specifier", () => {
+    const vfs = new VfsBus();
+    const hot = vfs.hot as unknown as {
+      mkdirSync: (p: string, o?: unknown) => void;
+      writeFileSync: (p: string, c: string) => void;
+    };
+    hot.mkdirSync("/pkg/sub", { recursive: true });
+    hot.writeFileSync("/pkg/package.json", "{}");
+    hot.writeFileSync("/pkg/sub/deep.js", "");
+    const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
+
+    expect(moduleShim.findPackageJSON("./sub/deep.js", "/pkg/index.js")).toBe(
+      "/pkg/package.json",
+    );
+    expect(moduleShim.findPackageJSON("/pkg/sub/deep.js")).toBe("/pkg/package.json");
+    expect(moduleShim.findPackageJSON("lodash")).toBeUndefined();
+    expect(moduleShim.findPackageJSON("./nope.js", "/other/index.js")).toBeUndefined();
+  });
 });

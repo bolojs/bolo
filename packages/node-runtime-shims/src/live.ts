@@ -117,6 +117,8 @@ export const createLiveShimRegistry = (
     punycode: nodeWebShims.punycode,
     diagnostics_channel: nodeWebShims.diagnostics_channel,
     readline: nodeWebShims.readline,
+    v8: nodeWebShims.v8,
+    http2: nodeWebShims.http2,
     vm: createVmShim(),
     dns: createDnsShim({ dohEndpoint: options.dohEndpoint }),
     fs: createFsShim(options.vfs),
