@@ -1,38 +1,176 @@
 import unenvCrypto from "unenv/node/crypto";
 
-// Spread first so unenv's implementations are preserved, then override the
-// stubs that throw "not implemented" — @yarnpkg/lockfile calls getHashes at
-// import time.
+import {
+  Hash,
+  createHash,
+  digestBytes,
+  getHashes,
+  hash,
+  normalizeHashName,
+} from "./crypto/hashes.js";
+import { Hmac, createHmac, hmacBytes } from "./crypto/hmac.js";
+import { hkdf, hkdfSync, pbkdf2, pbkdf2Sync, scrypt, scryptSync } from "./crypto/kdf.js";
+import { KeyObject, createPrivateKey, createPublicKey, createSecretKey } from "./crypto/keys.js";
+import {
+  checkPrime,
+  checkPrimeSync,
+  generateKey,
+  generateKeyPair,
+  generateKeyPairSync,
+  generateKeySync,
+  generatePrime,
+  generatePrimeSync,
+} from "./crypto/keygen.js";
+import {
+  pseudoRandomBytes,
+  randomFill,
+  randomFillSync,
+  randomInt,
+  timingSafeEqual,
+} from "./crypto/random.js";
+import { Sign, Verify, createSign, createVerify, sign, verify } from "./crypto/sign.js";
+
+/**
+ * Full `node:crypto` surface: unenv supplies the still-unimplemented stubs
+ * (ciphers, DH/ECDH, certificates — spread first), WebCrypto covers
+ * randomness/`subtle`, and noble hashes/curves plus a pure-BigInt RSA core
+ * cover the synchronous breadth SubtleCrypto can't reach.
+ */
 const crypto = {
   ...unenvCrypto,
-  getHashes: () => ["sha1", "sha256", "sha384", "sha512", "md5", "ripemd160"],
-  // Override unenv's "not implemented" stub with WebCrypto's native impl.
-  // Workers and modern browsers expose `globalThis.crypto.randomUUID`.
+
+  // ---- implemented here (unenv's versions throw "not implemented") ----
+  getHashes,
+  createHash,
+  Hash,
+  createHmac,
+  Hmac,
+  hash,
+
+  pbkdf2,
+  pbkdf2Sync,
+  scrypt,
+  scryptSync,
+  hkdf,
+  hkdfSync,
+
+  randomInt,
+  randomFill,
+  randomFillSync,
+  pseudoRandomBytes,
+  timingSafeEqual,
+
+  createSecretKey,
+  createPrivateKey,
+  createPublicKey,
+  KeyObject,
+
+  createSign,
+  createVerify,
+  Sign,
+  Verify,
+  sign,
+  verify,
+
+  generateKey,
+  generateKeySync,
+  generateKeyPair,
+  generateKeyPairSync,
+  generatePrime,
+  generatePrimeSync,
+  checkPrime,
+  checkPrimeSync,
+
+  getFips: () => false,
+  setFips: (enabled: boolean) => {
+    if (enabled) {
+      throw Object.assign(
+        new Error("crypto.setFips: FIPS mode is not supported in the browser crypto shim"),
+        { code: "ERR_CRYPTO_FIPS_UNAVAILABLE" },
+      );
+    }
+    return false;
+  },
+  secureHeapUsed: () => ({ total: 0, used: 0, min: 0 }),
+
+  // Keep WebCrypto-backed overrides (unenv's stubs are already correct, but
+  // pin them here like the previous shim did).
   randomUUID: () => globalThis.crypto.randomUUID(),
 };
 
 /**
- * Creates a node:crypto shim using WebCrypto API via unenv.
+ * Creates a node:crypto shim on WebCrypto + pure-JS primitives.
  *
  * @example
  * ```ts
- * const { createHash, randomBytes } = createCryptoShim();
- * const hash = createHash('sha256');
- * hash.update('hello');
- * console.log(hash.digest('hex'));
+ * const { createHash, pbkdf2Sync } = createCryptoShim();
+ * createHash('sha256').update('hello').digest('hex');
+ * pbkdf2Sync('password', 'salt', 1000, 32, 'sha256');
  * ```
  */
 export const createCryptoShim = (): typeof crypto => {
   return crypto;
 };
 
-// Named export so @yarnpkg/lockfile gets it as crypto_exports.getHashes
-// (pre-bundled require() returns crypto_exports, not crypto_default2)
-export const getHashes = crypto.getHashes;
+// Named exports so static `import { createHash } from "crypto"` (aliased to
+// this file) and the `bolo-node-shim:*` `Object.keys` re-export both work.
+export {
+  getHashes,
+  createHash,
+  Hash,
+  createHmac,
+  Hmac,
+  hash,
+  pbkdf2,
+  pbkdf2Sync,
+  scrypt,
+  scryptSync,
+  hkdf,
+  hkdfSync,
+  randomInt,
+  randomFill,
+  randomFillSync,
+  pseudoRandomBytes,
+  timingSafeEqual,
+  createSecretKey,
+  createPrivateKey,
+  createPublicKey,
+  KeyObject,
+  createSign,
+  createVerify,
+  Sign,
+  Verify,
+  sign,
+  verify,
+  generateKey,
+  generateKeySync,
+  generateKeyPair,
+  generateKeyPairSync,
+  generatePrime,
+  generatePrimeSync,
+  checkPrime,
+  checkPrimeSync,
+  normalizeHashName,
+  digestBytes,
+  hmacBytes,
+};
 
-// Static `import { randomUUID } from "crypto"` (which the vite-preset aliases
-// to this file) needs a named export, not just a property on the default.
-// ponytail: add more named exports here as new consumers surface them.
+const unenv = unenvCrypto as typeof import("node:crypto");
+
 export const randomUUID = crypto.randomUUID;
+export const getFips = crypto.getFips;
+export const setFips = crypto.setFips;
+export const secureHeapUsed = crypto.secureHeapUsed;
+export const constants = unenv.constants;
+export const webcrypto = unenv.webcrypto;
+export const subtle = unenv.subtle;
+export const randomBytes = unenv.randomBytes;
+// `rng`/`prng` are long-removed from @types/node but live in unenv — keep
+// them exported for packages that still reach for the aliases.
+export const rng = (unenvCrypto as Record<string, unknown>).rng;
+export const prng = (unenvCrypto as Record<string, unknown>).prng;
+export const getRandomValues = unenv.getRandomValues;
+export const fips = unenv.fips;
+export const DEFAULT_ENCODING = undefined;
 
 export default crypto;

@@ -32,6 +32,10 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
+    "brotli": "2.1.0",
+    "fflate": "0.8.3",
     "pathe": "^2.0.0",
     "unenv": "2.0.0-rc.24"
   },
