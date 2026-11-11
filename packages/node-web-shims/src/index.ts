@@ -20,6 +20,11 @@ export type {
   WorkerThreadSpawner,
   WorkerThreadContext,
   WorkerThreadsShimOptions,
+  WorkerThreadsShim,
+  WorkerThreadInstance,
+  WorkerThreadConstructor,
+  BroadcastChannelLike,
+  BroadcastChannelConstructor,
 } from "./worker_threads.js";
 export { createUtilShim, default as util } from "./util.js";
 export { createAsyncHooksShim, default as async_hooks } from "./async_hooks.js";

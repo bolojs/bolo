@@ -59,6 +59,76 @@ export interface WorkerThreadsShimOptions {
   readonly context?: WorkerThreadContext;
 }
 
+// ── Shim surface types ──────────────────────────────────────────────
+
+/**
+ * `Worker` object shape exposed by {@link WorkerThreadsShim}. Deliberately a
+ * named interface (not the local class) so the factory's return type stays
+ * free of private members.
+ */
+export interface WorkerThreadInstance {
+  readonly threadId: number;
+  readonly resourceLimits: Required<Record<string, number>>;
+  on(event: string | symbol, listener: (...args: any[]) => void): this;
+  once(event: string | symbol, listener: (...args: any[]) => void): this;
+  off(event: string | symbol, listener: (...args: any[]) => void): this;
+  emit(event: string | symbol, ...args: any[]): boolean;
+  postMessage(value: unknown, transferList?: readonly unknown[]): void;
+  terminate(): Promise<number>;
+  ref(): this;
+  unref(): this;
+  hasRef(): boolean;
+  getHeapSnapshot(): Promise<never>;
+}
+
+export interface WorkerThreadConstructor {
+  new (filename: string | URL, opts?: Record<string, unknown>): WorkerThreadInstance;
+}
+
+/**
+ * Minimal `BroadcastChannel` contract — satisfied by the native class when
+ * present and by the EventTarget fallback otherwise.
+ */
+export interface BroadcastChannelLike extends EventTarget {
+  postMessage(message: unknown): void;
+  close(): void;
+}
+
+export interface BroadcastChannelConstructor {
+  new (name?: string): BroadcastChannelLike;
+}
+
+/** The `node:worker_threads` surface `createWorkerThreadsShim` returns. */
+export interface WorkerThreadsShim {
+  readonly Worker: WorkerThreadConstructor;
+  readonly isMainThread: boolean;
+  /** `ShimMessagePort` or a host-provided bridge; `null` on the main thread. */
+  readonly parentPort: unknown;
+  readonly workerData: unknown;
+  readonly threadId: number;
+  readonly resourceLimits: Required<Record<string, number>>;
+  readonly MessageChannel: typeof ShimMessageChannel;
+  readonly MessagePort: typeof ShimMessagePort;
+  readonly BroadcastChannel: BroadcastChannelConstructor;
+  readonly SHARE_ENV: symbol;
+  readonly receiveMessageOnPort: (port: unknown) => unknown;
+  readonly moveMessagePortToContext: (
+    port: unknown,
+    contextifiedSandbox?: unknown,
+  ) => unknown;
+  readonly markAsUntransferable: typeof markAsUntransferable;
+  readonly markAsUncloneable: typeof markAsUncloneable;
+  readonly isMarkedAsUntransferable: typeof isMarkedAsUntransferable;
+  readonly setEnvironmentData: (key: unknown, value: unknown) => void;
+  readonly getEnvironmentData: (key: unknown) => unknown;
+  readonly postMessageToThread: (
+    targetThreadId: number,
+    value: unknown,
+    transferList?: readonly unknown[],
+    timeout?: number,
+  ) => Promise<unknown>;
+}
+
 // ── Clone / transfer guards ─────────────────────────────────────────
 
 const uncloneable = new WeakSet<object>();
@@ -336,7 +406,8 @@ const browserWorkerSpawner: WorkerThreadSpawner | undefined =
         let onExit: ((c: number) => void) | null = null;
         worker.onmessage = (ev: MessageEvent) => {
           const d = ev.data as Record<string, unknown> | null;
-          const ctrl = d?.[CTRL];
+          if (d === null) return void onMessage?.(d);
+          const ctrl = d[CTRL];
           if (ctrl === "exit") return void onExit?.(typeof d.code === "number" ? d.code : 0);
           if (ctrl === "error") return void onError?.(new Error(String(d.message)));
           onMessage?.(d);
@@ -376,7 +447,9 @@ const browserWorkerSpawner: WorkerThreadSpawner | undefined =
 
 let nextThreadId = 1;
 
-export const createWorkerThreadsShim = (options: WorkerThreadsShimOptions = {}) => {
+export const createWorkerThreadsShim = (
+  options: WorkerThreadsShimOptions = {},
+): WorkerThreadsShim => {
   const autoContext =
     options.context ??
     (globalThis.__boloWorkerThread
@@ -544,8 +617,10 @@ export const createWorkerThreadsShim = (options: WorkerThreadsShimOptions = {}) 
     return Promise.resolve(undefined);
   };
 
-  const BroadcastChannelShim =
-    (globalThis as { BroadcastChannel?: typeof BroadcastChannel }).BroadcastChannel ??
+  const NativeBroadcastChannel = (globalThis as { BroadcastChannel?: BroadcastChannelConstructor })
+    .BroadcastChannel;
+  const BroadcastChannelCtor: BroadcastChannelConstructor =
+    NativeBroadcastChannel ??
     class BroadcastChannelShim extends EventTarget {
       constructor(_name?: string) {
         super();
@@ -568,7 +643,7 @@ export const createWorkerThreadsShim = (options: WorkerThreadsShimOptions = {}) 
     },
     MessageChannel: ShimMessageChannel,
     MessagePort: ShimMessagePort,
-    BroadcastChannel: BroadcastChannelShim,
+    BroadcastChannel: BroadcastChannelCtor,
     SHARE_ENV,
     receiveMessageOnPort,
     moveMessagePortToContext,
