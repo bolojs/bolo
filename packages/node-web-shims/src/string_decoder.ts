@@ -1,4 +1,4 @@
-import { Buffer as UnenvBuffer } from "unenv/node/buffer";
+import { Buffer as WebBuffer } from "./buffer.js";
 
 export * from "unenv/node/string_decoder";
 
@@ -22,8 +22,7 @@ interface BufferCtor {
 // (injected by the container banner or a consumer polyfill) and fall back to
 // unenv's implementation.
 const getBuffer = (): BufferCtor =>
-  (globalThis as unknown as { Buffer?: BufferCtor }).Buffer ??
-  (UnenvBuffer as unknown as BufferCtor);
+  (globalThis as unknown as { Buffer?: BufferCtor }).Buffer ?? (WebBuffer as unknown as BufferCtor);
 
 const toBuffer = (buf: unknown): AnyBuffer => {
   const Buffer = getBuffer();
@@ -252,6 +251,8 @@ export class StringDecoder {
         default:
           break;
       }
+      this.lastNeed = 0;
+      this.lastTotal = 0;
     }
     return r;
   }

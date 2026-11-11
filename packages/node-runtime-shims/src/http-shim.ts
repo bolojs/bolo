@@ -8,6 +8,130 @@ const { Readable, Writable } = createStreamShim();
 // runtime value instead of trusting the type.
 const { Buffer } = createBufferShim() as unknown as { Buffer: typeof globalThis.Buffer };
 
+export const METHODS = [
+  "ACL",
+  "BIND",
+  "CHECKOUT",
+  "CONNECT",
+  "COPY",
+  "DELETE",
+  "GET",
+  "HEAD",
+  "LINK",
+  "LOCK",
+  "M-SEARCH",
+  "MERGE",
+  "MKACTIVITY",
+  "MKCALENDAR",
+  "MKCOL",
+  "MOVE",
+  "NOTIFY",
+  "OPTIONS",
+  "PATCH",
+  "POST",
+  "PROPFIND",
+  "PROPPATCH",
+  "PURGE",
+  "PUT",
+  "QUERY",
+  "REBIND",
+  "REPORT",
+  "SEARCH",
+  "SOURCE",
+  "SUBSCRIBE",
+  "TRACE",
+  "UNBIND",
+  "UNLINK",
+  "UNLOCK",
+  "UNSUBSCRIBE",
+];
+
+export const STATUS_CODES: Record<number | string, string> = {
+  100: "Continue",
+  101: "Switching Protocols",
+  102: "Processing",
+  103: "Early Hints",
+  200: "OK",
+  201: "Created",
+  202: "Accepted",
+  203: "Non-Authoritative Information",
+  204: "No Content",
+  205: "Reset Content",
+  206: "Partial Content",
+  207: "Multi-Status",
+  208: "Already Reported",
+  226: "IM Used",
+  300: "Multiple Choices",
+  301: "Moved Permanently",
+  302: "Found",
+  303: "See Other",
+  304: "Not Modified",
+  305: "Use Proxy",
+  307: "Temporary Redirect",
+  308: "Permanent Redirect",
+  400: "Bad Request",
+  401: "Unauthorized",
+  402: "Payment Required",
+  403: "Forbidden",
+  404: "Not Found",
+  405: "Method Not Allowed",
+  406: "Not Acceptable",
+  407: "Proxy Authentication Required",
+  408: "Request Timeout",
+  409: "Conflict",
+  410: "Gone",
+  411: "Length Required",
+  412: "Precondition Failed",
+  413: "Payload Too Large",
+  414: "URI Too Long",
+  415: "Unsupported Media Type",
+  416: "Range Not Satisfiable",
+  417: "Expectation Failed",
+  418: "I'm a Teapot",
+  421: "Misdirected Request",
+  422: "Unprocessable Entity",
+  423: "Locked",
+  424: "Failed Dependency",
+  425: "Too Early",
+  426: "Upgrade Required",
+  428: "Precondition Required",
+  429: "Too Many Requests",
+  431: "Request Header Fields Too Large",
+  451: "Unavailable For Legal Reasons",
+  500: "Internal Server Error",
+  501: "Not Implemented",
+  502: "Bad Gateway",
+  503: "Service Unavailable",
+  504: "Gateway Timeout",
+  505: "HTTP Version Not Supported",
+  506: "Variant Also Negotiates",
+  507: "Insufficient Storage",
+  508: "Loop Detected",
+  509: "Bandwidth Limit Exceeded",
+  510: "Not Extended",
+  511: "Network Authentication Required",
+};
+
+export const maxHeaderSize = 16384;
+
+export const validateHeaderName = (name: string): void => {
+  if (typeof name !== "string" || !/^[\w!#$%&'*+\-.^`|~]+$/.test(name)) {
+    const err = new TypeError(`Header name must be a valid HTTP token [${name}]`);
+    (err as unknown as { code: string }).code = "ERR_INVALID_HTTP_TOKEN";
+    throw err;
+  }
+};
+
+export const validateHeaderValue = (name: string, value: unknown): void => {
+  if (value === undefined || value === null) {
+    const err = new TypeError(`Invalid value "${value}" for header "${name}"`);
+    (err as unknown as { code: string }).code = "ERR_HTTP_INVALID_HEADER_VALUE";
+    throw err;
+  }
+};
+
+export const setMaxIdleHTTPParsers = (_max: number): void => {};
+
 export interface HttpShimOptions {
   onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
 }
@@ -96,9 +220,14 @@ class IncomingMessageImpl extends Readable {
   readonly url?: string;
   readonly method?: string;
   readonly headers: Record<string, string>;
+  readonly rawHeaders: string[];
   readonly httpVersion = "1.1";
   readonly statusCode?: number;
   readonly statusMessage?: string;
+  readonly socket: unknown;
+  readonly connection: unknown;
+  trailers: Record<string, string> = {};
+  rawTrailers: string[] = [];
   complete = false;
   private body?: Uint8Array;
   private emitted = false;
@@ -116,9 +245,23 @@ class IncomingMessageImpl extends Readable {
     this.url = init.url;
     this.method = init.method;
     this.headers = init.headers;
+    this.rawHeaders = Object.entries(init.headers).flatMap(([k, v]) => [k, v]);
     this.statusCode = init.statusCode;
     this.statusMessage = init.statusMessage;
     this.body = init.body;
+
+    const dummySocket = new EventEmitter();
+    (dummySocket as unknown as Record<string, unknown>).remoteAddress = "127.0.0.1";
+    (dummySocket as unknown as Record<string, unknown>).remotePort = 3000;
+    (dummySocket as unknown as Record<string, unknown>).localAddress = "127.0.0.1";
+    (dummySocket as unknown as Record<string, unknown>).localPort = 3000;
+    (dummySocket as unknown as Record<string, unknown>).encrypted = false;
+    (dummySocket as unknown as Record<string, unknown>).destroy = () => dummySocket;
+    (dummySocket as unknown as Record<string, unknown>).ref = () => dummySocket;
+    (dummySocket as unknown as Record<string, unknown>).unref = () => dummySocket;
+    this.socket = dummySocket;
+    this.connection = dummySocket;
+
     if (init.autoEmit !== false) {
       queueMicrotask(() => this._emitBody());
     }
@@ -142,27 +285,38 @@ class IncomingMessageImpl extends Readable {
   }
 }
 
-/**
- * unenv's own `Writable` already buffers written chunks and emits
- * 'finish'/'close' from `end()`, so only the http-specific surface
- * (writeHead/setHeader/statusCode/headersSent) plus the chunk capture
- * needed to build the final `Response` are added here.
- */
-class ServerResponseImpl extends Writable {
+export class OutgoingMessageImpl extends Writable {
   statusCode = 200;
+  statusMessage?: string;
   headersSent = false;
-  private responseHeaders: Record<string, string> = { "content-type": "text/plain" };
-  private chunks: Uint8Array[] = [];
+  sendDate = true;
+  chunkedEncoding = false;
+  shouldKeepAlive = true;
+  useChunkedEncodingByDefault = true;
+  readonly socket: unknown;
+  readonly connection: unknown;
+  protected responseHeaders: Record<string, string> = { "content-type": "text/plain" };
+  protected chunks: Uint8Array[] = [];
 
-  writeHead(status: number, headers?: Record<string, string>): this {
-    this.statusCode = status;
-    if (headers) Object.assign(this.responseHeaders, lowerCaseHeaders(headers));
-    this.headersSent = true;
-    return this;
+  constructor() {
+    super();
+    const dummySocket = new EventEmitter();
+    (dummySocket as unknown as Record<string, unknown>).remoteAddress = "127.0.0.1";
+    (dummySocket as unknown as Record<string, unknown>).remotePort = 3000;
+    (dummySocket as unknown as Record<string, unknown>).localAddress = "127.0.0.1";
+    (dummySocket as unknown as Record<string, unknown>).localPort = 3000;
+    (dummySocket as unknown as Record<string, unknown>).encrypted = false;
+    (dummySocket as unknown as Record<string, unknown>).destroy = () => dummySocket;
+    (dummySocket as unknown as Record<string, unknown>).ref = () => dummySocket;
+    (dummySocket as unknown as Record<string, unknown>).unref = () => dummySocket;
+    this.socket = dummySocket;
+    this.connection = dummySocket;
   }
 
-  setHeader(key: string, value: string): this {
-    this.responseHeaders[key.toLowerCase()] = String(value);
+  setHeader(key: string, value: string | number | readonly string[]): this {
+    this.responseHeaders[key.toLowerCase()] = Array.isArray(value)
+      ? value.join(", ")
+      : String(value);
     return this;
   }
 
@@ -170,9 +324,35 @@ class ServerResponseImpl extends Writable {
     return this.responseHeaders[key.toLowerCase()];
   }
 
+  hasHeader(key: string): boolean {
+    return key.toLowerCase() in this.responseHeaders;
+  }
+
   removeHeader(key: string): void {
     delete this.responseHeaders[key.toLowerCase()];
   }
+
+  getHeaderNames(): string[] {
+    return Object.keys(this.responseHeaders);
+  }
+
+  getHeaders(): Record<string, string> {
+    return { ...this.responseHeaders };
+  }
+
+  appendHeader(name: string, value: string | readonly string[]): this {
+    const key = name.toLowerCase();
+    const existing = this.responseHeaders[key];
+    const valStr = Array.isArray(value) ? value.join(", ") : String(value);
+    this.responseHeaders[key] = existing ? `${existing}, ${valStr}` : valStr;
+    return this;
+  }
+
+  flushHeaders(): void {
+    this.headersSent = true;
+  }
+
+  addTrailers(_headers: Record<string, string>): void {}
 
   override _write(
     chunk: unknown,
@@ -182,6 +362,30 @@ class ServerResponseImpl extends Writable {
     this.headersSent = true;
     this.chunks.push(toBytes(chunk));
     callback?.();
+  }
+}
+
+/**
+ * unenv's own `Writable` already buffers written chunks and emits
+ * 'finish'/'close' from `end()`, so only the http-specific surface
+ * (writeHead/setHeader/statusCode/headersSent) plus the chunk capture
+ * needed to build the final `Response` are added here.
+ */
+class ServerResponseImpl extends OutgoingMessageImpl {
+  writeHead(
+    status: number,
+    reasonOrHeaders?: string | Record<string, string>,
+    headers?: Record<string, string>,
+  ): this {
+    this.statusCode = status;
+    if (typeof reasonOrHeaders === "string") {
+      this.statusMessage = reasonOrHeaders;
+      if (headers) Object.assign(this.responseHeaders, lowerCaseHeaders(headers));
+    } else if (reasonOrHeaders && typeof reasonOrHeaders === "object") {
+      Object.assign(this.responseHeaders, lowerCaseHeaders(reasonOrHeaders));
+    }
+    this.headersSent = true;
+    return this;
   }
 
   toResponse(): Response {
@@ -433,38 +637,67 @@ const get = (
 export type IncomingMessage = IncomingMessageImpl;
 export type ServerResponse = ServerResponseImpl;
 export type ClientRequest = ClientRequestImpl;
+export type OutgoingMessage = OutgoingMessageImpl;
 
 export interface HttpServer {
-  listen(port?: number, host?: string, callback?: () => void): HttpServer;
-  close(): HttpServer;
+  listen(port?: unknown, host?: unknown, callback?: () => void): HttpServer;
+  close(callback?: (err?: Error) => void): HttpServer;
   on(event: string, listener: (...args: any[]) => void): HttpServer;
+  address(): { address: string; family: string; port: number } | null;
+  setTimeout(msecs?: number, callback?: () => void): HttpServer;
 }
 
-export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) => {
-  const { onPortEvent } = options ?? {};
+export class ServerImpl extends EventEmitter implements HttpServer {
+  listening = false;
+  private serverPort = 0;
+  private sandbox?: SWSandbox;
+  private onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
 
-  const createServer = (handler?: (req: IncomingMessage, res: ServerResponse) => void) => {
-    if (!sandbox) {
-      throw new Error(
-        "http.createServer requires an SWSandbox; client methods (request/get) are available without one",
-      );
+  constructor(
+    sandbox?: SWSandbox,
+    optionsOrListener?: unknown,
+    requestListener?: (req: IncomingMessageImpl, res: ServerResponseImpl) => void,
+    onPortEvent?: (event: string, data: { port: number; url?: string }) => void,
+  ) {
+    super();
+    this.sandbox = sandbox;
+    this.onPortEvent = onPortEvent;
+    const listener =
+      typeof optionsOrListener === "function"
+        ? (optionsOrListener as (req: IncomingMessageImpl, res: ServerResponseImpl) => void)
+        : requestListener;
+    if (listener) {
+      this.on("request", listener);
     }
-    const server = new EventEmitter() as unknown as HttpServer;
-    let listening = false;
-    let serverPort = 0;
+  }
 
-    server.listen = (port?: number, host?: string, callback?: () => void) => {
-      const actualPort = port ?? 3000;
-      const url = `/__virtual__/${actualPort}`;
+  listen(port?: unknown, host?: unknown, callback?: () => void): this {
+    let actualPort = 3000;
+    let cb: (() => void) | undefined;
+    if (typeof port === "number") {
+      actualPort = port || 3000;
+      if (typeof host === "function") {
+        cb = host as () => void;
+      } else if (typeof callback === "function") {
+        cb = callback;
+      }
+    } else if (typeof port === "function") {
+      cb = port as () => void;
+    } else if (typeof port === "object" && port !== null) {
+      actualPort = (port as { port?: number }).port ?? 3000;
+      cb = (typeof host === "function" ? host : callback) as (() => void) | undefined;
+    }
+    const url = `/__virtual__/${actualPort}`;
 
-      listening = true;
-      serverPort = actualPort;
+    this.listening = true;
+    this.serverPort = actualPort;
 
-      onPortEvent?.("server-ready", { port: actualPort, url });
-      onPortEvent?.("port-open", { port: actualPort, url });
+    this.onPortEvent?.("server-ready", { port: actualPort, url });
+    this.onPortEvent?.("port-open", { port: actualPort, url });
 
+    if (this.sandbox) {
       const fetchHandler = async (req: Request) => {
-        if (!listening) {
+        if (!this.listening) {
           return new Response("Server closed", { status: 503 });
         }
 
@@ -491,41 +724,105 @@ export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) =
           response.once("finish", () => resolve());
         });
 
-        const result = handler?.(request, response);
-        if (result && typeof (result as Promise<unknown>).then === "function") {
-          await result;
-        }
+        this.emit("request", request, response);
         await responseFinished;
 
         return response.toResponse();
       };
 
-      sandbox.onFetch(fetchHandler);
+      this.sandbox.onFetch(fetchHandler);
+    }
 
-      if (callback) callback();
-      return server;
+    queueMicrotask(() => {
+      this.emit("listening");
+      cb?.();
+    });
+    return this;
+  }
+
+  close(callback?: (err?: Error) => void): this {
+    if (this.listening) {
+      this.onPortEvent?.("port-close", { port: this.serverPort });
+      this.listening = false;
+    }
+    queueMicrotask(() => {
+      this.emit("close");
+      callback?.();
+    });
+    return this;
+  }
+
+  address() {
+    return {
+      address: "127.0.0.1",
+      family: "IPv4",
+      port: this.serverPort,
     };
+  }
 
-    server.close = () => {
-      if (listening) {
-        onPortEvent?.("port-close", { port: serverPort });
-        listening = false;
-      }
-      return server;
-    };
+  setTimeout(msecs = 0, callback?: () => void): this {
+    if (callback) this.on("timeout", callback);
+    return this;
+  }
+}
 
-    return server;
-  };
+export type RequestListener = (req: IncomingMessageImpl, res: ServerResponseImpl) => void;
+
+export interface ServerConstructor {
+  new (requestListener?: RequestListener): ServerImpl;
+  new (options: unknown, requestListener?: RequestListener): ServerImpl;
+  (requestListener?: RequestListener): ServerImpl;
+  (options: unknown, requestListener?: RequestListener): ServerImpl;
+}
+
+export function createServerConstructor(
+  sandbox?: SWSandbox,
+  onPortEvent?: (event: string, data: { port: number; url?: string }) => void,
+): ServerConstructor {
+  function Server(this: unknown, optionsOrListener?: unknown, requestListener?: RequestListener) {
+    return new ServerImpl(sandbox, optionsOrListener, requestListener, onPortEvent);
+  }
+  Server.prototype = ServerImpl.prototype;
+  Object.setPrototypeOf(Server, ServerImpl);
+  return Server as unknown as ServerConstructor;
+}
+
+export const Server = createServerConstructor();
+export type Server = ServerImpl;
+
+export const createHttpShim = (sandbox?: SWSandbox, options?: HttpShimOptions) => {
+  const { onPortEvent } = options ?? {};
+  const Server = createServerConstructor(sandbox, onPortEvent);
+
+  function createServer(requestListener?: RequestListener): ServerImpl;
+  function createServer(options: unknown, requestListener?: RequestListener): ServerImpl;
+  function createServer(
+    optionsOrListener?: unknown,
+    requestListener?: RequestListener,
+  ): ServerImpl {
+    return new (Server as unknown as { new (a?: unknown, b?: unknown): ServerImpl })(
+      optionsOrListener,
+      requestListener,
+    );
+  }
 
   return {
     createServer,
+    Server,
     request,
     get,
     ClientRequest: ClientRequestImpl,
     IncomingMessage: IncomingMessageImpl,
     ServerResponse: ServerResponseImpl,
+    OutgoingMessage: OutgoingMessageImpl,
     Agent,
     globalAgent,
     createAgent,
+    METHODS,
+    STATUS_CODES,
+    maxHeaderSize,
+    validateHeaderName,
+    validateHeaderValue,
+    setMaxIdleHTTPParsers,
   };
 };

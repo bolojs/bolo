@@ -126,6 +126,47 @@ const executeWithTimeout = (
   }
 };
 
+let quickJSModule: any = undefined;
+const quickJSPromise = newQuickJSWASMModuleFromVariant(releaseSyncVariant)
+  .then((mod) => {
+    quickJSModule = mod;
+    return mod;
+  })
+  .catch(() => undefined);
+
+export const initQuickJS = async (): Promise<void> => {
+  if (!quickJSModule) {
+    quickJSModule = await quickJSPromise;
+  }
+};
+
+const IS_CONTEXT = Symbol("IS_CONTEXT");
+
+const evalInProxySync = (code: string, sandbox?: Record<string, unknown>): unknown => {
+  const scope = sandbox ?? {};
+  const proxy = new Proxy(scope, {
+    has(_target, key) {
+      if (key === Symbol.unscopables) return false;
+      return true;
+    },
+    get(target, key) {
+      if (key === Symbol.unscopables) return undefined;
+      if (key in target) return (target as any)[key];
+      if (key in globalThis) return (globalThis as any)[key];
+      return undefined;
+    },
+    set(target, key, val) {
+      (target as any)[key] = val;
+      return true;
+    },
+  });
+  const fn = new Function(
+    "sandbox",
+    "with(sandbox) { return eval(" + JSON.stringify(code) + "); }",
+  );
+  return fn(proxy);
+};
+
 export class Script {
   private readonly code: string;
   private readonly filename: string;
@@ -144,60 +185,48 @@ export class Script {
     this._disposed = true;
   }
 
-  async runInContext(context: VmContext, options?: RunInContextOptions): Promise<unknown> {
+  runInContext(context: VmContext, options?: RunInContextOptions): unknown {
     if (this._disposed) throw new Error("Script has been disposed");
-    if (context.disposed) throw new Error("Context has been disposed");
-    const result = executeWithTimeout(
-      context.context,
-      context.runtime,
-      this.code,
-      options?.filename ?? this.filename,
-      options?.timeout,
-    );
-    return extractResult(context.context, result);
+    return runInContextInternal(this.code, context, { ...options, filename: this.filename });
   }
 
-  async runInNewContext(
-    context?: Record<string, unknown>,
-    options?: RunInContextOptions,
-  ): Promise<unknown> {
+  runInNewContext(context?: Record<string, unknown>, options?: RunInContextOptions): unknown {
     if (this._disposed) throw new Error("Script has been disposed");
-    const ctx = await createContextInternal(context);
-    try {
-      const result = executeWithTimeout(
-        ctx.context,
-        ctx.runtime,
-        this.code,
-        options?.filename ?? this.filename,
-        options?.timeout,
-      );
-      return extractResult(ctx.context, result);
-    } finally {
-      ctx.dispose();
-    }
+    return runInNewContextInternal(this.code, context, { ...options, filename: this.filename });
   }
 
-  async runInThisContext(options?: RunInContextOptions): Promise<unknown> {
+  runInThisContext(options?: RunInContextOptions): unknown {
     return this.runInNewContext(undefined, options);
   }
 }
 
-const createContextInternal = async (sandbox?: Record<string, unknown>): Promise<VmContext> => {
-  const QuickJS = await newQuickJSWASMModuleFromVariant(releaseSyncVariant);
-  const runtime = QuickJS.newRuntime();
-  const context = runtime.newContext();
+const createContextInternal = (sandbox?: Record<string, unknown>): VmContext => {
   const sandboxRecord = sandbox ?? {};
-  injectGlobals(context, sandboxRecord);
-  return new VmContext(runtime, context, sandboxRecord);
+  if (quickJSModule) {
+    const runtime = quickJSModule.newRuntime();
+    const context = runtime.newContext();
+    injectGlobals(context, sandboxRecord);
+    const vmCtx = new VmContext(runtime, context, sandboxRecord);
+    Object.assign(vmCtx, sandboxRecord);
+    (vmCtx as unknown as Record<symbol, boolean>)[IS_CONTEXT] = true;
+    return vmCtx;
+  }
+  const vmCtx = new VmContext(null as any, null as any, sandboxRecord);
+  Object.assign(vmCtx, sandboxRecord);
+  (vmCtx as unknown as Record<symbol, boolean>)[IS_CONTEXT] = true;
+  return vmCtx;
 };
 
-export const createVmShim = (_options?: VmShimOptions) => {
-  const runInNewContext = async (
-    code: string,
-    context?: Record<string, unknown>,
-    options?: RunInContextOptions,
-  ): Promise<unknown> => {
-    const ctx = await createContextInternal(context);
+const runInNewContextInternal = (
+  code: string,
+  context?: Record<string, unknown>,
+  options?: RunInContextOptions,
+): unknown => {
+  if (options?.timeout !== undefined && options.timeout > 0 && !quickJSModule) {
+    throw new Error("vm timeout requires initialized QuickJS module");
+  }
+  if (quickJSModule) {
+    const ctx = createContextInternal(context);
     try {
       const result = executeWithTimeout(
         ctx.context,
@@ -206,45 +235,83 @@ export const createVmShim = (_options?: VmShimOptions) => {
         options?.filename ?? "eval.js",
         options?.timeout,
       );
-      return extractResult(ctx.context, result);
+      const out = extractResult(ctx.context, result);
+      if (context) {
+        Object.assign(context, ctx.sandbox);
+      }
+      return out;
     } finally {
       ctx.dispose();
     }
-  };
+  }
+  return evalInProxySync(code, context);
+};
 
-  const runInThisContext = (code: string, options?: RunInContextOptions): Promise<unknown> => {
-    return runInNewContext(code, undefined, options);
-  };
-
-  const createContext = async (
-    sandbox?: Record<string, unknown>,
-    _options?: CreateContextOptions,
-  ): Promise<VmContext> => {
-    return createContextInternal(sandbox);
-  };
-
-  const runInContext = async (
-    code: string,
-    context: VmContext,
-    options?: RunInContextOptions,
-  ): Promise<unknown> => {
+const runInContextInternal = (
+  code: string,
+  context: VmContext | Record<string, unknown>,
+  options?: RunInContextOptions,
+): unknown => {
+  if (context instanceof VmContext) {
     if (context.disposed) throw new Error("Context has been disposed");
-    const result = executeWithTimeout(
-      context.context,
-      context.runtime,
-      code,
-      options?.filename ?? "eval.js",
-      options?.timeout,
-    );
-    return extractResult(context.context, result);
-  };
+    if (context.context && context.runtime) {
+      const result = executeWithTimeout(
+        context.context,
+        context.runtime,
+        code,
+        options?.filename ?? "eval.js",
+        options?.timeout,
+      );
+      const out = extractResult(context.context, result);
+      Object.assign(context, context.sandbox);
+      return out;
+    }
+    return evalInProxySync(code, context.sandbox);
+  }
+  return evalInProxySync(code, context);
+};
 
-  // vm.Module and vm.compileFunction are deferred — ponytail: real vm.compileFunction compiles to a function object
-  const compileFunction = async (
+export const createVmShim = (_options?: VmShimOptions) => {
+  const runInNewContext = (
     code: string,
     context?: Record<string, unknown>,
     options?: RunInContextOptions,
-  ): Promise<(...args: unknown[]) => unknown> => {
+  ): unknown => {
+    return runInNewContextInternal(code, context, options);
+  };
+
+  const runInThisContext = (code: string, options?: RunInContextOptions): unknown => {
+    return runInNewContext(code, undefined, options);
+  };
+
+  const createContext = (
+    sandbox?: Record<string, unknown>,
+    _options?: CreateContextOptions,
+  ): VmContext => {
+    return createContextInternal(sandbox);
+  };
+
+  const isContext = (sandbox: unknown): boolean => {
+    return (
+      sandbox instanceof VmContext ||
+      Boolean(sandbox && (sandbox as unknown as Record<symbol, boolean>)[IS_CONTEXT])
+    );
+  };
+
+  const runInContext = (
+    code: string,
+    context: VmContext,
+    options?: RunInContextOptions,
+  ): unknown => {
+    return runInContextInternal(code, context, options);
+  };
+
+  // vm.Module and vm.compileFunction are deferred — ponytail: real vm.compileFunction compiles to a function object
+  const compileFunction = (
+    code: string,
+    context?: Record<string, unknown>,
+    options?: RunInContextOptions,
+  ): ((...args: unknown[]) => unknown) => {
     // ponytail: simple wrapper — real vm.compileFunction compiles to a function object
     return (...args: unknown[]) => {
       const globals = { ...context, args };
@@ -256,6 +323,7 @@ export const createVmShim = (_options?: VmShimOptions) => {
     runInNewContext,
     runInThisContext,
     createContext,
+    isContext,
     runInContext,
     compileFunction,
     Script,

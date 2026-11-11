@@ -45,6 +45,43 @@ describe("http shim", () => {
     expect(await resp.text()).toBe('{"ok":true}');
   });
 
+  it("exports METHODS, STATUS_CODES, Server, and header helpers", () => {
+    const shim = createHttpShim();
+    expect(Array.isArray(shim.METHODS)).toBe(true);
+    expect(shim.METHODS).toContain("GET");
+    expect(shim.METHODS).toContain("POST");
+    expect(shim.STATUS_CODES[200]).toBe("OK");
+    expect(shim.STATUS_CODES[404]).toBe("Not Found");
+    expect(shim.maxHeaderSize).toBe(16384);
+
+    expect(() => shim.validateHeaderName("content-type")).not.toThrow();
+    expect(() => shim.validateHeaderName("invalid header")).toThrow();
+
+    expect(() => shim.validateHeaderValue("content-type", "text/plain")).not.toThrow();
+    expect(() => shim.validateHeaderValue("content-type", undefined)).toThrow();
+
+    // Server constructor & callable shape
+    const s1 = new shim.Server();
+    expect(s1).toBeInstanceOf(shim.Server);
+    const s2 = shim.Server();
+    expect(s2).toBeInstanceOf(shim.Server);
+    expect(typeof s1.listen).toBe("function");
+    expect(typeof s1.close).toBe("function");
+    expect(s1.address()).toEqual({ address: "127.0.0.1", family: "IPv4", port: 0 });
+
+    // OutgoingMessage / ServerResponse methods
+    const res = new shim.ServerResponse();
+    res.setHeader("X-Foo", "bar");
+    expect(res.getHeader("x-foo")).toBe("bar");
+    expect(res.hasHeader("x-foo")).toBe(true);
+    expect(res.getHeaderNames()).toContain("x-foo");
+    expect(res.getHeaders()["x-foo"]).toBe("bar");
+    res.appendHeader("X-Foo", "baz");
+    expect(res.getHeader("x-foo")).toBe("bar, baz");
+    res.removeHeader("X-Foo");
+    expect(res.hasHeader("x-foo")).toBe(false);
+  });
+
   it("createNetShim with no tcpRelay throws on connect and Server.listen", async () => {
     const sandbox = makeMockSandbox();
     const netShim = createNetShim(sandbox as any);
