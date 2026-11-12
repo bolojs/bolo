@@ -143,11 +143,48 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
 
   const hrtime = Object.assign(
     (prev?: [number, number]): [number, number] => {
+      if (prev !== undefined) {
+        // Node's validateTuple: the argument must be a 2-element Array of
+        // numbers — anything else is a synchronous ERR_INVALID_ARG_TYPE.
+        if (!Array.isArray(prev)) {
+          throw Object.assign(
+            new TypeError(
+              `The "time" argument must be an instance of Array.${describeReceived(prev)}`,
+            ),
+            { code: "ERR_INVALID_ARG_TYPE" },
+          );
+        }
+        if (prev.length !== 2) {
+          throw Object.assign(
+            new RangeError(
+              `The "time" argument must contain exactly 2 elements. Received ${prev.length} elements`,
+            ),
+            { code: "ERR_OUT_OF_RANGE" },
+          );
+        }
+        for (const i of [0, 1] as const) {
+          if (typeof prev[i] !== "number" || !Number.isFinite(prev[i])) {
+            throw Object.assign(
+              new TypeError(
+                `The "time[${i}]" argument must be of type number.${describeReceived(prev[i])}`,
+              ),
+              { code: "ERR_INVALID_ARG_TYPE" },
+            );
+          }
+        }
+      }
       const elapsedMs = performance.now() - startedAt;
       const sec = Math.floor(elapsedMs / 1000);
       const nsec = Math.floor((elapsedMs % 1000) * 1e6);
       if (!prev) return [sec, nsec];
-      return [sec - prev[0], nsec - prev[1]];
+      // Node borrows so the nanoseconds component stays non-negative.
+      let ds = sec - prev[0];
+      let dns = nsec - prev[1];
+      if (dns < 0) {
+        ds -= 1;
+        dns += 1e9;
+      }
+      return [ds, dns];
     },
     { bigint: () => BigInt(Math.round((performance.now() - startedAt) * 1e6)) },
   );
@@ -284,6 +321,12 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
       } catch (err) {
         if (!(err instanceof ProcessExit)) throw err;
       }
+      throw new ProcessExit(process.exitCode ?? 0);
+    },
+    // process.reallyExit: exit NOW — no 'exit' handlers, no stdio flush wait.
+    // The worker catches ProcessExit and finishes without emitting 'exit'.
+    reallyExit: (code?: number | string): never => {
+      if (code !== undefined) process.exitCode = validateExitCode(code);
       throw new ProcessExit(process.exitCode ?? 0);
     },
     hrtime,

@@ -193,7 +193,7 @@ describe("fs shim", () => {
     await expect(shim.promises.realpath("/alias.txt")).resolves.toBe("/real.txt");
 
     // Callback form (the shape chokidar/glob/rimraf call).
-    const viaCb = await new Promise<string>((resolve, reject) => {
+    const viaCb = await new Promise<string | Uint8Array>((resolve, reject) => {
       shim.realpath("/alias.txt", (err: unknown, resolved: string) =>
         err ? reject(err) : resolve(resolved),
       );
@@ -407,8 +407,8 @@ describe("fs shim", () => {
     await new Promise<void>((resolve, reject) => {
       shim.writeFile("/cb.txt", "cb-data", (err: unknown) => (err ? reject(err) : resolve()));
     });
-    const data = await new Promise<string>((resolve, reject) => {
-      shim.readFile("/cb.txt", "utf8", (err: unknown, d: string) =>
+    const data = await new Promise<string | Uint8Array>((resolve, reject) => {
+      shim.readFile("/cb.txt", "utf8", (err: unknown, d: string | Uint8Array) =>
         err ? reject(err) : resolve(d),
       );
     });

@@ -1,7 +1,10 @@
 import type { VfsBus } from "@bolojs/fs";
-import { createEventsShim } from "@bolojs/node-web-shims";
+import { createBufferShim, createEventsShim } from "@bolojs/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
+// `createBufferShim`'s declared return type loses the `Buffer` member (same
+// declaration-emit quirk as child-process-shim.ts) — read it off the value.
+const { Buffer } = createBufferShim() as unknown as { Buffer: typeof globalThis.Buffer };
 
 type FSWatcher = InstanceType<typeof EventEmitter> & { close: () => void };
 
@@ -87,22 +90,150 @@ const dual = <F extends (...args: any[]) => any>(fn: F) => {
   };
 };
 
+// Mirrors Node's ERR_INVALID_ARG_TYPE phrasing.
+const describeReceived = (value: unknown): string => {
+  if (value == null) return ` Received ${value}`;
+  if (typeof value === "function") return ` Received function ${value.name}`;
+  if (typeof value === "object") {
+    const name = (value as object).constructor?.name;
+    return name ? ` Received an instance of ${name}` : " Received [Object: null prototype]";
+  }
+  let shown = String(typeof value === "symbol" ? value.toString() : value);
+  if (typeof value === "string") shown = `'${value}'`;
+  if (typeof value === "bigint") shown = `${value}n`;
+  return ` Received type ${typeof value} (${shown})`;
+};
+
+const invalidArgType = (name: string, expected: string, actual: unknown): TypeError =>
+  Object.assign(
+    new TypeError(`The "${name}" argument must be of type ${expected}.${describeReceived(actual)}`),
+    { code: "ERR_INVALID_ARG_TYPE" },
+  );
+
+/**
+ * Node's path argument type: `string | Buffer | URL` — fd-taking methods
+ * (`readFile`/`writeFile`/`appendFile`/`stat`-family accept an open file
+ * descriptor too) get `allowFd`. Validation must happen synchronously in the
+ * public wrapper — Node throws before any callback/IO is scheduled.
+ */
+const validatePath = (path: unknown, name = "path", allowFd = false): void => {
+  const ok =
+    typeof path === "string" ||
+    path instanceof Uint8Array ||
+    path instanceof URL ||
+    (allowFd && typeof path === "number" && Number.isInteger(path) && path >= 0);
+  if (!ok) {
+    throw invalidArgType(
+      name,
+      allowFd ? "one of string, Buffer, URL, or integer" : "one of string, Buffer, or URL",
+      path,
+    );
+  }
+};
+
+/** Normalize a Node path arg to the VFS's string form (URL → file path, Buffer → utf8). */
+const pathOf = (path: string | Uint8Array | URL): string =>
+  typeof path === "string"
+    ? path
+    : path instanceof URL
+      ? path.pathname
+      : Buffer.from(path).toString();
+
+/** Node's writeFile/appendFile data type: string, Buffer/TypedArray/DataView, or iterable. */
+const validateWriteData = (data: unknown): void => {
+  const ok =
+    typeof data === "string" ||
+    data instanceof Uint8Array ||
+    ArrayBuffer.isView(data) ||
+    data instanceof ArrayBuffer ||
+    (data !== null &&
+      typeof data === "object" &&
+      (Symbol.iterator in data || Symbol.asyncIterator in data));
+  if (!ok) {
+    throw invalidArgType(
+      "data",
+      "one of string, Buffer, TypedArray, DataView, or an iterable",
+      data,
+    );
+  }
+};
+
+export interface FsReadFileFn {
+  (path: string | number, opts?: { encoding?: string } | string): Promise<string | Uint8Array>;
+  (path: string | number, cb: (err: unknown, data: string | Uint8Array) => void): void;
+  (
+    path: string | number,
+    opts: { encoding?: string } | string,
+    cb: (err: unknown, data: string | Uint8Array) => void,
+  ): void;
+}
+interface FsWriteFileFn {
+  (path: string | number, data: string | Uint8Array, opts?: unknown): Promise<void>;
+  (path: string | number, data: string | Uint8Array, cb: (err: unknown) => void): void;
+  (
+    path: string | number,
+    data: string | Uint8Array,
+    opts: unknown,
+    cb: (err: unknown) => void,
+  ): void;
+}
+interface FsMkdirFn {
+  (path: string, opts?: { recursive?: boolean }): Promise<void>;
+  (path: string, cb: (err: unknown) => void): void;
+  (path: string, opts: { recursive?: boolean }, cb: (err: unknown) => void): void;
+}
+
 export const createFsShim = (vfs: VfsBus) => {
   const readFileImpl = async (
-    path: string,
+    path: string | number,
     opts?: { encoding?: string } | string,
   ): Promise<string | Uint8Array> => {
     const encoding = typeof opts === "string" ? opts : opts?.encoding;
+    // An open fd is served by the sync volume directly (Node reads the fd
+    // position, same as fs.readFileSync(fd)).
+    if (typeof path === "number") {
+      const out = vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as
+        | string
+        | Uint8Array;
+      return typeof out === "string" ? out : Buffer.from(out);
+    }
+    // Hot-layer files read through memfs so the no-encoding result is a real
+    // Buffer (Node parity — `vfs.readFile` returns a utf8 string).
+    if (vfs.hot.existsSync(path)) {
+      const out = vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as
+        | string
+        | Uint8Array;
+      return typeof out === "string" ? out : Buffer.from(out);
+    }
+    // Cold-layer (OPFS) fallthrough: eviction misses and cold-only paths.
     const result = await vfs.readFile(path);
-    if (encoding === "utf8" || encoding === "utf-8") return String(result);
-    return result;
+    const buf = result instanceof Uint8Array ? Buffer.from(result) : Buffer.from(String(result));
+    if (encoding !== undefined && encoding !== null) {
+      return buf.toString(encoding as BufferEncoding);
+    }
+    return buf;
   };
 
   const writeFileImpl = async (
-    path: string,
+    path: string | number,
     data: string | Uint8Array,
-    _opts?: { encoding?: string },
+    opts?: { encoding?: string; flag?: string; mode?: number } | string,
   ): Promise<void> => {
+    // fd and flagged/moded writes go straight to memfs — `vfs.writeFile`
+    // handles the plain string-path case (watchers + cold replication).
+    if (
+      typeof path === "number" ||
+      (opts !== undefined &&
+        typeof opts === "object" &&
+        (opts.flag !== undefined || opts.mode !== undefined))
+    ) {
+      vfs.hot.writeFileSync(
+        path as never,
+        data as never,
+        typeof opts === "object" ? (opts as never) : undefined,
+      );
+      return;
+    }
     await vfs.writeFile(path, data);
   };
 
@@ -216,9 +347,31 @@ export const createFsShim = (vfs: VfsBus) => {
   const lstatImpl = async (path: string): Promise<FsStat> =>
     vfs.hot.lstatSync(path) as unknown as FsStat;
 
-  const readFile = withCallback(readFileImpl);
-  const writeFile = withCallback(writeFileImpl);
-  const mkdir = withCallback(mkdirImpl);
+  // Path/data validation is synchronous in Node (a TypeError thrown before
+  // any callback or IO is scheduled), so it lives in the exported wrappers,
+  // not the promise impls — `assert.throws(() => fs.mkdir(1, cb))` must see
+  // a throw, not a rejection.
+
+  const readFile = ((path: string | number, ...rest: any[]) => {
+    validatePath(path, "path", true);
+    return withCallback(readFileImpl)(
+      (typeof path === "number" ? path : pathOf(path as string | Uint8Array | URL)) as never,
+      ...rest,
+    );
+  }) as unknown as FsReadFileFn;
+  const writeFile = ((path: string | number, data: unknown, ...rest: any[]) => {
+    validatePath(path, "path", true);
+    validateWriteData(data);
+    return withCallback(writeFileImpl)(
+      (typeof path === "number" ? path : pathOf(path as string | Uint8Array | URL)) as never,
+      data as never,
+      ...rest,
+    );
+  }) as unknown as FsWriteFileFn;
+  const mkdir = ((path: unknown, ...rest: any[]) => {
+    validatePath(path);
+    return withCallback(mkdirImpl)(pathOf(path as string | Uint8Array | URL), ...rest);
+  }) as unknown as FsMkdirFn;
   const rm = withCallback(rmImpl);
   const readdir = withCallback(readdirImpl);
   const stat = withCallback(statImpl);
@@ -254,29 +407,39 @@ export const createFsShim = (vfs: VfsBus) => {
   // fs methods bundled apps expect (config loaders, `require()`-adjacent
   // code, CLIs) can be backed for real instead of throwing.
   const readFileSync = (
-    path: string,
+    path: string | number | Uint8Array | URL,
     opts?: { encoding?: string } | string,
   ): string | Uint8Array => {
+    validatePath(path, "path", true);
     const encoding = typeof opts === "string" ? opts : opts?.encoding;
-    return vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as
-      | string
-      | Uint8Array;
+    const out = vfs.hot.readFileSync(
+      (typeof path === "number" ? path : pathOf(path)) as never,
+      encoding as BufferEncoding | undefined,
+    ) as string | Uint8Array;
+    // memfs returns its own Buffer class; re-wrap so `instanceof Buffer`
+    // holds against the shim's Buffer (worker RPC returns a plain Uint8Array).
+    return typeof out === "string" ? out : Buffer.from(out);
   };
 
   const writeFileSync = (
-    path: string,
+    path: string | number | Uint8Array | URL,
     data: string | Uint8Array,
-    opts?: { encoding?: string },
+    opts?: { encoding?: string; flag?: string; mode?: number } | string,
   ): void => {
+    validatePath(path, "path", true);
+    validateWriteData(data);
     vfs.hot.writeFileSync(
-      path,
-      data,
-      opts?.encoding ? { encoding: opts.encoding as BufferEncoding } : undefined,
+      (typeof path === "number" ? path : pathOf(path)) as never,
+      data as never,
+      (typeof opts === "object" ? opts : opts ? { encoding: opts } : undefined) as never,
     );
   };
 
-  const mkdirSync = (path: string, opts?: { recursive?: boolean }): void => {
-    vfs.hot.mkdirSync(path, opts);
+  const mkdirSync = (path: string | Uint8Array | URL, opts?: { recursive?: boolean }) => {
+    validatePath(path);
+    // memfs returns the first created path under `recursive` (Node ≥13.11
+    // parity), undefined otherwise — forward it.
+    return vfs.hot.mkdirSync(pathOf(path), opts as never) as string | undefined;
   };
 
   const rmSync = (path: string, opts?: { recursive?: boolean }): void => {
@@ -376,6 +539,150 @@ export const createFsShim = (vfs: VfsBus) => {
     };
   };
 
+  /**
+   * A `fs.promises` FileHandle backed by the fd family on `vfs.hot` — all
+   * sync ops, so the handle works identically over a real memfs volume and
+   * the worker's sync-channel facade (a memfs FileHandle itself cannot
+   * cross the boundary). Methods are promise-shaped wrappers around the
+   * *Sync ops, matching what memfs' own FileHandle does on the volume.
+   */
+  class FileHandleShim extends EventEmitter {
+    constructor(readonly fd: number) {
+      super();
+    }
+
+    async close(): Promise<void> {
+      vfs.hot.closeSync(this.fd);
+      this.emit("close");
+    }
+
+    async stat(opts?: { bigint?: boolean }): Promise<FsStat> {
+      return vfs.hot.fstatSync(this.fd, opts as never) as unknown as FsStat;
+    }
+
+    async truncate(len?: number): Promise<void> {
+      vfs.hot.ftruncateSync(this.fd, len);
+    }
+
+    async chmod(mode: string | number): Promise<void> {
+      vfs.hot.fchmodSync(this.fd, mode as never);
+    }
+
+    async chown(uid: number, gid: number): Promise<void> {
+      vfs.hot.fchownSync(this.fd, uid, gid);
+    }
+
+    async utimes(atime: unknown, mtime: unknown): Promise<void> {
+      vfs.hot.futimesSync(this.fd, atime as never, mtime as never);
+    }
+
+    async datasync(): Promise<void> {
+      vfs.hot.fdatasyncSync(this.fd);
+    }
+
+    async sync(): Promise<void> {
+      vfs.hot.fsyncSync(this.fd);
+    }
+
+    async read(
+      buffer: Uint8Array,
+      offset?: number,
+      length?: number,
+      position?: number | null,
+    ): Promise<{ bytesRead: number; buffer: Uint8Array }> {
+      const bytesRead = vfs.hot.readSync(
+        this.fd,
+        buffer as never,
+        offset ?? 0,
+        length ?? buffer.byteLength - (offset ?? 0),
+        position ?? null,
+      ) as number;
+      return { bytesRead, buffer };
+    }
+
+    async readFile(opts?: { encoding?: string } | string): Promise<string | Uint8Array> {
+      const encoding = typeof opts === "string" ? opts : opts?.encoding;
+      const out = vfs.hot.readFileSync(this.fd, encoding as BufferEncoding | undefined) as
+        | string
+        | Uint8Array;
+      return typeof out === "string" ? out : Buffer.from(out);
+    }
+
+    async write(
+      buffer: Uint8Array | string,
+      offset?: number,
+      length?: number,
+      position?: number | null,
+    ): Promise<{ bytesWritten: number; buffer: Uint8Array | string }> {
+      const bytesWritten = vfs.hot.writeSync(
+        this.fd,
+        buffer as never,
+        offset ?? 0,
+        length as never,
+        position ?? null,
+      ) as number;
+      return { bytesWritten, buffer };
+    }
+
+    async writeFile(
+      data: string | Uint8Array,
+      opts?: { encoding?: string } | string,
+    ): Promise<void> {
+      vfs.hot.writeFileSync(
+        this.fd,
+        data as never,
+        (typeof opts === "object" ? opts : opts ? { encoding: opts } : undefined) as never,
+      );
+    }
+
+    async appendFile(
+      data: string | Uint8Array,
+      opts?: { encoding?: string } | string,
+    ): Promise<void> {
+      vfs.hot.appendFileSync(
+        this.fd,
+        data as never,
+        (typeof opts === "object" ? opts : opts ? { encoding: opts } : undefined) as never,
+      );
+    }
+
+    createReadStream(): unknown {
+      throw unsupported("promises.open#createReadStream");
+    }
+
+    createWriteStream(): unknown {
+      throw unsupported("promises.open#createWriteStream");
+    }
+
+    async [Symbol.asyncDispose](): Promise<void> {
+      await this.close();
+    }
+
+    get [Symbol.toStringTag](): string {
+      return "FileHandle";
+    }
+  }
+
+  /**
+   * `fs.promises.open` — needs `hot.openSync` (present on a real VfsBus and
+   * the worker facade). Rejects clearly where the backend lacks the fd
+   * family.
+   */
+  const promisesOpen =
+    typeof vfs.hot.openSync === "function"
+      ? async (
+          path: string | Uint8Array | URL,
+          flags?: string | number,
+          mode?: string | number,
+        ): Promise<FileHandleShim> => {
+          validatePath(path, "path", true);
+          if (typeof path === "number") return new FileHandleShim(path);
+          return new FileHandleShim(
+            vfs.hot.openSync(pathOf(path), (flags ?? "r") as never, mode as never),
+          );
+        }
+      : () => Promise.reject(unsupported("promises.open"));
+
   const realpathNativeFn = (hot.realpath as { native?: unknown } | undefined)?.native;
   const realpath = Object.assign(
     dualHot("realpath"),
@@ -397,8 +704,22 @@ export const createFsShim = (vfs: VfsBus) => {
   const promises = {
     // Two-layer-aware subset (kept: reads reach OPFS-cold paths on
     // eviction miss; writes go through the bus so watchers/middleware fire).
-    readFile: readFileImpl,
-    writeFile: writeFileImpl,
+    readFile: (path: unknown, opts?: { encoding?: string } | string) =>
+      path instanceof FileHandleShim
+        ? path.readFile(opts)
+        : readFileImpl(
+            typeof path === "number" ? path : pathOf(path as string | Uint8Array | URL),
+            opts,
+          ),
+    writeFile: async (path: unknown, data: unknown, opts?: unknown) => {
+      // The promises surface rejects rather than throwing — validate inside.
+      validatePath(path, "path", true);
+      validateWriteData(data);
+      if (path instanceof FileHandleShim) {
+        return path.writeFile(data as string | Uint8Array, opts as never);
+      }
+      return writeFileImpl(pathOf(path as string | Uint8Array | URL), data as never, opts as never);
+    },
     mkdir: mkdirImpl,
     rm: rmImpl,
     readdir: readdirImpl,
@@ -421,7 +742,9 @@ export const createFsShim = (vfs: VfsBus) => {
     link: promiseHot("link"),
     lutimes: promiseHot("lutimes"),
     mkdtemp: promiseHot("mkdtemp"),
-    open: promiseHot("open"),
+    // A FileHandle built on the fd family — works on a real VfsBus AND the
+    // worker sync-channel facade (a memfs FileHandle can't cross the wire).
+    open: promisesOpen,
     opendir: promiseHot("opendir"),
     realpath: promiseHot("realpath"),
     rename: promiseHot("rename"),
@@ -433,7 +756,7 @@ export const createFsShim = (vfs: VfsBus) => {
     watch: promiseHot("watch"),
     glob: promiseHot("glob"),
     constants: vfs.hot.constants,
-    FileHandle: (vfs.hot.promises as unknown as { FileHandle?: unknown } | undefined)?.FileHandle,
+    FileHandle: FileHandleShim,
   };
 
   return {
@@ -504,7 +827,7 @@ export const createFsShim = (vfs: VfsBus) => {
     mkdtempSync: (prefix: string, opts?: unknown) =>
       vfs.hot.mkdtempSync(prefix, opts as never) as string,
     open: dualHot("open"),
-    openSync: (path: string, flags?: string | number, mode?: string | number) =>
+    openSync: (path: string, flags: string | number = "r", mode?: string | number) =>
       vfs.hot.openSync(path, flags as never, mode as never),
     opendir: dualHot("opendir"),
     opendirSync: (path: string, opts?: unknown): FsDirShim =>

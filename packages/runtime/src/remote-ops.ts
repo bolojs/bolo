@@ -269,6 +269,95 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
     ops["shell.exec"] = (command: string, args: string[]) => shellService.exec(command, args);
   }
 
+  // Synchronous child-process requests (`spawnSync`/`execSync`/`execFileSync`).
+  // The worker blocks on the sync channel while the main thread either spawns
+  // a sibling process worker (node specs: `filename`/`code`) or dispatches the
+  // command through the wasm registry / bash service, then ships the buffered
+  // stdout/stderr/exit status back. No callbacks can cross the sync channel,
+  // so stdio returns whole and stdin input is not delivered.
+  ops["child.runSync"] = async (req: {
+    filename?: string;
+    code?: string;
+    command?: string;
+    args?: readonly string[];
+    env?: Record<string, string>;
+    cwd?: string;
+    /** `command` is a full shell line (execSync) — route to the shell, not wasm. */
+    shellString?: boolean;
+  }) => {
+    if (req.filename !== undefined || req.code !== undefined) {
+      const threads = deps.threads;
+      if (!threads) {
+        return {
+          status: null,
+          stdout: "",
+          stderr: "",
+          signal: null,
+          error: {
+            code: "ENOSYS",
+            message: "spawning a child node process requires a spawn service",
+          },
+        };
+      }
+      let stdout = "";
+      let stderr = "";
+      const status = await new Promise<number>((resolve, reject) => {
+        threads
+          .spawn(
+            {
+              filename: req.filename,
+              code: req.code,
+              args: req.args,
+              env: req.env,
+              cwd: req.cwd,
+            },
+            () => {},
+            resolve,
+            (d: string) => {
+              stdout += d;
+            },
+            (d: string) => {
+              stderr += d;
+            },
+          )
+          .then(() => {}, reject);
+      });
+      return { status, stdout, stderr, signal: null };
+    }
+
+    const command = req.command ?? "";
+    const cmdArgs = [...(req.args ?? [])];
+    if (wasmRegistry && !req.shellString) {
+      const result = await wasmRegistry.dispatch(command, cmdArgs);
+      const fellThrough =
+        result.exitCode !== 0 && result.stderr.includes("WASM tool not found") && shellService;
+      if (!fellThrough) {
+        return {
+          status: result.exitCode,
+          stdout: result.stdout,
+          stderr: result.stderr,
+          signal: null,
+        };
+      }
+    }
+    if (shellService) {
+      const result = await shellService.exec(command, cmdArgs);
+      return {
+        status: result.exitCode,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        signal: null,
+      };
+    }
+    return {
+      status: null,
+      stdout: "",
+      stderr: "",
+      signal: null,
+      error: { code: "ENOENT", message: `spawnSync ${command} ENOENT` },
+    };
+  };
+
   if (deps.threads) {
     const threads = deps.threads;
     const spawned = new Map<number, { post(v: unknown): void; terminate(): void }>();

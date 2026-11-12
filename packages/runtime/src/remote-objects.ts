@@ -58,11 +58,32 @@ const asU8 = (buffer: unknown): Uint8Array => {
   return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
 };
 
+/** Worker→main synchronous child-run request (`child_process.*Sync`). */
+export interface SyncRunRequest {
+  filename?: string;
+  code?: string;
+  command?: string;
+  args?: readonly string[];
+  env?: Record<string, string>;
+  cwd?: string;
+  shellString?: boolean;
+}
+
+export interface SyncRunResult {
+  status: number | null;
+  signal: string | null;
+  stdout: string;
+  stderr: string;
+  error?: { code: string; message: string };
+}
+
 export interface RemoteDeps {
   vfs: VfsBus;
   sandbox: SWSandbox | undefined;
   wasmRegistry: { dispatch: (command: string, args: string[]) => Promise<unknown> } | undefined;
   shellService: { exec: (command: string, args: string[]) => Promise<unknown> } | undefined;
+  /** Blocking worker→main child run (`child.runSync` op over the sync channel). */
+  spawnSync: (req: SyncRunRequest) => SyncRunResult;
   /** Number of fetch handlers registered via sandbox.onFetch — a listening
    * server is a live handle that keeps the process alive. */
   fetchHandlerCount: () => number;
@@ -325,6 +346,7 @@ export const createRemoteDeps = (opts: RemoteDepsOptions): RemoteDeps => {
     vfs,
     sandbox,
     fetchHandlerCount: () => fetchHandlers,
+    spawnSync: (req: SyncRunRequest) => syncOp("child.runSync", [req]) as SyncRunResult,
     wasmRegistry: opts.hasWasmRegistry
       ? {
           dispatch: (command: string, args: string[]) =>

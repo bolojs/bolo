@@ -37,6 +37,36 @@ export interface WorkerOptions {
   ) => WorkerLike | undefined;
 }
 
+/**
+ * Blocking child-run request the host resolves synchronously (process
+ * workers: the `child.runSync` op over the sync channel — the main thread
+ * spawns the child, buffers its stdio, and ships the result back while the
+ * caller is parked in `Atomics.wait` / a sync XHR).
+ */
+export interface SyncRunRequest {
+  /** Spawn a node process on a bundled file (`node <file> <args>`). */
+  filename?: string;
+  /** Spawn a node process on eval'd source (`node -e`/`--eval`/`-p`). */
+  code?: string;
+  /** Non-node command, dispatched through the wasm registry / shell. */
+  command?: string;
+  args?: readonly string[];
+  env?: Record<string, string>;
+  cwd?: string;
+  /** `command` is a whole shell line (execSync) — parse shell-side. */
+  shellString?: boolean;
+}
+
+export interface SyncRunResult {
+  status: number | null;
+  signal: string | null;
+  stdout: string;
+  stderr: string;
+  error?: { code: string; message: string };
+}
+
+export type SyncRunner = (req: SyncRunRequest) => SyncRunResult;
+
 const bufferFrom = (value: unknown): Buffer => {
   if (value instanceof Uint8Array) return Buffer.from(value);
   if (typeof value === "string") return Buffer.from(value);
@@ -275,6 +305,7 @@ export const createChildProcessShim = (
   registry?: WasmRegistry,
   shell?: ShellService,
   workerOptions?: WorkerOptions,
+  runSync?: SyncRunner,
 ) => {
   const createWorker = workerOptions?.createWorker;
 
@@ -462,16 +493,188 @@ export const createChildProcessShim = (
     return child;
   };
 
-  const execSync = (): never => {
-    throw new Error(SYNC_NOT_SUPPORTED);
+  /**
+   * `node <argv>` → a run-sync spec. `-e`/`--eval` run source directly;
+   * `-p`/`--print` prints the eval result; other bare flags are dropped
+   * (no CLI-flag surface exists in the browser runtime). The first non-flag
+   * arg is the entry filename.
+   */
+  const nodeRunSpec = (argv: readonly string[]): SyncRunRequest => {
+    const rest = [...argv];
+    while (rest.length > 0 && rest[0].startsWith("-")) {
+      const flag = rest.shift()!;
+      if (flag === "-e" || flag === "--eval") {
+        return { code: rest.shift() ?? "", args: rest };
+      }
+      if (flag === "-p" || flag === "--print") {
+        const src = rest.shift() ?? "";
+        return { code: `console.log((0, eval)(${JSON.stringify(src)}))`, args: rest };
+      }
+      if (flag === "-i" || flag === "--interactive") {
+        return { code: "", args: rest };
+      }
+    }
+    const filename = rest.shift();
+    if (filename === undefined) return { code: "", args: [] };
+    return { filename, args: rest };
   };
 
-  const execFileSync = (): never => {
-    throw new Error(SYNC_NOT_SUPPORTED);
+  /**
+   * A `spawnSync`/`execFileSync`/`execSync` argv → run-sync request. Node
+   * commands become filename/code specs (sibling process worker); anything
+   * else is dispatched as a plain command (wasm registry / shell).
+   */
+  const runSpecFor = (
+    command: string,
+    argv: readonly string[],
+    shellString = false,
+  ): SyncRunRequest => {
+    if (!shellString && isNodeCommand(command)) {
+      return nodeRunSpec(argv);
+    }
+    return { command, args: argv, shellString };
   };
 
-  const spawnSync = (): never => {
-    throw new Error(SYNC_NOT_SUPPORTED);
+  const runSyncOrThrow = (req: SyncRunRequest): SyncRunResult => {
+    if (!runSync) throw new Error(SYNC_NOT_SUPPORTED);
+    return runSync(req);
+  };
+
+  const enobufsError = (command: string): Error & { code: string } => {
+    const err = new Error(`spawnSync ${command} ENOBUFS`) as Error & { code: string };
+    err.code = "ENOBUFS";
+    return err;
+  };
+
+  /** `spawnSync(command[, args][, options])` — blocks on the host's
+   * sync runner (sync channel → main thread) and returns Node's result
+   * shape: `{ pid, output, stdout, stderr, status, signal, error? }`.
+   * `options.input` (child stdin) cannot be delivered — the transport
+   * ships buffered output only. */
+  const spawnSync = (
+    command: string,
+    args?: readonly string[],
+    options?: Record<string, unknown>,
+  ): Record<string, unknown> => {
+    const opts = options ?? {};
+    const argv = args ?? [];
+    const req = runSpecFor(command, argv);
+    req.env = envFrom(opts);
+    req.cwd = cwdFrom(opts);
+    const res = runSyncOrThrow(req);
+
+    const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
+    const toStdio = (text: string) =>
+      encoding === "buffer"
+        ? Buffer.from(text)
+        : Buffer.from(text).toString(encoding as BufferEncoding);
+
+    const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
+    let stdout = res.stdout ?? "";
+    let stderr = res.stderr ?? "";
+    let status = res.status ?? null;
+    let error: (Error & { code?: string }) | undefined;
+    if (res.error) {
+      error = Object.assign(new Error(res.error.message), { code: res.error.code });
+    } else if (stdout.length > maxBuffer || stderr.length > maxBuffer) {
+      // Node kills the child on overflow; the transport already ran it to
+      // completion, so the closest faithful shape is the ENOBUFS error plus
+      // the truncated output.
+      error = enobufsError(command);
+      status = null;
+      stdout = stdout.slice(0, maxBuffer);
+      stderr = stderr.slice(0, maxBuffer);
+    }
+
+    const out = toStdio(stdout);
+    const err = toStdio(stderr);
+    return {
+      pid: nextPid++,
+      output: [null, out, err],
+      stdout: out,
+      stderr: err,
+      status,
+      signal: res.signal ?? null,
+      ...(error ? { error } : {}),
+    };
+  };
+
+  const execSync = (command: string, options?: Record<string, unknown>): Buffer | string => {
+    const opts = options ?? {};
+    const str = String(command);
+    const parts = str.trim().split(/\s+/);
+    const req =
+      parts.length > 0 && isNodeCommand(parts[0])
+        ? nodeRunSpec(parts.slice(1))
+        : runSpecFor(str, [], true);
+    req.env = envFrom(opts);
+    req.cwd = cwdFrom(opts);
+    const res = runSyncOrThrow(req);
+
+    const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
+    const stdout = res.stdout ?? "";
+    const stderr = res.stderr ?? "";
+    if (stdout.length > maxBuffer || stderr.length > maxBuffer) throw enobufsError(str);
+
+    const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
+    const encodeOut = (text: string) =>
+      encoding === "buffer"
+        ? Buffer.from(text)
+        : Buffer.from(text).toString(encoding as BufferEncoding);
+    if (res.error) {
+      throw Object.assign(new Error(res.error.message), {
+        code: res.error.code,
+        status: res.status,
+      });
+    }
+    if (res.status !== 0 && res.status !== null) {
+      throw Object.assign(new Error(`Command failed: ${str}`), {
+        status: res.status,
+        signal: res.signal ?? null,
+        stdout: encodeOut(stdout),
+        stderr: encodeOut(stderr),
+      });
+    }
+    return encodeOut(stdout);
+  };
+
+  const execFileSync = (
+    file: string,
+    args?: readonly string[] | Record<string, unknown>,
+    options?: Record<string, unknown>,
+  ): Buffer | string => {
+    const argv = Array.isArray(args) ? args : [];
+    const opts = ((Array.isArray(args) ? options : args) ?? {}) as Record<string, unknown>;
+    const req = runSpecFor(file, argv);
+    req.env = envFrom(opts);
+    req.cwd = cwdFrom(opts);
+    const res = runSyncOrThrow(req);
+
+    const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
+    const stdout = res.stdout ?? "";
+    const stderr = res.stderr ?? "";
+    if (stdout.length > maxBuffer || stderr.length > maxBuffer) throw enobufsError(file);
+
+    const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
+    const encodeOut = (text: string) =>
+      encoding === "buffer"
+        ? Buffer.from(text)
+        : Buffer.from(text).toString(encoding as BufferEncoding);
+    if (res.error) {
+      throw Object.assign(new Error(res.error.message), {
+        code: res.error.code,
+        status: res.status,
+      });
+    }
+    if (res.status !== 0 && res.status !== null) {
+      throw Object.assign(new Error(`Command failed: ${file} ${argv.join(" ")}`), {
+        status: res.status,
+        signal: res.signal ?? null,
+        stdout: encodeOut(stdout),
+        stderr: encodeOut(stderr),
+      });
+    }
+    return encodeOut(stdout);
   };
 
   return {

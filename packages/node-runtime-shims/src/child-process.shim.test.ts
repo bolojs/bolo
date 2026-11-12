@@ -121,8 +121,8 @@ describe("child_process shim", () => {
 
   it("execSync and spawnSync throw a clear unsupported-environment error (A6)", () => {
     const shim = createChildProcessShim();
-    expect(() => shim.execSync()).toThrow(/not supported/);
-    expect(() => shim.spawnSync()).toThrow(/not supported/);
+    expect(() => shim.execSync("true")).toThrow(/not supported/);
+    expect(() => shim.spawnSync("true")).toThrow(/not supported/);
   });
 
   it("execFile dispatches file + argv and reports stdout via callback", async () => {
@@ -168,7 +168,7 @@ describe("child_process shim", () => {
 
   it("execFileSync throws the same unsupported-environment error", () => {
     const shim = createChildProcessShim();
-    expect(() => shim.execFileSync()).toThrow(/not supported/);
+    expect(() => shim.execFileSync("x")).toThrow(/not supported/);
   });
 
   it("exports every named key Node's child_process exposes (globby/del link check)", () => {
