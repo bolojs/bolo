@@ -9,15 +9,19 @@ const BUILTIN_MODULE_NAMES = [
   "async_hooks",
   "buffer",
   "child_process",
+  "console",
   "constants",
+  "crypto",
   "diagnostics_channel",
   "dns",
+  "dns/promises",
   "events",
   "fs",
   "fs/promises",
   "http",
   "http2",
   "https",
+  "module",
   "os",
   "path",
   "path/posix",
@@ -29,12 +33,16 @@ const BUILTIN_MODULE_NAMES = [
   "readline",
   "readline/promises",
   "stream",
+  "stream/consumers",
+  "stream/promises",
+  "stream/web",
   "string_decoder",
   "timers",
   "timers/promises",
   "tty",
   "url",
   "util",
+  "util/types",
   "v8",
   "vm",
   "worker_threads",
@@ -89,8 +97,24 @@ export const createModuleShim = (options: ModuleShimOptions) => {
       const bare = stripNodePrefix(specifier);
 
       if (BUILTIN_MODULE_NAMES.includes(bare) || PLUGGABLE_BUILTIN_NAMES.includes(bare)) {
-        const shim = getShim(bare);
-        if (shim) return shim;
+        // Subpath builtins resolve like the bundler's nodeAliasPlugin: a
+        // registry key of their own first ("timers/promises"), then the
+        // variant property on the parent shim ("fs/promises" → fs.promises,
+        // "path/win32" → path.win32), then — for dns/promises — the parent
+        // itself, since our dns shim's methods all return promises already.
+        let shim = getShim(bare);
+        if (shim === undefined) {
+          const slash = bare.indexOf("/");
+          if (slash !== -1) {
+            const parent = getShim(bare.slice(0, slash)) as
+              | Record<string, unknown>
+              | undefined;
+            const sub = bare.slice(slash + 1);
+            shim =
+              parent?.[sub] ?? (bare === "dns/promises" ? parent : undefined);
+          }
+        }
+        if (shim !== undefined) return shim;
 
         if (PLUGGABLE_BUILTIN_NAMES.includes(bare)) {
           throw new Error(

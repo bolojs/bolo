@@ -21,6 +21,102 @@ import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
 import { createVmShim } from "./vm-shim.js";
 
+interface WriteSink {
+  write: (data: string) => unknown;
+}
+
+/**
+ * `node:console` as a registry shim — the same surface the bundler's banner
+ * console exposes, but routed through the container's process stdout/stderr
+ * so `createRequire("x")("node:console")` and `import "node:console"` see the
+ * same object shape. `Console` is the per-stream constructor from Node; the
+ * module-level object is the default instance bound to process stdio.
+ */
+const createConsoleShim = (proc: ProcessShim): Record<string, unknown> => {
+  const utilFormat = (nodeWebShims.util as { format?: (...a: unknown[]) => string }).format;
+  const fmt = (args: unknown[]): string =>
+    utilFormat ? utilFormat(...args) : args.map(String).join(" ");
+
+  const make = (out?: WriteSink, err?: WriteSink): Record<string, unknown> => {
+    const counts = new Map<string, number>();
+    const times = new Map<string, number>();
+    let indent = 0;
+    const now = (): number => globalThis.performance?.now?.() ?? Date.now();
+    const write = (stream: "stdout" | "stderr", args: unknown[]): void => {
+      const sink = (stream === "stderr" ? err : out) ?? proc[stream];
+      sink?.write?.(`${"  ".repeat(indent)}${fmt(args)}\n`);
+    };
+    const labelTime = (label: string): number | undefined => {
+      const start = times.get(label);
+      return start === undefined ? undefined : now() - start;
+    };
+    return {
+      log: (...a: unknown[]) => write("stdout", a),
+      info: (...a: unknown[]) => write("stdout", a),
+      debug: (...a: unknown[]) => write("stdout", a),
+      table: (...a: unknown[]) => write("stdout", a),
+      dir: (obj: unknown) => write("stdout", [obj]),
+      dirxml: (obj: unknown) => write("stdout", [obj]),
+      warn: (...a: unknown[]) => write("stderr", a),
+      error: (...a: unknown[]) => write("stderr", a),
+      trace: (...a: unknown[]) => write("stderr", ["Trace:", ...a]),
+      assert: (cond: unknown, ...a: unknown[]) => {
+        if (!cond) write("stderr", [`Assertion failed${a.length ? ":" : ""}`, ...a]);
+      },
+      clear: () => {},
+      count: (label = "default") => {
+        const n = (counts.get(label) ?? 0) + 1;
+        counts.set(label, n);
+        write("stdout", [`${label}: ${n}`]);
+      },
+      countReset: (label = "default") => {
+        counts.delete(label);
+      },
+      time: (label = "default") => {
+        times.set(label, now());
+      },
+      timeEnd: (label = "default") => {
+        const ms = labelTime(label);
+        if (ms === undefined) {
+          write("stderr", [`Warning: No such label '${label}' for console.timeEnd()`]);
+          return;
+        }
+        times.delete(label);
+        write("stdout", [`${label}: ${ms.toFixed(3)}ms`]);
+      },
+      timeLog: (label = "default", ...a: unknown[]) => {
+        const ms = labelTime(label);
+        if (ms === undefined) {
+          write("stderr", [`Warning: No such label '${label}' for console.timeLog()`]);
+          return;
+        }
+        write("stdout", [`${label}: ${ms.toFixed(3)}ms`, ...a]);
+      },
+      group: (...a: unknown[]) => {
+        if (a.length) write("stdout", a);
+        indent++;
+      },
+      groupCollapsed: (...a: unknown[]) => {
+        if (a.length) write("stdout", a);
+        indent++;
+      },
+      groupEnd: () => {
+        if (indent > 0) indent--;
+      },
+      // `new Console(stdout, stderr)` returns the object built here — the
+      // constructor return value wins, so instances get the same own-key
+      // surface as the module (all methods enumerable for Object.keys-based
+      // bundler re-export).
+      Console: class {
+        constructor(o?: WriteSink, e?: WriteSink) {
+          return make(o, e);
+        }
+      },
+    };
+  };
+  return make(proc.stdout, proc.stderr);
+};
+
 export interface BackendDeps {
   readonly vfs: VfsBus;
   readonly sandbox?: SWSandbox;
@@ -184,6 +280,7 @@ export const createLiveShimRegistry = (
   }) as ProcessShim;
 
   registry.process = processShim;
+  registry.console = createConsoleShim(processShim);
   installUnhandledRejectionHandler(((reason: unknown, promise: unknown) =>
     processShim.emit("unhandledRejection", reason, promise)) as (
     reason: unknown,

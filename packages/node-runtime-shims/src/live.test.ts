@@ -57,6 +57,81 @@ describe("createLiveShimRegistry", () => {
     expect(require("node:path")).toBe(registry.path);
   });
 
+  it("resolves subpath and newly-routed builtins through createRequire", () => {
+    const vfs = new VfsBus();
+    const registry = createLiveShimRegistry({ vfs });
+    const require = (
+      registry.module as { createRequire: (f: string) => (s: string) => unknown }
+    ).createRequire("/entry.ts");
+
+    expect(require("node:fs/promises")).toBe(
+      (registry.fs as { promises: unknown }).promises,
+    );
+    expect(require("node:dns/promises")).toBe(
+      (registry.dns as { promises: unknown }).promises,
+    );
+    expect(require("node:assert/strict")).toBe(
+      (registry.assert as { strict: unknown }).strict,
+    );
+    expect(require("node:stream/promises")).toBe(
+      (registry.stream as { promises: unknown }).promises,
+    );
+    expect(require("node:util/types")).toBe(
+      (registry.util as { types: unknown }).types,
+    );
+    expect(require("node:path/posix")).toBe(
+      (registry.path as { posix: unknown }).posix,
+    );
+    expect(require("node:path/win32")).toBe(
+      (registry.path as { win32: unknown }).win32,
+    );
+    expect(require("node:readline/promises")).toBeDefined();
+    expect(require("node:timers/promises")).toBe(registry["timers/promises"]);
+    expect(require("node:crypto")).toBe(registry.crypto);
+    expect(require("node:console")).toBe(registry.console);
+    expect(require("node:module")).toBe(registry.module);
+  });
+
+  it("routes the console shim through process stdout/stderr", () => {
+    const vfs = new VfsBus();
+    const out: string[] = [];
+    const err: string[] = [];
+    const registry = createLiveShimRegistry({
+      vfs,
+      onStdout: (d) => out.push(d),
+      onStderr: (d) => err.push(d),
+    });
+    const console = registry.console as Record<string, (...a: never[]) => void>;
+
+    console.log("hello", "world");
+    console.warn("oops");
+    console.count("hits");
+    console.count("hits");
+    console.time("t");
+    console.timeLog("t", "checkpoint");
+    console.timeEnd("t");
+    console.group("g");
+    console.log("nested");
+    console.groupEnd();
+
+    expect(out.join("")).toContain("hello world\n");
+    expect(err.join("")).toContain("oops\n");
+    expect(out.join("")).toContain("hits: 1\n");
+    expect(out.join("")).toContain("hits: 2\n");
+    expect(out.join("")).toMatch(/t: \d+\.\d+ms/);
+    expect(out.join("")).toContain("  nested\n");
+
+    // `new Console(stream)` binds to the supplied sink, not process stdio.
+    const Console = console.Console as unknown as new (s: {
+      write: (d: string) => void;
+    }) => { log: (...a: unknown[]) => void };
+    const custom: string[] = [];
+    const own = new Console({ write: (d: string) => custom.push(d) });
+    own.log("custom");
+    expect(custom.join("")).toContain("custom\n");
+    expect(out.join("")).not.toContain("custom");
+  });
+
   it("binds http/net to the sandbox when one is provided", () => {
     const vfs = new VfsBus();
     const sandbox = { onFetch: () => {} } as unknown as Parameters<
