@@ -2,6 +2,7 @@ import { configureBrowserLogging, getLogger } from "@bolojs/log/browser";
 import { createProcessShim } from "@bolojs/node-runtime-shims";
 import type { ProcessShim } from "@bolojs/node-runtime-shims";
 import type { RuntimeMessage, RunScriptOptions } from "./runtime-worker.js";
+import { installStructuredCloneFallback } from "./env-snapshot.js";
 
 // ponytail: fire-and-forget so the worker module stays TLA-free. Vite bundles
 // this as IIFE for site-landing, which rejects top-level await. Early logs
@@ -23,6 +24,9 @@ let replActive = false;
 let replCodeBuffer = "";
 
 const post = (msg: RuntimeMessage) => self.postMessage(msg);
+
+// process.env here is also a coercion proxy — make structuredClone tolerate it.
+installStructuredCloneFallback();
 
 const isComplete = (buf: string): boolean => {
   // ponytail: `new Function(buf)` wraps buf in its own `{ }`, so an unclosed

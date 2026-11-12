@@ -308,11 +308,14 @@ const readPackageJson = (vfs: VfsBus, pkgDir: string): Record<string, unknown> =
   return JSON.parse(vfs.hot.readFileSync(pkgJsonPath, "utf8") as string);
 };
 
-// Condition priority for `exports`/`imports` resolution. We're always bundling
-// ESM for a browser platform, so `browser` (bundler-specific but ubiquitous)
-// wins, then `import`/`module`, then `default` — `require`/`node` are never
-// picked since we never want the CJS or server-only branch of a dual package.
-const CONDITIONS = ["browser", "import", "module", "default"];
+// Condition priority for `exports`/`imports` resolution. The bundle executes
+// in the runtime's process-worker realm, which has no DOM — so `worker`
+// (which dual packages use to serve their DOM-free build, e.g.
+// decode-named-character-reference's pure-JS decoder) wins over `browser`
+// (whose builds may touch `document` at module scope), then `import`/`module`,
+// then `default` — `require`/`node` are never picked since we never want the
+// CJS or server-only branch of a dual package.
+const CONDITIONS = ["worker", "browser", "import", "module", "default"];
 
 // Resolves an `exports`/`imports` target, which per spec can be a string, a
 // conditions object (checked in `CONDITIONS` order, recursing into nested
@@ -596,10 +599,13 @@ var __bc_Console = class {
   assert(cond, ...args) { if (!cond) this._write('stderr', ['Assertion failed' + (args.length ? ':' : ''), ...args]); }
   clear() {}
   count(label = 'default') {
+    // Implicit string coercion throws TypeError for Symbol labels, matching
+    // node:console (test-console-count).
+    label = '' + label;
     var n = (this._counts[label] = (this._counts[label] ?? 0) + 1);
     this._write('stdout', [label + ': ' + n]);
   }
-  countReset(label = 'default') { delete this._counts[label]; }
+  countReset(label = 'default') { label = '' + label; delete this._counts[label]; }
   time(label = 'default') { this._times[label] = globalThis.performance?.now?.() ?? Date.now(); }
   timeEnd(label = 'default') {
     var start = this._times[label];
