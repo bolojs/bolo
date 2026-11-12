@@ -294,13 +294,54 @@ export const getServers = (): string[] => defaultResolver.getServers();
 
 export const setServers = (servers: string[]): void => defaultResolver.setServers(servers);
 
+// No-op stubs for APIs that have no meaningful browser equivalent.
+export const setDefaultResultOrder = (_order: "verbatim" | "ipv4first"): void => {};
+export const getDefaultResultOrder = (): "verbatim" | "ipv4first" => "verbatim";
+
+export const promises = {
+  lookup: (hostname: string) => defaultResolver.lookup(hostname),
+  resolve4: (hostname: string) => defaultResolver.resolve4(hostname),
+  resolve6: (hostname: string) => defaultResolver.resolve6(hostname),
+  reverse: (ip: string) => defaultResolver.reverse(ip),
+  resolve: (hostname: string, rrtype?: string) => defaultResolver.resolve(hostname, rrtype),
+  resolveCname: (hostname: string) => defaultResolver.resolveCname(hostname),
+  resolveTxt: (hostname: string) => defaultResolver.resolveTxt(hostname),
+  resolveMx: (hostname: string) => defaultResolver.resolveMx(hostname),
+  resolveSrv: (hostname: string) => defaultResolver.resolveSrv(hostname),
+  resolvePtr: (ip: string) => defaultResolver.resolvePtr(ip),
+  resolveNs: (hostname: string) => defaultResolver.resolveNs(hostname),
+  resolveSoa: (hostname: string) => defaultResolver.resolveSoa(hostname),
+  resolveNaptr: (hostname: string, flags?: string) => defaultResolver.resolveNaptr(hostname, flags),
+  Resolver,
+};
+
 export const createDnsShim = (options?: DnsShimOptions) => {
   const resolver = new Resolver();
   resolver.setServers([options?.dohEndpoint ?? DEFAULT_ENDPOINT]);
-  return {
+  const shim = {
+    // Core lookup methods wired to the per-registry resolver instance.
     lookup: (hostname: string) => resolver.lookup(hostname),
+    resolve: (hostname: string, rrtype?: string) => resolver.resolve(hostname, rrtype),
     resolve4: (hostname: string) => resolver.resolve4(hostname),
     resolve6: (hostname: string) => resolver.resolve6(hostname),
+    resolveCname: (hostname: string) => resolver.resolveCname(hostname),
+    resolveTxt: (hostname: string) => resolver.resolveTxt(hostname),
+    resolveMx: (hostname: string) => resolver.resolveMx(hostname),
+    resolveSrv: (hostname: string) => resolver.resolveSrv(hostname),
+    resolvePtr: (ip: string) => resolver.resolvePtr(ip),
+    resolveNaptr: (hostname: string, flags?: string) => resolver.resolveNaptr(hostname, flags),
+    resolveSoa: (hostname: string) => resolver.resolveSoa(hostname),
+    resolveNs: (hostname: string) => resolver.resolveNs(hostname),
     reverse: (ip: string) => resolver.reverse(ip),
+    getServers: () => resolver.getServers(),
+    setServers: (servers: string[]) => resolver.setServers(servers),
+    // Constructor — required by packages that call `new dns.Resolver(...)`.
+    Resolver,
+    // Result-order control — no-ops in the browser (DoH always returns both).
+    setDefaultResultOrder,
+    getDefaultResultOrder,
+    // `dns/promises` subpath: our shim is already promisified so point to self.
+    promises,
   };
+  return shim;
 };

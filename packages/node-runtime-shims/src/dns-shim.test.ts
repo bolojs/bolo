@@ -71,6 +71,39 @@ describe("createDnsShim", () => {
 
     expect(fetchCalls[0].url.startsWith(customEndpoint)).toBe(true);
   });
+
+  it("exposes Resolver constructor so `new dns.Resolver()` works", () => {
+    const dns = createDnsShim();
+    expect(typeof dns.Resolver).toBe("function");
+    const r = new dns.Resolver();
+    expect(typeof r.getServers).toBe("function");
+  });
+
+  it("exposes setDefaultResultOrder and getDefaultResultOrder stubs", () => {
+    const dns = createDnsShim();
+    expect(typeof dns.setDefaultResultOrder).toBe("function");
+    expect(typeof dns.getDefaultResultOrder).toBe("function");
+    // No-ops: calling them must not throw.
+    expect(() => dns.setDefaultResultOrder("ipv4first")).not.toThrow();
+    expect(dns.getDefaultResultOrder()).toBe("verbatim");
+  });
+
+  it("exposes a promises subpath with the full DNS surface", async () => {
+    dohResponse = { Answer: [{ data: "1.2.3.4" }] };
+    const dns = createDnsShim();
+    expect(typeof dns.promises.resolve4).toBe("function");
+    expect(typeof dns.promises.Resolver).toBe("function");
+    const result = await dns.promises.resolve4("example.com");
+    expect(result).toEqual(["1.2.3.4"]);
+  });
+
+  it("resolves all standard DNS methods", async () => {
+    dohResponse = { Answer: [{ data: "1.2.3.4" }] };
+    const dns = createDnsShim();
+    for (const method of ["resolve", "resolve4", "resolve6", "resolveCname", "resolveNs", "reverse", "getServers"] as const) {
+      expect(typeof dns[method]).toBe("function");
+    }
+  });
 });
 
 describe("dns module-level functions", () => {
