@@ -1,8 +1,6 @@
 {
   "test/parallel/test-child-process-spawnsync.js": "spawns a child process via spawnSync (synchronous child_process unsupported in a browser)",
-  "test/parallel/test-cluster-basic.js": "cluster module has no browser analogue (worker process forking)",
-  "test/parallel/test-cluster-call-and-destroy.js": "cluster module has no browser analogue (worker process forking)",
-  "test/parallel/test-cluster-invalid-message.js": "cluster module has no browser analogue (worker process forking)",
+  "test/parallel/test-cluster-invalid-message.js": "cluster worker spawn works but the malformed IPC message is delivered to process.on('message') user handlers, and only the cluster shim's worker-self listener enforces the exit-on-malformed contract — remove if it passes in-container",
   "test/parallel/test-dgram-abort-closed.js": "UDP sockets have no browser transport (dgram requires a pluggable backend)",
   "test/parallel/test-dgram-bind.js": "UDP sockets have no browser transport (dgram requires a pluggable backend)",
   "test/parallel/test-dgram-send-callback-buffer-empty-address.js": "UDP sockets have no browser transport (dgram requires a pluggable backend)",
