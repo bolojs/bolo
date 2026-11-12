@@ -1,31 +1,28 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-08T08:31:47.430Z",
+  "generatedAt": "2026-11-12T00:20:03.169Z",
   "validated": true,
-  "total": 98,
-  "pass": 9,
-  "fail": 88,
+  "total": 167,
+  "pass": 79,
+  "fail": 87,
   "skip": 1,
   "modules": [
     {
       "name": "path",
-      "passed": 0,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-path-basename.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: '' strictEqual 'bbb'"
+          "status": "pass"
         },
         {
           "file": "test-path-dirname.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: '//' strictEqual '/'"
+          "status": "pass"
         },
         {
           "file": "test-path-extname.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError:"
+          "status": "pass"
         }
       ]
     },
@@ -37,51 +34,48 @@
         {
           "file": "test-buffer-alloc.js",
           "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "error": "Uncaught AssertionError: {\"message\":\"Array buffer allocation failed\"} deepStrictEqual {\"message\":\"Invalid typed array length: 2147483648\"}"
         },
         {
           "file": "test-buffer-concat.js",
           "status": "fail",
-          "error": "Uncaught TypeError: common.invalidArgTypeHelper is not a function"
+          "error": "Uncaught AssertionError: {\"message\":\"\\\"list\\\" argument must be an Array of Buffers\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"list\\\" argument must be an instance of Array. Received undefined\"}"
         },
         {
           "file": "test-buffer-from.js",
           "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "error": "Uncaught AssertionError: {\"name\":\"TypeError\",\"message\":\"The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type object\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",\"message\":\"The first argument must be of type string or an..."
         }
       ]
     },
     {
       "name": "events",
-      "passed": 0,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
           "file": "test-events-once.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/event_target\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/event_target"
+          "error": "Uncaught Error: boom"
         },
         {
           "file": "test-events-listener-count-with-listener.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: EventEmitter is not a constructor"
+          "status": "pass"
         },
         {
           "file": "test-events-getmaxlisteners.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: EventEmitter is not a constructor"
+          "status": "pass"
         }
       ]
     },
     {
       "name": "url",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-url-format.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: import_browser_external_node_querystring.stringify is not a function"
+          "status": "pass"
         },
         {
           "file": "test-url-relative.js",
@@ -89,20 +83,18 @@
         },
         {
           "file": "test-url-parse-query.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: import_browser_external_node_querystring.parse is not a function"
+          "status": "pass"
         }
       ]
     },
     {
       "name": "querystring",
-      "passed": 1,
+      "passed": 2,
       "total": 2,
       "tests": [
         {
           "file": "test-querystring.js",
-          "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "status": "pass"
         },
         {
           "file": "test-querystring-escape.js",
@@ -112,23 +104,21 @@
     },
     {
       "name": "zlib",
-      "passed": 0,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
           "file": "test-zlib-close-in-ondata.js",
           "status": "fail",
-          "error": "Uncaught Error: [unenv] zlib is not implemented yet! is not implemented yet!"
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 2."
         },
         {
           "file": "test-zlib-create-raw.js",
-          "status": "fail",
-          "error": "Uncaught Error: [unenv] zlib is not implemented yet! is not implemented yet!"
+          "status": "pass"
         },
         {
           "file": "test-zlib-no-stream.js",
-          "status": "fail",
-          "error": "Uncaught Error: [unenv] zlib.gzipSync is not implemented yet!"
+          "status": "pass"
         }
       ]
     },
@@ -140,12 +130,12 @@
         {
           "file": "test-os-eol.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Cannot redefine property: EOL"
+          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
         },
         {
           "file": "test-os-checked-function.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         },
         {
           "file": "test-os-homedir-no-envvar.js",
@@ -162,17 +152,17 @@
         {
           "file": "test-util-format.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'replace')"
+          "error": "Uncaught AssertionError: '[  ]' strictEqual '[]'"
         },
         {
           "file": "test-util-inspect.js",
           "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "error": "[bundle warning] \"trace_events\" could not be resolved off the installed node_modules — falling back to https://esm.sh/trace_events"
         },
         {
           "file": "test-util-types.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
@@ -184,7 +174,7 @@
         {
           "file": "test-assert.js",
           "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "error": "[bundle warning] home/harness/test/parallel/test-assert.js (950:8) \u001b[33m[EVAL] \u001b[0mUse of direct `eval` function is strongly discouraged as it poses security risks and may cause issues with minification."
         },
         {
           "file": "test-assert-fail.js",
@@ -199,23 +189,21 @@
     },
     {
       "name": "stream",
-      "passed": 0,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
           "file": "test-stream-pipe-event.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: Class constructors cannot be invoked without 'new'"
+          "status": "pass"
         },
         {
           "file": "test-stream-readable-event.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'reading')"
+          "error": "Uncaught AssertionError: 1 strictEqual 0"
         },
         {
           "file": "test-stream-writable-finished.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: assert is not a function"
+          "status": "pass"
         }
       ]
     },
@@ -227,17 +215,17 @@
         {
           "file": "test-fs-mkdir.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
         },
         {
           "file": "test-fs-write-file.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught TypeError: Cannot read properties of null (reading 'name')"
         },
         {
           "file": "test-fs-readfile.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught RangeError: Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes"
         }
       ]
     },
@@ -249,77 +237,297 @@
         {
           "file": "test-crypto-hash.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught TypeError: Unknown encoding: buffer"
         },
         {
           "file": "test-crypto-hmac.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Class constructors cannot be invoked without 'new'"
+          "error": "Uncaught TypeError: Class constructor Hmac cannot be invoked without 'new'"
         },
         {
           "file": "test-crypto-randomuuid.js",
           "status": "fail",
-          "error": "Uncaught TypeError: assert is not a function"
+          "error": "Uncaught AssertionError: Missing expected exception."
         }
       ]
     },
     {
       "name": "http",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-http-status-code.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught TypeError: Failed to fetch"
         },
         {
           "file": "test-http-methods.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: undefined deepStrictEqual [\"ACL\",\"BIND\",\"CHECKOUT\",\"CONNECT\",\"COPY\",\"DELETE\",\"GET\",\"HEAD\",\"LINK\",\"LOCK\",\"M-SEARCH\",\"MERGE\",\"MKACTIVITY\",\"MKCALENDAR\",\"MKCOL\",\"MOVE\",\"NOTIFY\",\"OPTIONS\",\"PATCH\",\"POST\",\"PROPFIND\",\"PROPPATCH\",\"PURGE\",\"PUT\",\"QUERY\",\"REBIND\",\"REPORT\",\"SEARCH\",\"SOUR..."
+          "status": "pass"
         },
         {
           "file": "test-http-write-head.js",
           "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'address')"
         }
       ]
     },
     {
       "name": "process",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-process-env.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: 42 strictEqual '42'"
+          "error": "Uncaught DataCloneError: Failed to execute 'structuredClone' on 'WorkerGlobalScope': #<Object> could not be cloned."
         },
         {
           "file": "test-process-next-tick.js",
-          "status": "fail",
-          "error": "Uncaught Error"
+          "status": "pass"
         },
         {
           "file": "test-process-hrtime.js",
           "status": "fail",
-          "error": "Uncaught TypeError: assert is not a function"
+          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
         }
       ]
     },
     {
       "name": "timers",
-      "passed": 1,
-      "total": 2,
+      "passed": 39,
+      "total": 54,
       "tests": [
+        {
+          "file": "test-timers-reset-process-domain-on-throw.js",
+          "status": "fail",
+          "error": "[bundle warning] \"domain\" could not be resolved off the installed node_modules — falling back to https://esm.sh/domain"
+        },
+        {
+          "file": "test-timers-active.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-api-refs.js",
+          "status": "pass"
+        },
         {
           "file": "test-timers-args.js",
           "status": "pass"
         },
         {
-          "file": "test-timers-immediate.js",
+          "file": "test-timers-clear-null-does-not-throw-error.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-clear-object-does-not-throw-error.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-clear-timeout-interval-equivalent.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-clearImmediate-als.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: function should not have been called"
+          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'get')"
+        },
+        {
+          "file": "test-timers-clearImmediate.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-destroyed.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-dispose.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-enroll-invalid-msecs.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-enroll-second-time.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-immediate-promisified.js",
+          "status": "fail",
+          "error": "Uncaught AssertionError: [Function (anonymous)] strictEqual [Function: setImmediateFallbackPromises]"
+        },
+        {
+          "file": "test-timers-immediate-queue-throw.js",
+          "status": "fail",
+          "error": "[bundle warning] \"domain\" could not be resolved off the installed node_modules — falling back to https://esm.sh/domain"
+        },
+        {
+          "file": "test-timers-immediate-queue.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-immediate-unref-nested-once.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-immediate-unref-simple.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-immediate-unref.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-immediate.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-interval-promisified.js",
+          "status": "fail",
+          "error": "Uncaught ReferenceError: kEvents is not defined"
+        },
+        {
+          "file": "test-timers-interval-throw.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-linked-list.js",
+          "status": "fail",
+          "error": "[bundle warning] \"internal/linkedlist\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/linkedlist"
+        },
+        {
+          "file": "test-timers-max-duration-warning.js",
+          "status": "fail",
+          "error": "Mismatched <anonymous> function calls. Expected 6, actual 3."
+        },
+        {
+          "file": "test-timers-nested.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-next-tick.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-non-integer-delay.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-now.js",
+          "status": "fail",
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+        },
+        {
+          "file": "test-timers-ordering.js",
+          "status": "fail",
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+        },
+        {
+          "file": "test-timers-promises-scheduler.js",
+          "status": "fail",
+          "error": "Uncaught AssertionError: 0 strictEqual 1"
+        },
+        {
+          "file": "test-timers-promises.js",
+          "status": "fail",
+          "error": "[bundle warning] \"node:test\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:test"
+        },
+        {
+          "file": "test-timers-refresh-in-callback.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-refresh.js",
+          "status": "fail",
+          "error": "[bundle warning] \"internal/timers\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/timers"
+        },
+        {
+          "file": "test-timers-same-timeout-wrong-list-deleted.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-setimmediate-infinite-loop.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-socket-timeout-removes-other-socket-unref-timer.js",
+          "status": "fail",
+          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
+        },
+        {
+          "file": "test-timers-this.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-throw-when-cb-not-function.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-timeout-promisified.js",
+          "status": "fail",
+          "error": "Uncaught AssertionError: [Function (anonymous)] strictEqual [Function: setTimeoutFallbackPromises]"
+        },
+        {
+          "file": "test-timers-timeout-to-interval.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-timeout-with-non-integer.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-to-primitive.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-uncaught-exception.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unenroll-unref-interval.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unref-active.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unref-remove-other-unref-timers-only-one-fires.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unref-remove-other-unref-timers.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unref-throw-then-ref.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unref.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unrefd-interval-still-fires.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unrefed-in-beforeexit.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-unrefed-in-callback.js",
+          "status": "fail",
+          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
+        },
+        {
+          "file": "test-timers-user-call.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-timers-zero-timeout.js",
+          "status": "pass"
         }
       ]
     },
@@ -331,12 +539,12 @@
         {
           "file": "test-console-clear.js",
           "status": "fail",
-          "error": "Uncaught TypeError: console.clear is not a function"
+          "error": "Uncaught TypeError: __bc_console.clear is not a function"
         },
         {
           "file": "test-console-count.js",
           "status": "fail",
-          "error": "Uncaught TypeError: console.count is not a function"
+          "error": "Uncaught TypeError: __bc_console.count is not a function"
         },
         {
           "file": "test-console-methods.js",
@@ -353,7 +561,7 @@
         {
           "file": "test-child-process-spawnsync.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         },
         {
           "file": "test-child-process-execsync-maxbuf.js",
@@ -364,13 +572,13 @@
     },
     {
       "name": "worker_threads",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-worker-message-port-constructor.js",
           "status": "fail",
-          "error": "Uncaught TypeError: MessageChannel is not a constructor"
+          "error": "Uncaught AssertionError: {} deepStrictEqual {\"code\":\"ERR_CONSTRUCT_CALL_INVALID\"}"
         },
         {
           "file": "test-worker-exit-event-error.js",
@@ -379,8 +587,7 @@
         },
         {
           "file": "test-worker-load-file-with-extension-other-than-js.js",
-          "status": "fail",
-          "error": "Build failed with 1 error:"
+          "status": "pass"
         }
       ]
     },
@@ -392,7 +599,7 @@
         {
           "file": "test-performanceobserver.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
@@ -404,7 +611,7 @@
         {
           "file": "test-net-connect-buffer.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Class constructor Server cannot be invoked without 'new'"
+          "error": "Uncaught TypeError: self._transport.listen is not a function"
         }
       ]
     },
@@ -416,12 +623,12 @@
         {
           "file": "test-dns-set-default-order.js",
           "status": "fail",
-          "error": "[bundle warning] \"dns\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dns"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         },
         {
           "file": "test-dns-setlocaladdress.js",
           "status": "fail",
-          "error": "[bundle warning] \"dns\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dns"
+          "error": "Uncaught TypeError: dns.Resolver is not a constructor"
         }
       ]
     },
@@ -438,12 +645,12 @@
         {
           "file": "test-https-request-arguments.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught TypeError: Failed to fetch"
         },
         {
           "file": "test-https-close.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught TypeError: Failed to fetch"
         }
       ]
     },
@@ -455,17 +662,17 @@
         {
           "file": "test-tls-legacy-deprecated.js",
           "status": "fail",
-          "error": "[bundle warning] \"tls\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/tls"
+          "error": "[bundle warning] \"tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tls"
         },
         {
           "file": "test-tls-ticket-12.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "[bundle warning] \"tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tls"
         },
         {
           "file": "test-tls-wrap-no-abort.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
@@ -477,17 +684,17 @@
         {
           "file": "test-dgram-abort-closed.js",
           "status": "fail",
-          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dgram"
+          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dgram"
         },
         {
           "file": "test-dgram-send-callback-buffer-empty-address.js",
           "status": "fail",
-          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dgram"
+          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dgram"
         },
         {
           "file": "test-dgram-bind.js",
           "status": "fail",
-          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/dgram"
+          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dgram"
         }
       ]
     },
@@ -499,39 +706,38 @@
         {
           "file": "test-cluster-basic.js",
           "status": "fail",
-          "error": "[bundle warning] \"node:cluster\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/node:cluster"
+          "error": "[bundle warning] \"node:cluster\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:cluster"
         },
         {
           "file": "test-cluster-call-and-destroy.js",
           "status": "fail",
-          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/cluster"
+          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules — falling back to https://esm.sh/cluster"
         },
         {
           "file": "test-cluster-invalid-message.js",
           "status": "fail",
-          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/cluster"
+          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules — falling back to https://esm.sh/cluster"
         }
       ]
     },
     {
       "name": "vm",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-vm-script-throw-in-tostring.js",
           "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "error": "Uncaught AssertionError: Missing expected exception (Error)."
         },
         {
           "file": "test-vm-indexed-properties.js",
           "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "error": "Uncaught AssertionError: undefined strictEqual 20"
         },
         {
           "file": "test-vm-deleting-property.js",
-          "status": "fail",
-          "error": "[bundle warning] \"vm\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/vm"
+          "status": "pass"
         }
       ]
     },
@@ -543,7 +749,7 @@
         {
           "file": "test-repl-no-terminal.js",
           "status": "fail",
-          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/repl"
+          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules — falling back to https://esm.sh/repl"
         },
         {
           "file": "test-repl-stdin-push-null.js",
@@ -553,7 +759,7 @@
         {
           "file": "test-repl-throw-null-or-undefined.js",
           "status": "fail",
-          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/repl"
+          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules — falling back to https://esm.sh/repl"
         }
       ]
     },
@@ -565,7 +771,7 @@
         {
           "file": "test-readline-interface-no-trailing-newline.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught TypeError: Cannot set properties of undefined (setting 'write')"
         },
         {
           "file": "test-readline-carriage-return-between-chunks.js",
@@ -575,7 +781,7 @@
         {
           "file": "test-readline-interface-recursive-writes.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught AssertionError: 0 strictEqual 2"
         }
       ]
     },
@@ -591,28 +797,29 @@
         {
           "file": "test-tty-backwards-api.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/internal/test/binding"
+          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
         }
       ]
     },
     {
       "name": "inspector",
-      "passed": 1,
+      "passed": 0,
       "total": 3,
       "tests": [
         {
           "file": "test-inspector-stops-no-file.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught Error: Build failed with 1 error:"
         },
         {
           "file": "test-inspector-already-activated-cli.js",
           "status": "fail",
-          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/inspector"
+          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules — falling back to https://esm.sh/inspector"
         },
         {
           "file": "test-inspector-open-port-integer-overflow.js",
           "status": "fail",
-          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/inspector"
+          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules — falling back to https://esm.sh/inspector"
         }
       ]
     },
@@ -629,7 +836,7 @@
         {
           "file": "test-async-hooks-enable-during-promise.js",
           "status": "fail",
-          "error": "Uncaught TypeError: mustCall: first argument must be a function (got a number)"
+          "error": "Mismatched noop function calls. Expected 1, actual 0."
         },
         {
           "file": "test-async-hooks-run-in-async-scope-caught-exception.js",
@@ -645,46 +852,44 @@
         {
           "file": "test-module-wrap.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         },
         {
           "file": "test-module-wrapper.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         },
         {
           "file": "test-module-main-extension-lookup.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         }
       ]
     },
     {
       "name": "string_decoder",
-      "passed": 0,
+      "passed": 1,
       "total": 2,
       "tests": [
         {
           "file": "test-string-decoder-end.js",
-          "status": "fail",
-          "error": "Uncaught Error: [unenv] string_decoder.StringDecoder is not implemented yet!"
+          "status": "pass"
         },
         {
           "file": "test-string-decoder-fuzz.js",
           "status": "fail",
-          "error": "Uncaught Error: [unenv] string_decoder.StringDecoder is not implemented yet!"
+          "error": "Uncaught AssertionError: Mismatch:"
         }
       ]
     },
     {
       "name": "v8",
-      "passed": 0,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
           "file": "test-v8-deserialize-buffer.js",
-          "status": "fail",
-          "error": "[bundle warning] \"v8\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/v8"
+          "status": "pass"
         },
         {
           "file": "test-v8-flag-pool-size-0.js",
@@ -693,8 +898,7 @@
         },
         {
           "file": "test-v8-getheapsnapshot-twice.js",
-          "status": "fail",
-          "error": "[bundle warning] \"v8\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/v8"
+          "status": "pass"
         }
       ]
     },
@@ -714,29 +918,114 @@
         {
           "file": "test-diagnostics-channel-object-channel-pub-sub.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: <null>"
+          "error": "Uncaught AssertionError: Missing expected exception."
         }
       ]
     },
     {
       "name": "fs/promises",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-fs-promises-exists.js",
-          "status": "fail",
-          "error": "[bundle warning] \"fs/promises\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/fs/promises"
+          "status": "pass"
         },
         {
           "file": "test-fs-promises-readfile-empty.js",
           "status": "fail",
-          "error": "Build failed with 1 error:"
+          "error": "Uncaught AssertionError: <null>"
         },
         {
           "file": "test-fs-promises-file-handle-dispose.js",
           "status": "fail",
-          "error": "Uncaught TypeError: fs.open is not a function"
+          "error": "Uncaught Error: fs.promises.open is not supported by this VFS backend"
+        }
+      ]
+    },
+    {
+      "name": "process-exit",
+      "passed": 6,
+      "total": 9,
+      "tests": [
+        {
+          "file": "test-process-beforeexit-throw-exit.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-process-beforeexit.js",
+          "status": "fail",
+          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
+        },
+        {
+          "file": "test-process-exit-code-validation.js",
+          "status": "fail",
+          "error": "Uncaught AssertionError: Missing expected exception."
+        },
+        {
+          "file": "test-process-exit-code.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-process-exit-from-before-exit.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-process-exit-handler.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-process-exit-recursive.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-process-exit.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-process-really-exit.js",
+          "status": "fail",
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+        }
+      ]
+    },
+    {
+      "name": "next-tick",
+      "passed": 7,
+      "total": 8,
+      "tests": [
+        {
+          "file": "test-next-tick-doesnt-hang.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-next-tick-domain.js",
+          "status": "fail",
+          "error": "[bundle warning] \"domain\" could not be resolved off the installed node_modules — falling back to https://esm.sh/domain"
+        },
+        {
+          "file": "test-next-tick-errors.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-next-tick-fixed-queue-regression.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-next-tick-intentional-starvation.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-next-tick-ordering.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-next-tick-ordering2.js",
+          "status": "pass"
+        },
+        {
+          "file": "test-next-tick-when-exiting.js",
+          "status": "pass"
         }
       ]
     }

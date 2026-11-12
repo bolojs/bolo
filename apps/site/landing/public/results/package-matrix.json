@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T11:28:32.348Z",
+  "generatedAt": "2026-11-12T00:24:33.389Z",
   "validated": true,
   "packages": [
     {
@@ -11,51 +11,46 @@
     {
       "name": "axios",
       "class": "HTTP client",
-      "status": "fail",
-      "duration": 2035.7299998998642,
-      "error": "[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0mEventEmitter\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   \u2502\u001b[0m          \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m   \u2502\u001b[0m                \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 3484
     },
     {
       "name": "node-fetch",
       "class": "HTTP client",
-      "status": "fail",
-      "duration": 630.5199999809265,
-      "error": "m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                            \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1219
     },
     {
       "name": "undici",
       "class": "HTTP client",
-      "status": "fail",
-      "duration": 476.1599999666214,
-      "error": "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: deep CJS interop + stream/http shim gaps."
+      "status": "pass",
+      "duration": 1280
     },
     {
       "name": "fs-extra",
       "class": "File system",
-      "status": "fail",
-      "duration": 626.5899999141693,
-      "error": "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: fs shim breadth (missing methods such as realpathSync used by outputFile/mkdirp chain)."
+      "status": "pass",
+      "duration": 2004
     },
     {
       "name": "globby",
       "class": "File system",
       "status": "fail",
       "duration": 1614.1299999952316,
-      "error": "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                       \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                             \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                       ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "chokidar",
       "class": "File system",
-      "status": "fail",
-      "duration": 353.6749999523163,
-      "error": "0mrealpathSync\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                            \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                  \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1101
     },
     {
       "name": "esbuild",
       "class": "Build tool",
       "status": "fail",
       "duration": 8386.789999961853,
-      "error": "[bundle warning] \"pnpapi\" could not be resolved off the installed node_modules \u2014 falling back to https://esm.sh/pnpapi\nUnsupported platform: browser  LE\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "[bundle warning] \"pnpapi\" could not be resolved off the installed node_modules — falling back to https://esm.sh/pnpapi\nUnsupported platform: browser  LE\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "swc",
@@ -76,7 +71,7 @@
       "class": "Build tool",
       "status": "fail",
       "duration": 2775.555000066757,
-      "error": "8;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0msass\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m          \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "8;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0msass\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ──┬─  \n \u001b[38;5;240m  │\u001b[0m          ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "rollup",
@@ -97,49 +92,46 @@
       "class": "Bundler",
       "status": "fail",
       "duration": 12226.265000104904,
-      "error": "[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m      \u2502\u001b[0m       \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m      \u2502\u001b[0m           \u2570\u2500\u2500\u2500\u2500\u2500\u2500 It can not be redeclared here\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m      │\u001b[0m       ────┬────  \n \u001b[38;5;240m      │\u001b[0m           ╰────── It can not be redeclared here\n\u001b[38;5;246m───────╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "parcel",
       "class": "Bundler",
       "status": "fail",
       "duration": 33203.18499994278,
-      "error": "l@2.16.4/node_modules/parcel/lib/bin.js:2:2 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249m#\u001b[0m!\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mb\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m  \u252c  \n \u001b[38;5;240m  \u2502\u001b[0m  \u2570\u2500\u2500 \n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "l@2.16.4/node_modules/parcel/lib/bin.js:2:2 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249m#\u001b[0m!\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mb\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\n \u001b[38;5;240m  │\u001b[0m  ┬  \n \u001b[38;5;240m  │\u001b[0m  ╰── \n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "vitest",
       "class": "Testing",
       "status": "fail",
       "duration": 1959.8799999952316,
-      "error": "\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                            \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                     \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n\nprobe returned a falsy value\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                            ─────────┬─────────  \n \u001b[38;5;240m  │\u001b[0m                                     ╰─────────── \n\u001b[38;5;246m───╯\u001b[0m\n\nprobe returned a falsy value\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "jest",
       "class": "Testing",
       "status": "fail",
       "duration": 22507.25,
-      "error": " already been declared here\n \u001b[38;5;240m   \u2502\u001b[0m \n \u001b[38;5;246m19 \u2502\u001b[0m \u001b[38;5;249ml\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m__dirname\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   \u2502\u001b[0m     \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m   \u2502\u001b[0m         \u2570\u2500\u2500\u2500\u2500\u2500\u2500 It can not be redeclared here\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u256f\u001b[0m\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": " already been declared here\n \u001b[38;5;240m   │\u001b[0m \n \u001b[38;5;246m19 │\u001b[0m \u001b[38;5;249ml\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m__dirname\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m     ────┬────  \n \u001b[38;5;240m   │\u001b[0m         ╰────── It can not be redeclared here\n\u001b[38;5;246m────╯\u001b[0m\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "express",
       "class": "HTTP server",
-      "status": "fail",
-      "duration": 3486.9950000047684,
-      "error": "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 5804
     },
     {
       "name": "fastify",
       "class": "HTTP server",
-      "status": "fail",
-      "duration": 3241.399999976158,
-      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 4899
     },
     {
       "name": "h3",
       "class": "HTTP server",
-      "status": "fail",
-      "duration": 448.7550001144409,
-      "error": "obe/h3.mjs:2:8 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mh3\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u252c  \n \u001b[38;5;240m  \u2502\u001b[0m         \u2570\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 966
     },
     {
       "name": "polka",
@@ -182,9 +174,8 @@
     {
       "name": "pug",
       "class": "Template",
-      "status": "fail",
-      "duration": 2686.429999947548,
-      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 5182
     },
     {
       "name": "hono",
@@ -208,9 +199,8 @@
     {
       "name": "koa",
       "class": "HTTP server",
-      "status": "fail",
-      "duration": 1589.530000090599,
-      "error": "Build failed with 4 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 2838
     },
     {
       "name": "zod",
@@ -239,9 +229,8 @@
     {
       "name": "events",
       "class": "Node core API",
-      "status": "fail",
-      "duration": 33.75999999046326,
-      "error": "0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m          \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 322
     },
     {
       "name": "stream",
@@ -252,16 +241,14 @@
     {
       "name": "buffer",
       "class": "Node core API",
-      "status": "fail",
-      "duration": 2900.710000038147,
-      "error": "   at superviseRun (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/supervise-run.js:90:19)\n    at ShellService.runNodeApp (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:221:34)\n    at async ShellService.execute (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:35:30)\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 5893
     },
     {
       "name": "crypto",
       "class": "Node core API",
-      "status": "fail",
-      "duration": 30.68499994277954,
-      "error": "[unenv] crypto.createHash is not implemented yet!\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 316
     },
     {
       "name": "path",
@@ -284,16 +271,14 @@
     {
       "name": "zlib",
       "class": "Node core API",
-      "status": "fail",
-      "duration": 14.625,
-      "error": "[unenv] zlib.gzipSync is not implemented yet!\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 367
     },
     {
       "name": "ajv",
       "class": "Validation",
-      "status": "fail",
-      "duration": 83.43999993801117,
-      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1022
     },
     {
       "name": "joi",
@@ -316,9 +301,8 @@
     {
       "name": "fast-json-stringify",
       "class": "Validation",
-      "status": "fail",
-      "duration": 135.0349999666214,
-      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1576
     },
     {
       "name": "superstruct",
@@ -341,16 +325,14 @@
     {
       "name": "dotenv",
       "class": "Utility",
-      "status": "fail",
-      "duration": 115.07500004768372,
-      "error": ".0.9/node_modules/dotenv/dist/index.cjs:2:2 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m2 \u2502\u001b[0m \u001b[38;5;249m#\u001b[0m!\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mb\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m  \u252c  \n \u001b[38;5;240m  \u2502\u001b[0m  \u2570\u2500\u2500 \n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 452
     },
     {
       "name": "js-yaml",
       "class": "Utility",
-      "status": "fail",
-      "duration": 321.77499997615814,
-      "error": "0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0myaml\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m-\u001b[0m\u001b[38;5;249my\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m          \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1077
     },
     {
       "name": "json5",
@@ -442,28 +424,27 @@
       "class": "File system",
       "status": "fail",
       "duration": 909.7800000905991,
-      "error": "38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   \u2502\u001b[0m                                           \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m   \u2502\u001b[0m                                               \u2570\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u2500\u256f\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m                                           ────┬────  \n \u001b[38;5;240m   │\u001b[0m                                               ╰────── Missing export\n\u001b[38;5;246m────╯\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "glob",
       "class": "File system",
       "status": "fail",
       "duration": 81.49500000476837,
-      "error": "  \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m          \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"realpathSync\" is not exported by \"bolo-node-shim:fs\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51125..51137\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"EventEmitter\" is not exported by \"bolo-node-shim:events\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51273..51285\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "  ──┬─  \n \u001b[38;5;240m  │\u001b[0m          ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"realpathSync\" is not exported by \"bolo-node-shim:fs\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51125..51137\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"EventEmitter\" is not exported by \"bolo-node-shim:events\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51273..51285\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "mkdirp",
       "class": "File system",
       "status": "fail",
       "duration": 168.9800000190735,
-      "error": ";5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mmkdirp\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mk\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m        \u2500\u2500\u2500\u252c\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m           \u2570\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": ";5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mmkdirp\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mk\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ───┬──  \n \u001b[38;5;240m  │\u001b[0m           ╰──── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "del",
       "class": "File system",
-      "status": "fail",
-      "duration": 1632.164999961853,
-      "error": "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                       \u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                             \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 2982
     },
     {
       "name": "memfs",
@@ -493,16 +474,14 @@
     {
       "name": "compression",
       "class": "HTTP server",
-      "status": "fail",
-      "duration": 519.4950000047684,
-      "error": "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1244
     },
     {
       "name": "serve-static",
       "class": "HTTP server",
-      "status": "fail",
-      "duration": 187.99500000476837,
-      "error": "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1626
     },
     {
       "name": "cookie-parser",
@@ -513,9 +492,8 @@
     {
       "name": "body-parser",
       "class": "HTTP server",
-      "status": "fail",
-      "duration": 762.7800000905991,
-      "error": "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 2909
     },
     {
       "name": "pino",
@@ -535,7 +513,7 @@
       "class": "HTTP client",
       "status": "fail",
       "duration": 3968.6999999284744,
-      "error": "\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                             \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                    ─────────┬─────────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "ky",
@@ -546,9 +524,8 @@
     {
       "name": "http-proxy-agent",
       "class": "HTTP client",
-      "status": "fail",
-      "duration": 710.6399999856949,
-      "error": "38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0monce\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m          \u2500\u2500\u252c\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m            \u2570\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 1022
     },
     {
       "name": "form-data",
@@ -566,9 +543,8 @@
     {
       "name": "hash.js",
       "class": "Crypto",
-      "status": "fail",
-      "duration": 489.1299999952316,
-      "error": "import_hash.default.utils.sha256 is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 648
     },
     {
       "name": "md5",
@@ -579,9 +555,8 @@
     {
       "name": "create-hash",
       "class": "Crypto",
-      "status": "fail",
-      "duration": 2977.2050000429153,
-      "error": "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented sync node:crypto primitives."
+      "status": "pass",
+      "duration": 3838
     },
     {
       "name": "jose",
@@ -592,16 +567,14 @@
     {
       "name": "jsonwebtoken",
       "class": "Crypto",
-      "status": "fail",
-      "duration": 2254.3300000429153,
-      "error": "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: node:crypto sign/HMAC stubs (unenv 'not implemented') used by jws."
+      "status": "pass",
+      "duration": 1602
     },
     {
       "name": "pbkdf2",
       "class": "Crypto",
-      "status": "fail",
-      "duration": 687.3949999809265,
-      "error": "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented node:crypto pbkdf2."
+      "status": "pass",
+      "duration": 3203
     },
     {
       "name": "marked",
@@ -630,9 +603,8 @@
     {
       "name": "liquidjs",
       "class": "Template",
-      "status": "fail",
-      "duration": 811.8200000524521,
-      "error": "38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                                                                                \u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                                                                                    \u2570\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "duration": 692
     },
     {
       "name": "mustache",
@@ -707,7 +679,7 @@
       "class": "Bundler",
       "status": "fail",
       "duration": 29247.44000005722,
-      "error": "[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m          \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                      \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Missing export\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
+      "error": "[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m          ────────────┬────────────  \n \u001b[38;5;240m  │\u001b[0m                      ╰────────────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "turbo",
