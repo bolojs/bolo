@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-12T09:52:46.686Z",
+  "generatedAt": "2026-11-12T11:10:45.023Z",
   "validated": true,
   "total": 167,
-  "pass": 83,
-  "fail": 83,
+  "pass": 107,
+  "fail": 59,
   "skip": 1,
   "modules": [
     {
@@ -28,7 +28,7 @@
     },
     {
       "name": "buffer",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
@@ -38,13 +38,12 @@
         },
         {
           "file": "test-buffer-concat.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"list\\\" argument must be of type Array. Received type undefined (undefined)\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"list\\\" argument must be an instance of Array. Received undefined\"}"
+          "status": "pass"
         },
         {
           "file": "test-buffer-from.js",
           "status": "fail",
-          "error": "Uncaught TypeError: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received an instance of MyPrimitive"
+          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",\"message\":\"The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received an instance of Object\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",..."
         }
       ]
     },
@@ -133,7 +132,7 @@
         {
           "file": "test-os-checked-function.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "error": "Uncaught Error: No such binding: os"
         },
         {
           "file": "test-os-homedir-no-envvar.js",
@@ -150,17 +149,17 @@
         {
           "file": "test-util-format.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: '0' strictEqual '-0'"
+          "error": "Uncaught TypeError: Cannot convert a Symbol value to a number"
         },
         {
           "file": "test-util-inspect.js",
           "status": "fail",
-          "error": "[bundle warning] \"trace_events\" could not be resolved off the installed node_modules — falling back to https://esm.sh/trace_events"
+          "error": "Uncaught Error: No such binding: js_stream"
         },
         {
           "file": "test-util-types.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "error": "Uncaught Error: No such binding: js_stream"
         }
       ]
     },
@@ -292,13 +291,13 @@
     },
     {
       "name": "timers",
-      "passed": 39,
+      "passed": 47,
       "total": 54,
       "tests": [
         {
           "file": "test-timers-reset-process-domain-on-throw.js",
           "status": "fail",
-          "error": "[bundle warning] \"domain\" could not be resolved off the installed node_modules — falling back to https://esm.sh/domain"
+          "error": "process.domain should be null in this timer callback, but is: undefined"
         },
         {
           "file": "test-timers-active.js",
@@ -326,8 +325,7 @@
         },
         {
           "file": "test-timers-clearImmediate-als.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'get')"
+          "status": "pass"
         },
         {
           "file": "test-timers-clearImmediate.js",
@@ -352,12 +350,12 @@
         {
           "file": "test-timers-immediate-promisified.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: [Function (anonymous)] strictEqual [Function: setImmediateFallbackPromises]"
+          "error": "Uncaught [object Object]"
         },
         {
           "file": "test-timers-immediate-queue-throw.js",
           "status": "fail",
-          "error": "[bundle warning] \"domain\" could not be resolved off the installed node_modules — falling back to https://esm.sh/domain"
+          "error": "Uncaught AssertionError: 0 strictEqual 1"
         },
         {
           "file": "test-timers-immediate-queue.js",
@@ -382,7 +380,7 @@
         {
           "file": "test-timers-interval-promisified.js",
           "status": "fail",
-          "error": "Uncaught ReferenceError: kEvents is not defined"
+          "error": "Uncaught [object Object]"
         },
         {
           "file": "test-timers-interval-throw.js",
@@ -390,13 +388,11 @@
         },
         {
           "file": "test-timers-linked-list.js",
-          "status": "fail",
-          "error": "[bundle warning] \"internal/linkedlist\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/linkedlist"
+          "status": "pass"
         },
         {
           "file": "test-timers-max-duration-warning.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 6, actual 3."
+          "status": "pass"
         },
         {
           "file": "test-timers-nested.js",
@@ -412,23 +408,19 @@
         },
         {
           "file": "test-timers-now.js",
-          "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "status": "pass"
         },
         {
           "file": "test-timers-ordering.js",
-          "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "status": "pass"
         },
         {
           "file": "test-timers-promises-scheduler.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: 0 strictEqual 1"
+          "status": "pass"
         },
         {
           "file": "test-timers-promises.js",
-          "status": "fail",
-          "error": "[bundle warning] \"node:test\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:test"
+          "status": "pass"
         },
         {
           "file": "test-timers-refresh-in-callback.js",
@@ -436,8 +428,7 @@
         },
         {
           "file": "test-timers-refresh.js",
-          "status": "fail",
-          "error": "[bundle warning] \"internal/timers\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/timers"
+          "status": "pass"
         },
         {
           "file": "test-timers-same-timeout-wrong-list-deleted.js",
@@ -463,7 +454,7 @@
         {
           "file": "test-timers-timeout-promisified.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: [Function (anonymous)] strictEqual [Function: setTimeoutFallbackPromises]"
+          "error": "Uncaught [object Object]"
         },
         {
           "file": "test-timers-timeout-to-interval.js",
@@ -568,18 +559,16 @@
     },
     {
       "name": "worker_threads",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-worker-message-port-constructor.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: {} deepStrictEqual {\"code\":\"ERR_CONSTRUCT_CALL_INVALID\"}"
+          "status": "pass"
         },
         {
           "file": "test-worker-exit-event-error.js",
-          "status": "fail",
-          "error": "Mismatched noop function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-worker-load-file-with-extension-other-than-js.js",
@@ -595,7 +584,7 @@
         {
           "file": "test-performanceobserver.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "error": "Uncaught Error: No such binding: performance"
         }
       ]
     },
@@ -619,7 +608,7 @@
         {
           "file": "test-dns-set-default-order.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "error": "Uncaught Error: No such binding: cares_wrap"
         },
         {
           "file": "test-dns-setlocaladdress.js",
@@ -630,13 +619,12 @@
     },
     {
       "name": "https",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-https-agent-constructor.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: Class constructor Agent cannot be invoked without 'new'"
+          "status": "pass"
         },
         {
           "file": "test-https-request-arguments.js",
@@ -658,61 +646,58 @@
         {
           "file": "test-tls-legacy-deprecated.js",
           "status": "fail",
-          "error": "[bundle warning] \"tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tls"
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         },
         {
           "file": "test-tls-ticket-12.js",
           "status": "fail",
-          "error": "[bundle warning] \"tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tls"
+          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
         },
         {
           "file": "test-tls-wrap-no-abort.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "error": "Uncaught Error: No such binding: tls_wrap"
         }
       ]
     },
     {
       "name": "dgram",
-      "passed": 0,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
           "file": "test-dgram-abort-closed.js",
-          "status": "fail",
-          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dgram"
+          "status": "pass"
         },
         {
           "file": "test-dgram-send-callback-buffer-empty-address.js",
           "status": "fail",
-          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dgram"
+          "error": "Uncaught AssertionError: ifError got unwanted exception: dgram.Socket.send() is not implemented: UDP sockets are unavailable in the browser"
         },
         {
           "file": "test-dgram-bind.js",
-          "status": "fail",
-          "error": "[bundle warning] \"dgram\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dgram"
+          "status": "pass"
         }
       ]
     },
     {
       "name": "cluster",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-cluster-basic.js",
           "status": "fail",
-          "error": "[bundle warning] \"node:cluster\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:cluster"
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         },
         {
           "file": "test-cluster-call-and-destroy.js",
           "status": "fail",
-          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules — falling back to https://esm.sh/cluster"
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         },
         {
           "file": "test-cluster-invalid-message.js",
-          "status": "fail",
-          "error": "[bundle warning] \"cluster\" could not be resolved off the installed node_modules — falling back to https://esm.sh/cluster"
+          "status": "pass"
         }
       ]
     },
@@ -739,13 +724,12 @@
     },
     {
       "name": "repl",
-      "passed": 0,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
           "file": "test-repl-no-terminal.js",
-          "status": "fail",
-          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules — falling back to https://esm.sh/repl"
+          "status": "pass"
         },
         {
           "file": "test-repl-stdin-push-null.js",
@@ -754,30 +738,26 @@
         },
         {
           "file": "test-repl-throw-null-or-undefined.js",
-          "status": "fail",
-          "error": "[bundle warning] \"repl\" could not be resolved off the installed node_modules — falling back to https://esm.sh/repl"
+          "status": "pass"
         }
       ]
     },
     {
       "name": "readline",
-      "passed": 0,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-readline-interface-no-trailing-newline.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: Cannot set properties of undefined (setting 'write')"
+          "status": "pass"
         },
         {
           "file": "test-readline-carriage-return-between-chunks.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-readline-interface-recursive-writes.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: 0 strictEqual 2"
+          "status": "pass"
         }
       ]
     },
@@ -793,13 +773,13 @@
         {
           "file": "test-tty-backwards-api.js",
           "status": "fail",
-          "error": "[bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "error": "Uncaught Error: No such binding: tty_wrap"
         }
       ]
     },
     {
       "name": "inspector",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
@@ -810,29 +790,26 @@
         {
           "file": "test-inspector-already-activated-cli.js",
           "status": "fail",
-          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules — falling back to https://esm.sh/inspector"
+          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'startsWith')"
         },
         {
           "file": "test-inspector-open-port-integer-overflow.js",
-          "status": "fail",
-          "error": "[bundle warning] \"inspector\" could not be resolved off the installed node_modules — falling back to https://esm.sh/inspector"
+          "status": "pass"
         }
       ]
     },
     {
       "name": "async_hooks",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-async-hooks-constructor.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
+          "status": "pass"
         },
         {
           "file": "test-async-hooks-enable-during-promise.js",
-          "status": "fail",
-          "error": "Mismatched noop function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-async-hooks-run-in-async-scope-caught-exception.js",
@@ -956,7 +933,7 @@
         {
           "file": "test-process-exit-code-validation.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception."
+          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
         },
         {
           "file": "test-process-exit-code.js",
@@ -987,7 +964,7 @@
     },
     {
       "name": "next-tick",
-      "passed": 7,
+      "passed": 8,
       "total": 8,
       "tests": [
         {
@@ -996,8 +973,7 @@
         },
         {
           "file": "test-next-tick-domain.js",
-          "status": "fail",
-          "error": "[bundle warning] \"domain\" could not be resolved off the installed node_modules — falling back to https://esm.sh/domain"
+          "status": "pass"
         },
         {
           "file": "test-next-tick-errors.js",

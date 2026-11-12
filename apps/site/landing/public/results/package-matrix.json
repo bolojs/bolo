@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T09:50:23.739Z",
+  "generatedAt": "2026-11-12T11:08:54.752Z",
   "validated": true,
   "packages": [
     {
@@ -7,110 +7,109 @@
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 487.84999999999127
+      "duration": 327.58000000000175
     },
     {
       "name": "axios",
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 4657.2300000000105
+      "duration": 2105.5750000000116
     },
     {
       "name": "node-fetch",
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1798.320000000007
+      "duration": 1077.9399999999878
     },
     {
       "name": "undici",
       "class": "HTTP client",
       "status": "pass",
-      "output": "[bundle warning] \"node:tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:tls\n[bundle warning] \"node:tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:tls\n[bundle warning] \"node:sqlite\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\n[bundle warning] \"node:sqlite\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\nPASS\n",
-      "duration": 1467.0499999999884
+      "output": "[bundle warning] \"node:sqlite\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\n[bundle warning] \"node:sqlite\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\nPASS\n",
+      "duration": 789.6999999999971
     },
     {
       "name": "fs-extra",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1240.1699999999983
+      "duration": 830.25
     },
     {
       "name": "globby",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 3830.034999999989
+      "duration": 1988.199999999997
     },
     {
       "name": "chokidar",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 962.7100000000064
+      "duration": 652.2400000000052
     },
     {
       "name": "esbuild",
       "class": "Build tool",
       "status": "skip",
       "output": "SKIP: esbuild requires its native platform binary — esbuild-wasm is the browser package\n",
-      "duration": 393.6000000000058
+      "duration": 270.79499999999825
     },
     {
       "name": "swc",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1271.479999999996
+      "duration": 811.0249999999942
     },
     {
       "name": "tsc",
       "class": "Build tool",
       "status": "fail",
       "output": "import_version.default.transpile is not a function\n",
-      "duration": 12540.900000000023,
+      "duration": 5702.5899999999965,
       "error": "import_version.default.transpile is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "sass",
       "class": "Build tool",
       "status": "fail",
-      "output": "Uncaught Error: Calling `require` for \"url\" in an environment that doesn't expose the `require` function. See https://rolldown.rs/in-depth/bundling-cjs#require-external-modules for more details.\n    at blob:http://localhost:5173/59b06990-31c5-4539-9fd7-04bdcad41a97:149:8\n    at _cliPkgExports$1.load (blob:http://localhost:5173/59b06990-31c5-4539-9fd7-04bdcad41a97:4423:95)\n    at blob:http://localhost:5173/59b06990-31c5-4539-9fd7-04bdcad41a97:131288:16\n\nNode.js v22.0.0\n",
-      "duration": 5194.044999999984,
-      "error": "Uncaught Error: Calling `require` for \"url\" in an environment that doesn't expose the `require` function. See https://rolldown.rs/in-depth/bundling-cjs#require-external-modules for more details.\n    at blob:http://localhost:5173/59b06990-31c5-4539-9fd7-04bdcad41a97:149:8\n    at _cliPkgExports$1.load (blob:http://localhost:5173/59b06990-31c5-4539-9fd7-04bdcad41a97:4423:95)\n    at blob:http://localhost:5173/59b06990-31c5-4539-9fd7-04bdcad41a97:131288:16\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+      "output": "Uncaught Error: Calling `require` for \"url\" in an environment that doesn't expose the `require` function. See https://rolldown.rs/in-depth/bundling-cjs#require-external-modules for more details.\n    at blob:http://localhost:5173/90c2b27b-f814-4954-88a2-7a797645deef:149:8\n    at _cliPkgExports$1.load (blob:http://localhost:5173/90c2b27b-f814-4954-88a2-7a797645deef:4423:95)\n    at blob:http://localhost:5173/90c2b27b-f814-4954-88a2-7a797645deef:131288:16\n\nNode.js v22.0.0\n",
+      "duration": 2974.800000000003,
+      "error": "Uncaught Error: Calling `require` for \"url\" in an environment that doesn't expose the `require` function. See https://rolldown.rs/in-depth/bundling-cjs#require-external-modules for more details.\n    at blob:http://localhost:5173/90c2b27b-f814-4954-88a2-7a797645deef:149:8\n    at _cliPkgExports$1.load (blob:http://localhost:5173/90c2b27b-f814-4954-88a2-7a797645deef:4423:95)\n    at blob:http://localhost:5173/90c2b27b-f814-4954-88a2-7a797645deef:131288:16\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "rollup",
       "class": "Bundler",
       "status": "fail",
       "output": "Build failed with 1 error:\n\n\u001b[31m[PARSE_ERROR] \u001b[0mFile appears to be binary.\n",
-      "duration": 6544.829999999987,
+      "duration": 2866.8649999999907,
       "error": "Build failed with 1 error:\n\n\u001b[31m[PARSE_ERROR] \u001b[0mFile appears to be binary.\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "webpack",
       "class": "Bundler",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 38998.620000000024,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "[bundle warning] \"sharp\" could not be resolved off the installed node_modules — falling back to https://esm.sh/sharp\n[bundle warning] \"clean-css\" could not be resolved off the installed node_modules — falling back to https://esm.sh/clean-css\n[bundle warning] \"@swc/css\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@swc/css\n[bundle warning] \"@swc/core\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@swc/core\n[bundle warning] \"@swc/html\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@swc/html\n[bundle warning] \"lightningcss\" could not be resolved off the installed node_modules — falling back to https://esm.sh/lightningcss\n[bundle warning] \"svgo\" could not be resolved off the installed node_modules — falling back to https://esm.sh/svgo\n[bundle warning] \"@napi-rs/image\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@napi-rs/image\n[bundle warning] \"@minify-html/node\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@minify-html/node\n[bundle warning] \"esbuild\" could not be resolved off the installed node_modules — falling back to https://esm.sh/esbuild\n[bundle warning] \"uglify-js\" could not be resolved off the installed node_modules — falling back to https://esm.sh/uglify-js\n[bundle warning] \"html-minifier-terser\" could not be resolved off the installed node_modules — falling back to https://esm.sh/html-minifier-terser\n[bundle warning] \"csso\" could not be resolved off the installed node_modules — falling back to https://esm.sh/csso\n[bundle warning] \"postcss\" could not be resolved off the installed node_modules — falling back to https://esm.sh/postcss\n[bundle warning] \"cssnano\" could not be resolved off the installed node_modules — falling back to https://esm.sh/cssnano\n[bundle warning] home/harness/node_modules/.bolo/webpack@5.112.2/node_modules/webpack/lib/loaders/loadLoader.js (77:26) \u001b[33m[EVAL] \u001b[0mUse of direct `eval` function is strongly discouraged as it poses security risks and may cause issues with minification.\n    \u001b[38;5;246m╭\u001b[0m\u001b[38;5;246m─\u001b[0m\u001b[38;5;246m[\u001b[0m node_modules/.bolo/webpack@5.112.2/node_modules/webpack/lib/loaders/loadLoader.js:77:27 \u001b[38;5;246m]\u001b[0m\n    \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m77 │\u001b[0m \u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249my\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mI\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m \u001b[0meval\u001b[38;5;249m(\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m>\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m                                 ──┬─  \n \u001b[38;5;240m   │\u001b[0m                                   ╰─── Use of direct `eval` here.\n \u001b[38;5;240m   │\u001b[0m \n \u001b[38;5;240m   │\u001b[0m \u001b[38;5;115mHelp\u001b[0m: Consider using indirect eval. For more information, check the documentation: https://rolldown.rs/guide/troubleshooting#avoiding-direct-eval\n\u001b[38;5;246m────╯\u001b[0m\n\nPASS\n",
+      "duration": 8070.75
     },
     {
       "name": "vite",
       "class": "Bundler",
       "status": "fail",
-      "output": "[bundle warning] \"@vitejs/devtools/integration\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\n[bundle warning] \"yaml\" could not be resolved off the installed node_modules — falling back to https://esm.sh/yaml\n[bundle warning] \"esbuild\" could not be resolved off the installed node_modules — falling back to https://esm.sh/esbuild\n[bundle warning] \"tsx/cjs/api\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tsx/cjs/api\n[bundle warning] \"jiti\" could not be resolved off the installed node_modules — falling back to https://esm.sh/jiti\n[bundle warning] \"@vitejs/devtools/config\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/config\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:1014:35\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:397:48\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:1190:47\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:147:23\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:1193:2\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:147:23\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:1250:2\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:147:23\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:1257:2\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:147:23\n\nNode.js v22.0.0\n",
-      "duration": 16605.495000000024,
-      "error": "[bundle warning] \"@vitejs/devtools/integration\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\n[bundle warning] \"yaml\" could not be resolved off the installed node_modules \n…\nb:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:147:23\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:1257:2\n    at blob:http://localhost:5173/db6f2737-0ea8-425c-98e3-0d283738f994:147:23\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+      "output": "[bundle warning] \"@vitejs/devtools/integration\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\n[bundle warning] \"yaml\" could not be resolved off the installed node_modules — falling back to https://esm.sh/yaml\n[bundle warning] \"esbuild\" could not be resolved off the installed node_modules — falling back to https://esm.sh/esbuild\n[bundle warning] \"tsx/cjs/api\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tsx/cjs/api\n[bundle warning] \"jiti\" could not be resolved off the installed node_modules — falling back to https://esm.sh/jiti\n[bundle warning] \"@vitejs/devtools/config\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/config\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:1014:35\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:397:48\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:1190:47\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:147:23\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:1193:2\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:147:23\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:1250:2\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:147:23\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:1257:2\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:147:23\n\nNode.js v22.0.0\n",
+      "duration": 7208.770000000004,
+      "error": "[bundle warning] \"@vitejs/devtools/integration\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\n[bundle warning] \"yaml\" could not be resolved off the installed node_modules \n…\nb:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:147:23\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:1257:2\n    at blob:http://localhost:5173/ff3a768b-71bc-46ad-ac6a-4355c43ae3ba:147:23\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "parcel",
       "class": "Bundler",
       "status": "fail",
-      "output": "Build failed with 3 errors:\n\nError: Cannot resolve module \"./build/Release/watcher.node\" from \"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\"\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=6b88c49a:6085:25)\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\nError: Cannot resolve module \"./utils\" from \"/home/harness/node_modules/.bolo/@parcel/rust@2.16.4/node_modules/@parcel/rust/src/browser.js\"\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=6b88c49a:6085:25)\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\nError: Cannot resolve module \"./swc.linux-arm64-gnu.node\" from \"/home/harness/node_modules/.bolo/@swc/core@1.16.22/node_modules/@swc/core/binding.js\"\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=6b88c49a:6085:25)\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47",
-      "duration": 40780.734999999986,
+      "output": "Build failed with 3 errors:\n\nError: Cannot resolve module \"./build/Release/watcher.node\" from \"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\"\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=d13d5cf9:6085:25)\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\nError: Cannot resolve module \"./utils\" from \"/home/harness/node_modules/.bolo/@parcel/rust@2.16.4/node_modules/@parcel/rust/src/browser.js\"\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=d13d5cf9:6085:25)\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\nError: Cannot resolve module \"./swc.linux-arm64-gnu.node\" from \"/home/harness/node_modules/.bolo/@swc/core@1.16.22/node_modules/@swc/core/binding.js\"\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=d13d5cf9:6085:25)\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47",
+      "duration": 22126.765000000007,
       "error": "Build failed with 3 errors:\n\nError: Cannot resolve module \"./build/Release/watcher.node\" from \"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\"\n    at napi_create_error (http://localhost:5173/@fs\n…\n3]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
@@ -118,613 +117,612 @@
       "class": "Testing",
       "status": "pass",
       "output": "[bundle warning] \"vite/module-runner\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\n[bundle warning] \"vite/module-runner\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\nPASS\n",
-      "duration": 3447.045000000013
+      "duration": 2103.024999999994
     },
     {
       "name": "jest",
       "class": "Testing",
       "status": "fail",
-      "error": "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)",
-      "duration": 60000.265000000014
+      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
+      "duration": 51652.785,
+      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "express",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 7882.594999999972
+      "duration": 4386.075000000012
     },
     {
       "name": "fastify",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 6697.565000000002
+      "duration": 3919.6050000000105
     },
     {
       "name": "h3",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1130.5050000000047
+      "duration": 678.8799999999756
     },
     {
       "name": "polka",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1555.780000000028
+      "duration": 1316.1700000000128
     },
     {
       "name": "crypto-js",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 753.3250000000116
+      "duration": 464.75500000000466
     },
     {
       "name": "bcrypt",
       "class": "Crypto",
       "status": "skip",
       "output": "SKIP: bcrypt needs a native addon — no browser-compatible build exists\n",
-      "duration": 394.23500000004424
+      "duration": 244.10999999998603
     },
     {
       "name": "argon2",
       "class": "Crypto",
       "status": "skip",
       "output": "SKIP: argon2 needs a native addon — no browser-compatible build exists\n",
-      "duration": 493.16499999997905
+      "duration": 337.95000000001164
     },
     {
       "name": "handlebars",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1808.1199999999953
+      "duration": 1113.9700000000012
     },
     {
       "name": "ejs",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 630.5050000000047
+      "duration": 554.6000000000058
     },
     {
       "name": "pug",
       "class": "Template",
       "status": "pass",
-      "output": "[bundle warning] \"domain\" could not be resolved off the installed node_modules — falling back to https://esm.sh/domain\nPASS\n",
-      "duration": 5598.72000000003
+      "output": "PASS\n",
+      "duration": 2939.9249999999884
     },
     {
       "name": "hono",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 856.2550000000047
+      "duration": 503.9449999999779
     },
     {
       "name": "elysia",
       "class": "HTTP server",
       "status": "pass",
       "output": "[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/system\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/system\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"file-type\" could not be resolved off the installed node_modules — falling back to https://esm.sh/file-type\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\nPASS\n",
-      "duration": 1962.7150000000256
+      "duration": 1224.4750000000058
     },
     {
       "name": "itty-router",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 665.5200000000186
+      "duration": 472.04000000000815
     },
     {
       "name": "koa",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 2985.975000000035
+      "duration": 1620.0999999999767
     },
     {
       "name": "zod",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1113.375
+      "duration": 753.9949999999953
     },
     {
       "name": "uuid",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 740.320000000007
+      "duration": 457.73499999998603
     },
     {
       "name": "lodash",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 815.4500000000116
+      "duration": 540.2850000000035
     },
     {
       "name": "chalk",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 530.3850000000093
+      "duration": 318.7699999999895
     },
     {
       "name": "events",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 396.4750000000349
+      "duration": 252.39499999998952
     },
     {
       "name": "stream",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 462.2399999999907
+      "duration": 335.95000000001164
     },
     {
       "name": "buffer",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 4313.889999999956
+      "duration": 2593.9249999999884
     },
     {
       "name": "crypto",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 409.9800000000396
+      "duration": 259.1499999999942
     },
     {
       "name": "path",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 406.83499999996275
+      "duration": 308.00500000000466
     },
     {
       "name": "url",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 457.54000000003725
+      "duration": 259.5799999999872
     },
     {
       "name": "querystring",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 399.7250000000349
+      "duration": 260.7299999999814
     },
     {
       "name": "zlib",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 402.945000000007
+      "duration": 257.070000000007
     },
     {
       "name": "ajv",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 733.3300000000163
+      "duration": 483.2749999999942
     },
     {
       "name": "joi",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1738.3899999999558
+      "duration": 1052.2700000000186
     },
     {
       "name": "valibot",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 709.0750000000116
+      "duration": 485.7049999999872
     },
     {
       "name": "yup",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1248.2550000000047
+      "duration": 793.7150000000256
     },
     {
       "name": "fast-json-stringify",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 775.734999999986
+      "duration": 482.0800000000163
     },
     {
       "name": "superstruct",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 748.234999999986
+      "duration": 500.65499999999884
     },
     {
       "name": "io-ts",
       "class": "Validation",
       "status": "pass",
       "output": "[bundle warning] \"fp-ts/es6/Either\" could not be resolved off the installed node_modules — falling back to https://esm.sh/fp-ts/es6/Either\nPASS\n",
-      "duration": 1053.960000000021
+      "duration": 498.5249999999942
     },
     {
       "name": "nanoid",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 539.4100000000326
+      "duration": 417.4900000000198
     },
     {
       "name": "dotenv",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 600.054999999993
+      "duration": 343.8399999999965
     },
     {
       "name": "js-yaml",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 758.3250000000116
+      "duration": 392.4549999999872
     },
     {
       "name": "json5",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 503.6900000000023
+      "duration": 365.7750000000233
     },
     {
       "name": "semver",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 489.5100000000093
+      "duration": 307.2300000000105
     },
     {
       "name": "ms",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 467.33499999996275
+      "duration": 256.24499999999534
     },
     {
       "name": "debug",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 455.125
+      "duration": 274.9400000000023
     },
     {
       "name": "deepmerge",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 485.4300000000512
+      "duration": 377.36000000001513
     },
     {
       "name": "query-string",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1111.320000000007
+      "duration": 644.8950000000186
     },
     {
       "name": "fast-deep-equal",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 412.4400000000023
+      "duration": 330.0449999999837
     },
     {
       "name": "change-case",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 698.7700000000186
+      "duration": 424.73500000001513
     },
     {
       "name": "p-limit",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 651.2399999999907
+      "duration": 346.7600000000093
     },
     {
       "name": "lru-cache",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 543.0349999999744
+      "duration": 453.8299999999872
     },
     {
       "name": "date-fns",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1278.5950000000303
+      "duration": 759.8649999999907
     },
     {
       "name": "dayjs",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 716.2249999999767
+      "duration": 463.8949999999895
     },
     {
       "name": "luxon",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 782.375
+      "duration": 522.7649999999849
     },
     {
       "name": "throttle-debounce",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 661.8250000000116
+      "duration": 500.1499999999942
     },
     {
       "name": "rimraf",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1598.4949999999953
+      "duration": 969.7049999999872
     },
     {
       "name": "glob",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 665.710000000021
+      "duration": 389.4199999999837
     },
     {
       "name": "mkdirp",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 695.734999999986
+      "duration": 413.95999999999185
     },
     {
       "name": "del",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1888.0999999999767
+      "duration": 1486.3299999999872
     },
     {
       "name": "memfs",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 4124.415000000037
+      "duration": 2174.9400000000023
     },
     {
       "name": "cors",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 708.4500000000116
+      "duration": 430.2699999999895
     },
     {
       "name": "helmet",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 654.3400000000256
+      "duration": 400.72000000000116
     },
     {
       "name": "morgan",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1319.4049999999697
+      "duration": 730.25
     },
     {
       "name": "compression",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1066.9499999999534
+      "duration": 757.3299999999872
     },
     {
       "name": "serve-static",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 658.9750000000349
+      "duration": 360.2049999999872
     },
     {
       "name": "cookie-parser",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 767.9799999999814
+      "duration": 624.7350000000151
     },
     {
       "name": "body-parser",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 903.7799999999697
+      "duration": 520.7900000000081
     },
     {
       "name": "pino",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 554.8800000000047
+      "duration": 332.4549999999872
     },
     {
       "name": "winston",
       "class": "HTTP server",
       "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 33549.815,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "output": "Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\n    at DerivedLogger.Readable (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:4373:10)\n    at DerivedLogger.Duplex (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:4956:12)\n    at new Transform (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:7020:10)\n    at _callSuper (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:12510:102)\n    at new Logger (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:12582:12)\n    at _callSuper (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:12977:102)\n    at new DerivedLogger (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:13044:12)\n    at module.exports [as createLogger] (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:13049:16)\n    at blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:13285:30\n    at blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:152:49\n\nNode.js v22.0.0\n",
+      "duration": 2288.8800000000047,
+      "error": "Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\n    at DerivedLogger.Readable (blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:4373:10)\n    at DerivedLogger.Duplex (blob:http://localhost:5\n…\np://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:13049:16)\n    at blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:13285:30\n    at blob:http://localhost:5173/6198cdd5-d1a4-4a64-b750-89ee45fac434:152:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "got",
       "class": "HTTP client",
-      "status": "fail",
-      "output": "[bundle warning] \"node:tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:tls\n[bundle warning] \"node:tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:tls\nUncaught TypeError: Failed to fetch dynamically imported module: blob:http://localhost:5173/8d665f51-fbd6-40b0-a025-a2fcea6bd197\n\nNode.js v22.0.0\n",
-      "duration": 3408.7399999999907,
-      "error": "[bundle warning] \"node:tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:tls\n[bundle warning] \"node:tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:tls\nUncaught TypeError: Failed to fetch dynamically imported module: blob:http://localhost:5173/8d665f51-fbd6-40b0-a025-a2fcea6bd197\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "PASS\n",
+      "duration": 1626.0849999999919
     },
     {
       "name": "ky",
       "class": "HTTP client",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30362.094999999972,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "PASS\n",
+      "duration": 482.2250000000058
     },
     {
       "name": "http-proxy-agent",
       "class": "HTTP client",
       "status": "pass",
-      "output": "[bundle warning] \"tls\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tls\n[bundle warning] \"kerberos\" could not be resolved off the installed node_modules — falling back to https://esm.sh/kerberos\nPASS\n",
-      "duration": 1778.5950000000303
+      "output": "[bundle warning] \"kerberos\" could not be resolved off the installed node_modules — falling back to https://esm.sh/kerberos\nPASS\n",
+      "duration": 689.2449999999953
     },
     {
       "name": "form-data",
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1358.204999999958
+      "duration": 542.9499999999825
     },
     {
       "name": "sha.js",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 3267.1149999999907
+      "duration": 1931.0400000000081
     },
     {
       "name": "hash.js",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 901.765000000014
+      "duration": 621.0650000000023
     },
     {
       "name": "md5",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1083.5650000000023
+      "duration": 684.2600000000093
     },
     {
       "name": "create-hash",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 2179.3499999999767
+      "duration": 1309.4799999999814
     },
     {
       "name": "jose",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 891.2550000000047
+      "duration": 505.0450000000128
     },
     {
       "name": "jsonwebtoken",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 2291.9499999999534
+      "duration": 1288.3850000000093
     },
     {
       "name": "pbkdf2",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1270.5650000000023
+      "duration": 781.3549999999814
     },
     {
       "name": "marked",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 656.2249999999767
+      "duration": 320.3999999999942
     },
     {
       "name": "markdown-it",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1455.850000000035
+      "duration": 838.195000000007
     },
     {
       "name": "micromark",
       "class": "Template",
       "status": "fail",
-      "output": "Uncaught ReferenceError: document is not defined\n    at blob:http://localhost:5173/d7a9fb6a-1c73-4d63-b051-5245b726e9e4:125:17\n\nNode.js v22.0.0\n",
-      "duration": 4155.900000000023,
-      "error": "Uncaught ReferenceError: document is not defined\n    at blob:http://localhost:5173/d7a9fb6a-1c73-4d63-b051-5245b726e9e4:125:17\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+      "output": "Uncaught ReferenceError: document is not defined\n    at blob:http://localhost:5173/ddc84a7e-62b3-4d83-a383-a0b67279e0ec:125:17\n\nNode.js v22.0.0\n",
+      "duration": 2060.170000000013,
+      "error": "Uncaught ReferenceError: document is not defined\n    at blob:http://localhost:5173/ddc84a7e-62b3-4d83-a383-a0b67279e0ec:125:17\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "nunjucks",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1124.3850000000093
+      "duration": 700.2400000000198
     },
     {
       "name": "liquidjs",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1018.7449999999953
+      "duration": 524.8950000000186
     },
     {
       "name": "mustache",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 659.0249999999651
+      "duration": 475.80000000001746
     },
     {
       "name": "twig",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1895.9499999999534
+      "duration": 1070.0250000000233
     },
     {
       "name": "chai",
       "class": "Testing",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 513.7600000000093
+      "duration": 319.6849999999977
     },
     {
       "name": "sinon",
       "class": "Testing",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1371.8699999999953
+      "duration": 848.3150000000023
     },
     {
       "name": "dompurify",
       "class": "Testing",
       "status": "fail",
       "output": "purify_default.sanitize is not a function\n",
-      "duration": 1047.8649999999907,
+      "duration": 671.2949999999837,
       "error": "purify_default.sanitize is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
@@ -732,63 +730,63 @@
       "class": "Testing",
       "status": "pass",
       "output": "[bundle warning] \"canvas\" could not be resolved off the installed node_modules — falling back to https://esm.sh/canvas\nPASS\n",
-      "duration": 3433.100000000035
+      "duration": 1781.1499999999942
     },
     {
       "name": "lightningcss",
       "class": "Build tool",
       "status": "skip",
       "output": "SKIP: lightningcss requires a native .node binding — no browser-compatible build exists\n",
-      "duration": 391.3150000000023
+      "duration": 310.5200000000186
     },
     {
       "name": "postcss",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 864.015000000014
+      "duration": 488.27999999999884
     },
     {
       "name": "babel",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 4648.865000000049
+      "duration": 2524.8399999999965
     },
     {
       "name": "sucrase",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1655.9349999999977
+      "duration": 979.335000000021
     },
     {
       "name": "acorn",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 986.7699999999604
+      "duration": 352.75499999997555
     },
     {
       "name": "rspack",
       "class": "Bundler",
       "status": "skip",
       "output": "SKIP: @rspack/core needs its native binding — @rspack/browser is the browser package\n",
-      "duration": 429.4300000000512
+      "duration": 258.70000000001164
     },
     {
       "name": "turbo",
       "class": "Bundler",
       "status": "skip",
       "output": "SKIP: turbo is a native Rust binary wrapper — no browser-compatible build exists\n",
-      "duration": 423.3499999999767
+      "duration": 293.6849999999977
     },
     {
       "name": "ws",
       "class": "HTTP server",
       "status": "skip",
       "output": "SKIP: ws browser field ships a throwing stub by design — native WebSocket is the browser path\n",
-      "duration": 865.6749999999884
+      "duration": 612.4649999999965
     }
   ]
 }
