@@ -25,9 +25,7 @@ const argTypeError = (name: string, expected: string, value: unknown): TypeError
 const assertAllocatable = (size: number): void => {
   if (size > 0x7fffffff) {
     throw Object.assign(
-      new RangeError(
-        `Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes`,
-      ),
+      new RangeError(`Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes`),
       { code: "ERR_OUT_OF_RANGE" },
     );
   }

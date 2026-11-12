@@ -74,4 +74,28 @@ describe("node-web-shims: assert", () => {
       expect.objectContaining({ code: "ERR_ASSERTION" }),
     );
   });
+
+  it("rejects/doesNotReject carry Node's validation error codes", async () => {
+    // A non-promise, non-function argument → ERR_INVALID_ARG_TYPE.
+    await expect(assert.rejects("fail", {})).rejects.toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    // A function that does not return a promise → ERR_INVALID_RETURN_VALUE.
+    await expect(
+      assert.rejects(
+        () => {},
+        () => true,
+      ),
+    ).rejects.toThrowError(expect.objectContaining({ code: "ERR_INVALID_RETURN_VALUE" }));
+    await expect(assert.doesNotReject(123)).rejects.toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    // A rejected promise resolves the assertion (Node's behavior too).
+    const boom = new Error("boom");
+    await expect(assert.rejects(Promise.reject(boom))).resolves.toBeUndefined();
+    // A validator that does not match surfaces the caught error.
+    await expect(assert.rejects(Promise.reject(boom), () => "nope")).rejects.toThrowError(
+      /validation function is expected to return/,
+    );
+  });
 });

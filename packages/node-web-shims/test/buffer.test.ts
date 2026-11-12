@@ -43,17 +43,14 @@ describe("node-web-shims: buffer", () => {
 
   it("Buffer.concat validates the list and its items like Node", () => {
     const { Buffer } = createBufferShim();
-    expect(() => (Buffer as unknown as { concat: (v: unknown) => void }).concat(undefined)).toThrowError(
-      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
-    );
+    expect(() =>
+      (Buffer as unknown as { concat: (v: unknown) => void }).concat(undefined),
+    ).toThrowError(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }));
     expect(() => (Buffer as unknown as { concat: (v: unknown) => void }).concat(null)).toThrowError(
       expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
     );
     expect(() =>
-      (Buffer as unknown as { concat: (v: unknown) => void }).concat([
-        Buffer.from("hello"),
-        3,
-      ]),
+      (Buffer as unknown as { concat: (v: unknown) => void }).concat([Buffer.from("hello"), 3]),
     ).toThrowError(
       expect.objectContaining({
         code: "ERR_INVALID_ARG_TYPE",
@@ -62,18 +59,18 @@ describe("node-web-shims: buffer", () => {
     );
     // A valid list still concatenates.
     expect(
-      (
-        Buffer as unknown as { concat: (v: unknown[]) => { toString(): string } }
-      ).concat([Buffer.from("as"), Buffer.from("df")]).toString(),
+      (Buffer as unknown as { concat: (v: unknown[]) => { toString(): string } })
+        .concat([Buffer.from("as"), Buffer.from("df")])
+        .toString(),
     ).toBe("asdf");
   });
 
   it("Buffer.from rejects unsupported first arguments with ERR_INVALID_ARG_TYPE", () => {
     const { Buffer } = createBufferShim();
     for (const bad of [{}, null, undefined, 5n, Symbol()]) {
-      expect(() =>
-        (Buffer as unknown as { from: (v: unknown) => void }).from(bad),
-      ).toThrowError(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }));
+      expect(() => (Buffer as unknown as { from: (v: unknown) => void }).from(bad)).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+      );
     }
     expect(() =>
       (Buffer as unknown as { from: (v: unknown, e: string) => void }).from("", "buffer"),
