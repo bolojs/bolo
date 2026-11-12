@@ -20,6 +20,10 @@ import {
   instrumentPromises,
 } from "@bolojs/node-web-shims/dist/async_hooks.js";
 import { trackEventTargetListeners } from "@bolojs/node-web-shims/dist/events.js";
+import { installStructuredCloneFallback, snapshotEnv, wrapEnv } from "./env-snapshot.js";
+
+// process.env is a coercion Proxy (process-shim); make structuredClone tolerate it.
+installStructuredCloneFallback();
 
 // ponytail: see worker-script.ts — fire-and-forget to stay TLA-free.
 configureBrowserLogging().catch(() => {});
@@ -203,10 +207,14 @@ const runProcess = async (msg: ProcRunMessage) => {
       resolveLifetime?.();
       onExit?.(c);
     };
+    // Node semantics: no explicit options.env → the child inherits the
+    // parent's env. The env proxy is not structured-cloneable, so post a
+    // plain snapshot through rpc.
+    const specWithEnv = { ...spec, env: spec.env ?? snapshotEnv(processShim?.env) };
     const idP = rpc
       .call<number>(
         "thread.spawn",
-        spec,
+        specWithEnv,
         (v: unknown) => onMessage?.(v),
         (c: number) => wrapExit(c),
         (d: string) => onStdout?.(d),
@@ -299,6 +307,16 @@ const runProcess = async (msg: ProcRunMessage) => {
       ...args,
     );
   }) as ProcessShim["nextTick"];
+  // PROC_RUN carries the spawn-time env (already a plain cloneable record);
+  // the live registry has no env option, so seed the shim env here. Wrap the
+  // coercion proxy so empty-name assignments are dropped (POSIX semantics,
+  // test-process-env).
+  processShim.env = wrapEnv(processShim.env ?? {});
+  if (msg.env) {
+    for (const [key, value] of Object.entries(msg.env)) {
+      processShim.env[key] = value;
+    }
+  }
   // child_process.fork IPC: `process.send`/`process.on('message')` ride the
   // same THREAD_MSG transport as parentPort, wrapped in IPC envelopes.
   const ipcProcess = processShim as ProcessShim & {
