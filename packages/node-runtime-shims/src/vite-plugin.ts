@@ -87,7 +87,8 @@ const dns = createDnsShim();
 export default dns;
 export const {
   lookup, lookupService, resolve, resolve4, resolve6, resolveCname, resolveMx, resolveNs,
-  resolveTxt, resolveSrv, resolvePtr, reverse, getServers, setServers, setDefaultResultOrder, promises
+  resolveTxt, resolveSrv, resolvePtr, reverse, getServers, setServers,
+  setDefaultResultOrder, getDefaultResultOrder, Resolver, ADDRCONFIG, V4MAPPED, ALL, promises
 } = dns;`;
       }
       if (id === "node:vm") {
