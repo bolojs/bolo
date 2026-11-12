@@ -86,15 +86,14 @@ const assertSize: (size: unknown) => asserts size is number = (size) => {
 
 /**
  * feross's Buffer cannot allocate past its own 32-bit limit even though Node
- * 22 allows sizes up to `Number.MAX_SAFE_INTEGER`; keep the coded RangeError
- * so callers can branch on it.
+ * 22 allows sizes up to `Number.MAX_SAFE_INTEGER`. Node lets the underlying
+ * `new Uint8Array(size)` throw, which surfaces V8's RangeError wording
+ * (`Invalid typed array length: N`) — mirror that instead of inventing a
+ * coded error (test-buffer-alloc asserts on the message).
  */
 const assertAllocatable = (size: number): void => {
   if (size > 0x7fffffff) {
-    throw Object.assign(
-      new RangeError(`Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes`),
-      { code: "ERR_OUT_OF_RANGE" },
-    );
+    throw new RangeError(`Invalid typed array length: ${size}`);
   }
 };
 
@@ -123,15 +122,27 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
   };
 
   const origToString = BufferClass.prototype.toString;
+  // V8 decodes Buffer utf8 through the WHATWG algorithm (maximal-subpart
+  // invalid-sequence handling, no BOM stripping); feross's hand-rolled
+  // decoder emits one U+FFFD per invalid byte, which diverges from Node on
+  // malformed input and broke test-string-decoder-fuzz's chunked-vs-one-shot
+  // comparison. Route utf8 through TextDecoder — `ignoreBOM: true` keeps a
+  // leading BOM as U+FEFF like Node's toString.
+  const utf8Decoder = new TextDecoder("utf-8", { ignoreBOM: true });
   BufferClass.prototype.toString = function (
     this: unknown,
     encoding?: string,
     start?: number,
     end?: number,
   ): string {
-    if (typeof encoding === "string" && encoding.toLowerCase() === "base64url") {
+    const enc = typeof encoding === "string" ? encoding.toLowerCase() : "utf8";
+    if (enc === "base64url") {
       const b64 = origToString.call(this, "base64", start, end);
       return toBase64Url(b64);
+    }
+    if (enc === "utf8" || enc === "utf-8") {
+      const view = this as Uint8Array;
+      return utf8Decoder.decode(view.subarray(start ?? 0, end ?? view.length));
     }
     return origToString.apply(this, arguments as unknown as [string, number, number]);
   };
@@ -186,7 +197,7 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
         throw Object.assign(
           new TypeError(
             "The first argument must be of type string or an instance of " +
-              "Buffer, ArrayBuffer, or Array or an Array-like Object. " +
+              "Buffer, ArrayBuffer, SharedArrayBuffer, Array or an Array-like Object. " +
               `Received ${determineSpecificType(value)}`,
           ),
           { code: "ERR_INVALID_ARG_TYPE" },

@@ -95,6 +95,26 @@ export class HmacImpl {
     if (enc.toLowerCase() === "buffer") return buf;
     return buf.toString(enc as BufferEncoding);
   }
+
+  // Minimal stream sugar so `hmac.write(d); hmac.end(d); hmac.read()`-shaped
+  // code paths work without a real Transform underneath (Node's Hmac is a
+  // LazyTransform; test-crypto-hmac drives the legacy stream surface).
+  write(chunk: BinaryLike, encoding?: BufferEncoding): boolean {
+    this.update(chunk, encoding);
+    return true;
+  }
+
+  end(chunk?: BinaryLike, encoding?: BufferEncoding): void {
+    if (chunk !== undefined) this.update(chunk, encoding);
+  }
+
+  read(): Buffer | null {
+    try {
+      return this.digest();
+    } catch {
+      return null;
+    }
+  }
 }
 
 /**
