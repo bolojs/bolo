@@ -23,6 +23,7 @@ import {
 } from "./crypto/keygen.js";
 import {
   pseudoRandomBytes,
+  randomBytes,
   randomFill,
   randomFillSync,
   randomInt,
@@ -58,6 +59,7 @@ const crypto = {
   randomFill,
   randomFillSync,
   pseudoRandomBytes,
+  randomBytes,
   timingSafeEqual,
 
   createSecretKey,
@@ -95,7 +97,42 @@ const crypto = {
 
   // Keep WebCrypto-backed overrides (unenv's stubs are already correct, but
   // pin them here like the previous shim did).
-  randomUUID: () => globalThis.crypto.randomUUID(),
+  randomUUID: (options?: RandomUUIDOptions) => randomUuid(options),
+};
+
+/**
+ * Node's `randomUUID(options)` — the options bag is validated the way Node
+ * validates it (a non-object throws `ERR_INVALID_ARG_TYPE`, and
+ * `disableEntropyCache` must be a boolean).
+ */
+export interface RandomUUIDOptions {
+  disableEntropyCache?: boolean;
+}
+
+const randomUuid = (options?: RandomUUIDOptions): string => {
+  if (options === undefined) return globalThis.crypto.randomUUID();
+  if (options === null || typeof options !== "object") {
+    throw Object.assign(
+      new TypeError(
+        `The "options" argument must be of type object. Received ${
+          options === null ? "null" : `type ${typeof options}`
+        }`,
+      ),
+      { code: "ERR_INVALID_ARG_TYPE" },
+    );
+  }
+  if (
+    options.disableEntropyCache !== undefined &&
+    typeof options.disableEntropyCache !== "boolean"
+  ) {
+    throw Object.assign(
+      new TypeError(
+        `The "options.disableEntropyCache" property must be of type boolean. Received type ${typeof options.disableEntropyCache}`,
+      ),
+      { code: "ERR_INVALID_ARG_TYPE" },
+    );
+  }
+  return globalThis.crypto.randomUUID();
 };
 
 /**
@@ -131,6 +168,7 @@ export {
   randomFill,
   randomFillSync,
   pseudoRandomBytes,
+  randomBytes,
   timingSafeEqual,
   createSecretKey,
   createPrivateKey,
@@ -164,7 +202,6 @@ export const secureHeapUsed = crypto.secureHeapUsed;
 export const constants = unenv.constants;
 export const webcrypto = unenv.webcrypto;
 export const subtle = unenv.subtle;
-export const randomBytes = unenv.randomBytes;
 // `rng`/`prng` are long-removed from @types/node but live in unenv — keep
 // them exported for packages that still reach for the aliases.
 export const rng = (unenvCrypto as Record<string, unknown>).rng;
