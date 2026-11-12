@@ -118,7 +118,7 @@ const RESOLVE_EXTENSIONS = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".
 // stateless, from `node-web-shims`, or host-bound, from `node-runtime-shims`).
 // Resolution of the *live* value happens via `getShim` at bundle time — this
 // package only knows the builtin's name, not its implementation.
-const NODE_BUILTIN_NAMES = new Set([
+export const NODE_BUILTIN_NAMES = new Set([
   "fs",
   "fs/promises",
   "http",
@@ -127,6 +127,7 @@ const NODE_BUILTIN_NAMES = new Set([
   "child_process",
   "path",
   "path/posix",
+  "path/win32",
   "buffer",
   "url",
   "crypto",
@@ -155,6 +156,7 @@ const NODE_BUILTIN_NAMES = new Set([
   "module",
   "diagnostics_channel",
   "readline",
+  "readline/promises",
   "vm",
   "dns",
   "dns/promises",
@@ -178,12 +180,22 @@ const BANNER_CONSOLE_KEYS = [
   "info",
   "debug",
   "table",
+  "dir",
+  "dirxml",
   "warn",
   "error",
   "trace",
   "assert",
+  "clear",
+  "count",
+  "countReset",
+  "time",
+  "timeEnd",
+  "timeLog",
   "group",
+  "groupCollapsed",
   "groupEnd",
+  "Console",
 ];
 
 const VALID_JS_IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
@@ -548,18 +560,59 @@ var __bcFormat = (args) => args.map((a) => {
   return String(a);
 }).join(' ');
 var __bcWrite = (stream, args) => __bcGlobals()?.shims?.process?.[stream]?.write(__bcFormat(args) + '\\n');
-var __bc_console = {
-  log: (...args) => __bcWrite('stdout', args),
-  info: (...args) => __bcWrite('stdout', args),
-  debug: (...args) => __bcWrite('stdout', args),
-  table: (...args) => __bcWrite('stdout', args),
-  warn: (...args) => __bcWrite('stderr', args),
-  error: (...args) => __bcWrite('stderr', args),
-  trace: (...args) => __bcWrite('stderr', ['Trace:', ...args]),
-  assert: (cond, ...args) => { if (!cond) __bcWrite('stderr', ['Assertion failed' + (args.length ? ':' : ''), ...args]); },
-  group: () => {},
-  groupEnd: () => {},
+// Minimal node:console.Console — stdout/stderr args are accepted (a real
+// Writable, or anything with .write) so `new Console(stream)` mirrors Node;
+// the no-arg default routes through the process shim like global console.
+var __bc_Console = class {
+  constructor(stdout, stderr) {
+    this._stdout = stdout;
+    this._stderr = stderr ?? stdout;
+    this._counts = Object.create(null);
+    this._times = Object.create(null);
+    this._indent = 0;
+  }
+  _write(stream, args) {
+    var sink = stream === 'stderr' ? this._stderr : this._stdout;
+    var line = '  '.repeat(this._indent) + __bcFormat(args);
+    if (sink && typeof sink.write === 'function') sink.write(line + '\\n');
+    else __bcGlobals()?.shims?.process?.[stream]?.write(line + '\\n');
+  }
+  log(...args) { this._write('stdout', args); }
+  info(...args) { this._write('stdout', args); }
+  debug(...args) { this._write('stdout', args); }
+  table(...args) { this._write('stdout', args); }
+  dir(obj) { this._write('stdout', [obj]); }
+  dirxml(obj) { this._write('stdout', [obj]); }
+  warn(...args) { this._write('stderr', args); }
+  error(...args) { this._write('stderr', args); }
+  trace(...args) { this._write('stderr', ['Trace:', ...args]); }
+  assert(cond, ...args) { if (!cond) this._write('stderr', ['Assertion failed' + (args.length ? ':' : ''), ...args]); }
+  clear() {}
+  count(label = 'default') {
+    var n = (this._counts[label] = (this._counts[label] ?? 0) + 1);
+    this._write('stdout', [label + ': ' + n]);
+  }
+  countReset(label = 'default') { delete this._counts[label]; }
+  time(label = 'default') { this._times[label] = globalThis.performance?.now?.() ?? Date.now(); }
+  timeEnd(label = 'default') {
+    var start = this._times[label];
+    if (start === undefined) { this._write('stderr', ['Warning: No such label \\'' + label + '\\' for console.timeEnd()']); return; }
+    delete this._times[label];
+    var ms = (globalThis.performance?.now?.() ?? Date.now()) - start;
+    this._write('stdout', [label + ': ' + ms.toFixed(3) + 'ms']);
+  }
+  timeLog(label = 'default', ...args) {
+    var start = this._times[label];
+    if (start === undefined) { this._write('stderr', ['Warning: No such label \\'' + label + '\\' for console.timeLog()']); return; }
+    var ms = (globalThis.performance?.now?.() ?? Date.now()) - start;
+    this._write('stdout', [label + ': ' + ms.toFixed(3) + 'ms', ...args]);
+  }
+  group(...args) { if (args.length) this._write('stdout', args); this._indent++; }
+  groupCollapsed(...args) { this.group(...args); }
+  groupEnd() { if (this._indent > 0) this._indent--; }
 };
+var __bc_console = new __bc_Console();
+__bc_console.Console = __bc_Console;
 `.trim();
 
 // Emits a `const <name>=<literal>;` prelude declaration for a CJS implicit
