@@ -182,9 +182,12 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     // Best-effort executable path — there is no real node binary on disk,
     // but tools read execPath for re-spawn/shebang logic.
     execPath: "/usr/local/bin/node",
-    version: "v22.0.0",
-    versions: { node: "22.0.0" },
-    release: { name: "node", version: "22.0.0" },
+    // Track an actively-maintained LTS line: tools gate on `process.version`
+    // (e.g. rspack requires >=20.19 or >=22.12), and 22.0.0 fails those checks
+    // even when the shimmed APIs they actually call are present.
+    version: "v22.12.0",
+    versions: { node: "22.12.0" },
+    release: { name: "node", version: "22.12.0" },
     features: {
       inspector: false,
       debug: false,

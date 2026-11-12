@@ -287,7 +287,10 @@ export const createFsShim = (vfs: VfsBus) => {
     const names = vfs.hot.readdirSync(path, opts?.recursive ? { recursive: true } : undefined) as
       | string[]
       | { name: string }[];
-    const plain = typeof names[0] === "string" ? (names as string[]) : (names as { name: string }[]).map((e) => e.name);
+    const plain =
+      typeof names[0] === "string"
+        ? (names as string[])
+        : (names as { name: string }[]).map((e) => e.name);
     if (!opts?.withFileTypes) return plain;
     return plain.map((name) => {
       const idx = opts?.recursive ? name.lastIndexOf("/") : -1;
