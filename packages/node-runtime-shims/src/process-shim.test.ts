@@ -176,3 +176,31 @@ describe("createProcessShim", () => {
     expect(process.getBuiltinModule("fs")).toBeUndefined();
   });
 });
+
+describe("process.exit re-entrancy", () => {
+  it("does not re-emit 'exit' when exit() is called from an exit handler", () => {
+    const process = createProcessShim();
+    let exits = 0;
+    let finalCode: number | undefined;
+    process.on("exit", (code) => {
+      exits++;
+      expect(code).toBe(1);
+      expect(() => process.exit(0)).toThrow(expect.objectContaining({ code: 0 }));
+      finalCode = process.exitCode;
+    });
+    expect(() => process.exit(1)).toThrow(expect.objectContaining({ code: 0 }));
+    expect(exits).toBe(1);
+    expect(finalCode).toBe(0);
+  });
+
+  it("emits 'exit' exactly once on repeated exit() calls", () => {
+    const process = createProcessShim();
+    let exits = 0;
+    process.on("exit", () => {
+      exits++;
+    });
+    expect(() => process.exit()).toThrow();
+    expect(() => process.exit(3)).toThrow(expect.objectContaining({ code: 3 }));
+    expect(exits).toBe(1);
+  });
+});

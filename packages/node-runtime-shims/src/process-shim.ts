@@ -231,6 +231,9 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     },
     exit: (code?: number): never => {
       if (code !== undefined) process.exitCode = code;
+      // Node: process.exit() inside an 'exit' handler just re-asserts the
+      // pending exit — the handlers already ran, recursion is a no-op.
+      if (process._exiting) throw new ProcessExit(process.exitCode ?? 0);
       try {
         process.emit("exit", process.exitCode ?? 0);
       } catch (err) {
