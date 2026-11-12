@@ -5,6 +5,7 @@ import {
   runInAsyncScope,
 } from "@bolojs/node-web-shims/dist/async_hooks.js";
 import { createTimersPromisesShim } from "@bolojs/node-web-shims/dist/timers_promises.js";
+import { customPromisifySymbol } from "@bolojs/node-web-shims/dist/util.js";
 
 /**
  * Node-flavoured timers for a process worker: `Timeout`/`Immediate` objects
@@ -329,6 +330,11 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     Object.defineProperty(timers[name], Symbol.for("nodejs.util.promisify.custom"), {
       value: promises[name],
     });
+    // unenv's promisify() reads a *different* symbol than Node's — mirror the
+    // custom promisify onto it so `promisify(timers.setImmediate) ===
+    // timers/promises.setImmediate` (bundled code uses unenv util).
+    (timers[name] as unknown as Record<PropertyKey, unknown>)[customPromisifySymbol] =
+      promises[name];
   }
   return { timers, promises };
 };

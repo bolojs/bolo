@@ -19,6 +19,7 @@ import {
   runInAsyncScope,
   instrumentPromises,
 } from "@bolojs/node-web-shims/dist/async_hooks.js";
+import { trackEventTargetListeners } from "@bolojs/node-web-shims/dist/events.js";
 
 // ponytail: see worker-script.ts — fire-and-forget to stay TLA-free.
 configureBrowserLogging().catch(() => {});
@@ -161,6 +162,9 @@ const runProcess = async (msg: ProcRunMessage) => {
   // Promise continuations announce an async resource so async_hooks
   // init/before/after/promiseResolve fire around them (Node parity).
   instrumentPromises();
+  // Track EventTarget listeners so events.getEventListeners() can report
+  // them (unenv's implementation reads a private symbol that does not exist).
+  trackEventTargetListeners();
 
   // worker_threads: a thread is a spawned process worker. `spawnProcess`
   // asks the main thread for one over rpc (`thread.*` ops — main bundles the

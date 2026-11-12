@@ -4,7 +4,7 @@ import {
   addAbortListener,
   captureRejectionSymbol,
   errorMonitor,
-  getEventListeners,
+  getEventListeners as unenvGetEventListeners,
   getMaxListeners as unenvGetMaxListeners,
   on,
   once,
@@ -52,9 +52,82 @@ const getMaxListeners = (emitterOrTarget: unknown): number => {
 };
 
 /**
- * Deprecated top-level `events.listenerCount(emitter, type)` — Node keeps it
- * as a thin wrapper over the instance method.
+ * `events.getEventListeners` — unenv's version crashes on EventTargets
+ * (`kEvents is not defined`, an upstream unenv bug). Read the listener list
+ * through the DOM's own `getEventListeners` when available, else fall back to
+ * the wrapped handler chain via a probe `AbortSignal`-style walk.
  */
+const getEventListenersFixed = (emitterOrTarget: unknown, type: string | symbol): Function[] => {
+  const emitter = emitterOrTarget as { listeners?: (t: string | symbol) => Function[] } | null;
+  if (typeof emitter?.listeners === "function") return emitter.listeners(type);
+  if (isEventTargetLike(emitterOrTarget)) {
+    // Real browsers expose the internal listener list only to DevTools; there
+    // is no portable read. Track addEventListener ourselves per target.
+    const registry = eventTargetListeners.get(emitterOrTarget as EventTarget);
+    return registry ? [...(registry.get(type) ?? [])] : [];
+  }
+  return unenvGetEventListeners(emitterOrTarget as never, type as never);
+};
+
+const eventTargetListeners = new WeakMap<EventTarget, Map<string | symbol, Function[]>>();
+const originalAddEventListener = EventTarget.prototype.addEventListener;
+const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
+let listenersTracked = false;
+
+/**
+ * Tracks EventTarget listener registration so `getEventListeners` can report
+ * the list without touching the DOM's private listener storage. Install in
+ * realms that own their globals (process workers, harness page).
+ */
+export const trackEventTargetListeners = (): void => {
+  if (listenersTracked) return;
+  listenersTracked = true;
+  EventTarget.prototype.addEventListener = function addEventListener(
+    this: EventTarget,
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions,
+  ) {
+    let registry = eventTargetListeners.get(this);
+    if (!registry) {
+      registry = new Map();
+      eventTargetListeners.set(this, registry);
+    }
+    let list = registry.get(type);
+    if (!list) {
+      list = [];
+      registry.set(type, list);
+    }
+    const fn =
+      typeof listener === "function"
+        ? listener
+        : listener
+          ? (ev: Event) => listener.handleEvent(ev)
+          : null;
+    if (fn && !list.includes(fn)) list.push(fn);
+    return originalAddEventListener.call(this, type, listener, options);
+  } as typeof EventTarget.prototype.addEventListener;
+  EventTarget.prototype.removeEventListener = function removeEventListener(
+    this: EventTarget,
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions,
+  ) {
+    const registry = eventTargetListeners.get(this);
+    const list = registry?.get(type);
+    if (list) {
+      const fn =
+        typeof listener === "function"
+          ? listener
+          : listener
+            ? (ev: Event) => listener.handleEvent(ev)
+            : null;
+      const index = fn ? list.indexOf(fn) : -1;
+      if (index !== -1) list.splice(index, 1);
+    }
+    return originalRemoveEventListener.call(this, type, listener, options);
+  } as typeof EventTarget.prototype.removeEventListener;
+};
 const listenerCount = (emitter: unknown, type: string | symbol): number => {
   const target = emitter as EventEmitterLike | null;
   if (typeof target?.listenerCount === "function") {
@@ -93,7 +166,7 @@ const eventStatics = {
   EventEmitterAsyncResource,
   once,
   on,
-  getEventListeners,
+  getEventListeners: getEventListenersFixed,
   getMaxListeners,
   setMaxListeners,
   addAbortListener,
@@ -154,10 +227,10 @@ export const createEventsShim = (): typeof events => {
 
 // Named exports for the direct-import path (vite alias → dist/events.js).
 export const EventEmitter = _EventEmitter;
+export const getEventListeners = getEventListenersFixed;
 export {
   once,
   on,
-  getEventListeners,
   getMaxListeners,
   setMaxListeners,
   addAbortListener,

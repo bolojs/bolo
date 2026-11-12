@@ -8,11 +8,15 @@ export interface TimerHost {
 }
 
 export interface TimerOptions {
-  signal?: AbortSignal;
+  /**
+   * An `AbortSignal` (or any EventTarget-like object exposing
+   * addEventListener/removeEventListener, as Node accepts).
+   */
+  signal?: AbortSignal | (EventTarget & { aborted?: boolean; reason?: unknown });
   ref?: boolean;
 }
 
-const abortError = (signal: AbortSignal) =>
+const abortError = (signal: { reason?: unknown }) =>
   Object.assign(new Error("The operation was aborted", { cause: signal.reason }), {
     name: "AbortError",
     code: "ABORT_ERR",
@@ -23,7 +27,26 @@ const validate = (options: TimerOptions) => {
     throw Object.assign(new TypeError('The "options" argument must be of type object'), {
       code: "ERR_INVALID_ARG_TYPE",
     });
-  if (options.signal !== undefined && !(options.signal instanceof AbortSignal))
+  // Node accepts any EventTarget (e.g. internal NodeEventTarget), not just
+  // AbortSignal — duck-type on addEventListener/removeEventListener.
+  const signal = options.signal as
+    | (AbortSignal & { reason?: unknown; aborted?: boolean })
+    | undefined;
+  if (
+    signal !== undefined &&
+    signal !== null &&
+    typeof signal !== "object" &&
+    typeof signal !== "function"
+  )
+    throw Object.assign(
+      new TypeError('The "options.signal" argument must be an instance of AbortSignal'),
+      { code: "ERR_INVALID_ARG_TYPE" },
+    );
+  if (
+    signal != null &&
+    (typeof signal.addEventListener !== "function" ||
+      typeof signal.removeEventListener !== "function")
+  )
     throw Object.assign(
       new TypeError('The "options.signal" argument must be an instance of AbortSignal'),
       { code: "ERR_INVALID_ARG_TYPE" },

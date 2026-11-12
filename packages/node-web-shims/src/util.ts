@@ -1,4 +1,5 @@
 import unenvUtil from "unenv/node/util";
+import { promisify as unenvPromisify } from "unenv/node/util";
 import unenvTypes from "unenv/node/util/types";
 
 export * from "unenv/node/util";
@@ -7,6 +8,29 @@ export * from "unenv/node/util";
 // `browser_external_*` namespace in consumer bundles — import the real,
 // self-contained module directly instead.
 export const types = unenvTypes;
+
+/**
+ * unenv's `promisify()` reads its own custom-promisify symbol (not Node's
+ * `Symbol.for("nodejs.util.promisify.custom")`). Expose it so other shims
+ * can tag their functions with the symbol unenv's promisify actually reads.
+ */
+export const customPromisifySymbol = (unenvUtil as unknown as { promisify: { custom: symbol } })
+  .promisify.custom;
+
+/**
+ * `util.promisify` — Node reads `Symbol.for("nodejs.util.promisify.custom")`
+ * (and keeps `.custom` pointing at it). unenv's version reads its own
+ * module-local symbol, so a function tagged with Node's symbol (or vice
+ * versa) is invisible. Try both.
+ */
+const promisify = <F extends (...args: any[]) => any>(fn: F) => {
+  const tagged =
+    (fn as Record<PropertyKey, unknown>)[Symbol.for("nodejs.util.promisify.custom")] ??
+    (fn as Record<PropertyKey, unknown>)[customPromisifySymbol];
+  if (tagged) return tagged as (...args: Parameters<F>) => Promise<unknown>;
+  return unenvPromisify(fn as never);
+};
+promisify.custom = Symbol.for("nodejs.util.promisify.custom");
 
 const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
 
@@ -269,6 +293,7 @@ const util = {
   formatWithOptions,
   callbackify,
   toUSVString,
+  promisify,
 };
 
 /**
