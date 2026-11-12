@@ -25,6 +25,13 @@ const SHIMMED_BUILTINS = new Set([
   "punycode",
   "diagnostics_channel",
   "readline",
+  "domain",
+  "tls",
+  "dgram",
+  "cluster",
+  "repl",
+  "inspector",
+  "trace_events",
 ]);
 
 // Subset of SHIMMED_BUILTINS actually backed by unenv (worker_threads is a
