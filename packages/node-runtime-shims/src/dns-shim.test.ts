@@ -100,7 +100,15 @@ describe("createDnsShim", () => {
   it("resolves all standard DNS methods", async () => {
     dohResponse = { Answer: [{ data: "1.2.3.4" }] };
     const dns = createDnsShim();
-    for (const method of ["resolve", "resolve4", "resolve6", "resolveCname", "resolveNs", "reverse", "getServers"] as const) {
+    for (const method of [
+      "resolve",
+      "resolve4",
+      "resolve6",
+      "resolveCname",
+      "resolveNs",
+      "reverse",
+      "getServers",
+    ] as const) {
       expect(typeof dns[method]).toBe("function");
     }
   });

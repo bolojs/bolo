@@ -561,7 +561,7 @@ var __bcFormat = (args) => args.map((a) => {
 }).join(' ');
 var __bcWrite = (stream, args) => __bcGlobals()?.shims?.process?.[stream]?.write(__bcFormat(args) + '\\n');
 // Minimal node:console.Console — stdout/stderr args are accepted (a real
-// Writable, or anything with .write) so `new Console(stream)` mirrors Node;
+// Writable, or anything with .write) so new Console(stream) mirrors Node;
 // the no-arg default routes through the process shim like global console.
 var __bc_Console = class {
   constructor(stdout, stderr) {

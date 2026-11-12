@@ -53,9 +53,7 @@ describe("createModuleShim", () => {
     const moduleShim = createModuleShim({
       vfs,
       getShim: (name) =>
-        (({ timers: timersShim, "timers/promises": dedicated }) as Record<string, unknown>)[
-          name
-        ],
+        (({ timers: timersShim, "timers/promises": dedicated }) as Record<string, unknown>)[name],
     });
     const require = moduleShim.createRequire("/entry.ts");
 

@@ -106,12 +106,9 @@ export const createModuleShim = (options: ModuleShimOptions) => {
         if (shim === undefined) {
           const slash = bare.indexOf("/");
           if (slash !== -1) {
-            const parent = getShim(bare.slice(0, slash)) as
-              | Record<string, unknown>
-              | undefined;
+            const parent = getShim(bare.slice(0, slash)) as Record<string, unknown> | undefined;
             const sub = bare.slice(slash + 1);
-            shim =
-              parent?.[sub] ?? (bare === "dns/promises" ? parent : undefined);
+            shim = parent?.[sub] ?? (bare === "dns/promises" ? parent : undefined);
           }
         }
         if (shim !== undefined) return shim;
