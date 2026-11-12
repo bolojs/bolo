@@ -44,7 +44,7 @@
   "test/parallel/test-tls-ticket-12.js": "no default tls backend (TLS over TCP is pluggable-only, needs tlsBackend)",
   "test/parallel/test-tls-wrap-no-abort.js": "requires internal/test/binding and a tls backend (both absent in the browser harness)",
   "test/parallel/test-tty-backwards-api.js": "requires internal/test/binding (--expose-internals native binding)",
-  "test/parallel/test-util-inspect.js": "requires internal/test/binding (--expose-internals native binding)",
+  "test/parallel/test-util-inspect.js": "requires internal/test/binding and node:trace_events (--expose-internals native binding)",
   "test/parallel/test-util-types.js": "requires internal/test/binding (--expose-internals native binding)",
   "test/parallel/test-v8-deserialize-buffer.js": "v8 module has no browser shim (ValueSerializer internals not exposed)",
   "test/parallel/test-v8-flag-pool-size-0.js": "needs globalThis.gc and V8 flag control (not exposed to browsers)",

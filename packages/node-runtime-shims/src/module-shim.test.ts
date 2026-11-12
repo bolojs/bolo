@@ -16,6 +16,50 @@ describe("createModuleShim", () => {
     expect(require("path")).toBe(pathShim);
   });
 
+  it("resolves subpath builtins via the parent shim's variant property", () => {
+    const vfs = new VfsBus();
+    const promises = { readFile: () => {} };
+    const fsShim = { promises };
+    const pathShim = { posix: { sep: "/" }, win32: { sep: "\\" } };
+    const utilShim = { types: { isDate: () => true } };
+    const moduleShim = createModuleShim({
+      vfs,
+      getShim: (name) =>
+        (({ fs: fsShim, path: pathShim, util: utilShim }) as Record<string, unknown>)[name],
+    });
+    const require = moduleShim.createRequire("/entry.ts");
+
+    expect(require("node:fs/promises")).toBe(promises);
+    expect(require("node:path/win32")).toBe(pathShim.win32);
+    expect(require("node:util/types")).toBe(utilShim.types);
+  });
+
+  it("resolves dns/promises to the dns shim itself (its API is already promisified)", () => {
+    const vfs = new VfsBus();
+    const dnsShim = { resolve4: () => Promise.resolve([]) };
+    const moduleShim = createModuleShim({
+      vfs,
+      getShim: (name) => (name === "dns" ? dnsShim : undefined),
+    });
+    const require = moduleShim.createRequire("/entry.ts");
+
+    expect(require("node:dns/promises")).toBe(dnsShim);
+  });
+
+  it("prefers a dedicated registry key over the parent-property walk", () => {
+    const vfs = new VfsBus();
+    const dedicated = { scheduler: true };
+    const timersShim = { setTimeout: () => {} };
+    const moduleShim = createModuleShim({
+      vfs,
+      getShim: (name) =>
+        (({ timers: timersShim, "timers/promises": dedicated }) as Record<string, unknown>)[name],
+    });
+    const require = moduleShim.createRequire("/entry.ts");
+
+    expect(require("node:timers/promises")).toBe(dedicated);
+  });
+
   it("throws a clear error for a builtin with no registered shim", () => {
     const vfs = new VfsBus();
     const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
