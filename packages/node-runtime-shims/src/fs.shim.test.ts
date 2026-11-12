@@ -25,6 +25,36 @@ describe("fs shim", () => {
     expect(await shim.readdir("/nested")).toContain("dir");
   });
 
+  it("readdir supports withFileTypes (Dirent objects) across async, sync and promises", async () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    await shim.mkdir("/wt/sub", { recursive: true });
+    await shim.writeFile("/wt/file.txt", "x");
+
+    const dirents = (await shim.readdir("/wt", { withFileTypes: true })) as unknown as {
+      name: string;
+      isFile: () => boolean;
+      isDirectory: () => boolean;
+    }[];
+    const byName = new Map(dirents.map((d) => [d.name, d]));
+    expect(byName.get("file.txt")?.isFile()).toBe(true);
+    expect(byName.get("sub")?.isDirectory()).toBe(true);
+
+    const syncDirents = shim.readdirSync("/wt", { withFileTypes: true }) as unknown as {
+      isFile: () => boolean;
+    }[];
+    expect(syncDirents.every((d) => typeof d.isFile === "function")).toBe(true);
+
+    const promiseDirents = (await shim.promises.readdir("/wt", { withFileTypes: true })) as {
+      isDirectory: () => boolean;
+    }[];
+    expect(promiseDirents.every((d) => typeof d.isDirectory === "function")).toBe(true);
+
+    // Default shape is unchanged: plain name strings.
+    expect(await shim.readdir("/wt")).toContain("file.txt");
+  });
+
   it("rm removes files", async () => {
     const vfs = new VfsBus();
     const shim = createFsShim(vfs);

@@ -340,6 +340,9 @@ export const createDnsShim = (options?: DnsShimOptions) => {
     // Result-order control — no-ops in the browser (DoH always returns both).
     setDefaultResultOrder,
     getDefaultResultOrder,
+    ADDRCONFIG: 1024,
+    V4MAPPED: 2048,
+    ALL: 256,
     // `dns/promises` subpath: our shim is already promisified so point to self.
     promises,
   };

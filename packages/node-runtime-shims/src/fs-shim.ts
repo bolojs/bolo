@@ -114,11 +114,59 @@ export const createFsShim = (vfs: VfsBus) => {
     await vfs.rm(path, opts);
   };
 
-  const readdirImpl = async (path: string): Promise<string[]> => {
+  // Realm-safe Dirent construction: memfs Dirent instances lose their
+  // prototype methods when they cross the worker RPC boundary (JSON), so
+  // dirents are rebuilt locally from each entry's lstat mode bits — `mode`
+  // is a plain number and survives serialization.
+  const S_IFMT = 0o170000;
+  const S_IFREG = 0o100000;
+  const S_IFDIR = 0o040000;
+  const S_IFLNK = 0o120000;
+  const makeDirent = (parentPath: string, name: string) => {
+    const full = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
+    let kind = 0;
+    try {
+      kind = (Number((vfs.hot.lstatSync(full) as { mode?: number })?.mode) || 0) & S_IFMT;
+    } catch {
+      // Entry vanished between readdir and lstat — report all-false, like a
+      // Dirent for a type we cannot determine.
+    }
+    return {
+      name,
+      path: parentPath,
+      parentPath,
+      isFile: () => kind === S_IFREG,
+      isDirectory: () => kind === S_IFDIR,
+      isSymbolicLink: () => kind === S_IFLNK,
+      isBlockDevice: () => false,
+      isCharacterDevice: () => false,
+      isFIFO: () => false,
+      isSocket: () => false,
+    };
+  };
+
+  const readdirNames = async (path: string, recursive?: boolean): Promise<string[]> => {
+    if (recursive) return vfs.hot.readdirSync(path, { recursive: true }) as string[];
     const entries = await vfs.readdir(path);
     return typeof entries[0] === "string"
       ? (entries as string[])
       : (entries as { name: string }[]).map((e) => e.name);
+  };
+
+  const readdirImpl = async (
+    path: string,
+    opts?: { withFileTypes?: boolean; recursive?: boolean },
+  ): Promise<unknown> => {
+    const names = await readdirNames(path, opts?.recursive);
+    if (!opts?.withFileTypes) return names;
+    return names.map((name) => {
+      // With `recursive`, names contain subpaths ("sub/file") — the Dirent's
+      // parent is the entry's own directory, not the readdir root.
+      const idx = opts?.recursive ? name.lastIndexOf("/") : -1;
+      return idx === -1
+        ? makeDirent(path, name)
+        : makeDirent(`${path.replace(/\/$/, "")}/${name.slice(0, idx)}`, name.slice(idx + 1));
+    });
   };
 
   const existsImpl = async (path: string): Promise<boolean> => {
@@ -235,7 +283,22 @@ export const createFsShim = (vfs: VfsBus) => {
     vfs.hot.rmSync(path, opts);
   };
 
-  const readdirSync = (path: string): string[] => vfs.hot.readdirSync(path) as string[];
+  const readdirSync = (path: string, opts?: { withFileTypes?: boolean; recursive?: boolean }) => {
+    const names = vfs.hot.readdirSync(path, opts?.recursive ? { recursive: true } : undefined) as
+      | string[]
+      | { name: string }[];
+    const plain =
+      typeof names[0] === "string"
+        ? (names as string[])
+        : (names as { name: string }[]).map((e) => e.name);
+    if (!opts?.withFileTypes) return plain;
+    return plain.map((name) => {
+      const idx = opts?.recursive ? name.lastIndexOf("/") : -1;
+      return idx === -1
+        ? makeDirent(path, name)
+        : makeDirent(`${path.replace(/\/$/, "")}/${name.slice(0, idx)}`, name.slice(idx + 1));
+    });
+  };
 
   const existsSync = (path: string): boolean => vfs.hot.existsSync(path);
 
