@@ -12,7 +12,13 @@ import { createRemoteDeps } from "./remote-objects.js";
 import { createSyncCaller } from "./sync-channel.js";
 import { createNodeTimers } from "./node-timers.js";
 import { createEventLoop } from "./event-loop.js";
-import { AsyncLocalStorage } from "@bolojs/node-web-shims/dist/async_hooks.js";
+import {
+  AsyncLocalStorage,
+  emitInit,
+  reserveAsyncId,
+  runInAsyncScope,
+  instrumentPromises,
+} from "@bolojs/node-web-shims/dist/async_hooks.js";
 
 // ponytail: see worker-script.ts — fire-and-forget to stay TLA-free.
 configureBrowserLogging().catch(() => {});
@@ -152,6 +158,9 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
 
 const runProcess = async (msg: ProcRunMessage) => {
   const rpc = createRpcPeer((m) => post(m));
+  // Promise continuations announce an async resource so async_hooks
+  // init/before/after/promiseResolve fire around them (Node parity).
+  instrumentPromises();
 
   // worker_threads: a thread is a spawned process worker. `spawnProcess`
   // asks the main thread for one over rpc (`thread.*` ops — main bundles the
@@ -250,13 +259,21 @@ const runProcess = async (msg: ProcRunMessage) => {
   });
   processShim = shims.process as ProcessShim;
   const nextTick = processShim.nextTick;
-  processShim.nextTick = ((fn: unknown, ...args: unknown[]) =>
-    nextTick(
-      typeof fn === "function"
-        ? AsyncLocalStorage.bind(fn as (...a: unknown[]) => unknown)
-        : fn,
+  processShim.nextTick = ((fn: unknown, ...args: unknown[]) => {
+    if (typeof fn !== "function") return nextTick(fn as never, ...args);
+    // Capture the async context (AsyncLocalStorage store) and announce the
+    // async resource, so async_hooks sees 'init'/'before'/'after' around the
+    // callback like Node does.
+    const run = AsyncLocalStorage.snapshot();
+    // Node does not report nextTick through 'init', only through
+    // before/after — so reserve an id instead of announcing a resource.
+    const asyncId = reserveAsyncId();
+    return nextTick(
+      (...cbArgs: unknown[]) =>
+        runInAsyncScope(asyncId, () => Reflect.apply(fn, undefined, cbArgs)) as unknown,
       ...args,
-    )) as ProcessShim["nextTick"];
+    );
+  }) as ProcessShim["nextTick"];
   // child_process.fork IPC: `process.send`/`process.on('message')` ride the
   // same THREAD_MSG transport as parentPort, wrapped in IPC envelopes.
   const ipcProcess = processShim as ProcessShim & {

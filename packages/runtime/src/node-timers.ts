@@ -1,5 +1,9 @@
 import type { LoopHandle } from "./event-loop.js";
-import { AsyncLocalStorage } from "@bolojs/node-web-shims/dist/async_hooks.js";
+import {
+  AsyncLocalStorage,
+  emitInit,
+  runInAsyncScope,
+} from "@bolojs/node-web-shims/dist/async_hooks.js";
 import { createTimersPromisesShim } from "@bolojs/node-web-shims/dist/timers_promises.js";
 
 /**
@@ -86,6 +90,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     private native: LoopHandle | undefined;
     private pending = false;
     private readonly runContext = AsyncLocalStorage.snapshot();
+    private readonly asyncId = emitInit("Timeout");
 
     constructor(fn: (...a: unknown[]) => void, after: unknown, args: unknown[], repeat: boolean) {
       let ms = Number(after);
@@ -112,7 +117,11 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       this.pending = false;
       try {
         if (typeof this._onTimeout === "function") {
-          this.runContext(() => Reflect.apply(this._onTimeout!, this, this._timerArgs));
+          this.runContext(() =>
+            runInAsyncScope(this.asyncId, () =>
+              Reflect.apply(this._onTimeout!, this, this._timerArgs),
+            ),
+          );
         }
       } finally {
         const repeat = this._repeat;
@@ -179,6 +188,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     refed = true;
     native: LoopHandle;
     private readonly runContext = AsyncLocalStorage.snapshot();
+    private readonly asyncId = emitInit("Immediate");
     constructor(fn: (...a: unknown[]) => void, args: unknown[]) {
       this._onImmediate = fn;
       this._argv = args;
@@ -189,7 +199,13 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       this._destroyed = true;
       this.refed = false;
       try {
-        if (this._onImmediate) this.runContext(() => Reflect.apply(this._onImmediate!, this, this._argv));
+        if (this._onImmediate) {
+          this.runContext(() =>
+            runInAsyncScope(this.asyncId, () =>
+              Reflect.apply(this._onImmediate!, this, this._argv),
+            ),
+          );
+        }
       } finally {
         this._onImmediate = null;
       }
@@ -255,7 +271,10 @@ export const createNodeTimers = (host: NodeTimersHost) => {
   const deprecate = (name: string) => {
     if (deprecated.has(name)) return;
     deprecated.add(name);
-    host.warn?.("DeprecationWarning", `timers.${name}() is deprecated. Please use setTimeout instead.`);
+    host.warn?.(
+      "DeprecationWarning",
+      `timers.${name}() is deprecated. Please use setTimeout instead.`,
+    );
   };
 
   const timers: NodeTimers = {
@@ -298,13 +317,18 @@ export const createNodeTimers = (host: NodeTimersHost) => {
         (item as Record<string, unknown>)._idleTimeout = -1;
       }
     },
-    active: (item) => { deprecate("active"); activate(item, true); },
+    active: (item) => {
+      deprecate("active");
+      activate(item, true);
+    },
     _unrefActive: (item) => activate(item, false),
   };
 
   const promises = createTimersPromisesShim(timers);
   for (const name of ["setTimeout", "setImmediate", "setInterval"] as const) {
-    Object.defineProperty(timers[name], Symbol.for("nodejs.util.promisify.custom"), { value: promises[name] });
+    Object.defineProperty(timers[name], Symbol.for("nodejs.util.promisify.custom"), {
+      value: promises[name],
+    });
   }
   return { timers, promises };
 };

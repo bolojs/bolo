@@ -60,3 +60,25 @@ describe("node-web-shims: async_hooks", () => {
     expect(typeof shim.AsyncResource).toBe("function");
   });
 });
+
+describe("async_hooks: createHook fires around async boundaries", () => {
+  it("fires init/before/after/destroy around a bound callback", async () => {
+    const { createHook } = createAsyncHooksShim();
+    const mod = await import("../src/async_hooks.ts");
+    const events: string[] = [];
+    createHook({
+      init: (id, type) => events.push(`init:${type}`),
+      before: (id) => events.push(`before:${id}`),
+      after: (id) => events.push(`after:${id}`),
+      destroy: (id) => events.push(`destroy:${id}`),
+    }).enable();
+    await new Promise<void>((resolve) => {
+      const fn = mod.bindAsyncCallback(() => resolve(), "custom");
+      fn();
+    });
+    expect(events).toContain("init:custom");
+    expect(events.some((e) => e.startsWith("before:"))).toBe(true);
+    expect(events.some((e) => e.startsWith("after:"))).toBe(true);
+    expect(events.some((e) => e.startsWith("destroy:"))).toBe(true);
+  });
+});
