@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-12T11:37:39.948Z",
+  "generatedAt": "2026-11-12T18:06:56.533Z",
   "validated": true,
   "total": 167,
-  "pass": 113,
-  "fail": 53,
+  "pass": 119,
+  "fail": 47,
   "skip": 1,
   "modules": [
     {
@@ -43,7 +43,7 @@
         {
           "file": "test-buffer-from.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",\"message\":\"The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received an instance of Object\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",..."
+          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",\"message\":\"The first argument must be of type string or an instance of Buffer, ArrayBuffer, SharedArrayBuffer, Array or an Array-like Object. Received an instance of Object\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"na..."
         }
       ]
     },
@@ -122,7 +122,7 @@
     },
     {
       "name": "os",
-      "passed": 1,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
@@ -136,8 +136,7 @@
         },
         {
           "file": "test-os-homedir-no-envvar.js",
-          "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "status": "pass"
         }
       ]
     },
@@ -149,7 +148,7 @@
         {
           "file": "test-util-format.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Cannot convert a Symbol value to a number"
+          "error": "Uncaught AssertionError: '118059162071741140000 118059162071741140000 123123123' strictEqual '118_059_162_071_741_140_000 118_059_162_071_741_140_000 123_123_123'"
         },
         {
           "file": "test-util-inspect.js",
@@ -212,17 +211,17 @@
         {
           "file": "test-fs-mkdir.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
+          "error": "Uncaught AssertionError: Missing expected exception (Error)."
         },
         {
           "file": "test-fs-write-file.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: ifError got unwanted exception: path.lastIndexOf is not a function"
+          "error": "Uncaught AssertionError: The input did not match the regular expression {}. Input:"
         },
         {
           "file": "test-fs-readfile.js",
           "status": "fail",
-          "error": "Uncaught RangeError: Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes"
+          "error": "Validating readFile on file /home/harness/test/.tmp.0/.removeme-fs-readfile-1-1K.txt of length 1024"
         }
       ]
     },
@@ -239,7 +238,7 @@
         {
           "file": "test-crypto-hmac.js",
           "status": "fail",
-          "error": "Uncaught TypeError: str.end is not a function"
+          "error": "Uncaught AssertionError: The input did not match the regular expression {}. Input:"
         },
         {
           "file": "test-crypto-randomuuid.js",
@@ -284,13 +283,13 @@
         {
           "file": "test-process-hrtime.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
+          "error": "Uncaught AssertionError: {\"code\":\"ERR_OUT_OF_RANGE\",\"name\":\"RangeError\",\"message\":\"The \\\"time\\\" argument must contain exactly 2 elements. Received 0 elements\"} deepStrictEqual {\"code\":\"ERR_OUT_OF_RANGE\",\"name\":\"RangeError\",\"message\":\"The value of \\\"time\\\" is out of range. It must be 2. Received 0\"}"
         }
       ]
     },
     {
       "name": "timers",
-      "passed": 47,
+      "passed": 48,
       "total": 54,
       "tests": [
         {
@@ -349,7 +348,7 @@
         {
           "file": "test-timers-immediate-promisified.js",
           "status": "fail",
-          "error": "Uncaught [object Object]"
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         },
         {
           "file": "test-timers-immediate-queue-throw.js",
@@ -440,7 +439,7 @@
         {
           "file": "test-timers-socket-timeout-removes-other-socket-unref-timer.js",
           "status": "fail",
-          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
+          "error": "TIMEOUT after 30000ms"
         },
         {
           "file": "test-timers-this.js",
@@ -505,8 +504,7 @@
         },
         {
           "file": "test-timers-unrefed-in-callback.js",
-          "status": "fail",
-          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
+          "status": "pass"
         },
         {
           "file": "test-timers-user-call.js",
@@ -546,12 +544,12 @@
         {
           "file": "test-child-process-spawnsync.js",
           "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'code')"
         },
         {
           "file": "test-child-process-execsync-maxbuf.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: undefined strictEqual 'ENOBUFS'"
+          "error": "Uncaught Error: [unenv] util.getSystemErrorName is not implemented yet!"
         }
       ]
     },
@@ -594,7 +592,7 @@
         {
           "file": "test-net-connect-buffer.js",
           "status": "fail",
-          "error": "Uncaught TypeError: self._transport.listen is not a function"
+          "error": "Uncaught TypeError: net.Stream is not a function"
         }
       ]
     },
@@ -649,7 +647,7 @@
         {
           "file": "test-tls-ticket-12.js",
           "status": "fail",
-          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
+          "error": "Uncaught Error: tls.connect() is not implemented: TLS handshakes are unavailable in the browser"
         },
         {
           "file": "test-tls-wrap-no-abort.js",
@@ -686,7 +684,7 @@
         {
           "file": "test-cluster-basic.js",
           "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         },
         {
           "file": "test-cluster-call-and-destroy.js",
@@ -815,29 +813,28 @@
     },
     {
       "name": "module",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-module-wrap.js",
           "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "error": "Uncaught Error: Build failed with 1 error:"
         },
         {
           "file": "test-module-wrapper.js",
           "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "error": "Uncaught Error: Build failed with 1 error:"
         },
         {
           "file": "test-module-main-extension-lookup.js",
-          "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "status": "pass"
         }
       ]
     },
     {
       "name": "string_decoder",
-      "passed": 1,
+      "passed": 2,
       "total": 2,
       "tests": [
         {
@@ -846,8 +843,7 @@
         },
         {
           "file": "test-string-decoder-fuzz.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Mismatch:"
+          "status": "pass"
         }
       ]
     },
@@ -891,7 +887,7 @@
     },
     {
       "name": "fs/promises",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
@@ -900,13 +896,11 @@
         },
         {
           "file": "test-fs-promises-readfile-empty.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: <null>"
+          "status": "pass"
         },
         {
           "file": "test-fs-promises-file-handle-dispose.js",
-          "status": "fail",
-          "error": "Uncaught Error: fs.promises.open is not supported by this VFS backend"
+          "status": "pass"
         }
       ]
     },
@@ -922,12 +916,12 @@
         {
           "file": "test-process-beforeexit.js",
           "status": "fail",
-          "error": "Uncaught Error: net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage"
+          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         },
         {
           "file": "test-process-exit-code-validation.js",
           "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "error": "exit code 1"
         },
         {
           "file": "test-process-exit-code.js",
@@ -952,7 +946,7 @@
         {
           "file": "test-process-really-exit.js",
           "status": "fail",
-          "error": "Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "error": "Uncaught AssertionError: '' strictEqual 'really exited'"
         }
       ]
     },
