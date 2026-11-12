@@ -23,6 +23,9 @@ export interface PackageEntry {
   source?: string;
   /** When false, no import line is generated for `probe` entries. */
   import?: boolean;
+  /** Per-package probe deadline override (ms) — packages whose honest bundling
+   * + eval budget exceeds the global 60s default (e.g. webpack's WASM bundle). */
+  timeoutMs?: number;
 }
 
 export interface PackageMatrix {
@@ -188,12 +191,13 @@ export class PackageMatrixRunner {
 
   private async runOne(pkg: PackageEntry): Promise<PackageResult> {
     const start = performance.now();
+    const timeoutMs = pkg.timeoutMs ?? this.packageTimeoutMs;
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       const outcome = await Promise.race([
         this.runPackage(pkg),
         new Promise<"timeout">((resolve) => {
-          timer = setTimeout(() => resolve("timeout"), this.packageTimeoutMs);
+          timer = setTimeout(() => resolve("timeout"), timeoutMs);
         }),
       ]);
       const duration = performance.now() - start;
@@ -203,7 +207,7 @@ export class PackageMatrixRunner {
           name: pkg.name,
           class: pkg.class,
           status: "fail",
-          error: `TIMEOUT after ${this.packageTimeoutMs}ms`,
+          error: `TIMEOUT after ${timeoutMs}ms`,
           duration,
         };
       }
