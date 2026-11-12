@@ -166,6 +166,11 @@ const runProcess = async (msg: ProcRunMessage) => {
   // them (unenv's implementation reads a private symbol that does not exist).
   trackEventTargetListeners();
 
+  // Live worker threads keep the process alive (Node refs a Worker until it
+  // exits) — the drain loop waits for them, so the thread's 'exit' event
+  // still reaches the parent before the process goes away.
+  const liveThreads = new Set<Promise<void>>();
+
   // worker_threads: a thread is a spawned process worker. `spawnProcess`
   // asks the main thread for one over rpc (`thread.*` ops — main bundles the
   // file, spawns the NodeProcess, and relays messages both ways). Message
@@ -184,16 +189,32 @@ const runProcess = async (msg: ProcRunMessage) => {
     let onError: ((e: unknown) => void) | null = null;
     let onStdout: ((d: string) => void) | null = null;
     let onStderr: ((d: string) => void) | null = null;
+    let resolveLifetime: (() => void) | undefined;
+    const lifetime = new Promise<void>((resolve) => {
+      resolveLifetime = resolve;
+    });
+    // A worker_threads thread carries a threadId; child_process spawns do
+    // not (they do not keep the process alive here — the child outlives the
+    // parent's own lifetime by design of this environment).
+    const isThread = spec.threadId !== undefined;
+    if (isThread) liveThreads.add(lifetime);
+    const wrapExit = (c: number) => {
+      liveThreads.delete(lifetime);
+      resolveLifetime?.();
+      onExit?.(c);
+    };
     const idP = rpc
       .call<number>(
         "thread.spawn",
         spec,
         (v: unknown) => onMessage?.(v),
-        (c: number) => onExit?.(c),
+        (c: number) => wrapExit(c),
         (d: string) => onStdout?.(d),
         (d: string) => onStderr?.(d),
       )
       .catch((err) => {
+        liveThreads.delete(lifetime);
+        resolveLifetime?.();
         onError?.(err);
         return -1;
       });
@@ -417,6 +438,13 @@ const runProcess = async (msg: ProcRunMessage) => {
     await sleep(10);
     if (exited) return;
     if (hasRefedTimers()) continue;
+    // A live worker thread is a ref'd handle in Node — the process stays
+    // alive until it exits (so its 'exit' event still fires). Poll instead of
+    // awaiting the thread: the loop must keep running timers meanwhile.
+    if (liveThreads.size > 0) {
+      await sleep(10);
+      continue;
+    }
     // A listening server keeps the process alive indefinitely — the worker
     // must not emit exit (main would terminate it and kill the server).
     if (serving()) {
