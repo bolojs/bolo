@@ -205,7 +205,27 @@ const unwrapTransferable = (value: unknown): Transferable => {
  */
 const PORT_CONSTRUCTOR = Symbol("bolo.MessagePort.constructor");
 
-export class ShimMessagePort extends EventEmitter {
+type EventEmitterInstance = {
+  on(event: string | symbol, listener: (...args: any[]) => void): unknown;
+  once(event: string | symbol, listener: (...args: any[]) => void): unknown;
+  emit(event: string | symbol, ...args: unknown[]): boolean;
+  listenerCount(event: string | symbol): number;
+};
+
+export interface ShimMessagePort extends EventEmitterInstance {
+  readonly backend: PortBackend;
+  postMessage(value: unknown, transferList?: readonly unknown[]): void;
+  dequeue(): unknown;
+  start(): void;
+  close(): void;
+  ref(): this;
+  unref(): this;
+  hasRef(): boolean;
+}
+
+type EventEmitterClass = new () => EventEmitterInstance;
+
+class ShimMessagePortImpl extends (EventEmitter as unknown as EventEmitterClass) {
   /** Inbound values buffered while no 'message' listener is attached —
    * the queue `receiveMessageOnPort` drains. */
   private readonly queue: unknown[] = [];
@@ -243,9 +263,9 @@ export class ShimMessagePort extends EventEmitter {
   }
 
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
-    const ret = super.on(event, listener);
+    super.on(event, listener);
     if (event === "message") queueMicrotask(() => this.drain());
-    return ret;
+    return this;
   }
 
   postMessage(value: unknown, transferList?: readonly unknown[]): void {
@@ -287,8 +307,47 @@ export class ShimMessagePort extends EventEmitter {
   }
 }
 
+/**
+ * `MessagePort` — Node's is not constructible by user code: both
+ * `MessagePort()` and `new MessagePort()` throw
+ * `ERR_CONSTRUCT_CALL_INVALID`. A native class would raise a plain TypeError
+ * for the call form, so the exported constructor is function-style and
+ * raises Node's exact error in both cases.
+ */
+export const ShimMessagePort = function MessagePort(
+  this: ShimMessagePort,
+  backend?: PortBackend,
+  token?: symbol,
+): ShimMessagePort | void {
+  throw Object.assign(
+    new TypeError(
+      "MessagePort cannot be constructed directly. Use MessageChannel() to create a port pair.",
+    ),
+    { code: "ERR_CONSTRUCT_CALL_INVALID" },
+  );
+} as unknown as {
+  new (backend?: PortBackend, token?: symbol): ShimMessagePort;
+  (backend?: PortBackend, token?: symbol): ShimMessagePort;
+  prototype: ShimMessagePort;
+};
+
+Object.defineProperty(ShimMessagePort, "prototype", {
+  value: ShimMessagePortImpl.prototype,
+  writable: false,
+  configurable: false,
+});
+// `port.constructor === MessagePort` — Node's ports report the exported
+// constructor, not an internal implementation class.
+Object.defineProperty(ShimMessagePortImpl.prototype, "constructor", {
+  value: ShimMessagePort,
+  writable: true,
+  configurable: true,
+});
+
 const createShimMessagePort = (backend: PortBackend): ShimMessagePort =>
-  new ShimMessagePort(backend, PORT_CONSTRUCTOR);
+  new (ShimMessagePortImpl as unknown as {
+    new (b: PortBackend, t: symbol): ShimMessagePort;
+  })(backend, PORT_CONSTRUCTOR);
 
 const wrapNativePort = (native: MessagePort): ShimMessagePort =>
   createShimMessagePort({
