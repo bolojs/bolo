@@ -26,6 +26,7 @@ export {
   Server,
   WebSocketTransport,
   NoopTransport,
+  LoopbackTransport,
   isIP,
   isIPv4,
   isIPv6,
@@ -41,7 +42,14 @@ export type {
   ServerAddress,
 } from "./net-shim.js";
 export { createChildProcessShim } from "./child-process-shim.js";
-export type { WasmRegistry, ShellService, ChildProcess } from "./child-process-shim.js";
+export type {
+  WasmRegistry,
+  ShellService,
+  ChildProcess,
+  SyncRunner,
+  SyncRunRequest,
+  SyncRunResult,
+} from "./child-process-shim.js";
 export { createProcessShim, ProcessExit } from "./process-shim.js";
 export type { ProcessShim, ProcessShimOptions } from "./process-shim.js";
 export { createModuleShim } from "./module-shim.js";

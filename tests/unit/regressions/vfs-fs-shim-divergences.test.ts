@@ -14,11 +14,11 @@ describe("known VfsBus/fs-shim vs node:fs divergences", () => {
     await expect(shim.stat("/missing")).rejects.toThrow(); // shim returns all-false FsStat
   });
 
-  it.fails("[seed any] readFile without encoding returns string, node returns bytes", async () => {
+  it("[fixed] readFile without encoding returns bytes like node", async () => {
     const shim = createFsShim(new VfsBus());
     await shim.writeFile("/x.txt", "hello");
     const data = await shim.readFile("/x.txt");
-    expect(data).toBeInstanceOf(Uint8Array); // shim returns "hello" (string)
+    expect(data).toBeInstanceOf(Uint8Array);
   });
 
   it.fails("[seed any] writeFile auto-creates parent dirs where node throws ENOENT", async () => {

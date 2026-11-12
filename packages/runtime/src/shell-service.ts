@@ -86,9 +86,15 @@ let runCounter = 0;
  * no bundler rewrite, so the node:* surface is reached through the container
  * globals every bundled module sees (`__browserContainers.shims`).
  */
-const WORKER_EVAL_PRELUDE = `const __wt = globalThis.__browserContainers.shims.worker_threads;
+const WORKER_EVAL_PRELUDE = `const __shims = globalThis.__browserContainers.shims;
+const __wt = __shims.worker_threads;
 const { parentPort, workerData, isMainThread, MessageChannel, BroadcastChannel } = __wt;
-const process = globalThis.__browserContainers.shims.process;
+const process = __shims.process;
+const console = __shims.console;
+const { Buffer } = __shims.buffer;
+// node -e snippets reach builtins through the same createRequire the
+// module shim exposes (no static bundler resolution in eval code).
+const require = __shims.module.createRequire("/");
 `;
 
 export interface ThreadSpawnSpec {

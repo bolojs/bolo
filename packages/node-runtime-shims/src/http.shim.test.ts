@@ -82,19 +82,24 @@ describe("http shim", () => {
     expect(res.hasHeader("x-foo")).toBe(false);
   });
 
-  it("createNetShim with no tcpRelay throws on connect and Server.listen", async () => {
+  it("createNetShim without a relay falls back to loopback transports", async () => {
     const sandbox = makeMockSandbox();
     const netShim = createNetShim(sandbox as any);
-    expect(() => netShim.connect({ port: 80 })).toThrow(
-      "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
+    const socket = netShim.connect({ port: 1 });
+    const err = await new Promise<Error & { code?: string }>((resolve) =>
+      socket.on("error", resolve),
     );
-    expect(() => new netShim.Socket().connect("localhost:80")).toThrow(
-      "net.connect requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
-    );
+    expect(err.code).toBe("ECONNREFUSED");
+    const sockErr = await new Promise<Error & { code?: string }>((resolve) => {
+      const s = new netShim.Socket();
+      s.on("error", resolve);
+      s.connect("localhost:1");
+    });
+    expect(sockErr.code).toBe("ECONNREFUSED");
     const server = netShim.createServer();
-    expect(() => server.listen(0)).toThrow(
-      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
-    );
+    await new Promise<void>((resolve) => server.listen({ port: 0 }, resolve));
+    expect((server.address() as { port: number }).port).toBeGreaterThan(0);
+    await new Promise<void>((resolve) => server.close(() => resolve()));
     expect(netShim.isIP("127.0.0.1")).toBe(4);
     expect(netShim.isIP("2001:0db8:85a3:0000:0000:8a2e:0370:7334")).toBe(6);
     expect(netShim.isIP("not-an-ip")).toBe(0);

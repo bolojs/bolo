@@ -234,7 +234,10 @@ describe("worker VFS facade", () => {
     // Deregistering a watcher that could never register is a no-op.
     expect(() => shim.unwatchFile("/s.txt")).not.toThrow();
 
-    await expect(shim.promises.open("/s.txt")).rejects.toThrow(/not supported by this VFS backend/);
+    // `openSync`/`fstatSync`/`closeSync` cross the boundary — `promises.open`
+    // returns a working FileHandle over the fd family.
+    const fh = await shim.promises.open("/s.txt");
+    await fh.close();
     await expect(shim.promises.opendir("/")).rejects.toThrow(/not supported by this VFS backend/);
     await expect(shim.promises.watch("/")).rejects.toThrow(/not supported by this VFS backend/);
 

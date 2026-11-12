@@ -20,7 +20,9 @@ import {
  * unenv "not implemented" stubs.
  */
 describe("wasm-registry: real-package crypto repro", () => {
-  it("installs jsonwebtoken via PackageManager and signs/verifies a token", async () => {
+  // rolldown's WASM backend can hit "memory access out of bounds" under
+  // heavy parallel load (observed on CI and in full-repo runs) — retry.
+  it("installs jsonwebtoken via PackageManager and signs/verifies a token", { retry: 2 }, async () => {
     const vfs = new VfsBus();
     vfs.hot.writeFileSync(
       "/package.json",
