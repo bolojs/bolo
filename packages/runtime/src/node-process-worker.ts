@@ -12,6 +12,7 @@ import { createRemoteDeps } from "./remote-objects.js";
 import { createSyncCaller } from "./sync-channel.js";
 import { createNodeTimers } from "./node-timers.js";
 import { createEventLoop } from "./event-loop.js";
+import { AsyncLocalStorage } from "@bolojs/node-web-shims/dist/async_hooks.js";
 
 // ponytail: see worker-script.ts — fire-and-forget to stay TLA-free.
 configureBrowserLogging().catch(() => {});
@@ -248,6 +249,14 @@ const runProcess = async (msg: ProcRunMessage) => {
       : undefined,
   });
   processShim = shims.process as ProcessShim;
+  const nextTick = processShim.nextTick;
+  processShim.nextTick = ((fn: unknown, ...args: unknown[]) =>
+    nextTick(
+      typeof fn === "function"
+        ? AsyncLocalStorage.bind(fn as (...a: unknown[]) => unknown)
+        : fn,
+      ...args,
+    )) as ProcessShim["nextTick"];
   // child_process.fork IPC: `process.send`/`process.on('message')` ride the
   // same THREAD_MSG transport as parentPort, wrapped in IPC envelopes.
   const ipcProcess = processShim as ProcessShim & {
@@ -305,7 +314,7 @@ const runProcess = async (msg: ProcRunMessage) => {
     onUncaught: handleUncaught,
     isExited: () => exited,
   });
-  const { timers: trackedTimers } = createNodeTimers({
+  const { timers: trackedTimers, promises: timerPromises } = createNodeTimers({
     setTimer: (fn, ms) => loop.setTimeout(fn, ms),
     clearTimer: (h) => loop.clearTimeout(h),
     setImmediate: (fn) => loop.setImmediate(fn),
@@ -318,7 +327,8 @@ const runProcess = async (msg: ProcRunMessage) => {
   globalThis.__browserContainers!.timers = trackedTimers;
   // `require('node:timers')` sees the same implementation.
   const timersShim = shims.timers as Record<string, unknown> | undefined;
-  if (timersShim) Object.assign(timersShim, trackedTimers);
+  shims.timers = { ...timersShim, ...trackedTimers, promises: timerPromises };
+  shims["timers/promises"] = timerPromises;
 
   const hasRefedTimers = () => loop.hasRefed();
   const origSet = globalThis.setTimeout.bind(globalThis);

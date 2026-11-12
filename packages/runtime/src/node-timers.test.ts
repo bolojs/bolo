@@ -25,6 +25,26 @@ const setup = (warn?: (name: string, message: string) => void) => {
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe("createNodeTimers", () => {
+  it("does not resurrect cleared timers on refresh", async () => {
+    const { timers, run, hasRefed } = setup();
+    const fn = vi.fn();
+    const timer = timers.setTimeout(fn, 1) as { refresh(): unknown };
+    timers.clearTimeout(timer);
+    timer.refresh();
+    expect(hasRefed()).toBe(false);
+    await run();
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("can cancel another immediate in the active batch", async () => {
+    const { timers, run } = setup();
+    const fn = vi.fn();
+    timers.setImmediate(() => timers.clearImmediate(second));
+    const second = timers.setImmediate(fn);
+    await run();
+    expect(fn).not.toHaveBeenCalled();
+  });
+
   it("binds this to the Timeout and passes args", async () => {
     const { timers, run } = setup();
     const seen: unknown[] = [];
