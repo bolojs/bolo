@@ -9,7 +9,11 @@ const unenvOs = unenvOsDefault as unknown as typeof import("node:os");
 // `{ writable: false, enumerable: true, configurable: true }` and the compat
 // suite redefines it (unenv ships it as a plain const, which froze the shim's
 // namespace and threw `Cannot redefine property: EOL`).
-let eolValue: string = unenvOs.EOL;
+//
+// `writable: false` is what makes `os.EOL = 123` throw a `TypeError` in
+// strict-mode callers, exactly like Node: the property is a read-only value
+// that can still be re-`defineProperty`'d.
+const eolValue: string = unenvOs.EOL;
 
 const nav = (): Navigator | undefined => (globalThis as { navigator?: Navigator }).navigator;
 
@@ -33,10 +37,8 @@ const os = {
 Object.defineProperty(os, "EOL", {
   enumerable: true,
   configurable: true,
-  get: () => eolValue,
-  set: (v: string) => {
-    eolValue = v;
-  },
+  writable: false,
+  value: eolValue,
 });
 
 export const EOL = os.EOL;
