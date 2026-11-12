@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   createWorkerThreadsShim,
   type WorkerThreadHandle,
@@ -184,8 +184,11 @@ describe("node-web-shims: worker_threads", () => {
     const { port1, port2 } = new shim.MessageChannel();
     expect(shim.receiveMessageOnPort(port2)).toBeUndefined();
     port1.postMessage("a");
-    await nextTick();
-    expect(shim.receiveMessageOnPort(port2)).toEqual({ message: "a" });
+    // Delivery rides a microtask — poll so heavy parallel runs can't
+    // outrace the queue drain.
+    await vi.waitFor(() => {
+      expect(shim.receiveMessageOnPort(port2)).toEqual({ message: "a" });
+    });
     expect(shim.receiveMessageOnPort(port2)).toBeUndefined();
   });
 
