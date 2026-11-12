@@ -86,6 +86,10 @@ const describeReceived = (value: unknown): string => {
   return ` Received type ${typeof value} (${shown})`;
 };
 
+// Named `process` on purpose: V8's "Cannot delete property" message uses the
+// constructor name, and Node prints `#<process>`.
+const ProcessShim = class process extends EventEmitter {};
+
 const createStdioStream = (onWrite?: (data: string) => void) => {
   const stream = new EventEmitter() as unknown as {
     write: (chunk: unknown, ...rest: unknown[]) => boolean;
@@ -202,6 +206,9 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
   };
 
   const process = Object.assign(new EventEmitter(), {
+    // Node's error text says `Cannot delete property 'exitCode' of #<process>`;
+    // the object stringifies via its constructor, so name the class.
+    constructor: ProcessShim,
     /** Validating accessor — defined below (Object.assign drops accessors). */
     exitCode: undefined as number | undefined,
     env: createEnv(options.env),
@@ -336,7 +343,8 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
   // `exitCode` as a real validating accessor afterwards.
   Object.defineProperty(process, "exitCode", {
     enumerable: true,
-    configurable: true,
+    // Node: `delete process.exitCode` throws "Cannot delete property …".
+    configurable: false,
     get: () => exitCode,
     set: (code: number | string | undefined | null) => {
       exitCode = validateExitCode(code);

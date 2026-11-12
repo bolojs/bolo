@@ -230,6 +230,13 @@ describe("process.exitCode validation", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
+  it("refuses to delete exitCode with Node's message", () => {
+    const process = createProcessShim();
+    expect(() => {
+      delete (process as unknown as { exitCode: unknown }).exitCode;
+    }).toThrow("Cannot delete property 'exitCode' of #<process>");
+  });
+
   it("process.exit validates the code argument too", () => {
     const process = createProcessShim();
     expect(() => (process as unknown as { exit(code: string): void }).exit("two")).toThrow(
