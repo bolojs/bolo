@@ -112,69 +112,73 @@ const decodeBytes = (buf: AnyBuffer, encoding: string, start?: number, end?: num
   return buf.toString(encoding, start, end);
 };
 
-// Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
-// continuation byte. If an invalid byte is detected, -2 is returned.
-const utf8CheckByte = (byte: number): number => {
-  if (byte <= 0x7f) return 0;
-  else if (byte >> 5 === 0x06) return 2;
-  else if (byte >> 4 === 0x0e) return 3;
-  else if (byte >> 3 === 0x1e) return 4;
-  return byte >> 6 === 0x02 ? -1 : -2;
-};
+// --- UTF-8 / UTF-16LE: WHATWG-faithful streaming decoders -------------------
+//
+// The legacy string_decoder algorithm buffers trailing partial *bytes*, but
+// V8's `Buffer.toString('utf8')` is a full WHATWG decoder: an invalid
+// sequence consumes its maximal subpart and emits exactly one replacement
+// character, which byte-level buffering cannot reproduce. Feeding the bytes
+// through `TextDecoder({ stream: true })` — the same algorithm V8 uses for
+// the reference output — keeps every chunked write byte-identical with a
+// one-shot `Buffer.concat(bufs).toString(enc)`, which is exactly what the
+// Node string_decoder fuzz test asserts.
+//
+// UTF-16LE has no WHATWG quirk here, but Node's own semantics are
+// non-obvious: a lone high surrogate is carried across chunk boundaries and
+// paired with the next unit, and a trailing lone surrogate is preserved
+// literally (not replaced) — see the verified model below.
 
-// Checks at most 3 bytes at the end of a Buffer in order to detect an
-// incomplete multi-byte UTF-8 character. The total number of bytes (2, 3, or
-// 4) needed to complete the UTF-8 character (if applicable) are returned.
-const utf8CheckIncomplete = (self: StringDecoderBase, buf: AnyBuffer, i: number): number => {
-  let j = buf.length - 1;
-  if (j < i) return 0;
-  let nb = utf8CheckByte(buf[j]);
-  if (nb >= 0) {
-    if (nb > 0) self.lastNeed = nb - 1;
-    return nb;
-  }
-  if (--j < i || nb === -2) return 0;
-  nb = utf8CheckByte(buf[j]);
-  if (nb >= 0) {
-    if (nb > 0) self.lastNeed = nb - 2;
-    return nb;
-  }
-  if (--j < i || nb === -2) return 0;
-  nb = utf8CheckByte(buf[j]);
-  if (nb >= 0) {
-    if (nb > 0) {
-      if (nb === 2) nb = 0;
-      else self.lastNeed = nb - 3;
-    }
-    return nb;
-  }
-  return 0;
-};
+class Utf8StreamDecoder {
+  #decoder = new TextDecoder("utf-8");
 
-// Validates as many continuation bytes for a multi-byte UTF-8 character as
-// needed or are available. If we see a non-continuation byte where we expect
-// one, we "replace" the validated continuation bytes we've seen so far with a
-// single UTF-8 replacement character ('�'), to match v8's UTF-8 decoding
-// behavior.
-const utf8CheckExtraBytes = (self: StringDecoderBase, buf: AnyBuffer): string | undefined => {
-  if ((buf[0] & 0xc0) !== 0x80) {
-    self.lastNeed = 0;
-    return "�";
+  write(buf: AnyBuffer): string {
+    return this.#decoder.decode(new Uint8Array(buf as unknown as Uint8Array), {
+      stream: true,
+    });
   }
-  if (self.lastNeed > 1 && buf.length > 1) {
-    if ((buf[1] & 0xc0) !== 0x80) {
-      self.lastNeed = 1;
-      return "�";
-    }
-    if (self.lastNeed > 2 && buf.length > 2) {
-      if ((buf[2] & 0xc0) !== 0x80) {
-        self.lastNeed = 2;
-        return "�";
+
+  end(): string {
+    return this.#decoder.decode();
+  }
+}
+
+class Utf16StreamDecoder {
+  #pendingByte: number | null = null;
+  #pendingHigh: number | null = null;
+
+  write(buf: AnyBuffer): string {
+    const bytes = this.#pendingByte === null ? buf : [this.#pendingByte, ...Array.from(buf)];
+    this.#pendingByte = null;
+    let out = "";
+    let i = 0;
+    for (; i + 1 < bytes.length; i += 2) {
+      const u = bytes[i] | (bytes[i + 1] << 8);
+      if (this.#pendingHigh !== null) {
+        if (u >= 0xdc00 && u <= 0xdfff) {
+          out += String.fromCharCode(this.#pendingHigh, u);
+          this.#pendingHigh = null;
+          continue;
+        }
+        out += String.fromCharCode(this.#pendingHigh);
+        this.#pendingHigh = null;
       }
+      if (u >= 0xd800 && u <= 0xdbff) this.#pendingHigh = u;
+      else out += String.fromCharCode(u);
     }
+    if (i < bytes.length) this.#pendingByte = bytes[i];
+    return out;
   }
-  return undefined;
-};
+
+  end(): string {
+    let out = "";
+    if (this.#pendingHigh !== null) {
+      out += String.fromCharCode(this.#pendingHigh);
+      this.#pendingHigh = null;
+    }
+    this.#pendingByte = null;
+    return out;
+  }
+}
 
 interface StringDecoderBase {
   encoding: string;
@@ -186,14 +190,20 @@ interface StringDecoderBase {
 /**
  * StringDecoder provides an interface for efficiently splitting a series of
  * buffers into a series of JS strings without breaking apart multi-byte
- * characters. Ported from Node's pure-JS string_decoder (pre-native
- * implementation) with `base64url` support added.
+ * characters. utf8/utf16le run through WHATWG/Node-faithful streaming
+ * decoders; base64 keeps Node's 3-byte carry; hex/ascii/latin1 pass bytes
+ * straight through to `Buffer.toString`.
  */
 export class StringDecoder {
   encoding: string;
+  // Node's legacy state fields — kept populated for introspection parity.
   lastNeed = 0;
   lastTotal = 0;
   lastChar: AnyBuffer;
+
+  #utf8: Utf8StreamDecoder | null = null;
+  #utf16: Utf16StreamDecoder | null = null;
+  #base64Carry: number[] = [];
 
   constructor(encoding = "utf8") {
     this.encoding = normalizeEncoding(encoding);
@@ -204,25 +214,26 @@ export class StringDecoder {
           ? 3
           : 0;
     this.lastChar = getBuffer().alloc(nb);
+    if (this.encoding === "utf8") this.#utf8 = new Utf8StreamDecoder();
+    else if (this.encoding === "utf16le") this.#utf16 = new Utf16StreamDecoder();
   }
 
   /** Decodes `buf`, omitting any incomplete trailing multi-byte character. */
   write(buf: unknown): string {
     if (typeof buf === "string") return buf;
     const b = toBuffer(buf);
-    if (b.length === 0) return "";
-    let r: string | undefined;
-    let i: number;
-    if (this.lastNeed) {
-      r = this.#fillLast(b);
-      if (r === undefined) return "";
-      i = this.lastNeed;
-      this.lastNeed = 0;
-    } else {
-      i = 0;
+    if (this.#utf8) return this.#utf8.write(b);
+    if (this.#utf16) return this.#utf16.write(b);
+    if (this.encoding === "base64" || this.encoding === "base64url") {
+      const carry = this.#base64Carry;
+      const input = carry.length > 0 ? [...carry, ...Array.from(b)] : Array.from(b);
+      const rem = input.length % 3;
+      const cut = input.length - rem;
+      this.#base64Carry = input.slice(cut);
+      return decodeBytes(getBuffer().from(input.slice(0, cut)), this.encoding);
     }
-    if (i < b.length) return r ? r + this.#text(b, i) : this.#text(b, i);
-    return r || "";
+    // Single-byte encodings pass bytes straight through.
+    return decodeBytes(b, this.encoding);
   }
 
   /**
@@ -231,28 +242,23 @@ export class StringDecoder {
    */
   end(buf?: unknown): string {
     let r = buf !== undefined ? this.write(buf) : "";
-    if (this.lastNeed) {
-      switch (this.encoding) {
-        case "utf8":
-          // For UTF-8 a replacement character is appended on a partial char.
-          r += "�";
-          break;
-        case "utf16le": {
-          // For UTF-16LE we do not explicitly append a replacement character;
-          // emit whatever complete bytes are buffered.
-          const end = this.lastTotal - this.lastNeed;
-          r += decodeBytes(this.lastChar, "utf16le", 0, end);
-          break;
-        }
-        case "base64":
-        case "base64url":
-          r += decodeBytes(this.lastChar, this.encoding, 0, 3 - this.lastNeed);
-          break;
-        default:
-          break;
+    if (this.#utf8) {
+      r += this.#utf8.end();
+      this.#utf8 = new Utf8StreamDecoder();
+      return r;
+    }
+    if (this.#utf16) {
+      r += this.#utf16.end();
+      this.#utf16 = new Utf16StreamDecoder();
+      return r;
+    }
+    if (this.encoding === "base64" || this.encoding === "base64url") {
+      const carry = this.#base64Carry;
+      this.#base64Carry = [];
+      if (carry.length > 0) {
+        r += decodeBytes(getBuffer().from(carry), this.encoding);
       }
-      this.lastNeed = 0;
-      this.lastTotal = 0;
+      return r;
     }
     return r;
   }
@@ -261,115 +267,21 @@ export class StringDecoder {
   text(buf: unknown, offset?: number): string {
     this.lastNeed = 0;
     this.lastTotal = 0;
+    this.#utf8 = this.encoding === "utf8" ? new Utf8StreamDecoder() : null;
+    this.#utf16 = this.encoding === "utf16le" ? new Utf16StreamDecoder() : null;
+    this.#base64Carry = [];
     const b = toBuffer(buf);
     return this.write(b.slice(offset ?? 0));
   }
 
   /**
    * Attempts to complete a partial character using bytes from `buf`
-   * (legacy). Returns the completed character string, or a Buffer with the
-   * buffered bytes when still incomplete.
+   * (legacy). Returns the completed character string.
    */
   fillLast(buf: unknown): string | AnyBuffer | undefined {
-    const b = toBuffer(buf);
-    const r = this.#fillLast(b);
-    if (r === undefined) return this.lastChar.slice(0, this.lastTotal);
-    return r;
-  }
-
-  // --- per-encoding internals (Node's utf8/utf16le/base64 code paths) ---
-
-  #fillLast(buf: AnyBuffer): string | undefined {
-    if (this.encoding === "utf8") return utf8FillLast(this, buf);
-    if (this.lastNeed <= buf.length) {
-      buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, this.lastNeed);
-      return decodeBytes(this.lastChar, this.encoding, 0, this.lastTotal);
-    }
-    buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, buf.length);
-    this.lastNeed -= buf.length;
-    return undefined;
-  }
-
-  #text(buf: AnyBuffer, i: number): string {
-    switch (this.encoding) {
-      case "utf16le":
-        return utf16Text(this, buf, i);
-      case "base64":
-      case "base64url":
-        return base64Text(this, buf, i);
-      case "utf8":
-        return utf8Text(this, buf, i);
-      default:
-        // Single-byte encodings pass bytes straight through.
-        return decodeBytes(buf, this.encoding, i);
-    }
+    return this.write(buf);
   }
 }
-
-// Attempts to complete a multi-byte UTF-8 character using bytes from a Buffer.
-const utf8FillLast = (self: StringDecoderBase, buf: AnyBuffer): string | undefined => {
-  const p = self.lastTotal - self.lastNeed;
-  const r = utf8CheckExtraBytes(self, buf);
-  if (r !== undefined) return r;
-  if (self.lastNeed <= buf.length) {
-    buf.copy(self.lastChar, p, 0, self.lastNeed);
-    return decodeBytes(self.lastChar, self.encoding, 0, self.lastTotal);
-  }
-  buf.copy(self.lastChar, p, 0, buf.length);
-  self.lastNeed -= buf.length;
-  return undefined;
-};
-
-// Returns all complete UTF-8 characters in a Buffer. If the Buffer ended on a
-// partial character, the character's bytes are buffered until the required
-// number of bytes are available.
-const utf8Text = (self: StringDecoderBase, buf: AnyBuffer, i: number): string => {
-  const total = utf8CheckIncomplete(self, buf, i);
-  if (!self.lastNeed) return decodeBytes(buf, "utf8", i);
-  self.lastTotal = total;
-  const end = buf.length - (total - self.lastNeed);
-  buf.copy(self.lastChar, 0, end);
-  return decodeBytes(buf, "utf8", i, end);
-};
-
-// UTF-16LE typically needs two bytes per character, but even if we have an
-// even number of bytes available, we need to check if we end on a leading/
-// high surrogate. In that case, we need to wait for the next two bytes in
-// order to decode the last character properly.
-const utf16Text = (self: StringDecoderBase, buf: AnyBuffer, i: number): string => {
-  if ((buf.length - i) % 2 === 0) {
-    const r = decodeBytes(buf, "utf16le", i);
-    if (r) {
-      const c = r.charCodeAt(r.length - 1);
-      if (c >= 0xd800 && c <= 0xdbff) {
-        self.lastNeed = 2;
-        self.lastTotal = 4;
-        self.lastChar[0] = buf[buf.length - 2];
-        self.lastChar[1] = buf[buf.length - 1];
-        return r.slice(0, -1);
-      }
-    }
-    return r;
-  }
-  self.lastNeed = 1;
-  self.lastTotal = 2;
-  self.lastChar[0] = buf[buf.length - 1];
-  return decodeBytes(buf, "utf16le", i, buf.length - 1);
-};
-
-const base64Text = (self: StringDecoderBase, buf: AnyBuffer, i: number): string => {
-  const n = (buf.length - i) % 3;
-  if (n === 0) return decodeBytes(buf, self.encoding, i);
-  self.lastNeed = 3 - n;
-  self.lastTotal = 3;
-  if (n === 1) {
-    self.lastChar[0] = buf[buf.length - 1];
-  } else {
-    self.lastChar[0] = buf[buf.length - 2];
-    self.lastChar[1] = buf[buf.length - 1];
-  }
-  return decodeBytes(buf, self.encoding, i, buf.length - n);
-};
 
 const string_decoder = { StringDecoder };
 
