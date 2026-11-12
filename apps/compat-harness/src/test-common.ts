@@ -323,9 +323,11 @@ module.exports = Countdown;
 // CJS sources written under /test/node_modules/internal/ so Node test files
 // that `require('internal/<name>')` (the --expose-internals surface) resolve
 // through plain node_modules lookup. Only modules with a browser-faithful
-// subset are shimmed; genuinely native internals (internal/test/binding,
-// internal/linkedlist, internal/timers) stay unresolved so those tests fail
-// with honest expected-fail reasons instead of silently degraded behavior.
+// subset are shimmed; internals with no faithful JS semantics stay unresolved
+// so those tests fail with honest expected-fail reasons instead of silently
+// degraded behavior. "node:test" is also shimmed here; runner.ts writes it as
+// a package directory (/test/node_modules/node:test/index.js) because the
+// bundler's bare-specifier resolver only matches existing directories.
 export const internalShimSources: Record<string, string> = {
   // internal/event_target: NodeEventTarget keeps its listener registry in a
   // kEvents-keyed Map so tests can inspect it (test-events-once,
@@ -363,5 +365,250 @@ module.exports = { NodeEventTarget, kEvents };
   "internal/util": String.raw`'use strict';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 module.exports = { sleep };
+`,
+
+  // internal/test/binding: Node's --expose-internals test seam. Only bindings
+  // whose JS-visible semantics the browser container can reproduce faithfully
+  // are exposed; anything else throws "No such binding" like Node does for an
+  // unknown internal binding, rather than returning a fabricated object.
+  // (Node's module also exports `primordials`; nothing in the vendored
+  // sources needs it, so it is intentionally omitted.)
+  "internal/test/binding": String.raw`'use strict';
+const bindings = {
+  timers: {
+    // uv_now(): monotonic whole milliseconds since the event loop started.
+    // The container worker's clock starts at process boot, matching libuv's
+    // loop time base (uv_now is NOT wall-clock time).
+    getLibuvNow: (() => {
+      const started = performance.now();
+      return () => Math.floor(performance.now() - started);
+    })(),
+  },
+};
+
+const internalBinding = (id) => {
+  if (typeof id !== 'string') throw new TypeError('binding id must be a string');
+  if (id.startsWith('internal_only')) {
+    const error = new Error('No such binding: ' + id);
+    error.code = 'ERR_INVALID_MODULE';
+    throw error;
+  }
+  const binding = bindings[id];
+  if (binding === undefined) {
+    const error = new Error('No such binding: ' + id);
+    error.code = 'ERR_INVALID_MODULE';
+    throw error;
+  }
+  return binding;
+};
+
+module.exports = { internalBinding };
+`,
+
+  // internal/linkedlist: vendored verbatim from Node v22.0.0
+  // lib/internal/linkedlist.js (pure JS, no primordials in that tree).
+  "internal/linkedlist": String.raw`'use strict';
+
+function init(list) {
+  list._idleNext = list;
+  list._idlePrev = list;
+  return list;
+}
+
+// Show the most idle item.
+function peek(list) {
+  if (list._idlePrev === list) return null;
+  return list._idlePrev;
+}
+
+// Remove an item from its list.
+function remove(item) {
+  if (item._idleNext) {
+    item._idleNext._idlePrev = item._idlePrev;
+  }
+
+  if (item._idlePrev) {
+    item._idlePrev._idleNext = item._idleNext;
+  }
+
+  item._idleNext = null;
+  item._idlePrev = null;
+}
+
+// Remove an item from its list and place at the end.
+function append(list, item) {
+  if (item._idleNext || item._idlePrev) {
+    remove(item);
+  }
+
+  // Items are linked  with _idleNext -> (older) and _idlePrev -> (newer).
+  // Note: This linkage (next being older) may seem counter-intuitive at first.
+  item._idleNext = list._idleNext;
+  item._idlePrev = list;
+
+  // The list _idleNext points to tail (newest) and _idlePrev to head (oldest).
+  list._idleNext._idlePrev = item;
+  list._idleNext = item;
+}
+
+function isEmpty(list) {
+  return list._idleNext === list;
+}
+
+module.exports = {
+  init,
+  peek,
+  remove,
+  append,
+  isEmpty,
+};
+`,
+
+  // internal/timers: browser-faithful subset of lib/internal/timers.js.
+  // setUnrefTimeout layers on the container's tracked setTimeout, which
+  // returns real Timeout objects with unref()/refresh()/hasRef() — the same
+  // surface Node's internal/timers provides. Ordering semantics (a refreshed
+  // or unref'd timer yields to an already-queued timer of the same expiry)
+  // come from the container event loop, which sorts due timers by
+  // (expiry, creation sequence).
+  "internal/timers": String.raw`'use strict';
+
+function setUnrefTimeout(callback, after, ...args) {
+  if (typeof callback !== 'function') {
+    let received;
+    if (callback === null) received = ' Received null';
+    else if (typeof callback === 'object') {
+      const name = callback.constructor && callback.constructor.name;
+      received = name ? ' Received an instance of ' + name : ' Received ' + String(callback);
+    } else {
+      received = ' Received type ' + typeof callback + ' (' + String(callback) + ')';
+    }
+    const error = new TypeError(
+      'The "callback" argument must be of type function.' + received,
+    );
+    error.code = 'ERR_INVALID_ARG_TYPE';
+    throw error;
+  }
+  return setTimeout(callback, after, ...args).unref();
+}
+
+module.exports = { setUnrefTimeout };
+`,
+
+  // node:test: minimal serial runner. Tests declared with test()/it() execute
+  // immediately in declaration order (matching top-level run order); async
+  // tests keep the process alive until they settle. TAP 13 is printed per
+  // test plus a plan once the queue drains; any failure sets a non-zero exit
+  // code. describe() runs its body synchronously and groups the tests
+  // declared inside it. No concurrency, isolation, or watch mode — none of
+  // the vendored tests need more.
+  "node:test": String.raw`'use strict';
+
+let count = 0;
+let failures = 0;
+let pending = 0;
+let keepAlive = null;
+let currentSuite = null;
+
+const suites = [];
+
+const ensureKeepAlive = () => {
+  if (!keepAlive) keepAlive = setInterval(() => {}, 2147483647);
+};
+
+const releaseKeepAlive = () => {
+  if (pending === 0 && keepAlive) {
+    clearInterval(keepAlive);
+    keepAlive = null;
+  }
+};
+
+const reportPlan = () => {
+  console.log('1..' + count);
+};
+
+const reportFailure = (name, err) => {
+  failures += 1;
+  process.exitCode = 1;
+  console.log('not ok ' + count + ' ' + name);
+  console.error(err);
+};
+
+const runTest = (name, fn) => {
+  count += 1;
+  const suite = currentSuite;
+  try {
+    const result = fn();
+    if (result && typeof result.then === 'function') {
+      pending += 1;
+      ensureKeepAlive();
+      return result.then(
+        () => {
+          pending -= 1;
+          console.log('ok ' + count + ' ' + name);
+          if (suite) suite.failures = failures - suite.startFailures;
+          releaseKeepAlive();
+        },
+        (err) => {
+          pending -= 1;
+          reportFailure(name, err);
+          if (suite) suite.failures = failures - suite.startFailures;
+          releaseKeepAlive();
+        },
+      );
+    }
+    console.log('ok ' + count + ' ' + name);
+    if (suite) suite.failures = failures - suite.startFailures;
+  } catch (err) {
+    reportFailure(name, err);
+    if (suite) suite.failures = failures - suite.startFailures;
+  }
+  return undefined;
+};
+
+const normalizeTestArgs = (name, options, fn) => {
+  if (typeof name === 'function') {
+    return [name.name || '<anonymous>', {}, name];
+  }
+  if (typeof options === 'function') {
+    return [String(name), {}, options];
+  }
+  return [String(name), options || {}, fn];
+};
+
+const test = (name, options, fn) => {
+  const [testName, , testFn] = normalizeTestArgs(name, options, fn);
+  if (typeof testFn !== 'function') {
+    const error = new TypeError('The "fn" argument must be of type function');
+    error.code = 'ERR_INVALID_ARG_TYPE';
+    throw error;
+  }
+  return runTest(testName, testFn);
+};
+
+const describe = (name, options, fn) => {
+  const [suiteName, , suiteFn] = normalizeTestArgs(name, options, fn);
+  if (typeof suiteFn !== 'function') {
+    const error = new TypeError('The "fn" argument must be of type function');
+    error.code = 'ERR_INVALID_ARG_TYPE';
+    throw error;
+  }
+  const suite = { name: suiteName, failures: 0, startFailures: failures };
+  suites.push(suite);
+  const previous = currentSuite;
+  currentSuite = suite;
+  try {
+    suiteFn();
+  } catch (err) {
+    reportFailure(suiteName, err);
+  } finally {
+    currentSuite = previous;
+  }
+  return suite;
+};
+
+process.on('exit', reportPlan);
+
+module.exports = { describe, it: test, test, suites };
 `,
 };
