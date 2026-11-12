@@ -171,7 +171,38 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     }
   };
 
+  // `process.exitCode` accepts only integer-ish values (or a numeric string);
+  // anything else throws ERR_INVALID_ARG_TYPE like Node.
+  let exitCode: number | undefined;
+  const validateExitCode = (code: unknown): number | undefined => {
+    if (code === undefined || code === null) return undefined;
+    if (typeof code === "number") {
+      if (!Number.isInteger(code)) {
+        throw Object.assign(
+          new TypeError(`The "code" argument must be an integer. Received ${String(code)}`),
+          { code: "ERR_INVALID_ARG_TYPE" },
+        );
+      }
+      return code;
+    }
+    if (typeof code === "string") {
+      const trimmed = code.trim();
+      if (!/^[+-]?\d+$/.test(trimmed)) {
+        throw Object.assign(
+          new TypeError(`The "code" argument must be an integer. Received type string ('${code}')`),
+          { code: "ERR_INVALID_ARG_TYPE" },
+        );
+      }
+      return Number(trimmed);
+    }
+    throw Object.assign(
+      new TypeError(`The "code" argument must be an integer. Received${describeReceived(code)}`),
+      { code: "ERR_INVALID_ARG_TYPE" },
+    );
+  };
+
   const process = Object.assign(new EventEmitter(), {
+    /** Validating accessor — defined below (Object.assign drops accessors). */
     exitCode: undefined as number | undefined,
     env: createEnv(options.env),
     platform: "browser" as const,
@@ -229,8 +260,12 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     chdir: (dir: string) => {
       cwd = dir;
     },
-    exit: (code?: number): never => {
-      if (code !== undefined) process.exitCode = code;
+    exit: (code?: number | string): never => {
+      if (code !== undefined) {
+        // Validate before emitting anything — Node throws synchronously.
+        const normalized = validateExitCode(code);
+        process.exitCode = normalized;
+      }
       // Node: process.exit() inside an 'exit' handler just re-asserts the
       // pending exit — the handlers already ran, recursion is a no-op.
       if (process._exiting) throw new ProcessExit(process.exitCode ?? 0);
@@ -295,6 +330,17 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     },
     hasUncaughtExceptionCaptureCallback: () => uncaughtExceptionCapture !== null,
     getBuiltinModule: (name: string): unknown => options.getBuiltinModule?.(stripNodePrefix(name)),
+  });
+
+  // `Object.assign` copies accessor *values*, not the accessor itself — define
+  // `exitCode` as a real validating accessor afterwards.
+  Object.defineProperty(process, "exitCode", {
+    enumerable: true,
+    configurable: true,
+    get: () => exitCode,
+    set: (code: number | string | undefined | null) => {
+      exitCode = validateExitCode(code);
+    },
   });
 
   // 'exit' fires at most once, whether triggered by process.exit() or by the

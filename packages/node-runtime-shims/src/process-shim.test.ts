@@ -204,3 +204,36 @@ describe("process.exit re-entrancy", () => {
     expect(exits).toBe(1);
   });
 });
+
+describe("process.exitCode validation", () => {
+  it("rejects non-integer exit codes with ERR_INVALID_ARG_TYPE", () => {
+    const process = createProcessShim();
+    for (const bad of ["", "1 one", "two", {}, [], true, false, 2n, 2.1, Infinity, NaN]) {
+      expect(() => {
+        (process as unknown as { exitCode: unknown }).exitCode = bad;
+      }).toThrow(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE", name: "TypeError" }));
+    }
+  });
+
+  it("accepts integers and numeric strings, coercing them", () => {
+    const process = createProcessShim();
+    const target = process as unknown as { exitCode: unknown };
+    target.exitCode = 1;
+    expect(process.exitCode).toBe(1);
+    target.exitCode = "2";
+    expect(process.exitCode).toBe(2);
+    target.exitCode = "0";
+    expect(process.exitCode).toBe(0);
+    target.exitCode = undefined;
+    expect(process.exitCode).toBeUndefined();
+    target.exitCode = null;
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("process.exit validates the code argument too", () => {
+    const process = createProcessShim();
+    expect(() => (process as unknown as { exit(code: string): void }).exit("two")).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+  });
+});

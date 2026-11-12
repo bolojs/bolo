@@ -223,8 +223,10 @@ describe("exec/execFile maxBuffer", () => {
     const shim = createChildProcessShim(overflowingRegistry);
     const result = await new Promise<{ error: (Error & { code?: string }) | null; stdout: string }>(
       (resolve) => {
-        shim.exec("big", { maxBuffer: 1024 }, (error: (Error & { code?: string }) | null, stdout: string) =>
-          resolve({ error, stdout }),
+        shim.exec(
+          "big",
+          { maxBuffer: 1024 },
+          (error: (Error & { code?: string }) | null, stdout: string) => resolve({ error, stdout }),
         );
       },
     );
@@ -236,8 +238,10 @@ describe("exec/execFile maxBuffer", () => {
     const shim = createChildProcessShim(overflowingRegistry);
     const result = await new Promise<{ error: (Error & { code?: string }) | null; stdout: string }>(
       (resolve) => {
-        shim.exec("big", { maxBuffer: 4096 }, (error: (Error & { code?: string }) | null, stdout: string) =>
-          resolve({ error, stdout }),
+        shim.exec(
+          "big",
+          { maxBuffer: 4096 },
+          (error: (Error & { code?: string }) | null, stdout: string) => resolve({ error, stdout }),
         );
       },
     );

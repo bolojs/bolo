@@ -621,11 +621,9 @@ AgentImpl.prototype.destroy = function destroy() {
  * `new` and `instanceof`-compatible in both directions
  * (`https.Agent() instanceof https.Agent` must hold).
  */
-export const Agent = function Agent(
-  this: AgentImpl,
-  options?: AgentOptions,
-): AgentImpl {
-  if (!(this instanceof AgentImpl)) return new (AgentImpl as unknown as { new (o?: AgentOptions): AgentImpl })(options);
+export const Agent = function Agent(this: AgentImpl, options?: AgentOptions): AgentImpl {
+  if (!(this instanceof AgentImpl))
+    return new (AgentImpl as unknown as { new (o?: AgentOptions): AgentImpl })(options);
   AgentImpl.call(this, options);
   return this;
 } as unknown as {

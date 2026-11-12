@@ -392,7 +392,9 @@ export const createChildProcessShim = (
         if (done) return;
         done = true;
         cb(
-          code === 0 ? null : Object.assign(new Error(`Command failed: ${command}\n${output.stderr}`), { code }),
+          code === 0
+            ? null
+            : Object.assign(new Error(`Command failed: ${command}\n${output.stderr}`), { code }),
           output.stdout,
           output.stderr,
         );
