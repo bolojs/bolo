@@ -155,10 +155,13 @@ export class NodeTestRunner {
       await this.harness.write(key.slice("/node-tests".length), await this.loadBinary(url));
     }
     for (const specifier of Object.keys(internalShimSources)) {
-      await this.harness.write(
-        `/test/node_modules/${specifier}.js`,
-        internalShimSources[specifier],
-      );
+      // A specifier containing ':' (e.g. "node:test") cannot resolve as a
+      // plain file: the bundler's bare-package walk only matches existing
+      // directories under node_modules, so write those as a package dir.
+      const path = specifier.includes(":")
+        ? `/test/node_modules/${specifier}/index.js`
+        : `/test/node_modules/${specifier}.js`;
+      await this.harness.write(path, internalShimSources[specifier]);
     }
   }
 
