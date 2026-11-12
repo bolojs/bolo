@@ -44,10 +44,14 @@ describe("vendored node-tests support tree", () => {
 });
 
 describe("internal/* shim sources", () => {
-  it("covers internal/event_target and internal/util", () => {
+  it("covers the vendored internal/* modules and node:test", () => {
     expect(Object.keys(internalShimSources).sort()).toEqual([
       "internal/event_target",
+      "internal/linkedlist",
+      "internal/test/binding",
+      "internal/timers",
       "internal/util",
+      "node:test",
     ]);
   });
 
