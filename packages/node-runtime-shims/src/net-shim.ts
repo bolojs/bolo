@@ -178,6 +178,144 @@ export class NoopTransport implements ByteTransport {
   }
 }
 
+/**
+ * In-process loopback transport: `net.Server.listen` + `net.connect` pair
+ * client and server sockets inside the same realm through crossed
+ * ReadableStream/WritableStream pipes — no network, no relay. Real TCP
+ * semantics that map cleanly: connect to an unbound port → ECONNREFUSED,
+ * listen on a bound port → EADDRINUSE, peer close → stream EOF. This is
+ * the default when no `tcpRelay`/custom transport is configured, so
+ * client↔server tests in one container behave like Node's loopback.
+ */
+export class LoopbackTransport implements ByteTransport {
+  private readonly listeners = new Map<
+    string,
+    { host: string; port: number; onConnection: (conn: AcceptedConnection) => void }
+  >();
+  private nextEphemeralPort = 49152;
+  private nextConnectionId = 1;
+
+  private static key(host: string, port: number): string {
+    return `${host}:${port}`;
+  }
+
+  private static wildcard(host: string): boolean {
+    return (
+      host === "0.0.0.0" ||
+      host === "::" ||
+      host === "*" ||
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "::1"
+    );
+  }
+
+  connect(
+    options: NetConnectOptions,
+    _onControl?: (msg: object) => void,
+    _onError?: (err: Error) => void,
+  ): Promise<{
+    readable: ReadableStream<Uint8Array>;
+    writable: WritableStream<Uint8Array>;
+    remoteAddress?: string;
+    remotePort?: number;
+    localAddress?: string;
+    localPort?: number;
+  }> {
+    const host = options.host ?? "localhost";
+    const port = options.port;
+    const listener = [...this.listeners.values()].find(
+      (l) => l.port === port && (LoopbackTransport.wildcard(l.host) || l.host === host),
+    );
+    if (!listener) {
+      return Promise.reject(errnoException("ECONNREFUSED", "connect", host, port));
+    }
+
+    // Pipe A: client→server. Pipe B: server→client. Closing/aborting one
+    // side's writable ends/errors the other side's readable — FIN/RST.
+    const a = createPipe();
+    const b = createPipe();
+    const localPort = this.nextEphemeralPort++;
+    const accepted: AcceptedConnection = {
+      connectionId: String(this.nextConnectionId++).padStart(8, "0"),
+      readable: a.readable,
+      writable: b.writable,
+      remoteAddress: host,
+      remotePort: localPort,
+    };
+    listener.onConnection(accepted);
+    return Promise.resolve({
+      readable: b.readable,
+      writable: a.writable,
+      remoteAddress: host,
+      remotePort: port,
+      localAddress: host,
+      localPort,
+    });
+  }
+
+  listen(
+    port: number,
+    host: string,
+    onConnection: (conn: AcceptedConnection) => void,
+    _onControl: (msg: object) => void,
+  ): Promise<{ port: number; host: string; close: () => Promise<void> }> {
+    const boundPort = port === 0 ? this.nextEphemeralPort++ : port;
+    const boundHost = host || "0.0.0.0";
+    const key = LoopbackTransport.key(boundHost, boundPort);
+    if (this.listeners.has(key) || [...this.listeners.values()].some((l) => l.port === boundPort)) {
+      return Promise.reject(errnoException("EADDRINUSE", "listen", boundHost, boundPort));
+    }
+    this.listeners.set(key, { host: boundHost, port: boundPort, onConnection });
+    return Promise.resolve({
+      port: boundPort,
+      host: boundHost,
+      close: () => {
+        this.listeners.delete(key);
+        return Promise.resolve();
+      },
+    });
+  }
+}
+
+/**
+ * A half of a loopback connection: writes feed the peer's readable. The
+ * writable is intentionally not back-pressured by the reader (loopback
+ * buffers are unbounded in Node too — the kernel manages them, and the
+ * reader drains on its own schedule).
+ */
+const createPipe = (): {
+  readable: ReadableStream<Uint8Array>;
+  writable: WritableStream<Uint8Array>;
+} => {
+  let controller!: ReadableStreamDefaultController<Uint8Array>;
+  const readable = new ReadableStream<Uint8Array>({
+    start(c) {
+      controller = c;
+    },
+  });
+  const writable = new WritableStream<Uint8Array>({
+    write(chunk) {
+      controller.enqueue(chunk);
+    },
+    close() {
+      try {
+        controller.close();
+      } catch {
+        /* peer already errored */
+      }
+    },
+    abort(reason) {
+      try {
+        controller.error(reason ?? new Error("ECONNRESET"));
+      } catch {
+        /* already closed */
+      }
+    },
+  });
+  return { readable, writable };
+};
+
 export class WebSocketTransport implements ByteTransport {
   private url: string;
 
@@ -700,6 +838,12 @@ export const Socket = function Socket(
       transport,
       options,
     );
+  }
+  // Node's public signature is `new Socket(options?)` — when the first arg
+  // is not a ByteTransport it is the options object, not a transport.
+  if (transport !== undefined && typeof (transport as ByteTransport).connect !== "function") {
+    options = options ?? (typeof transport === "object" ? (transport as SocketOptions) : undefined);
+    transport = undefined;
   }
   const opts = options ?? { port: 0 };
   DuplexCtor.call(this, { allowHalfOpen: opts.allowHalfOpen ?? false });
@@ -1256,6 +1400,25 @@ export const Server = function Server(
       ): Server;
     })(transport, options, connectionListener);
   }
+  // Node's public signature is `new Server(options?, connectionListener?)` —
+  // the leading transport arg is this shim's extension. When it is not a
+  // ByteTransport (a listener function or a plain options object) the args
+  // shift back to the Node shape.
+  if (
+    transport !== undefined &&
+    (typeof (transport as ByteTransport).listen !== "function" ||
+      typeof (transport as ByteTransport).connect !== "function")
+  ) {
+    if (typeof transport === "function") {
+      connectionListener = transport as unknown as (socket: Socket) => void;
+    } else {
+      if (typeof options === "function") {
+        connectionListener = options as unknown as (socket: Socket) => void;
+      }
+      options = transport as { allowHalfOpen?: boolean; backlog?: number };
+    }
+    transport = undefined;
+  }
   // `events` is a class, not a function-style ctor — `EventEmitter.call(this)`
   // throws "class constructor cannot be invoked without 'new'". Node's legacy
   // `EventEmitter.init(this)` performs the same `_events`/`_eventsCount`
@@ -1471,9 +1634,12 @@ const normalizeConnectArgs = (args: unknown[]): { options: NetConnectOptions; cb
 };
 
 export const createNetShim = (_sandbox?: unknown, options?: NetShimOptions) => {
+  // Default: in-process loopback. `net.connect`/`net.Server.listen` pair
+  // inside the realm (ECONNREFUSED/EADDRINUSE intact); a configured
+  // `tcpRelay` or explicit `transport` still wins for real egress.
   const transport: ByteTransport =
     options?.transport ??
-    (options?.tcpRelay?.url ? new WebSocketTransport(options.tcpRelay.url) : new NoopTransport());
+    (options?.tcpRelay?.url ? new WebSocketTransport(options.tcpRelay.url) : new LoopbackTransport());
   const tracker = options?.handleTracker ?? defaultHandleTracker;
 
   const bindTracker = <T extends { _tracker?: NetHandleTracker }>(obj: T): T => {

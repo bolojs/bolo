@@ -7,6 +7,7 @@ import { createHttpShim } from "./http-shim.js";
 import { createNetShim } from "./net-shim.js";
 import {
   createChildProcessShim,
+  type SyncRunner,
   type WasmRegistry,
   type ShellService,
 } from "./child-process-shim.js";
@@ -183,6 +184,14 @@ export interface LiveShimRegistryOptions {
    * reach a real Worker (main thread: NodeProcess; process worker: rpc).
    */
   readonly spawnProcess?: ProcessSpawner;
+  /**
+   * Blocking child-run backend for `child_process.spawnSync`/`execSync`/
+   * `execFileSync`. Inside a process worker this rides the sync channel
+   * (`child.runSync` op — the main thread runs the child to completion and
+   * ships buffered stdio back). Absent a backend the sync APIs keep throwing
+   * the documented unsupported error.
+   */
+  readonly spawnSyncProcess?: SyncRunner;
   /** Present when this registry runs INSIDE a spawned worker thread. */
   readonly workerThread?: WorkerThreadInfo;
   // Extension points
@@ -268,6 +277,7 @@ export const createLiveShimRegistry = (
             },
           }
         : undefined,
+      options.spawnSyncProcess,
     ),
   };
 

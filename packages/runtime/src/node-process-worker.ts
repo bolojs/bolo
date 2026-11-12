@@ -282,6 +282,9 @@ const runProcess = async (msg: ProcRunMessage) => {
     onStderr: (data) => post({ type: "STDERR", data }),
     onPortEvent: (event, data) => post({ type: "PORT_EVENT", event, data }),
     spawnProcess,
+    // `child_process.*Sync`: the worker blocks on the sync channel while the
+    // main thread runs the child to completion and ships stdio back.
+    spawnSyncProcess: remote.spawnSync,
     workerThread: thread
       ? {
           workerData: msg.thread!.workerData,
