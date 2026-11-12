@@ -184,3 +184,36 @@ describe("createNodeTimers", () => {
     );
   });
 });
+
+describe("createNodeTimers: async context propagation", () => {
+  it("propagates the AsyncLocalStorage store captured at scheduling time", async () => {
+    const { AsyncLocalStorage } = await import("@bolojs/node-web-shims/dist/async_hooks.js");
+    const als = new AsyncLocalStorage<{ tag: string }>();
+    const { timers, run } = setup();
+    const seen: Array<string | undefined> = [];
+    await als.run({ tag: "outer" }, async () => {
+      timers.setImmediate(() => seen.push(als.getStore()?.tag));
+      timers.setTimeout(() => seen.push(als.getStore()?.tag), 1);
+      // A nested context does not leak into the already-scheduled callback.
+      await als.run({ tag: "inner" }, async () => {
+        timers.setImmediate(() => seen.push(als.getStore()?.tag));
+      });
+    });
+    await run();
+    expect(seen).toEqual(["outer", "outer", "inner"]);
+  });
+
+  it("does not leak the store into a later, unrelated turn", async () => {
+    const { AsyncLocalStorage } = await import("@bolojs/node-web-shims/dist/async_hooks.js");
+    const als = new AsyncLocalStorage<string>();
+    const { timers, run } = setup();
+    let seen: string | undefined = "unset";
+    als.run("scoped", () => {
+      timers.setTimeout(() => {
+        seen = als.getStore();
+      }, 1);
+    });
+    await run();
+    expect(seen).toBe("scoped");
+  });
+});
