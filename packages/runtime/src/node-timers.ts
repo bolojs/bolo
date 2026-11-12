@@ -4,6 +4,7 @@ import {
   emitInit,
   runInAsyncScope,
 } from "@bolojs/node-web-shims/dist/async_hooks.js";
+import { withCode } from "@bolojs/node-web-shims/dist/coded-error.js";
 import { createTimersPromisesShim } from "@bolojs/node-web-shims/dist/timers_promises.js";
 import { customPromisifySymbol } from "@bolojs/node-web-shims/dist/util.js";
 
@@ -40,21 +41,20 @@ const describeReceived = (value: unknown): string => {
   return ` Received type ${typeof value} (${shown})`;
 };
 
-const invalidArgType = (name: string, expected: string, value: unknown) => {
-  const err = new TypeError(
-    `The "${name}" argument must be of type ${expected}.${describeReceived(value)}`,
-  ) as TypeError & { code: string };
-  err.code = "ERR_INVALID_ARG_TYPE";
-  return err;
-};
+const invalidArgType = (name: string, expected: string, value: unknown) =>
+  withCode(
+    new TypeError(`The "${name}" argument must be of type ${expected}.${describeReceived(value)}`),
+    "ERR_INVALID_ARG_TYPE",
+  );
 
-const outOfRange = (name: string, range: string, value: unknown) => {
-  const err = new RangeError(
-    `The value of "${name}" is out of range. It must be ${range}. Received ${String(value)}`,
-  ) as RangeError & { code: string };
-  err.code = "ERR_OUT_OF_RANGE";
-  return err;
-};
+const outOfRange = (name: string, range: string, value: unknown) =>
+  withCode(
+    new RangeError(
+      `The value of "${name}" is out of range. It must be ${range}. Received ${String(value)}`,
+    ),
+    "ERR_OUT_OF_RANGE",
+    "RangeError",
+  );
 
 export interface NodeTimers {
   setTimeout: (fn: (...a: unknown[]) => void, ms?: number, ...args: unknown[]) => unknown;

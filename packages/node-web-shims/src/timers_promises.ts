@@ -1,3 +1,5 @@
+import { withCode } from "./coded-error.js";
+
 export interface TimerHost {
   setTimeout(callback: (...args: any[]) => void, delay?: number, ...args: any[]): unknown;
   clearTimeout(handle: any): void;
@@ -17,44 +19,59 @@ export interface TimerOptions {
 }
 
 const abortError = (signal: { reason?: unknown }) =>
-  Object.assign(new Error("The operation was aborted", { cause: signal.reason }), {
-    name: "AbortError",
-    code: "ABORT_ERR",
-  });
+  withCode(
+    new Error("The operation was aborted", { cause: signal.reason }),
+    "ABORT_ERR",
+    "AbortError",
+  );
+
+// Node phrasing ("Received type string ('x')" / "Received an instance of X").
+const describeReceived = (value: unknown): string => {
+  if (value == null) return ` Received ${value}`;
+  if (typeof value === "function") return ` Received function ${value.name}`;
+  if (typeof value === "object") {
+    const name = (value as object).constructor?.name;
+    return name ? ` Received an instance of ${name}` : " Received [Object: null prototype]";
+  }
+  let shown = String(typeof value === "symbol" ? value.toString() : value);
+  if (typeof value === "string") shown = `'${value}'`;
+  if (typeof value === "bigint") shown = `${value}n`;
+  return ` Received type ${typeof value} (${shown})`;
+};
 
 const validate = (options: TimerOptions) => {
   if (options === null || typeof options !== "object")
-    throw Object.assign(new TypeError('The "options" argument must be of type object'), {
-      code: "ERR_INVALID_ARG_TYPE",
-    });
+    throw withCode(
+      new TypeError('The "options" argument must be of type object.' + describeReceived(options)),
+      "ERR_INVALID_ARG_TYPE",
+    );
   // Node accepts any EventTarget (e.g. internal NodeEventTarget), not just
-  // AbortSignal — duck-type on addEventListener/removeEventListener.
+  // AbortSignal — duck-type on addEventListener/removeEventListener. A
+  // present-but-invalid signal (including null) is rejected by Node.
   const signal = options.signal as
     | (AbortSignal & { reason?: unknown; aborted?: boolean })
     | undefined;
   if (
     signal !== undefined &&
-    signal !== null &&
-    typeof signal !== "object" &&
-    typeof signal !== "function"
-  )
-    throw Object.assign(
-      new TypeError('The "options.signal" argument must be an instance of AbortSignal'),
-      { code: "ERR_INVALID_ARG_TYPE" },
-    );
-  if (
-    signal != null &&
-    (typeof signal.addEventListener !== "function" ||
+    (signal === null ||
+      typeof signal !== "object" ||
+      typeof signal.addEventListener !== "function" ||
       typeof signal.removeEventListener !== "function")
   )
-    throw Object.assign(
-      new TypeError('The "options.signal" argument must be an instance of AbortSignal'),
-      { code: "ERR_INVALID_ARG_TYPE" },
+    throw withCode(
+      new TypeError(
+        'The "options.signal" argument must be an instance of AbortSignal.' +
+          describeReceived(signal),
+      ),
+      "ERR_INVALID_ARG_TYPE",
     );
   if (options.ref !== undefined && typeof options.ref !== "boolean")
-    throw Object.assign(new TypeError('The "options.ref" argument must be of type boolean'), {
-      code: "ERR_INVALID_ARG_TYPE",
-    });
+    throw withCode(
+      new TypeError(
+        `The "options.ref" argument must be of type boolean.` + describeReceived(options.ref),
+      ),
+      "ERR_INVALID_ARG_TYPE",
+    );
 };
 
 const defaultHost: TimerHost = {
