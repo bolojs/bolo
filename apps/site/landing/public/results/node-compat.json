@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-12T11:10:45.023Z",
+  "generatedAt": "2026-11-12T11:37:39.948Z",
   "validated": true,
   "total": 167,
-  "pass": 107,
-  "fail": 59,
+  "pass": 113,
+  "fail": 53,
   "skip": 1,
   "modules": [
     {
@@ -270,13 +270,12 @@
     },
     {
       "name": "process",
-      "passed": 1,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
           "file": "test-process-env.js",
-          "status": "fail",
-          "error": "Uncaught DataCloneError: Failed to execute 'structuredClone' on 'WorkerGlobalScope': #<Object> could not be cloned."
+          "status": "pass"
         },
         {
           "file": "test-process-next-tick.js",
@@ -521,7 +520,7 @@
     },
     {
       "name": "console",
-      "passed": 1,
+      "passed": 2,
       "total": 3,
       "tests": [
         {
@@ -531,8 +530,7 @@
         },
         {
           "file": "test-console-count.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
+          "status": "pass"
         },
         {
           "file": "test-console-methods.js",
@@ -703,18 +701,16 @@
     },
     {
       "name": "vm",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-vm-script-throw-in-tostring.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (Error)."
+          "status": "pass"
         },
         {
           "file": "test-vm-indexed-properties.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: undefined strictEqual 20"
+          "status": "pass"
         },
         {
           "file": "test-vm-deleting-property.js",
@@ -857,7 +853,7 @@
     },
     {
       "name": "v8",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
@@ -866,8 +862,7 @@
         },
         {
           "file": "test-v8-flag-pool-size-0.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: globalThis.gc is not a function"
+          "status": "pass"
         },
         {
           "file": "test-v8-getheapsnapshot-twice.js",
@@ -877,7 +872,7 @@
     },
     {
       "name": "diagnostics_channel",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
@@ -890,8 +885,7 @@
         },
         {
           "file": "test-diagnostics-channel-object-channel-pub-sub.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception."
+          "status": "pass"
         }
       ]
     },
