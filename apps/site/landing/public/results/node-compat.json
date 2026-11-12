@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-12T00:20:03.169Z",
+  "generatedAt": "2026-11-12T09:52:46.686Z",
   "validated": true,
   "total": 167,
-  "pass": 79,
-  "fail": 87,
+  "pass": 83,
+  "fail": 83,
   "skip": 1,
   "modules": [
     {
@@ -39,12 +39,12 @@
         {
           "file": "test-buffer-concat.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: {\"message\":\"\\\"list\\\" argument must be an Array of Buffers\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"list\\\" argument must be an instance of Array. Received undefined\"}"
+          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"list\\\" argument must be of type Array. Received type undefined (undefined)\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"list\\\" argument must be an instance of Array. Received undefined\"}"
         },
         {
           "file": "test-buffer-from.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: {\"name\":\"TypeError\",\"message\":\"The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type object\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",\"message\":\"The first argument must be of type string or an..."
+          "error": "Uncaught TypeError: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received an instance of MyPrimitive"
         }
       ]
     },
@@ -104,13 +104,12 @@
     },
     {
       "name": "zlib",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-zlib-close-in-ondata.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 2."
+          "status": "pass"
         },
         {
           "file": "test-zlib-create-raw.js",
@@ -124,13 +123,12 @@
     },
     {
       "name": "os",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-os-eol.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
+          "status": "pass"
         },
         {
           "file": "test-os-checked-function.js",
@@ -152,7 +150,7 @@
         {
           "file": "test-util-format.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: '[  ]' strictEqual '[]'"
+          "error": "Uncaught AssertionError: '0' strictEqual '-0'"
         },
         {
           "file": "test-util-inspect.js",
@@ -183,7 +181,7 @@
         {
           "file": "test-assert-async.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: {} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\"}"
+          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"promiseFn\\\" argument must be of type function or an instance of Promise. Received type string (fail)\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"promiseFn\\\" argument must be of type function or an instance..."
         }
       ]
     },
@@ -220,7 +218,7 @@
         {
           "file": "test-fs-write-file.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Cannot read properties of null (reading 'name')"
+          "error": "Uncaught AssertionError: ifError got unwanted exception: path.lastIndexOf is not a function"
         },
         {
           "file": "test-fs-readfile.js",
@@ -231,23 +229,22 @@
     },
     {
       "name": "crypto",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-crypto-hash.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Unknown encoding: buffer"
+          "error": "Uncaught Error: fs.createReadStream is not supported by this VFS backend"
         },
         {
           "file": "test-crypto-hmac.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Class constructor Hmac cannot be invoked without 'new'"
+          "error": "Uncaught TypeError: str.end is not a function"
         },
         {
           "file": "test-crypto-randomuuid.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception."
+          "status": "pass"
         }
       ]
     },
@@ -533,23 +530,22 @@
     },
     {
       "name": "console",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "tests": [
         {
           "file": "test-console-clear.js",
           "status": "fail",
-          "error": "Uncaught TypeError: __bc_console.clear is not a function"
+          "error": "Uncaught AssertionError: '' strictEqual '\u001b[1;1H\u001b[0J'"
         },
         {
           "file": "test-console-count.js",
           "status": "fail",
-          "error": "Uncaught TypeError: __bc_console.count is not a function"
+          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
         },
         {
           "file": "test-console-methods.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: Console is not a constructor"
+          "status": "pass"
         }
       ]
     },
@@ -628,7 +624,7 @@
         {
           "file": "test-dns-setlocaladdress.js",
           "status": "fail",
-          "error": "Uncaught TypeError: dns.Resolver is not a constructor"
+          "error": "Uncaught TypeError: resolver.setLocalAddress is not a function"
         }
       ]
     },
