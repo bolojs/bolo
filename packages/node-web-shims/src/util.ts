@@ -49,8 +49,10 @@ const inspectValue = (
     case "undefined":
       return "undefined";
     case "boolean":
-    case "number":
       return String(value);
+    case "number":
+      // Node renders negative zero as '-0' (inspect(-0) === '-0').
+      return Object.is(value, -0) ? "-0" : String(value);
     case "bigint":
       return `${value}n`;
     case "symbol":
@@ -183,6 +185,9 @@ export const inspect = Object.assign(
 
 const FORMAT_SPECIFIER = /%[%sdifjoOc]/g;
 
+/** Node renders negative zero as '-0' in every numeric conversion. */
+const numberToString = (n: number): string => (Object.is(n, -0) ? "-0" : String(n));
+
 const formatImpl = (
   inspectOptions: InspectOptions | undefined,
   fmt: unknown,
@@ -201,13 +206,14 @@ const formatImpl = (
     const arg = args[argIndex++];
     switch (spec[1]) {
       case "s":
-        return typeof arg === "string" ? arg : String(arg as string);
+        if (typeof arg === "string") return arg;
+        return typeof arg === "number" ? numberToString(arg) : String(arg as string);
       case "d":
-        return String(Number(arg));
+        return numberToString(Number(arg));
       case "i":
-        return String(Math.trunc(Number(arg)));
+        return numberToString(Math.trunc(Number(arg)));
       case "f":
-        return String(Number(arg));
+        return numberToString(Number(arg));
       case "j":
         try {
           return JSON.stringify(arg);

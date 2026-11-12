@@ -28,6 +28,16 @@ describe("node-web-shims: util", () => {
     expect(format("%j", { a: 1 })).toBe('{"a":1}');
   });
 
+  it("format() renders negative zero as '-0' in every numeric conversion", () => {
+    expect(format("%d", -0)).toBe("-0");
+    expect(format("%d", " -0.000")).toBe("-0");
+    expect(format("%i", -0.5)).toBe("-0");
+    expect(format("%f", "-0.0")).toBe("-0");
+    expect(format("%s", -0)).toBe("-0");
+    expect(format(1, -0)).toBe("1 -0");
+    expect(inspect(-0)).toBe("-0");
+  });
+
   it("format() tolerates non-string first arguments", () => {
     // unenv's version threw `.replace of undefined` here.
     expect(format({ a: 1 })).toBe("{ a: 1 }");
