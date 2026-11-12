@@ -322,24 +322,88 @@ export const createChildProcessShim = (
     return child;
   };
 
+  /**
+   * Node's default `maxBuffer` for `exec`/`execFile` (1 MiB).
+   */
+  const DEFAULT_MAX_BUFFER = 1024 * 1024;
+
+  /**
+   * Accumulates a child's stdout/stderr, enforcing `maxBuffer`. Node kills
+   * the child and fails with `ENOBUFS` when the limit is exceeded.
+   */
+  const collectOutput = (
+    child: ChildProcess,
+    maxBuffer: number,
+    onOverflow: (error: Error & { code: string; killed: boolean }) => void,
+  ) => {
+    let stdout = "";
+    let stderr = "";
+    let overflowed = false;
+    const append = (target: "out" | "err", chunk: Buffer) => {
+      if (overflowed) return;
+      const text = chunk.toString();
+      if (target === "out") stdout += text;
+      else stderr += text;
+      if (stdout.length > maxBuffer || stderr.length > maxBuffer) {
+        overflowed = true;
+        const err = new Error(
+          `stdout or stderr exceeded the maxBuffer limit of ${maxBuffer} bytes`,
+        ) as Error & { code: string; killed: boolean };
+        err.code = "ENOBUFS";
+        err.killed = true;
+        onOverflow(err);
+      }
+    };
+    child.stdout.on("data", (chunk: Buffer) => append("out", chunk));
+    child.stderr.on("data", (chunk: Buffer) => append("err", chunk));
+    return {
+      get overflowed() {
+        return overflowed;
+      },
+      get stdout() {
+        return stdout;
+      },
+      get stderr() {
+        return stderr;
+      },
+    };
+  };
+
   const exec = (command: string, options?: any, callback?: any) => {
     const cb = typeof options === "function" ? options : callback;
+    const opts = typeof options === "object" && options !== null ? options : {};
+    const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
     const parts = command.split(" ");
-    const child = spawn(parts[0], parts.slice(1));
+    const child = spawn(parts[0], parts.slice(1), opts);
 
     if (cb) {
-      let stdout = "";
-      let stderr = "";
-      child.stdout.on("data", (chunk: Buffer) => {
-        stdout += chunk.toString();
-      });
-      child.stderr.on("data", (chunk: Buffer) => {
-        stderr += chunk.toString();
+      let done = false;
+      const output = collectOutput(child, maxBuffer, (error) => {
+        if (done) return;
+        done = true;
+        try {
+          child.kill?.();
+        } catch {
+          /* the child may already be gone */
+        }
+        cb(error, output.stdout, output.stderr);
       });
       child.on("close", (code: number) => {
-        cb(code === 0 ? null : new Error(`Command failed: ${command}\n${stderr}`), stdout, stderr);
+        if (done) return;
+        done = true;
+        cb(
+          code === 0
+            ? null
+            : Object.assign(new Error(`Command failed: ${command}\n${output.stderr}`), { code }),
+          output.stdout,
+          output.stderr,
+        );
       });
-      child.on("error", (error: Error) => cb(error, "", ""));
+      child.on("error", (error: Error) => {
+        if (done) return;
+        done = true;
+        cb(error, "", "");
+      });
     }
 
     return child;
@@ -364,25 +428,35 @@ export const createChildProcessShim = (
     const options = [argsOrOptions, optionsOrCallback].find(
       (arg) => typeof arg === "object" && arg !== null,
     ) as Record<string, unknown> | undefined;
+    const maxBuffer = Number(options?.maxBuffer ?? DEFAULT_MAX_BUFFER);
     const child = spawn(file, argv, options);
 
     if (cb) {
-      let stdout = "";
-      let stderr = "";
-      child.stdout.on("data", (chunk: Buffer) => {
-        stdout += chunk.toString();
-      });
-      child.stderr.on("data", (chunk: Buffer) => {
-        stderr += chunk.toString();
+      let done = false;
+      const output = collectOutput(child, maxBuffer, (error) => {
+        if (done) return;
+        done = true;
+        try {
+          child.kill?.();
+        } catch {
+          /* the child may already be gone */
+        }
+        cb(error, output.stdout, output.stderr);
       });
       child.on("close", (code: number) => {
+        if (done) return;
+        done = true;
         const error =
           code === 0
             ? null
-            : Object.assign(new Error(`Command failed: ${file}\n${stderr}`), { code });
-        cb(error, stdout, stderr);
+            : Object.assign(new Error(`Command failed: ${file}\n${output.stderr}`), { code });
+        cb(error, output.stdout, output.stderr);
       });
-      child.on("error", (error: Error) => cb(error, "", ""));
+      child.on("error", (error: Error) => {
+        if (done) return;
+        done = true;
+        cb(error, "", "");
+      });
     }
 
     return child;

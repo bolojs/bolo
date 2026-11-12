@@ -25,6 +25,26 @@ const setup = (warn?: (name: string, message: string) => void) => {
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe("createNodeTimers", () => {
+  it("does not resurrect cleared timers on refresh", async () => {
+    const { timers, run, hasRefed } = setup();
+    const fn = vi.fn();
+    const timer = timers.setTimeout(fn, 1) as { refresh(): unknown };
+    timers.clearTimeout(timer);
+    timer.refresh();
+    expect(hasRefed()).toBe(false);
+    await run();
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("can cancel another immediate in the active batch", async () => {
+    const { timers, run } = setup();
+    const fn = vi.fn();
+    timers.setImmediate(() => timers.clearImmediate(second));
+    const second = timers.setImmediate(fn);
+    await run();
+    expect(fn).not.toHaveBeenCalled();
+  });
+
   it("binds this to the Timeout and passes args", async () => {
     const { timers, run } = setup();
     const seen: unknown[] = [];
@@ -162,5 +182,38 @@ describe("createNodeTimers", () => {
       "TimeoutOverflowWarning",
       `${2 ** 31} does not fit into a 32-bit signed integer.\nTimeout duration was set to 1.`,
     );
+  });
+});
+
+describe("createNodeTimers: async context propagation", () => {
+  it("propagates the AsyncLocalStorage store captured at scheduling time", async () => {
+    const { AsyncLocalStorage } = await import("@bolojs/node-web-shims/dist/async_hooks.js");
+    const als = new AsyncLocalStorage<{ tag: string }>();
+    const { timers, run } = setup();
+    const seen: Array<string | undefined> = [];
+    await als.run({ tag: "outer" }, async () => {
+      timers.setImmediate(() => seen.push(als.getStore()?.tag));
+      timers.setTimeout(() => seen.push(als.getStore()?.tag), 1);
+      // A nested context does not leak into the already-scheduled callback.
+      await als.run({ tag: "inner" }, async () => {
+        timers.setImmediate(() => seen.push(als.getStore()?.tag));
+      });
+    });
+    await run();
+    expect(seen).toEqual(["outer", "outer", "inner"]);
+  });
+
+  it("does not leak the store into a later, unrelated turn", async () => {
+    const { AsyncLocalStorage } = await import("@bolojs/node-web-shims/dist/async_hooks.js");
+    const als = new AsyncLocalStorage<string>();
+    const { timers, run } = setup();
+    let seen: string | undefined = "unset";
+    als.run("scoped", () => {
+      timers.setTimeout(() => {
+        seen = als.getStore();
+      }, 1);
+    });
+    await run();
+    expect(seen).toBe("scoped");
   });
 });

@@ -38,13 +38,9 @@ const evalSpawner = () => {
           "process",
           spec.code ?? "",
         );
-        fn(
-          parentPort,
-          spec.workerData,
-          false,
-          globalThis.MessageChannel,
-          { exit: (c?: number) => onExit?.(c ?? 0) },
-        );
+        fn(parentPort, spec.workerData, false, globalThis.MessageChannel, {
+          exit: (c?: number) => onExit?.(c ?? 0),
+        });
         onExit?.(0);
       } catch (err) {
         onError?.(err);
@@ -221,5 +217,67 @@ describe("node-web-shims: worker_threads", () => {
     expect(worker.hasRef()).toBe(false);
     worker.ref();
     expect(worker.hasRef()).toBe(true);
+  });
+});
+
+describe("worker_threads: MessagePort/MessageChannel construction semantics", () => {
+  it("MessagePort cannot be constructed directly (ERR_CONSTRUCT_CALL_INVALID)", () => {
+    const shim = createWorkerThreadsShim();
+    expect(() => new shim.MessagePort(undefined as never)).toThrow(
+      expect.objectContaining({ code: "ERR_CONSTRUCT_CALL_INVALID", name: "TypeError" }),
+    );
+  });
+
+  it("MessageChannel requires new (ERR_CONSTRUCT_CALL_REQUIRED)", () => {
+    const shim = createWorkerThreadsShim();
+    const { MessageChannel } = shim;
+    expect(() => (MessageChannel as unknown as () => unknown)()).toThrow(
+      expect.objectContaining({ code: "ERR_CONSTRUCT_CALL_REQUIRED", name: "TypeError" }),
+    );
+  });
+
+  it("MessageChannel ports are MessagePort instances with constructor fidelity", () => {
+    const shim = createWorkerThreadsShim();
+    const { port1, port2 } = new shim.MessageChannel();
+    expect(port1 instanceof shim.MessagePort).toBe(true);
+    expect(port1.constructor).toBe(shim.MessagePort);
+    expect(port2.constructor).toBe(shim.MessagePort);
+  });
+});
+
+describe("worker_threads: exit event", () => {
+  it("emits 'exit' when the thread reports a normal exit and exceptions in the handler surface as 'error'", async () => {
+    const { spawner } = evalSpawner();
+    const shim = createWorkerThreadsShim({ spawnWorker: spawner });
+    const worker = new shim.Worker("parentPort.postMessage('done')", { eval: true });
+    const exitCode = await new Promise<number>((resolve) => worker.on("exit", resolve));
+    expect(exitCode).toBe(0);
+  });
+
+  it("'exit' fires with code 1 after an uncaught thread error", async () => {
+    let onError: ((e: unknown) => void) | null = null;
+    let onExit: ((c: number) => void) | null = null;
+    const spawner = (): WorkerThreadHandle => ({
+      postMessage: () => {},
+      terminate: () => {},
+      setOnMessage: () => {},
+      setOnError: (cb) => {
+        onError = cb;
+      },
+      setOnExit: (cb) => {
+        onExit = cb;
+      },
+    });
+    const shim = createWorkerThreadsShim({ spawnWorker: spawner });
+    const worker = new shim.Worker(`throw new Error("foo")`, { eval: true });
+    const codes: number[] = [];
+    worker.on("exit", (code: number) => codes.push(code));
+    const errors: unknown[] = [];
+    worker.on("error", (err: unknown) => errors.push(err));
+    await nextTick();
+    onError?.(new Error("foo"));
+    await nextTick();
+    expect(errors.length).toBe(1);
+    expect(codes).toEqual([1]);
   });
 });

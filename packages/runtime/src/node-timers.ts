@@ -1,4 +1,12 @@
 import type { LoopHandle } from "./event-loop.js";
+import {
+  AsyncLocalStorage,
+  emitInit,
+  runInAsyncScope,
+} from "@bolojs/node-web-shims/dist/async_hooks.js";
+import { withCode } from "@bolojs/node-web-shims/dist/coded-error.js";
+import { createTimersPromisesShim } from "@bolojs/node-web-shims/dist/timers_promises.js";
+import { customPromisifySymbol } from "@bolojs/node-web-shims/dist/util.js";
 
 /**
  * Node-flavoured timers for a process worker: `Timeout`/`Immediate` objects
@@ -33,21 +41,20 @@ const describeReceived = (value: unknown): string => {
   return ` Received type ${typeof value} (${shown})`;
 };
 
-const invalidArgType = (name: string, expected: string, value: unknown) => {
-  const err = new TypeError(
-    `The "${name}" argument must be of type ${expected}.${describeReceived(value)}`,
-  ) as TypeError & { code: string };
-  err.code = "ERR_INVALID_ARG_TYPE";
-  return err;
-};
+const invalidArgType = (name: string, expected: string, value: unknown) =>
+  withCode(
+    new TypeError(`The "${name}" argument must be of type ${expected}.${describeReceived(value)}`),
+    "ERR_INVALID_ARG_TYPE",
+  );
 
-const outOfRange = (name: string, range: string, value: unknown) => {
-  const err = new RangeError(
-    `The value of "${name}" is out of range. It must be ${range}. Received ${String(value)}`,
-  ) as RangeError & { code: string };
-  err.code = "ERR_OUT_OF_RANGE";
-  return err;
-};
+const outOfRange = (name: string, range: string, value: unknown) =>
+  withCode(
+    new RangeError(
+      `The value of "${name}" is out of range. It must be ${range}. Received ${String(value)}`,
+    ),
+    "ERR_OUT_OF_RANGE",
+    "RangeError",
+  );
 
 export interface NodeTimers {
   setTimeout: (fn: (...a: unknown[]) => void, ms?: number, ...args: unknown[]) => unknown;
@@ -83,6 +90,8 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     private id = nextId++;
     private native: LoopHandle | undefined;
     private pending = false;
+    private readonly runContext = AsyncLocalStorage.snapshot();
+    private readonly asyncId = emitInit("Timeout");
 
     constructor(fn: (...a: unknown[]) => void, after: unknown, args: unknown[], repeat: boolean) {
       let ms = Number(after);
@@ -109,7 +118,11 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       this.pending = false;
       try {
         if (typeof this._onTimeout === "function") {
-          Reflect.apply(this._onTimeout, this, this._timerArgs);
+          this.runContext(() =>
+            runInAsyncScope(this.asyncId, () =>
+              Reflect.apply(this._onTimeout!, this, this._timerArgs),
+            ),
+          );
         }
       } finally {
         const repeat = this._repeat;
@@ -145,6 +158,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       return this.refed;
     }
     refresh() {
+      if (this._onTimeout === null) return this;
       if (this._destroyed && !this.pending) {
         // Node re-arms a fired timer on refresh; a cleared one stays dead.
         if (!byId.has(this.id)) byId.set(this.id, this);
@@ -154,6 +168,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       return this;
     }
     close() {
+      this._onTimeout = null;
       if (this.native) host.clearTimer(this.native);
       this.pending = false;
       this.dispose();
@@ -173,6 +188,8 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     _destroyed = false;
     refed = true;
     native: LoopHandle;
+    private readonly runContext = AsyncLocalStorage.snapshot();
+    private readonly asyncId = emitInit("Immediate");
     constructor(fn: (...a: unknown[]) => void, args: unknown[]) {
       this._onImmediate = fn;
       this._argv = args;
@@ -181,7 +198,18 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     private fire() {
       if (this._destroyed) return;
       this._destroyed = true;
-      if (this._onImmediate) Reflect.apply(this._onImmediate, this, this._argv);
+      this.refed = false;
+      try {
+        if (this._onImmediate) {
+          this.runContext(() =>
+            runInAsyncScope(this.asyncId, () =>
+              Reflect.apply(this._onImmediate!, this, this._argv),
+            ),
+          );
+        }
+      } finally {
+        this._onImmediate = null;
+      }
     }
     ref() {
       this.refed = true;
@@ -240,6 +268,16 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     enrolled.set(item, native);
   };
 
+  const deprecated = new Set<string>();
+  const deprecate = (name: string) => {
+    if (deprecated.has(name)) return;
+    deprecated.add(name);
+    host.warn?.(
+      "DeprecationWarning",
+      `timers.${name}() is deprecated. Please use setTimeout instead.`,
+    );
+  };
+
   const timers: NodeTimers = {
     setTimeout: (fn, ms, ...args) => {
       requireFn(fn);
@@ -257,6 +295,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     },
     clearImmediate,
     enroll: (item, msecs: unknown) => {
+      deprecate("enroll");
       if (typeof msecs !== "number") throw invalidArgType("msecs", "number", msecs);
       if (msecs < 0 || !Number.isFinite(msecs)) {
         throw outOfRange("msecs", "a non-negative finite number", msecs);
@@ -269,6 +308,7 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       item._idleTimeout = msecs;
     },
     unenroll: (item) => {
+      deprecate("unenroll");
       if (item instanceof Timeout) {
         item.close();
         return;
@@ -278,9 +318,23 @@ export const createNodeTimers = (host: NodeTimersHost) => {
         (item as Record<string, unknown>)._idleTimeout = -1;
       }
     },
-    active: (item) => activate(item, true),
+    active: (item) => {
+      deprecate("active");
+      activate(item, true);
+    },
     _unrefActive: (item) => activate(item, false),
   };
 
-  return { timers };
+  const promises = createTimersPromisesShim(timers);
+  for (const name of ["setTimeout", "setImmediate", "setInterval"] as const) {
+    Object.defineProperty(timers[name], Symbol.for("nodejs.util.promisify.custom"), {
+      value: promises[name],
+    });
+    // unenv's promisify() reads a *different* symbol than Node's — mirror the
+    // custom promisify onto it so `promisify(timers.setImmediate) ===
+    // timers/promises.setImmediate` (bundled code uses unenv util).
+    (timers[name] as unknown as Record<PropertyKey, unknown>)[customPromisifySymbol] =
+      promises[name];
+  }
+  return { timers, promises };
 };

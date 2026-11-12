@@ -163,3 +163,29 @@ describe("http-shim - Port Discovery Events", () => {
     });
   });
 });
+
+describe("http-shim - Agent construction", () => {
+  it("Agent is callable without new and instanceof-compatible both ways", () => {
+    const shim = createHttpShim();
+    const withoutNew = shim.Agent();
+    expect(withoutNew instanceof shim.Agent).toBe(true);
+    expect(new shim.Agent() instanceof shim.Agent).toBe(true);
+    expect(withoutNew.maxSockets).toBe(Infinity);
+    expect(withoutNew.maxFreeSockets).toBe(256);
+    expect(withoutNew.keepAlive).toBe(false);
+  });
+
+  it("Agent honours options and pools connections", () => {
+    const shim = createHttpShim();
+    const agent = new shim.Agent({ maxSockets: 2, maxFreeSockets: 4, keepAlive: true });
+    expect(agent.maxSockets).toBe(2);
+    expect(agent.keepAlive).toBe(true);
+    const a = agent.get("https://example.com");
+    const b = agent.get("https://example.com");
+    expect(b.controller).toBe(a.controller);
+    b.detach();
+    a.detach();
+    expect(agent.get("https://example.com")).toBeDefined();
+    agent.destroy();
+  });
+});

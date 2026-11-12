@@ -197,7 +197,35 @@ const unwrapTransferable = (value: unknown): Transferable => {
   return value as Transferable;
 };
 
-export class ShimMessagePort extends EventEmitter {
+/**
+ * Node's `MessagePort` cannot be constructed by user code
+ * (`ERR_CONSTRUCT_CALL_INVALID`) — instances only come from a
+ * `MessageChannel`. The shim keeps the class for `instanceof` and prototype
+ * fidelity; internal code mints ports through `createShimMessagePort`.
+ */
+const PORT_CONSTRUCTOR = Symbol("bolo.MessagePort.constructor");
+
+type EventEmitterInstance = {
+  on(event: string | symbol, listener: (...args: any[]) => void): unknown;
+  once(event: string | symbol, listener: (...args: any[]) => void): unknown;
+  emit(event: string | symbol, ...args: unknown[]): boolean;
+  listenerCount(event: string | symbol): number;
+};
+
+export interface ShimMessagePort extends EventEmitterInstance {
+  readonly backend: PortBackend;
+  postMessage(value: unknown, transferList?: readonly unknown[]): void;
+  dequeue(): unknown;
+  start(): void;
+  close(): void;
+  ref(): this;
+  unref(): this;
+  hasRef(): boolean;
+}
+
+type EventEmitterClass = new () => EventEmitterInstance;
+
+class ShimMessagePortImpl extends (EventEmitter as unknown as EventEmitterClass) {
   /** Inbound values buffered while no 'message' listener is attached —
    * the queue `receiveMessageOnPort` drains. */
   private readonly queue: unknown[] = [];
@@ -206,8 +234,16 @@ export class ShimMessagePort extends EventEmitter {
   readonly backend: PortBackend;
 
   /** @internal */
-  constructor(backend: PortBackend) {
+  constructor(backend: PortBackend, token?: symbol) {
     super();
+    if (token !== PORT_CONSTRUCTOR) {
+      throw Object.assign(
+        new TypeError(
+          "MessagePort cannot be constructed directly. Use MessageChannel() to create a port pair.",
+        ),
+        { code: "ERR_CONSTRUCT_CALL_INVALID" },
+      );
+    }
     this.backend = backend;
     backend.setOnMessage((value) => this.deliver(value));
   }
@@ -227,9 +263,9 @@ export class ShimMessagePort extends EventEmitter {
   }
 
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
-    const ret = super.on(event, listener);
+    super.on(event, listener);
     if (event === "message") queueMicrotask(() => this.drain());
-    return ret;
+    return this;
   }
 
   postMessage(value: unknown, transferList?: readonly unknown[]): void {
@@ -271,8 +307,50 @@ export class ShimMessagePort extends EventEmitter {
   }
 }
 
+/**
+ * `MessagePort` — Node's is not constructible by user code: both
+ * `MessagePort()` and `new MessagePort()` throw
+ * `ERR_CONSTRUCT_CALL_INVALID`. A native class would raise a plain TypeError
+ * for the call form, so the exported constructor is function-style and
+ * raises Node's exact error in both cases.
+ */
+export const ShimMessagePort = function MessagePort(
+  this: ShimMessagePort,
+  backend?: PortBackend,
+  token?: symbol,
+): ShimMessagePort | void {
+  throw Object.assign(
+    new TypeError(
+      "MessagePort cannot be constructed directly. Use MessageChannel() to create a port pair.",
+    ),
+    { code: "ERR_CONSTRUCT_CALL_INVALID" },
+  );
+} as unknown as {
+  new (backend?: PortBackend, token?: symbol): ShimMessagePort;
+  (backend?: PortBackend, token?: symbol): ShimMessagePort;
+  prototype: ShimMessagePort;
+};
+
+Object.defineProperty(ShimMessagePort, "prototype", {
+  value: ShimMessagePortImpl.prototype,
+  writable: false,
+  configurable: false,
+});
+// `port.constructor === MessagePort` — Node's ports report the exported
+// constructor, not an internal implementation class.
+Object.defineProperty(ShimMessagePortImpl.prototype, "constructor", {
+  value: ShimMessagePort,
+  writable: true,
+  configurable: true,
+});
+
+const createShimMessagePort = (backend: PortBackend): ShimMessagePort =>
+  new (ShimMessagePortImpl as unknown as {
+    new (b: PortBackend, t: symbol): ShimMessagePort;
+  })(backend, PORT_CONSTRUCTOR);
+
 const wrapNativePort = (native: MessagePort): ShimMessagePort =>
-  new ShimMessagePort({
+  createShimMessagePort({
     transferable: native,
     post: (value, transfer) => native.postMessage(value, { transfer: [...(transfer ?? [])] }),
     close: () => native.close(),
@@ -285,14 +363,14 @@ const wrapNativePort = (native: MessagePort): ShimMessagePort =>
 const createLinkedPair = (): [ShimMessagePort, ShimMessagePort] => {
   let a: ((v: unknown) => void) | null = null;
   let b: ((v: unknown) => void) | null = null;
-  const port1 = new ShimMessagePort({
+  const port1 = createShimMessagePort({
     post: (v) => queueMicrotask(() => b?.(v)),
     close: () => {},
     setOnMessage: (cb) => {
       a = cb;
     },
   });
-  const port2 = new ShimMessagePort({
+  const port2 = createShimMessagePort({
     post: (v) => queueMicrotask(() => a?.(v)),
     close: () => {},
     setOnMessage: (cb) => {
@@ -305,19 +383,41 @@ const createLinkedPair = (): [ShimMessagePort, ShimMessagePort] => {
 const NativeMessageChannel = (globalThis as { MessageChannel?: typeof globalThis.MessageChannel })
   .MessageChannel;
 
-export class ShimMessageChannel {
+/**
+ * `MessageChannel` — Node's is a class: calling it without `new` throws
+ * `ERR_CONSTRUCT_CALL_REQUIRED`. Function-style construction lets the shim
+ * raise that exact code (a native class would throw a plain TypeError).
+ */
+interface ShimMessageChannel {
   readonly port1: ShimMessagePort;
   readonly port2: ShimMessagePort;
-  constructor() {
-    if (NativeMessageChannel) {
-      const channel = new NativeMessageChannel();
-      this.port1 = wrapNativePort(channel.port1);
-      this.port2 = wrapNativePort(channel.port2);
-    } else {
-      [this.port1, this.port2] = createLinkedPair();
-    }
-  }
 }
+
+interface ShimMessageChannelCtor {
+  new (): ShimMessageChannel;
+  (): ShimMessageChannel;
+  prototype: ShimMessageChannel;
+}
+
+export const ShimMessageChannel = function MessageChannel(
+  this: ShimMessageChannel,
+): ShimMessageChannel | void {
+  if (!(this instanceof ShimMessageChannel)) {
+    throw Object.assign(
+      new TypeError("Class constructor MessageChannel cannot be invoked without 'new'"),
+      { code: "ERR_CONSTRUCT_CALL_REQUIRED" },
+    );
+  }
+  if (NativeMessageChannel) {
+    const channel = new NativeMessageChannel();
+    (this as { port1: ShimMessagePort }).port1 = wrapNativePort(channel.port1);
+    (this as { port2: ShimMessagePort }).port2 = wrapNativePort(channel.port2);
+  } else {
+    const [port1, port2] = createLinkedPair();
+    (this as { port1: ShimMessagePort }).port1 = port1;
+    (this as { port2: ShimMessagePort }).port2 = port2;
+  }
+} as unknown as ShimMessageChannelCtor;
 
 /**
  * Host-bridge port: `post` ships parentPort.postMessage payloads to the parent
@@ -326,7 +426,7 @@ export class ShimMessageChannel {
  */
 export const createHostPort = (post: (value: unknown) => void) => {
   let deliverCb: ((v: unknown) => void) | null = null;
-  const port = new ShimMessagePort({
+  const port = createShimMessagePort({
     post: (value) => post(value),
     close: () => {},
     setOnMessage: (cb) => {

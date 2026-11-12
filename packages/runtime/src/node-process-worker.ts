@@ -12,6 +12,14 @@ import { createRemoteDeps } from "./remote-objects.js";
 import { createSyncCaller } from "./sync-channel.js";
 import { createNodeTimers } from "./node-timers.js";
 import { createEventLoop } from "./event-loop.js";
+import {
+  AsyncLocalStorage,
+  emitInit,
+  reserveAsyncId,
+  runInAsyncScope,
+  instrumentPromises,
+} from "@bolojs/node-web-shims/dist/async_hooks.js";
+import { trackEventTargetListeners } from "@bolojs/node-web-shims/dist/events.js";
 
 // ponytail: see worker-script.ts — fire-and-forget to stay TLA-free.
 configureBrowserLogging().catch(() => {});
@@ -151,6 +159,17 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
 
 const runProcess = async (msg: ProcRunMessage) => {
   const rpc = createRpcPeer((m) => post(m));
+  // Promise continuations announce an async resource so async_hooks
+  // init/before/after/promiseResolve fire around them (Node parity).
+  instrumentPromises();
+  // Track EventTarget listeners so events.getEventListeners() can report
+  // them (unenv's implementation reads a private symbol that does not exist).
+  trackEventTargetListeners();
+
+  // Live worker threads keep the process alive (Node refs a Worker until it
+  // exits) — the drain loop waits for them, so the thread's 'exit' event
+  // still reaches the parent before the process goes away.
+  const liveThreads = new Set<Promise<void>>();
 
   // worker_threads: a thread is a spawned process worker. `spawnProcess`
   // asks the main thread for one over rpc (`thread.*` ops — main bundles the
@@ -170,16 +189,32 @@ const runProcess = async (msg: ProcRunMessage) => {
     let onError: ((e: unknown) => void) | null = null;
     let onStdout: ((d: string) => void) | null = null;
     let onStderr: ((d: string) => void) | null = null;
+    let resolveLifetime: (() => void) | undefined;
+    const lifetime = new Promise<void>((resolve) => {
+      resolveLifetime = resolve;
+    });
+    // A worker_threads thread carries a threadId; child_process spawns do
+    // not (they do not keep the process alive here — the child outlives the
+    // parent's own lifetime by design of this environment).
+    const isThread = spec.threadId !== undefined;
+    if (isThread) liveThreads.add(lifetime);
+    const wrapExit = (c: number) => {
+      liveThreads.delete(lifetime);
+      resolveLifetime?.();
+      onExit?.(c);
+    };
     const idP = rpc
       .call<number>(
         "thread.spawn",
         spec,
         (v: unknown) => onMessage?.(v),
-        (c: number) => onExit?.(c),
+        (c: number) => wrapExit(c),
         (d: string) => onStdout?.(d),
         (d: string) => onStderr?.(d),
       )
       .catch((err) => {
+        liveThreads.delete(lifetime);
+        resolveLifetime?.();
         onError?.(err);
         return -1;
       });
@@ -248,6 +283,22 @@ const runProcess = async (msg: ProcRunMessage) => {
       : undefined,
   });
   processShim = shims.process as ProcessShim;
+  const nextTick = processShim.nextTick;
+  processShim.nextTick = ((fn: unknown, ...args: unknown[]) => {
+    if (typeof fn !== "function") return nextTick(fn as never, ...args);
+    // Capture the async context (AsyncLocalStorage store) and announce the
+    // async resource, so async_hooks sees 'init'/'before'/'after' around the
+    // callback like Node does.
+    const run = AsyncLocalStorage.snapshot();
+    // Node does not report nextTick through 'init', only through
+    // before/after — so reserve an id instead of announcing a resource.
+    const asyncId = reserveAsyncId();
+    return nextTick(
+      (...cbArgs: unknown[]) =>
+        runInAsyncScope(asyncId, () => Reflect.apply(fn, undefined, cbArgs)) as unknown,
+      ...args,
+    );
+  }) as ProcessShim["nextTick"];
   // child_process.fork IPC: `process.send`/`process.on('message')` ride the
   // same THREAD_MSG transport as parentPort, wrapped in IPC envelopes.
   const ipcProcess = processShim as ProcessShim & {
@@ -305,7 +356,7 @@ const runProcess = async (msg: ProcRunMessage) => {
     onUncaught: handleUncaught,
     isExited: () => exited,
   });
-  const { timers: trackedTimers } = createNodeTimers({
+  const { timers: trackedTimers, promises: timerPromises } = createNodeTimers({
     setTimer: (fn, ms) => loop.setTimeout(fn, ms),
     clearTimer: (h) => loop.clearTimeout(h),
     setImmediate: (fn) => loop.setImmediate(fn),
@@ -318,7 +369,8 @@ const runProcess = async (msg: ProcRunMessage) => {
   globalThis.__browserContainers!.timers = trackedTimers;
   // `require('node:timers')` sees the same implementation.
   const timersShim = shims.timers as Record<string, unknown> | undefined;
-  if (timersShim) Object.assign(timersShim, trackedTimers);
+  shims.timers = { ...timersShim, ...trackedTimers, promises: timerPromises };
+  shims["timers/promises"] = timerPromises;
 
   const hasRefedTimers = () => loop.hasRefed();
   const origSet = globalThis.setTimeout.bind(globalThis);
@@ -386,6 +438,13 @@ const runProcess = async (msg: ProcRunMessage) => {
     await sleep(10);
     if (exited) return;
     if (hasRefedTimers()) continue;
+    // A live worker thread is a ref'd handle in Node — the process stays
+    // alive until it exits (so its 'exit' event still fires). Poll instead of
+    // awaiting the thread: the loop must keep running timers meanwhile.
+    if (liveThreads.size > 0) {
+      await sleep(10);
+      continue;
+    }
     // A listening server keeps the process alive indefinitely — the worker
     // must not emit exit (main would terminate it and kill the server).
     if (serving()) {

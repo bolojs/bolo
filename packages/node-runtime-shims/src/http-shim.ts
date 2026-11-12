@@ -145,7 +145,7 @@ export interface RequestOptions {
   path?: string;
   headers?: Record<string, string | string[]> | [string, string][] | Headers;
   auth?: string;
-  agent?: Agent | boolean | null;
+  agent?: AgentImpl | boolean | null;
   timeout?: number;
   signal?: AbortSignal;
 }
@@ -439,7 +439,7 @@ class ClientRequestImpl extends EventEmitter {
       this.abortController = new AbortController();
     } else {
       const origin = `${this.url.protocol}//${this.url.host}`;
-      const connection = (agent as Agent).get(origin);
+      const connection = (agent as AgentImpl).get(origin);
       this.abortController = connection.controller;
       this.detachAgent = connection.detach;
     }
@@ -563,49 +563,87 @@ class ClientRequestImpl extends EventEmitter {
   }
 }
 
-class Agent {
+interface AgentOptions {
+  maxSockets?: number;
+  maxFreeSockets?: number;
+  keepAlive?: boolean;
+}
+
+/**
+ * Function-style constructor (like Node's `http.Agent`): callable with or
+ * without `new`, and `instanceof`-compatible in both directions.
+ */
+function AgentImpl(this: AgentImpl, options?: AgentOptions) {
+  this.maxSockets = options?.maxSockets ?? Infinity;
+  this.maxFreeSockets = options?.maxFreeSockets ?? 256;
+  this.keepAlive = options?.keepAlive ?? false;
+  this.connections = new Map<string, { controller: AbortController; count: number }>();
+}
+
+interface AgentImpl {
   maxSockets: number;
   maxFreeSockets: number;
   keepAlive: boolean;
-  private connections = new Map<string, { controller: AbortController; count: number }>();
-
-  constructor(options?: { maxSockets?: number; maxFreeSockets?: number; keepAlive?: boolean }) {
-    this.maxSockets = options?.maxSockets ?? Infinity;
-    this.maxFreeSockets = options?.maxFreeSockets ?? 256;
-    this.keepAlive = options?.keepAlive ?? false;
-  }
-
-  get(origin: string): { controller: AbortController; detach: () => void } {
-    const existing = this.connections.get(origin);
-    if (existing && existing.count < (this.maxSockets === Infinity ? 6 : this.maxSockets)) {
-      existing.count++;
-      return { controller: existing.controller, detach: () => existing.count-- };
-    }
-    const controller = new AbortController();
-    this.connections.set(origin, { controller, count: 1 });
-    return {
-      controller,
-      detach: () => {
-        const c = this.connections.get(origin);
-        if (c) {
-          c.count--;
-          if (c.count <= 0) this.connections.delete(origin);
-        }
-      },
-    };
-  }
-
-  destroy(): void {
-    for (const { controller } of this.connections.values()) {
-      controller.abort();
-    }
-    this.connections.clear();
-  }
+  connections: Map<string, { controller: AbortController; count: number }>;
+  get(origin: string): { controller: AbortController; detach: () => void };
+  destroy(): void;
 }
+
+AgentImpl.prototype.get = function get(origin: string) {
+  const existing = this.connections.get(origin);
+  if (existing && existing.count < (this.maxSockets === Infinity ? 6 : this.maxSockets)) {
+    existing.count++;
+    return { controller: existing.controller, detach: () => existing.count-- };
+  }
+  const controller = new AbortController();
+  this.connections.set(origin, { controller, count: 1 });
+  return {
+    controller,
+    detach: () => {
+      const c = this.connections.get(origin);
+      if (c) {
+        c.count--;
+        if (c.count <= 0) this.connections.delete(origin);
+      }
+    },
+  };
+};
+
+AgentImpl.prototype.destroy = function destroy() {
+  for (const { controller } of this.connections.values()) {
+    controller.abort();
+  }
+  this.connections.clear();
+};
+
+/**
+ * `http.Agent` — Node's is a function-style constructor: callable without
+ * `new` and `instanceof`-compatible in both directions
+ * (`https.Agent() instanceof https.Agent` must hold).
+ */
+export const Agent = function Agent(this: AgentImpl, options?: AgentOptions): AgentImpl {
+  if (!(this instanceof AgentImpl))
+    return new (AgentImpl as unknown as { new (o?: AgentOptions): AgentImpl })(options);
+  AgentImpl.call(this, options);
+  return this;
+} as unknown as {
+  new (options?: AgentOptions): AgentImpl;
+  (options?: AgentOptions): AgentImpl;
+  prototype: AgentImpl;
+};
+
+// `x instanceof Agent` must hold for every agent instance, so the exported
+// constructor shares the implementation prototype.
+Object.defineProperty(Agent, "prototype", {
+  value: AgentImpl.prototype,
+  writable: false,
+  configurable: false,
+});
 
 const globalAgent = new Agent();
 
-export const createAgent = (options?: ConstructorParameters<typeof Agent>[0]) => new Agent(options);
+export const createAgent = (options?: AgentOptions) =>
+  new (AgentImpl as unknown as { new (o?: AgentOptions): AgentImpl })(options);
 
 const request = (
   urlOrOpts: string | URL | RequestOptions,

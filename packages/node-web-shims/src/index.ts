@@ -3,7 +3,7 @@ export { createStreamShim, default as stream } from "./stream.js";
 export { createBufferShim, default as buffer } from "./buffer.js";
 export { createPathShim, default as path } from "./path.js";
 export { createUrlShim, default as url } from "./url.js";
-export { createEventsShim, default as events } from "./events.js";
+export { createEventsShim, trackEventTargetListeners, default as events } from "./events.js";
 export { createOsShim, default as os } from "./os.js";
 export { createHttpShim, default as http } from "./http.js";
 export {
@@ -26,7 +26,7 @@ export type {
   BroadcastChannelLike,
   BroadcastChannelConstructor,
 } from "./worker_threads.js";
-export { createUtilShim, default as util } from "./util.js";
+export { createUtilShim, customPromisifySymbol, default as util } from "./util.js";
 export { createAsyncHooksShim, default as async_hooks } from "./async_hooks.js";
 export { createQuerystringShim, default as querystring } from "./querystring.js";
 export { createStringDecoderShim, default as string_decoder } from "./string_decoder.js";
@@ -37,6 +37,7 @@ export { createConstantsShim, default as constants } from "./constants.js";
 export { createPerfHooksShim, default as perf_hooks } from "./perf_hooks.js";
 export { createTimersShim, default as timers } from "./timers.js";
 export { createTimersPromisesShim, default as timers_promises } from "./timers_promises.js";
+export { withCode } from "./coded-error.js";
 export { createPunycodeShim, default as punycode } from "./punycode.js";
 export {
   createDiagnosticsChannelShim,

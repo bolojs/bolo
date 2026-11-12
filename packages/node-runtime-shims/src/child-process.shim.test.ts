@@ -209,3 +209,53 @@ describe("child_process shim", () => {
     expect(child.signalCode).toBe("SIGKILL");
   });
 });
+
+describe("exec/execFile maxBuffer", () => {
+  const overflowingRegistry = {
+    dispatch: async (_cmd: string, _args: string[]) => ({
+      stdout: "x".repeat(2048),
+      stderr: "",
+      exitCode: 0,
+    }),
+  };
+
+  it("exec rejects stdout beyond maxBuffer with ENOBUFS", async () => {
+    const shim = createChildProcessShim(overflowingRegistry);
+    const result = await new Promise<{ error: (Error & { code?: string }) | null; stdout: string }>(
+      (resolve) => {
+        shim.exec(
+          "big",
+          { maxBuffer: 1024 },
+          (error: (Error & { code?: string }) | null, stdout: string) => resolve({ error, stdout }),
+        );
+      },
+    );
+    expect(result.error?.code).toBe("ENOBUFS");
+    expect(result.error?.message).toMatch(/maxBuffer/);
+  });
+
+  it("exec within maxBuffer succeeds normally", async () => {
+    const shim = createChildProcessShim(overflowingRegistry);
+    const result = await new Promise<{ error: (Error & { code?: string }) | null; stdout: string }>(
+      (resolve) => {
+        shim.exec(
+          "big",
+          { maxBuffer: 4096 },
+          (error: (Error & { code?: string }) | null, stdout: string) => resolve({ error, stdout }),
+        );
+      },
+    );
+    expect(result.error).toBeNull();
+    expect(result.stdout.length).toBe(2048);
+  });
+
+  it("execFile rejects stdout beyond maxBuffer with ENOBUFS", async () => {
+    const shim = createChildProcessShim(overflowingRegistry);
+    const result = await new Promise<{ error: (Error & { code?: string }) | null }>((resolve) => {
+      shim.execFile("big", { maxBuffer: 100 }, (error: (Error & { code?: string }) | null) =>
+        resolve({ error }),
+      );
+    });
+    expect(result.error?.code).toBe("ENOBUFS");
+  });
+});

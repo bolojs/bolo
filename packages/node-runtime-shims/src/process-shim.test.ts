@@ -176,3 +176,71 @@ describe("createProcessShim", () => {
     expect(process.getBuiltinModule("fs")).toBeUndefined();
   });
 });
+
+describe("process.exit re-entrancy", () => {
+  it("does not re-emit 'exit' when exit() is called from an exit handler", () => {
+    const process = createProcessShim();
+    let exits = 0;
+    let finalCode: number | undefined;
+    process.on("exit", (code) => {
+      exits++;
+      expect(code).toBe(1);
+      expect(() => process.exit(0)).toThrow(expect.objectContaining({ code: 0 }));
+      finalCode = process.exitCode;
+    });
+    expect(() => process.exit(1)).toThrow(expect.objectContaining({ code: 0 }));
+    expect(exits).toBe(1);
+    expect(finalCode).toBe(0);
+  });
+
+  it("emits 'exit' exactly once on repeated exit() calls", () => {
+    const process = createProcessShim();
+    let exits = 0;
+    process.on("exit", () => {
+      exits++;
+    });
+    expect(() => process.exit()).toThrow();
+    expect(() => process.exit(3)).toThrow(expect.objectContaining({ code: 3 }));
+    expect(exits).toBe(1);
+  });
+});
+
+describe("process.exitCode validation", () => {
+  it("rejects non-integer exit codes with ERR_INVALID_ARG_TYPE", () => {
+    const process = createProcessShim();
+    for (const bad of ["", "1 one", "two", {}, [], true, false, 2n, 2.1, Infinity, NaN]) {
+      expect(() => {
+        (process as unknown as { exitCode: unknown }).exitCode = bad;
+      }).toThrow(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE", name: "TypeError" }));
+    }
+  });
+
+  it("accepts integers and numeric strings, coercing them", () => {
+    const process = createProcessShim();
+    const target = process as unknown as { exitCode: unknown };
+    target.exitCode = 1;
+    expect(process.exitCode).toBe(1);
+    target.exitCode = "2";
+    expect(process.exitCode).toBe(2);
+    target.exitCode = "0";
+    expect(process.exitCode).toBe(0);
+    target.exitCode = undefined;
+    expect(process.exitCode).toBeUndefined();
+    target.exitCode = null;
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("refuses to delete exitCode with Node's message", () => {
+    const process = createProcessShim();
+    expect(() => {
+      delete (process as unknown as { exitCode: unknown }).exitCode;
+    }).toThrow("Cannot delete property 'exitCode' of #<process>");
+  });
+
+  it("process.exit validates the code argument too", () => {
+    const process = createProcessShim();
+    expect(() => (process as unknown as { exit(code: string): void }).exit("two")).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+  });
+});
