@@ -19,7 +19,6 @@ import {
 } from "./worker-threads-shim.js";
 import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
-import { createVmShim } from "./vm-shim.js";
 
 interface WriteSink {
   write: (data: string) => unknown;
@@ -65,11 +64,15 @@ const createConsoleShim = (proc: ProcessShim): Record<string, unknown> => {
       },
       clear: () => {},
       count: (label = "default") => {
+        // Implicit coercion throws TypeError on Symbol labels, matching
+        // node:console (test-console-count).
+        label = "" + label;
         const n = (counts.get(label) ?? 0) + 1;
         counts.set(label, n);
         write("stdout", [`${label}: ${n}`]);
       },
       countReset: (label = "default") => {
+        label = "" + label;
         counts.delete(label);
       },
       time: (label = "default") => {
@@ -243,7 +246,10 @@ export const createLiveShimRegistry = (
     repl: nodeWebShims.repl,
     inspector: nodeWebShims.inspector,
     trace_events: nodeWebShims.trace_events,
-    vm: createVmShim(),
+    // node-web-shims' realm-local contextification (sandbox object identity
+    // across the boundary); the QuickJS-backed createVmShim cannot reflect
+    // defineProperty writes back onto the caller's sandbox object.
+    vm: nodeWebShims.vm,
     dns: createDnsShim({ dohEndpoint: options.dohEndpoint }),
     fs: createFsShim(options.vfs),
     child_process: createChildProcessShim(

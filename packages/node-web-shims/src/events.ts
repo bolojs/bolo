@@ -7,7 +7,6 @@ import {
   getEventListeners as unenvGetEventListeners,
   getMaxListeners as unenvGetMaxListeners,
   on,
-  once,
   usingDomains,
 } from "unenv/node/events";
 
@@ -20,6 +19,171 @@ type EventEmitterLike = {
 type MaxListenerTarget = { [kMaxEventTargetListeners]?: number };
 
 const kMaxEventTargetListeners = Symbol.for("events.maxEventTargetListeners");
+
+/** Node's DOMException-named rejection reason for aborted `once`/`on` waits. */
+class AbortError extends Error {
+  readonly code = "ABORT_ERR";
+  readonly cause: unknown;
+  constructor(message = "The operation was aborted", options?: { cause?: unknown }) {
+    super(message);
+    this.name = "AbortError";
+    this.cause = options?.cause;
+  }
+}
+
+const argTypeError = (name: string, expected: string, value: unknown): TypeError =>
+  Object.assign(
+    new TypeError(
+      `The "${name}" argument must be of type ${expected}. Received ${
+        value === null
+          ? "null"
+          : typeof value === "object" && value !== undefined
+            ? `an instance of ${(value as { constructor?: { name?: string } }).constructor?.name ?? "Object"}`
+            : `type ${typeof value} (${String(value)})`
+      }`,
+    ),
+    { code: "ERR_INVALID_ARG_TYPE" },
+  );
+
+const isAbortSignal = (value: unknown): value is AbortSignal =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as AbortSignal).aborted === "boolean" &&
+  typeof (value as AbortSignal).addEventListener === "function";
+
+/**
+ * Waits for one `name` event on an EventEmitter or EventTarget — Node 22
+ * semantics:
+ * - invalid `options` / `options.signal` reject `ERR_INVALID_ARG_TYPE`
+ *   (the async function turns the synchronous validation into rejections)
+ * - an already-aborted signal rejects with `AbortError`
+ * - on EventEmitters (checked first, so a poisoned `addEventListener` is
+ *   never touched), an emitted `'error'` rejects with the error and both
+ *   listeners are removed
+ * - on EventTargets, `'error'` resolves like any other event
+ * - aborting after listening rejects with `AbortError` and detaches both
+ *   listeners; a prior `stopImmediatePropagation()` on the signal cannot
+ *   swallow the rejection (Node's kResistStopPropagation equivalent), which
+ *   the poll fallback covers since browsers offer no flag channel.
+ */
+const once = async (
+  emitter: {
+    on?: Function;
+    once?: Function;
+    addEventListener?: Function;
+    removeListener?: Function;
+    removeEventListener?: Function;
+  },
+  name: string | symbol,
+  options?: unknown,
+): Promise<unknown[]> => {
+  if (options === undefined) {
+    options = {};
+  } else if (options === null || typeof options !== "object" || Array.isArray(options)) {
+    throw argTypeError("options", "object", options);
+  }
+  const signal = (options as { signal?: unknown }).signal;
+  if (signal !== undefined && !isAbortSignal(signal)) {
+    throw argTypeError("signal", "AbortSignal", signal);
+  }
+  if (signal?.aborted) {
+    throw new AbortError(undefined, { cause: (signal as AbortSignal).reason });
+  }
+
+  return new Promise<unknown[]>((resolve, reject) => {
+    let settled = false;
+    let abortPoll: ReturnType<typeof setInterval> | undefined;
+
+    const cleanup = (): void => {
+      if (abortPoll !== undefined) {
+        clearInterval(abortPoll);
+        abortPoll = undefined;
+      }
+    };
+
+    const errorListener = (err: unknown): void => {
+      if (settled) return;
+      settled = true;
+      eventTargetAgnosticRemoveListener(emitter, name, resolver);
+      if (signal != null) eventTargetAgnosticRemoveListener(signal, "abort", abortListener);
+      cleanup();
+      reject(err);
+    };
+
+    const resolver = (...args: unknown[]): void => {
+      if (settled) return;
+      settled = true;
+      eventTargetAgnosticRemoveListener(emitter, "error", errorListener);
+      if (signal != null) eventTargetAgnosticRemoveListener(signal, "abort", abortListener);
+      cleanup();
+      resolve(args);
+    };
+
+    function abortListener(): void {
+      if (settled) return;
+      settled = true;
+      eventTargetAgnosticRemoveListener(emitter, name, resolver);
+      eventTargetAgnosticRemoveListener(emitter, "error", errorListener);
+      cleanup();
+      reject(new AbortError(undefined, { cause: (signal as AbortSignal | undefined)?.reason }));
+    }
+
+    eventTargetAgnosticAddListener(emitter, name, resolver, { once: true });
+    if (name !== "error" && typeof emitter.once === "function") {
+      // EventTargets have no Node-style 'error' semantics — only listen on
+      // emitters that look like EventEmitters.
+      emitter.once("error", errorListener);
+    }
+    if (signal != null) {
+      signal.addEventListener("abort", abortListener, { once: true });
+      // A listener registered before ours may call stopImmediatePropagation()
+      // during 'abort' dispatch, which would skip abortListener entirely even
+      // though signal.aborted is already true. Node's internal EventTarget
+      // honors kResistStopPropagation; native ones do not, so poll as a
+      // safety net while the wait is pending.
+      abortPoll = setInterval(() => {
+        if ((signal as AbortSignal).aborted) abortListener();
+      }, 1);
+    }
+  });
+};
+
+const eventTargetAgnosticAddListener = (
+  target: {
+    on?: Function;
+    once?: Function;
+    addEventListener?: Function;
+  },
+  name: string | symbol,
+  listener: (...args: unknown[]) => void,
+  flags?: { once?: boolean },
+): void => {
+  if (typeof target.on === "function") {
+    if (flags?.once && typeof target.once === "function") target.once(name, listener);
+    else target.on(name, listener);
+  } else if (typeof target.addEventListener === "function") {
+    target.addEventListener(name, listener, flags);
+  } else {
+    throw argTypeError("emitter", "EventEmitter", target);
+  }
+};
+
+const eventTargetAgnosticRemoveListener = (
+  target: {
+    removeListener?: Function;
+    removeEventListener?: Function;
+  },
+  name: string | symbol,
+  listener: (...args: unknown[]) => void,
+): void => {
+  if (typeof target.removeListener === "function") {
+    target.removeListener(name, listener);
+  } else if (typeof target.removeEventListener === "function") {
+    target.removeEventListener(name, listener);
+  } else {
+    throw argTypeError("emitter", "EventEmitter", target);
+  }
+};
 
 const isEventTargetLike = (target: unknown): target is EventTarget =>
   typeof target === "object" &&

@@ -45,6 +45,7 @@ export {
 } from "./diagnostics_channel.js";
 export { createReadlineShim, default as readline } from "./readline.js";
 export { createV8Shim, default as v8 } from "./v8.js";
+export { createVmShim, default as vm } from "./vm.js";
 export { createHttp2Shim, default as http2 } from "./http2.js";
 export { createDomainShim, default as domain } from "./domain.js";
 export { createTlsShim, default as tls } from "./tls.js";

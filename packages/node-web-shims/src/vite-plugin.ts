@@ -32,6 +32,7 @@ const SHIMMED_BUILTINS = new Set([
   "repl",
   "inspector",
   "trace_events",
+  "vm",
 ]);
 
 // Subset of SHIMMED_BUILTINS actually backed by unenv (worker_threads is a

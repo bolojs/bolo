@@ -123,6 +123,13 @@ const decodeBytes = (buf: AnyBuffer, encoding: string, start?: number, end?: num
 // one-shot `Buffer.concat(bufs).toString(enc)`, which is exactly what the
 // Node string_decoder fuzz test asserts.
 //
+// NOTE: this holds only when the realm's `Buffer.toString('utf8')` is itself
+// WHATWG-faithful (V8, or a TextDecoder-backed polyfill). bolo's realm Buffer
+// (feross `buffer@6`) uses a hand-rolled decoder whose invalid-sequence
+// handling differs (one U+FFFD per byte, no maximal-subpart), so the fuzz
+// test's chunked-output vs one-shot-toString comparison cannot pass until
+// the Buffer side is aligned — see the report.
+//
 // UTF-16LE has no WHATWG quirk here, but Node's own semantics are
 // non-obvious: a lone high surrogate is carried across chunk boundaries and
 // paired with the next unit, and a trailing lone surrogate is preserved

@@ -3,6 +3,24 @@ import { Buffer as _BufferCtor } from "unenv/node/buffer";
 
 export * from "unenv/node/v8";
 
+// Node only exposes globalThis.gc with --expose-gc; browsers have no
+// JS-reachable garbage collector. Tests that merely invoke gc() (e.g.
+// test-v8-flag-pool-size-0) need the callable to exist — a no-op is the
+// honest maximum a browser realm can provide. Installed at module scope so
+// the process worker (which imports this package's registry) gets it before
+// user code runs; an existing gc (e.g. a host that provides one) wins.
+if (typeof globalThis === "object" && typeof (globalThis as { gc?: unknown }).gc !== "function") {
+  try {
+    Object.defineProperty(globalThis, "gc", {
+      value: () => {},
+      writable: true,
+      configurable: true,
+    });
+  } catch {
+    // A frozen globalThis (some sandboxed realms) — gc simply stays absent.
+  }
+}
+
 const v8 = _v8 as unknown as Record<string, unknown>;
 
 type BufferLike = { from: (v: string, enc: string) => Uint8Array };
