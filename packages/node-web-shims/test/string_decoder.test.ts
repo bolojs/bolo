@@ -27,6 +27,13 @@ describe("node-web-shims: string_decoder", () => {
     expect(d.end()).toBe("�");
   });
 
+  it("keeps a leading BOM as U+FEFF like Node", () => {
+    // Node's StringDecoder treats BOM bytes as data (no stripping); a default
+    // TextDecoder would eat it.
+    const d = new StringDecoder("utf8");
+    expect(d.write(Buffer.from([0xef, 0xbb, 0xbf, 0x61]))).toBe("﻿a");
+  });
+
   it("decodes utf16le including surrogate pairs split across writes", () => {
     const d = new StringDecoder("utf16le");
     const buf = Buffer.from("😀", "utf16le");

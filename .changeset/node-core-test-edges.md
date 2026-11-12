@@ -1,7 +1,10 @@
 ---
+"@bolojs/node-web-shims": patch
 "@bolojs/node-runtime-shims": minor
 "@bolojs/runtime": minor
 ---
+
+Node core-test edge fixes: `util.format` now maps Symbol to `'NaN'` under `%d`/`%i`/`%f` (instead of throwing "Cannot convert a Symbol value to a number"), renders BigInt with its `n` suffix for `%d`/`%i`, uses `parseInt` semantics for `%i`, inspects objects for `%s`, and reports `%j` cycles as `'[Circular: ~]'`. `Buffer.alloc` surfaces V8's `Invalid typed array length: N` RangeError past the 32-bit limit, `Buffer.from`'s `ERR_INVALID_ARG_TYPE` message lists `SharedArrayBuffer` like Node 22, and `Buffer.prototype.toString('utf8')` decodes through `TextDecoder` so invalid sequences consume maximal subparts (one U+FFFD) exactly like V8 — aligning the chunked `StringDecoder` output with a one-shot `Buffer.toString` for `test-string-decoder-fuzz`. `StringDecoder('utf8')` no longer strips a leading BOM, and `crypto.Hmac` gains the legacy `write`/`end`/`read` stream surface Node's `LazyTransform` exposes.
 
 Sync `child_process` (`spawnSync`/`execSync`/`execFileSync`) now runs for real inside process workers: the worker blocks on the sync channel while the main thread runs the child to completion through a new `child.runSync` op — sibling process workers for `node` specs (bundled file or `-e`/`-p` eval code, whose prelude now exposes `process`/`console`/`Buffer`/`require`), wasm-registry/shell dispatch for non-node commands — then ships buffered stdout/stderr/exit status back and the shim reconstructs Node's result shape (`{ pid, output, stdout, stderr, status, signal, error? }`, `ENOBUFS` on `maxBuffer` overflow, `ENOENT`-style error results). Without a backend the sync APIs keep the documented unsupported error; stdin `input` is not delivered.
 

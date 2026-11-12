@@ -230,19 +230,31 @@ const formatImpl = (
     const arg = args[argIndex++];
     switch (spec[1]) {
       case "s":
+        // Node converts everything with String() except BigInt, -0, and
+        // objects, which are inspected ('%s' of {} is '{}', not
+        // '[object Object]').
         if (typeof arg === "string") return arg;
+        if (typeof arg === "object" && arg !== null) {
+          return inspectValue(arg, inspectOptions ?? {}, 0, new Map());
+        }
+        if (typeof arg === "bigint") return `${arg}n`;
         return typeof arg === "number" ? numberToString(arg) : String(arg as string);
       case "d":
+        if (typeof arg === "bigint") return `${arg}n`;
+        if (typeof arg === "symbol") return "NaN";
         return numberToString(Number(arg));
       case "i":
-        return numberToString(Math.trunc(Number(arg)));
+        if (typeof arg === "bigint") return `${arg}n`;
+        if (typeof arg === "symbol") return "NaN";
+        return numberToString(Number.parseInt(String(arg), 10));
       case "f":
+        if (typeof arg === "symbol") return "NaN";
         return numberToString(Number(arg));
       case "j":
         try {
-          return JSON.stringify(arg);
+          return `${JSON.stringify(arg)}`;
         } catch {
-          return "[Circular]";
+          return "[Circular: ~]";
         }
       case "o":
       case "O":

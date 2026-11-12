@@ -41,6 +41,17 @@ describe("node-web-shims: buffer", () => {
     expect(target.subarray(0, written).toString("utf8")).toBe("hello world?+/>");
   });
 
+  it("decodes utf8 toString with WHATWG semantics like V8", () => {
+    const { Buffer } = createBufferShim();
+    // A truncated 3-byte sequence is one maximal subpart → a single U+FFFD
+    // (feross's hand-rolled decoder emitted one per byte).
+    expect(Buffer.from([0xe2, 0x82]).toString("utf8")).toBe("�");
+    // A leading BOM is data to Buffer.toString — not stripped.
+    expect(Buffer.from([0xef, 0xbb, 0xbf, 0x61]).toString()).toBe("﻿a");
+    // Invalid start bytes each produce one U+FFFD.
+    expect(Buffer.from([0x61, 0xff, 0x62]).toString("utf8")).toBe("a�b");
+  });
+
   it("Buffer.concat validates the list and its items like Node", () => {
     const { Buffer } = createBufferShim();
     expect(() =>
@@ -82,14 +93,15 @@ describe("node-web-shims: buffer", () => {
     );
   });
 
-  it("Buffer.alloc refuses sizes above Node's maximum with ERR_OUT_OF_RANGE", () => {
+  it("Buffer.alloc surfaces V8's RangeError past the typed-array limit", () => {
     const { Buffer } = createBufferShim();
+    // Node lets `new Uint8Array(size)` throw natively — a plain RangeError
+    // with V8's wording and no `code` property (test-buffer-alloc).
     expect(() =>
       (Buffer as unknown as { alloc: (n: number) => void }).alloc(0x80000000),
     ).toThrowError(
       expect.objectContaining({
-        code: "ERR_OUT_OF_RANGE",
-        message: "Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes",
+        message: "Invalid typed array length: 2147483648",
       }),
     );
   });
@@ -173,7 +185,7 @@ describe("node-web-shims: buffer", () => {
     const { Buffer } = createBufferShim();
     const prefix =
       "The first argument must be of type string or an instance of " +
-      "Buffer, ArrayBuffer, or Array or an Array-like Object.";
+      "Buffer, ArrayBuffer, SharedArrayBuffer, Array or an Array-like Object.";
     const cases: Array<[unknown, string]> = [
       [{}, " Received an instance of Object"],
       [new Boolean(true), " Received an instance of Boolean"],
@@ -213,7 +225,7 @@ describe("node-web-shims: buffer", () => {
         code: "ERR_INVALID_ARG_TYPE",
         message:
           "The first argument must be of type string or an instance of " +
-          "Buffer, ArrayBuffer, or Array or an Array-like Object. " +
+          "Buffer, ArrayBuffer, SharedArrayBuffer, Array or an Array-like Object. " +
           "Received an instance of Object",
       }),
     );

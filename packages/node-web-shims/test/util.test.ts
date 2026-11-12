@@ -38,6 +38,29 @@ describe("node-web-shims: util", () => {
     expect(inspect(-0)).toBe("-0");
   });
 
+  it("format() handles Symbol and BigInt args like Node (test-util-format)", () => {
+    // Node converts symbols to 'NaN' under numeric specifiers instead of
+    // throwing "Cannot convert a Symbol value to a number".
+    expect(format("%d", Symbol("x"))).toBe("NaN");
+    expect(format("%i", Symbol("x"))).toBe("NaN");
+    expect(format("%f", Symbol("x"))).toBe("NaN");
+    expect(format("%s", Symbol("x"))).toBe("Symbol(x)");
+    // BigInt keeps its 'n' suffix for %d/%i and stays decimal for %f.
+    expect(format("%d", 42n)).toBe("42n");
+    expect(format("%i", 42n)).toBe("42n");
+    // %i uses parseInt semantics — partial numeric strings still parse.
+    expect(format("%i", "42.9")).toBe("42");
+    expect(format("%i", "abc")).toBe("NaN");
+  });
+
+  it("format() inspects objects for %s and reports %j cycles like Node", () => {
+    expect(format("%s", { a: 1 })).toBe("{ a: 1 }");
+    expect(format("%s", [1, 2])).toBe("[ 1, 2 ]");
+    const circular: { self?: unknown } = {};
+    circular.self = circular;
+    expect(format("%j", circular)).toBe("[Circular: ~]");
+  });
+
   it("format() tolerates non-string first arguments", () => {
     // unenv's version threw `.replace of undefined` here.
     expect(format({ a: 1 })).toBe("{ a: 1 }");

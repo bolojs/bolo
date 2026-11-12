@@ -86,6 +86,19 @@ describe("hmac", () => {
       nodeCrypto.createHmac("sha256", key).update("m").digest("hex"),
     );
   });
+
+  it("drives the legacy stream surface like Node's LazyTransform", () => {
+    // test-crypto-hmac ends the writable side with the input and reads the
+    // digest back — `str.end is not a function` regressed that shape.
+    const ours = c.createHmac("sha256", "secret-key") as unknown as {
+      end(d: string): void;
+      read(): { toString(e: string): string } | null;
+    };
+    ours.end("message");
+    const theirs = nodeCrypto.createHmac("sha256", "secret-key");
+    theirs.end("message");
+    expect(ours.read()?.toString("hex")).toBe(theirs.read()?.toString("hex"));
+  });
 });
 
 describe("kdf", () => {

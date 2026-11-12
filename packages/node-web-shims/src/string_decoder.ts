@@ -123,12 +123,9 @@ const decodeBytes = (buf: AnyBuffer, encoding: string, start?: number, end?: num
 // one-shot `Buffer.concat(bufs).toString(enc)`, which is exactly what the
 // Node string_decoder fuzz test asserts.
 //
-// NOTE: this holds only when the realm's `Buffer.toString('utf8')` is itself
-// WHATWG-faithful (V8, or a TextDecoder-backed polyfill). bolo's realm Buffer
-// (feross `buffer@6`) uses a hand-rolled decoder whose invalid-sequence
-// handling differs (one U+FFFD per byte, no maximal-subpart), so the fuzz
-// test's chunked-output vs one-shot-toString comparison cannot pass until
-// the Buffer side is aligned — see the report.
+// This holds because the realm Buffer's utf8 `toString` is itself patched to
+// route through `TextDecoder({ ignoreBOM: true })` (see buffer.ts), so both
+// sides of the fuzz comparison decode with the same WHATWG algorithm.
 //
 // UTF-16LE has no WHATWG quirk here, but Node's own semantics are
 // non-obvious: a lone high surrogate is carried across chunk boundaries and
@@ -136,7 +133,10 @@ const decodeBytes = (buf: AnyBuffer, encoding: string, start?: number, end?: num
 // literally (not replaced) — see the verified model below.
 
 class Utf8StreamDecoder {
-  #decoder = new TextDecoder("utf-8");
+  // `ignoreBOM: true` keeps a leading BOM as U+FEFF in the output — Node's
+  // StringDecoder does not strip BOMs (they are just bytes to it), and the
+  // fuzz test compares against `Buffer.toString`, which keeps them too.
+  #decoder = new TextDecoder("utf-8", { ignoreBOM: true });
 
   write(buf: AnyBuffer): string {
     return this.#decoder.decode(new Uint8Array(buf as unknown as Uint8Array), {
