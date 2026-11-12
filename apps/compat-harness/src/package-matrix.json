@@ -463,7 +463,7 @@
     {
       "name": "hash.js",
       "class": "Crypto",
-      "source": "import hash from 'hash.js';\ntry {\n  const h = hash.utils.sha256('hello');\n  if (h.length !== 64) throw new Error('hash.js failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+      "source": "import hash from 'hash.js';\ntry {\n  const h = (hash.sha256 ? hash.sha256().update('hello').digest('hex') : hash.utils?.sha256?.('hello'));\n  if (h.length !== 64) throw new Error('hash.js failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
     },
     {
       "name": "md5",
