@@ -279,6 +279,13 @@ export class LoopbackTransport implements ByteTransport {
 }
 
 /**
+ * Realm-wide default loopback: bare `new Socket()`/`new Server()` and every
+ * `createNetShim` without a configured backend share one in-process loopback
+ * namespace, mirroring Node where all realm code sees the same localhost.
+ */
+const defaultLoopback = new LoopbackTransport();
+
+/**
  * A half of a loopback connection: writes feed the peer's readable. The
  * writable is intentionally not back-pressured by the reader (loopback
  * buffers are unbounded in Node too — the kernel manages them, and the
@@ -842,14 +849,16 @@ export const Socket = function Socket(
   // Node's public signature is `new Socket(options?)` — when the first arg
   // is not a ByteTransport it is the options object, not a transport.
   if (transport !== undefined && typeof (transport as ByteTransport).connect !== "function") {
-    options = options ?? (typeof transport === "object" ? (transport as SocketOptions) : undefined);
+    options =
+      options ??
+      (typeof transport === "object" ? (transport as unknown as SocketOptions) : undefined);
     transport = undefined;
   }
   const opts = options ?? { port: 0 };
   DuplexCtor.call(this, { allowHalfOpen: opts.allowHalfOpen ?? false });
 
   const self = this as unknown as SocketInternal;
-  self._transport = transport ?? new NoopTransport();
+  self._transport = transport ?? defaultLoopback;
   self._options = opts;
   self._tracker = defaultHandleTracker;
   self._connecting = false;
@@ -1425,7 +1434,7 @@ export const Server = function Server(
   // initialization the stream port uses in `Stream`.
   events.init(this);
   const self = this as unknown as ServerInternal;
-  self._transport = transport ?? new NoopTransport();
+  self._transport = transport ?? defaultLoopback;
   self._tracker = defaultHandleTracker;
   self._allowHalfOpen = options?.allowHalfOpen ?? false;
   self._listener = undefined;
@@ -1639,7 +1648,7 @@ export const createNetShim = (_sandbox?: unknown, options?: NetShimOptions) => {
   // `tcpRelay` or explicit `transport` still wins for real egress.
   const transport: ByteTransport =
     options?.transport ??
-    (options?.tcpRelay?.url ? new WebSocketTransport(options.tcpRelay.url) : new LoopbackTransport());
+    (options?.tcpRelay?.url ? new WebSocketTransport(options.tcpRelay.url) : defaultLoopback);
   const tracker = options?.handleTracker ?? defaultHandleTracker;
 
   const bindTracker = <T extends { _tracker?: NetHandleTracker }>(obj: T): T => {

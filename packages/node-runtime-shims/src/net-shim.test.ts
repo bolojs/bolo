@@ -128,13 +128,18 @@ describe("net-shim", () => {
   });
 
   it("NoopTransport throws on connect", () => {
-    const socket = new Socket();
-    expect(() => socket.connect("localhost:5432")).toThrow(EXPECTED_CONNECT_ERROR);
+    expect(() => new NoopTransport().connect({ port: 1 }, () => {})).toThrow(
+      EXPECTED_CONNECT_ERROR,
+    );
   });
 
-  it("createNetShim with no tcpRelay throws on connect", () => {
+  it("createNetShim with no tcpRelay falls back to loopback (ECONNREFUSED on unbound ports)", async () => {
     const netShim = createNetShim(undefined);
-    expect(() => netShim.connect({ port: 80 })).toThrow(EXPECTED_CONNECT_ERROR);
+    const socket = netShim.connect({ port: 1 });
+    const err = await new Promise<Error & { code?: string }>((resolve) =>
+      socket.on("error", resolve),
+    );
+    expect(err.code).toBe("ECONNREFUSED");
   });
 
   it("WebSocketTransport sends connect frame and resolves on connected", async () => {
@@ -271,11 +276,11 @@ describe("net-shim", () => {
     );
   });
 
-  it("Server with no transport throws on listen", () => {
+  it("Server with no explicit transport listens on the shared loopback", async () => {
     const server = new Server();
-    expect(() => server.listen(0, "localhost")).toThrow(
-      "net.Server.listen requires a StreamBackend (TCP relay). Register one via createLiveShimRegistry({ netBackend }) or configure a tcpRelay. See: https://bolojs.dev/docs/shim-coverage",
-    );
+    await new Promise<void>((resolve) => server.listen({ port: 0 }, resolve));
+    expect((server.address() as { port: number }).port).toBeGreaterThan(0);
+    await new Promise<void>((resolve) => server.close(() => resolve()));
   });
 
   it("Server.listen emits listening and address returns relay-assigned port", async () => {

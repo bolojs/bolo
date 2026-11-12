@@ -499,9 +499,7 @@ export const createChildProcessShim = (
    * (no CLI-flag surface exists in the browser runtime). The first non-flag
    * arg is the entry filename.
    */
-  const nodeRunSpec = (
-    argv: readonly string[],
-  ): Pick<SyncRunRequest, "filename" | "code" | "args"> => {
+  const nodeRunSpec = (argv: readonly string[]): SyncRunRequest => {
     const rest = [...argv];
     while (rest.length > 0 && rest[0].startsWith("-")) {
       const flag = rest.shift()!;
@@ -567,7 +565,9 @@ export const createChildProcessShim = (
 
     const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
     const toStdio = (text: string) =>
-      encoding === "buffer" ? Buffer.from(text) : Buffer.from(text).toString(encoding);
+      encoding === "buffer"
+        ? Buffer.from(text)
+        : Buffer.from(text).toString(encoding as BufferEncoding);
 
     const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
     let stdout = res.stdout ?? "";
@@ -599,16 +599,14 @@ export const createChildProcessShim = (
     };
   };
 
-  const execSync = (
-    command: string,
-    options?: Record<string, unknown>,
-  ): Buffer | string => {
+  const execSync = (command: string, options?: Record<string, unknown>): Buffer | string => {
     const opts = options ?? {};
     const str = String(command);
     const parts = str.trim().split(/\s+/);
-    const req = parts.length > 0 && isNodeCommand(parts[0])
-      ? nodeRunSpec(parts.slice(1))
-      : runSpecFor(str, [], true);
+    const req =
+      parts.length > 0 && isNodeCommand(parts[0])
+        ? nodeRunSpec(parts.slice(1))
+        : runSpecFor(str, [], true);
     req.env = envFrom(opts);
     req.cwd = cwdFrom(opts);
     const res = runSyncOrThrow(req);
@@ -620,7 +618,9 @@ export const createChildProcessShim = (
 
     const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
     const encodeOut = (text: string) =>
-      encoding === "buffer" ? Buffer.from(text) : Buffer.from(text).toString(encoding);
+      encoding === "buffer"
+        ? Buffer.from(text)
+        : Buffer.from(text).toString(encoding as BufferEncoding);
     if (res.error) {
       throw Object.assign(new Error(res.error.message), {
         code: res.error.code,
@@ -644,7 +644,7 @@ export const createChildProcessShim = (
     options?: Record<string, unknown>,
   ): Buffer | string => {
     const argv = Array.isArray(args) ? args : [];
-    const opts = (Array.isArray(args) ? options : args) ?? {};
+    const opts = ((Array.isArray(args) ? options : args) ?? {}) as Record<string, unknown>;
     const req = runSpecFor(file, argv);
     req.env = envFrom(opts);
     req.cwd = cwdFrom(opts);
@@ -657,7 +657,9 @@ export const createChildProcessShim = (
 
     const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
     const encodeOut = (text: string) =>
-      encoding === "buffer" ? Buffer.from(text) : Buffer.from(text).toString(encoding);
+      encoding === "buffer"
+        ? Buffer.from(text)
+        : Buffer.from(text).toString(encoding as BufferEncoding);
     if (res.error) {
       throw Object.assign(new Error(res.error.message), {
         code: res.error.code,
