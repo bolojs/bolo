@@ -1,5 +1,8 @@
 import asyncHooks from "unenv/node/async_hooks";
-import { AsyncResource as UnenvAsyncResource, createHook as unenvCreateHook } from "unenv/node/async_hooks";
+import {
+  AsyncResource as UnenvAsyncResource,
+  createHook as unenvCreateHook,
+} from "unenv/node/async_hooks";
 import type nodeAsyncHooks from "node:async_hooks";
 export * from "unenv/node/async_hooks";
 
@@ -21,7 +24,7 @@ export class AsyncLocalStorage<T> {
   }
 
   getStore(): T | undefined {
-    return this.enabled && context.has(this) ? context.get(this) as T : this.defaultValue;
+    return this.enabled && context.has(this) ? (context.get(this) as T) : this.defaultValue;
   }
 
   enterWith(store: T) {
@@ -74,7 +77,11 @@ export class AsyncLocalStorage<T> {
 export class AsyncResource extends UnenvAsyncResource {
   private readonly runContext = AsyncLocalStorage.snapshot();
 
-  override runInAsyncScope<F extends (...args: any[]) => any>(fn: F, thisArg?: unknown, ...args: Parameters<F>): ReturnType<F> {
+  override runInAsyncScope<F extends (...args: any[]) => any>(
+    fn: F,
+    thisArg?: unknown,
+    ...args: Parameters<F>
+  ): ReturnType<F> {
     return this.runContext(() => Reflect.apply(fn, thisArg, args));
   }
 }
@@ -82,7 +89,9 @@ export class AsyncResource extends UnenvAsyncResource {
 export const createHook: typeof nodeAsyncHooks.createHook = (callbacks) => {
   for (const name of ["init", "before", "after", "destroy", "promiseResolve"] as const) {
     if (callbacks[name] !== undefined && typeof callbacks[name] !== "function") {
-      throw Object.assign(new TypeError(`hook.${name} must be a function`), { code: "ERR_ASYNC_CALLBACK" });
+      throw Object.assign(new TypeError(`hook.${name} must be a function`), {
+        code: "ERR_ASYNC_CALLBACK",
+      });
     }
   }
   return unenvCreateHook(callbacks);

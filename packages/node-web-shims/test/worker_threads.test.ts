@@ -38,13 +38,9 @@ const evalSpawner = () => {
           "process",
           spec.code ?? "",
         );
-        fn(
-          parentPort,
-          spec.workerData,
-          false,
-          globalThis.MessageChannel,
-          { exit: (c?: number) => onExit?.(c ?? 0) },
-        );
+        fn(parentPort, spec.workerData, false, globalThis.MessageChannel, {
+          exit: (c?: number) => onExit?.(c ?? 0),
+        });
         onExit?.(0);
       } catch (err) {
         onError?.(err);

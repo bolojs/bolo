@@ -25,7 +25,11 @@ describe("node-web-shims: async_hooks", () => {
     const als = new AsyncLocalStorage();
     const callbacks: Array<() => unknown> = [];
     als.run("outer", () => {
-      expect(() => als.run("inner", () => { throw new Error("boom"); })).toThrow("boom");
+      expect(() =>
+        als.run("inner", () => {
+          throw new Error("boom");
+        }),
+      ).toThrow("boom");
       expect(als.getStore()).toBe("outer");
       callbacks.push(AsyncLocalStorage.bind(() => als.getStore()));
     });
@@ -40,9 +44,13 @@ describe("node-web-shims: async_hooks", () => {
     const { createHook } = createAsyncHooksShim();
     for (const name of ["init", "before", "after", "destroy", "promiseResolve"]) {
       for (const value of [null, 1, {}, []]) {
-        expect(() => createHook({ [name]: value })).toThrow(expect.objectContaining({
-          name: "TypeError", code: "ERR_ASYNC_CALLBACK", message: `hook.${name} must be a function`,
-        }));
+        expect(() => createHook({ [name]: value })).toThrow(
+          expect.objectContaining({
+            name: "TypeError",
+            code: "ERR_ASYNC_CALLBACK",
+            message: `hook.${name} must be a function`,
+          }),
+        );
       }
     }
   });
