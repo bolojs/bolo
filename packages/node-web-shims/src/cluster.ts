@@ -26,17 +26,22 @@ const { EventEmitter } = createEventsShim();
  * but no separate realm runs.
  */
 
-declare global {
-  // Set by the container host before a bundled app evaluates; the bundle's
-  // `node:cluster` virtual module reads this realm's shim off it.
-  // eslint-disable-next-line no-var
-  var __browserContainers:
-    | { shims?: Record<string, unknown> }
-    | undefined;
-}
+// `__browserContainers` is set by the container host before a bundled app
+// evaluates; the bundle's `node:cluster` virtual module reads this realm's
+// shim off it.
+//
+// Deliberately not a `declare global`: the runtime package declares the same
+// global with a richer shape (`vfs`/`sandbox`/`timers` alongside `shims`),
+// and two `declare global` blocks for one name must agree exactly — the
+// mismatch fails the runtime's build with "Subsequent variable declarations
+// must have the same type". The local cast below reads the same global
+// without contributing a competing declaration.
 
-export const SCHED_NONE = 1;
-export const SCHED_RR = 2;
+const SCHED_NONE_VALUE = 1;
+const SCHED_RR_VALUE = 2;
+
+export const SCHED_NONE = SCHED_NONE_VALUE;
+export const SCHED_RR = SCHED_RR_VALUE;
 export const schedulingPolicy = SCHED_RR;
 
 export const settings: Record<string, unknown> = {};
@@ -167,6 +172,10 @@ export class Worker extends EventEmitter {
   #exitCode: number | null = null;
   #signalCode: string | null = null;
   #killSignal: string | null = null;
+  /** The spawned thread reported 'online' before 'fork' was emitted. */
+  #onlinePending = false;
+  /** 'fork' has been emitted — 'online' may now be delivered. */
+  #forked = false;
 
   constructor(id: number) {
     super();
@@ -207,7 +216,26 @@ export class Worker extends EventEmitter {
   }
 
   /**
-   * Primary side: bind the spawned realm's worker_threads handle. 'fork' is
+   * Deliver 'online' once 'fork' has been emitted. Node's primary emits
+   * 'fork' on the tick after fork() returns and 'online' only afterwards
+   * (the spawned process has to boot first), so the two are strictly
+   * ordered: fork → online → listening → exit.
+   */
+  #flushOnline(): void {
+    if (!this.#onlinePending || !this.#forked || this.#exited) return;
+    this.#onlinePending = false;
+    this.state = "online";
+    cluster.emit("online", this);
+    this.emit("online");
+  }
+
+  /** Mark this worker as forked — unblocks a pending 'online'. */
+  markForked(): void {
+    this.#forked = true;
+    this.#flushOnline();
+  }
+
+  /** Primary side: bind the spawned realm's worker_threads handle. 'fork' is
    * emitted by the caller; 'online' arrives on the thread's own spawn tick,
    * preserving the fork → online → listening → exit event order.
    */
@@ -219,9 +247,12 @@ export class Worker extends EventEmitter {
     this.#thread = thread;
     thread.on("online", () => {
       if (this.#exited) return;
-      this.state = "online";
-      cluster.emit("online", this);
-      this.emit("online");
+      // 'fork' is emitted on the tick after fork() returns; the spawned
+      // thread's 'online' can land before that tick. Hold 'online' back
+      // until 'fork' has been emitted, so the fork → online → listening →
+      // exit order holds even on a fast spawn.
+      this.#onlinePending = true;
+      this.#flushOnline();
     });
     thread.on("message", (value: unknown) => this.#inbound(value));
     thread.on("exit", (code: number) => {
@@ -398,8 +429,11 @@ let nextWorkerId = 1;
 class Cluster extends EventEmitter {
   Worker = Worker;
   schedulingPolicy = schedulingPolicy;
-  SCHED_NONE = SCHED_NONE;
-  SCHED_RR = SCHED_RR;
+  // Renamed locals: a class field named `SCHED_RR` shadows the module-level
+  // const in its own initializer, so `SCHED_RR = SCHED_RR` reads the
+  // (uninitialized) field instead of the exported constant.
+  SCHED_NONE = SCHED_NONE_VALUE;
+  SCHED_RR = SCHED_RR_VALUE;
   settings = settings;
   workers = workers;
 
@@ -411,6 +445,14 @@ class Cluster extends EventEmitter {
    */
   #realm: "unknown" | "primary" | "worker" = "unknown";
   #workerSelf?: Worker;
+
+  // Realm flags are installed as own enumerable getters in the constructor
+  // (bundler `Object.keys` materialization); these declarations only teach
+  // TypeScript about them.
+  declare isWorker: boolean;
+  declare isPrimary: boolean;
+  declare isMaster: boolean;
+  declare worker: Worker | undefined;
 
   constructor() {
     super();
@@ -481,6 +523,13 @@ class Cluster extends EventEmitter {
 
   fork(env?: Record<string, string>): Worker {
     this.#detect();
+    // A cluster worker never forks: Node loads `internal/cluster/child.js`
+    // in the child realm, which exports no `fork`. Without this guard the
+    // forked realm re-runs the primary's entry script, hits `cluster.fork()`
+    // again, and the two realms fork each other into a fork bomb.
+    if (this.#realm === "worker") {
+      throw new Error("cluster.fork() is not available in a worker");
+    }
     const newWorker = new Worker(nextWorkerId++);
     workers[newWorker.id] = newWorker;
 
@@ -501,9 +550,19 @@ class Cluster extends EventEmitter {
         thread = undefined;
       }
       newWorker.attachThread(thread);
-      // 'fork' is synchronous — it must precede the spawned thread's queued
-      // 'online' and see state 'none' (Node emits it inside fork()).
-      this.emit("fork", newWorker);
+      // Node emits 'fork' on the next tick, not synchronously inside fork()
+      // (lib/internal/cluster/primary.js: `process.nextTick(emitForkNT, worker)`).
+      // The difference is observable: a handler registered before
+      // `const worker = cluster.fork()` reads `worker` in its body, and a
+      // synchronous emit would hit the temporal dead zone
+      // ("Cannot access 'worker' before initialization"). A microtask also
+      // runs before the spawned thread's 'online', so the fork → online →
+      // listening → exit order is preserved.
+      queueMicrotask(() => {
+        if (newWorker.isDead()) return;
+        this.emit("fork", newWorker);
+        newWorker.markForked();
+      });
       return newWorker;
     }
 
