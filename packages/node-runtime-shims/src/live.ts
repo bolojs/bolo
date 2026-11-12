@@ -234,6 +234,15 @@ export const createLiveShimRegistry = (
     readline: nodeWebShims.readline,
     v8: nodeWebShims.v8,
     http2: nodeWebShims.http2,
+    domain: nodeWebShims.domain,
+    // dgram/tls get a real single-process skeleton here; a host with a true
+    // backend (options.dgramBackend/tlsBackend) overrides below.
+    dgram: nodeWebShims.dgram,
+    tls: nodeWebShims.tls,
+    cluster: nodeWebShims.cluster,
+    repl: nodeWebShims.repl,
+    inspector: nodeWebShims.inspector,
+    trace_events: nodeWebShims.trace_events,
     vm: createVmShim(),
     dns: createDnsShim({ dohEndpoint: options.dohEndpoint }),
     fs: createFsShim(options.vfs),

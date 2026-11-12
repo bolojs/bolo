@@ -1,26 +1,93 @@
 import buffer from "unenv/node/buffer";
 
 /**
- * Node's `ERR_INVALID_ARG_TYPE` shape. The message mirrors Node's
- * `The "<name>" argument must be of type <type>. Received <received>`.
+ * Node's `determineSpecificType` (lib/internal/errors.js) — the text after
+ * "Received" in `ERR_INVALID_ARG_TYPE` messages.
  */
-const argTypeError = (name: string, expected: string, value: unknown): TypeError => {
-  const received =
-    value === null
-      ? "null"
-      : typeof value === "object" && value !== undefined
-        ? `an instance of ${value.constructor?.name || "Object"}`
-        : `type ${typeof value} (${String(value)})`;
-  return Object.assign(
-    new TypeError(`The "${name}" argument must be of type ${expected}. Received ${received}`),
+const determineSpecificType = (value: unknown): string => {
+  if (value === null) return "null";
+  if (value === undefined) return "undefined";
+  switch (typeof value) {
+    case "bigint":
+      return `type bigint (${value}n)`;
+    case "number":
+      if (value === 0) return 1 / value === -Infinity ? "type number (-0)" : "type number (0)";
+      if (Number.isNaN(value)) return "type number (NaN)";
+      if (value === Infinity) return "type number (Infinity)";
+      if (value === -Infinity) return "type number (-Infinity)";
+      return `type number (${value})`;
+    case "boolean":
+      return value ? "type boolean (true)" : "type boolean (false)";
+    case "symbol":
+      return `type symbol (${String(value)})`;
+    case "function":
+      return `function ${(value as Function).name}`;
+    case "object": {
+      const ctor = (value as { constructor?: { name?: string } }).constructor;
+      if (ctor && typeof ctor.name === "string" && ctor.name !== "") {
+        return `an instance of ${ctor.name}`;
+      }
+      return "an instance of Object";
+    }
+    case "string": {
+      let s = value as string;
+      if (s.length > 28) s = `${s.slice(0, 25)}...`;
+      return s.includes("'") ? `type string (${JSON.stringify(s)})` : `type string ('${s}')`;
+    }
+    default:
+      return `type ${typeof value} (${String(value)})`;
+  }
+};
+
+/** Node's `ERR_INVALID_ARG_TYPE`. `expected` is the text after "must be". */
+const invalidArgType = (name: string, expected: string, value: unknown): TypeError =>
+  Object.assign(
+    new TypeError(
+      `The "${name}" argument must be ${expected}. Received ${determineSpecificType(value)}`,
+    ),
     { code: "ERR_INVALID_ARG_TYPE" },
   );
+
+/** Node's `ERR_OUT_OF_RANGE` for a numeric value outside `[min, max]`. */
+const outOfRange = (name: string, range: string, value: number): RangeError =>
+  Object.assign(
+    new RangeError(
+      `The value of "${name}" is out of range. It must be ${range}. Received ${String(value)}`,
+    ),
+    { code: "ERR_OUT_OF_RANGE" },
+  );
+
+/** Node 22's `buffer.kMaxLength` (`validateNumber(size, 'size', 0, kMaxLength)`). */
+const K_MAX_LENGTH = 9007199254740991;
+
+const KNOWN_ENCODINGS = new Set([
+  "utf8",
+  "utf-8",
+  "ascii",
+  "latin1",
+  "binary",
+  "base64",
+  "base64url",
+  "hex",
+  "ucs2",
+  "ucs-2",
+  "utf16le",
+  "utf-16le",
+]);
+
+const assertSize: (size: unknown) => asserts size is number = (size) => {
+  if (typeof size !== "number") {
+    throw invalidArgType("size", "of type number", size);
+  }
+  if (size < 0 || size > K_MAX_LENGTH || Number.isNaN(size)) {
+    throw outOfRange("size", `>= 0 && <= ${K_MAX_LENGTH}`, size);
+  }
 };
 
 /**
- * Node refuses buffers larger than its 32-bit size limit with a coded
- * RangeError. Browsers cannot allocate that much anyway, but the code and
- * message must match so callers can branch on them.
+ * feross's Buffer cannot allocate past its own 32-bit limit even though Node
+ * 22 allows sizes up to `Number.MAX_SAFE_INTEGER`; keep the coded RangeError
+ * so callers can branch on it.
  */
 const assertAllocatable = (size: number): void => {
   if (size > 0x7fffffff) {
@@ -86,22 +153,7 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
     // Node rejects unknown encodings with a coded TypeError; feross's Buffer
     // silently treats them as utf8, which broke `Buffer.from('', 'buffer')`.
     if (typeof value === "string" && typeof encodingOrOffset === "string") {
-      const enc = encodingOrOffset.toLowerCase();
-      const known = [
-        "utf8",
-        "utf-8",
-        "ascii",
-        "latin1",
-        "binary",
-        "base64",
-        "base64url",
-        "hex",
-        "ucs2",
-        "ucs-2",
-        "utf16le",
-        "utf-16le",
-      ];
-      if (!known.includes(enc)) {
+      if (!KNOWN_ENCODINGS.has(encodingOrOffset.toLowerCase())) {
         throw Object.assign(new TypeError(`Unknown encoding: ${encodingOrOffset}`), {
           code: "ERR_UNKNOWN_ENCODING",
         });
@@ -110,6 +162,19 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
     // Node: non-string, non-view, non-array-like first argument → coded
     // TypeError. feross's Buffer accepts anything shapeless here.
     if (typeof value !== "string") {
+      // Node honors Symbol.toPrimitive (e.g. `Buffer.from({ [Symbol.toPrimitive]: () => 'x' })`).
+      if (
+        value !== null &&
+        typeof value === "object" &&
+        typeof (value as { [Symbol.toPrimitive]?: unknown })[Symbol.toPrimitive] === "function"
+      ) {
+        const primitive = (value as { [Symbol.toPrimitive]: (hint: string) => unknown })[
+          Symbol.toPrimitive
+        ]("string");
+        if (typeof primitive === "string") {
+          return origFrom.call(this, primitive, encodingOrOffset);
+        }
+      }
       const okType =
         ArrayBuffer.isView(value) ||
         value instanceof ArrayBuffer ||
@@ -122,7 +187,7 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
           new TypeError(
             "The first argument must be of type string or an instance of " +
               "Buffer, ArrayBuffer, or Array or an Array-like Object. " +
-              `Received ${describe(value)}`,
+              `Received ${determineSpecificType(value)}`,
           ),
           { code: "ERR_INVALID_ARG_TYPE" },
         );
@@ -184,17 +249,11 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
   const origConcat = BufferClass.concat;
   BufferClass.concat = function (list: unknown, length?: unknown): unknown {
     if (!Array.isArray(list)) {
-      throw argTypeError("list", "Array", list);
+      throw invalidArgType("list", "an instance of Array", list);
     }
-    list.forEach((item, index) => {
+    list.forEach((item: unknown, index: number) => {
       if (!BufferClass.isBuffer(item) && !(item instanceof Uint8Array)) {
-        throw Object.assign(
-          new TypeError(
-            `The "list[${index}]" argument must be an instance of Buffer or Uint8Array. ` +
-              `Received ${describe(item)}`,
-          ),
-          { code: "ERR_INVALID_ARG_TYPE" },
-        );
+        throw invalidArgType(`list[${index}]`, "an instance of Buffer or Uint8Array", item);
       }
     });
     return origConcat.call(this, list, length);
@@ -202,33 +261,47 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
 
   const origAlloc = BufferClass.alloc;
   BufferClass.alloc = function (size: unknown, fill?: unknown, encoding?: unknown): unknown {
-    if (typeof size !== "number" || !Number.isFinite(size) || size < 0) {
-      throw Object.assign(new TypeError('"size" argument must be of type number'), {
-        code: "ERR_INVALID_ARG_TYPE",
-      });
-    }
+    assertSize(size);
     assertAllocatable(size);
+    if (fill !== undefined && fill !== 0 && size > 0) {
+      if (typeof fill === "string") {
+        // Node validates the encoding for string fills (Buffer.alloc(40, 'x', 20)).
+        if (encoding != null && typeof encoding !== "string") {
+          throw invalidArgType("encoding", "of type string", encoding);
+        }
+        if (typeof encoding === "string" && !KNOWN_ENCODINGS.has(encoding.toLowerCase())) {
+          throw Object.assign(new TypeError(`Unknown encoding: ${encoding}`), {
+            code: "ERR_UNKNOWN_ENCODING",
+          });
+        }
+      } else if (
+        fill !== null &&
+        typeof fill === "object" &&
+        (fill as { length?: number }).length === 0
+      ) {
+        // Node refuses zero-length fills: Buffer.alloc(1, Buffer.alloc(0)).
+        const inspected = BufferClass.isBuffer(fill) ? "<Buffer >" : `${String(fill)}`;
+        throw Object.assign(
+          new TypeError(`The argument 'value' is invalid. Received ${inspected}`),
+          {
+            code: "ERR_INVALID_ARG_VALUE",
+          },
+        );
+      }
+    }
     return origAlloc.call(this, size, fill, encoding);
   };
 
   const origAllocUnsafe = BufferClass.allocUnsafe;
   BufferClass.allocUnsafe = function (size: unknown): unknown {
-    if (typeof size !== "number" || !Number.isFinite(size) || size < 0) {
-      throw Object.assign(new TypeError('"size" argument must be of type number'), {
-        code: "ERR_INVALID_ARG_TYPE",
-      });
-    }
+    assertSize(size);
     assertAllocatable(size);
     return origAllocUnsafe.call(this, size);
   };
 
   const origAllocUnsafeSlow = BufferClass.allocUnsafeSlow;
   BufferClass.allocUnsafeSlow = function (size: unknown): unknown {
-    if (typeof size !== "number" || !Number.isFinite(size) || size < 0) {
-      throw Object.assign(new TypeError('"size" argument must be of type number'), {
-        code: "ERR_INVALID_ARG_TYPE",
-      });
-    }
+    assertSize(size);
     assertAllocatable(size);
     return origAllocUnsafeSlow.call(this, size);
   };
@@ -241,24 +314,12 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
     sourceStart?: unknown,
     sourceEnd?: unknown,
   ): unknown {
-    if (target === undefined || target === null) {
-      throw argTypeError("target", "Buffer or Uint8Array", target);
+    if (!BufferClass.isBuffer(target) && !(target instanceof Uint8Array)) {
+      throw invalidArgType("target", "an instance of Buffer or Uint8Array", target);
     }
     return origCopy.call(this, target, targetStart, sourceStart, sourceEnd);
   };
 }
-
-/** Node's `invalidArgTypeHelper`-style description of a bad value. */
-const describe = (value: unknown): string => {
-  if (value === null) return "null";
-  if (value === undefined) return "undefined";
-  if (typeof value === "function") return `function ${value.name}`;
-  if (typeof value === "object") {
-    const ctor = (value as { constructor?: { name?: string } }).constructor?.name;
-    return ctor ? `an instance of ${ctor}` : String(value);
-  }
-  return `type ${typeof value} (${String(value)})`;
-};
 
 export * from "unenv/node/buffer";
 

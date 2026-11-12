@@ -46,6 +46,13 @@ export {
 export { createReadlineShim, default as readline } from "./readline.js";
 export { createV8Shim, default as v8 } from "./v8.js";
 export { createHttp2Shim, default as http2 } from "./http2.js";
+export { createDomainShim, default as domain } from "./domain.js";
+export { createTlsShim, default as tls } from "./tls.js";
+export { createDgramShim, default as dgram } from "./dgram.js";
+export { createClusterShim, default as cluster } from "./cluster.js";
+export { createReplShim, default as repl } from "./repl.js";
+export { createInspectorShim, default as inspector } from "./inspector.js";
+export { createTraceEventsShim, default as trace_events } from "./trace_events.js";
 export {
   installNavigatorUserAgent,
   installUnhandledRejectionHandler,
