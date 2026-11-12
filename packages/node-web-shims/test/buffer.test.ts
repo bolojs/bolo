@@ -40,4 +40,57 @@ describe("node-web-shims: buffer", () => {
     expect(written).toBe(buf.length);
     expect(target.subarray(0, written).toString("utf8")).toBe("hello world?+/>");
   });
+
+  it("Buffer.concat validates the list and its items like Node", () => {
+    const { Buffer } = createBufferShim();
+    expect(() =>
+      (Buffer as unknown as { concat: (v: unknown) => void }).concat(undefined),
+    ).toThrowError(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }));
+    expect(() => (Buffer as unknown as { concat: (v: unknown) => void }).concat(null)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(() =>
+      (Buffer as unknown as { concat: (v: unknown) => void }).concat([Buffer.from("hello"), 3]),
+    ).toThrowError(
+      expect.objectContaining({
+        code: "ERR_INVALID_ARG_TYPE",
+        message: expect.stringContaining('The "list[1]" argument'),
+      }),
+    );
+    // A valid list still concatenates.
+    expect(
+      (Buffer as unknown as { concat: (v: unknown[]) => { toString(): string } })
+        .concat([Buffer.from("as"), Buffer.from("df")])
+        .toString(),
+    ).toBe("asdf");
+  });
+
+  it("Buffer.from rejects unsupported first arguments with ERR_INVALID_ARG_TYPE", () => {
+    const { Buffer } = createBufferShim();
+    for (const bad of [{}, null, undefined, 5n, Symbol()]) {
+      expect(() => (Buffer as unknown as { from: (v: unknown) => void }).from(bad)).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+      );
+    }
+    expect(() =>
+      (Buffer as unknown as { from: (v: unknown, e: string) => void }).from("", "buffer"),
+    ).toThrowError(
+      expect.objectContaining({
+        code: "ERR_UNKNOWN_ENCODING",
+        message: "Unknown encoding: buffer",
+      }),
+    );
+  });
+
+  it("Buffer.alloc refuses sizes above Node's maximum with ERR_OUT_OF_RANGE", () => {
+    const { Buffer } = createBufferShim();
+    expect(() =>
+      (Buffer as unknown as { alloc: (n: number) => void }).alloc(0x80000000),
+    ).toThrowError(
+      expect.objectContaining({
+        code: "ERR_OUT_OF_RANGE",
+        message: "Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes",
+      }),
+    );
+  });
 });

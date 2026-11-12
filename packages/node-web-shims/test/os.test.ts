@@ -8,19 +8,19 @@ describe("node-web-shims: os", () => {
     expect(_nodeOs).toBeDefined();
   });
 
-  it("exposes EOL as a configurable property like Node", () => {
+  it("exposes EOL as configurable but non-writable like Node", () => {
     const shim = createOsShim();
     const desc = Object.getOwnPropertyDescriptor(shim, "EOL");
     expect(desc?.configurable).toBe(true);
+    expect(desc?.writable).toBe(false);
+    // Assignment throws TypeError in strict mode (test-os-eol asserts this).
+    expect(() => {
+      "use strict";
+      (shim as { EOL: string }).EOL = "x";
+    }).toThrow(TypeError);
     // The compat suite redefines EOL on the module object.
-    Object.defineProperty(shim, "EOL", { value: "\r\n" });
-    expect(shim.EOL).toBe("\r\n");
-    Object.defineProperty(shim, "EOL", {
-      enumerable: true,
-      configurable: true,
-      get: () => "\n",
-    });
-    expect(shim.EOL).toBe("\n");
+    Object.defineProperty(shim, "EOL", { value: "foo", writable: false });
+    expect(shim.EOL).toBe("foo");
   });
 
   it("returns loopback networkInterfaces", () => {

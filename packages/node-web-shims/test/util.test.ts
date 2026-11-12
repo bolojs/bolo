@@ -44,6 +44,11 @@ describe("node-web-shims: util", () => {
   it("inspect() formats common values like Node", () => {
     expect(inspect({ a: 1, b: "x" })).toBe("{ a: 1, b: 'x' }");
     expect(inspect([1, "two"])).toBe("[ 1, 'two' ]");
+    // Node prints an empty array as "[]", not "[  ]".
+    expect(inspect([])).toBe("[]");
+    expect(format([])).toBe("[]");
+    expect(format([0])).toBe("[ 0 ]");
+    expect(format({})).toBe("{}");
     expect(inspect(undefined)).toBe("undefined");
     expect(inspect(null)).toBe("null");
     expect(inspect(/re/g)).toBe("/re/g");

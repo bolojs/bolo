@@ -61,3 +61,39 @@ describe("node-web-shims: string_decoder", () => {
     );
   });
 });
+
+describe("node-web-shims: string_decoder fuzz (Node's test-string-decoder-fuzz)", () => {
+  it("chunked decoding equals one-shot Buffer.toString for every encoding", () => {
+    const encodings = ["utf16le", "utf8", "ascii", "hex", "base64", "latin1", "base64url"] as const;
+    let seed = 42;
+    const rand = (max: number): number => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return Math.floor((seed / 2147483648) * max);
+    };
+    for (let round = 0; round < 200; round++) {
+      const enc = encodings[rand(encodings.length)] as (typeof encodings)[number];
+      const decoder = new StringDecoder(enc);
+      const bufs: Buffer[] = [];
+      const strings: string[] = [];
+      const n = rand(10);
+      for (let i = 0; i < n; i++) {
+        const buf = Buffer.allocUnsafe(rand(50));
+        for (let i = 0; i < buf.length; i++) buf[i] = rand(256);
+        bufs.push(buf);
+        strings.push(decoder.write(buf));
+      }
+      strings.push(decoder.end());
+      expect(strings.join(""), `encoding ${enc}`).toBe(
+        Buffer.concat(bufs).toString(enc as BufferEncoding),
+      );
+    }
+  });
+
+  it("end() reuses the decoder like Node", () => {
+    const d = new StringDecoder();
+    expect(d.write(Buffer.from([0xe2, 0x82]))).toBe("");
+    expect(d.end()).toBe("\uFFFD");
+    expect(d.write(Buffer.from("ok"))).toBe("ok");
+    expect(d.end()).toBe("");
+  });
+});

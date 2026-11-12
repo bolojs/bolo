@@ -6,7 +6,11 @@ const z = createZlibShim();
 const DATA = Buffer.from("the quick brown fox jumps over the lazy dog ".repeat(8));
 
 const collect = (
-  s: { on(e: string, l: (...a: never[]) => void): unknown; write(d: Buffer): unknown; end(d?: Buffer): unknown },
+  s: {
+    on(e: string, l: (...a: never[]) => void): unknown;
+    write(d: Buffer): unknown;
+    end(d?: Buffer): unknown;
+  },
   writes: Buffer[],
 ): Promise<Buffer> =>
   new Promise<Buffer>((res, rej) => {
@@ -21,15 +25,43 @@ const collect = (
 describe("node-web-shims: zlib", () => {
   it("exports the full surface", () => {
     for (const name of [
-      "deflate", "deflateSync", "inflate", "inflateSync",
-      "deflateRaw", "deflateRawSync", "inflateRaw", "inflateRawSync",
-      "gzip", "gzipSync", "gunzip", "gunzipSync", "unzip", "unzipSync",
-      "brotliCompress", "brotliCompressSync", "brotliDecompress", "brotliDecompressSync",
-      "createDeflate", "createInflate", "createDeflateRaw", "createInflateRaw",
-      "createGzip", "createGunzip", "createUnzip",
-      "createBrotliCompress", "createBrotliDecompress",
-      "Deflate", "Inflate", "Gzip", "Gunzip", "Unzip",
-      "BrotliCompress", "BrotliDecompress", "crc32", "constants", "codes",
+      "deflate",
+      "deflateSync",
+      "inflate",
+      "inflateSync",
+      "deflateRaw",
+      "deflateRawSync",
+      "inflateRaw",
+      "inflateRawSync",
+      "gzip",
+      "gzipSync",
+      "gunzip",
+      "gunzipSync",
+      "unzip",
+      "unzipSync",
+      "brotliCompress",
+      "brotliCompressSync",
+      "brotliDecompress",
+      "brotliDecompressSync",
+      "createDeflate",
+      "createInflate",
+      "createDeflateRaw",
+      "createInflateRaw",
+      "createGzip",
+      "createGunzip",
+      "createUnzip",
+      "createBrotliCompress",
+      "createBrotliDecompress",
+      "Deflate",
+      "Inflate",
+      "Gzip",
+      "Gunzip",
+      "Unzip",
+      "BrotliCompress",
+      "BrotliDecompress",
+      "crc32",
+      "constants",
+      "codes",
     ]) {
       expect(Object.keys(z), name).toContain(name);
       expect(z[name as keyof typeof z], name).toBeDefined();
@@ -51,8 +83,12 @@ describe("sync codecs", () => {
   });
 
   it("deflateRawSync/inflateRawSync round-trip", () => {
-    expect(nodeZlib.inflateRawSync(z.deflateRawSync(DATA) as Buffer).toString()).toBe(DATA.toString());
-    expect((z.inflateRawSync(nodeZlib.deflateRawSync(DATA)) as Buffer).toString()).toBe(DATA.toString());
+    expect(nodeZlib.inflateRawSync(z.deflateRawSync(DATA) as Buffer).toString()).toBe(
+      DATA.toString(),
+    );
+    expect((z.inflateRawSync(nodeZlib.deflateRawSync(DATA)) as Buffer).toString()).toBe(
+      DATA.toString(),
+    );
   });
 
   it("unzipSync detects gzip and zlib wrappers", () => {
@@ -111,7 +147,10 @@ describe("brotli", () => {
 
 describe("streams", () => {
   it("createGzip stream → node gunzip", async () => {
-    const compressed = await collect(z.createGzip() as never, [DATA.subarray(0, 50), DATA.subarray(50)]);
+    const compressed = await collect(z.createGzip() as never, [
+      DATA.subarray(0, 50),
+      DATA.subarray(50),
+    ]);
     expect(nodeZlib.gunzipSync(compressed).toString()).toBe(DATA.toString());
   });
 
@@ -173,9 +212,12 @@ describe("zstd", () => {
 
   it("exports the surface and constants", () => {
     for (const name of [
-      "ZstdCompress", "ZstdDecompress",
-      "createZstdCompress", "createZstdDecompress",
-      "zstdCompress", "zstdDecompress",
+      "ZstdCompress",
+      "ZstdDecompress",
+      "createZstdCompress",
+      "createZstdDecompress",
+      "zstdCompress",
+      "zstdDecompress",
     ]) {
       expect(Object.keys(z), name).toContain(name);
       expect(z[name as keyof typeof z], name).toBeDefined();
@@ -204,9 +246,7 @@ describe("zstd", () => {
 
   it.skipIf(!zstdStreams)("zstdDecompress callback decodes node:zlib output", async () => {
     const plain = await new Promise<Buffer>((res, rej) =>
-      z.zstdDecompress(nodeZlib.zstdCompressSync(DATA), (e, b) =>
-        e ? rej(e) : res(b),
-      ),
+      z.zstdDecompress(nodeZlib.zstdCompressSync(DATA), (e, b) => (e ? rej(e) : res(b))),
     );
     expect(plain.toString()).toBe(DATA.toString());
   });
@@ -224,5 +264,39 @@ describe("crc32", () => {
     // incremental: crc32(data2, crc32(data1)) === crc32(concat)
     const a = nodeZlib.crc32("hello ");
     expect(z.crc32("world", a)).toBe(nodeZlib.crc32("hello world"));
+  });
+});
+
+describe("node-web-shims: zlib close semantics", () => {
+  it("close() from a 'data' handler stops the stream after one chunk", async () => {
+    const zlib = createZlibShim();
+    const ts = zlib.createGzip();
+    const buf = Buffer.alloc(1024 * 1024 * 20);
+    let calls = 0;
+    await new Promise<void>((resolve) => {
+      ts.on("data", () => {
+        calls++;
+        ts.close();
+      });
+      ts.on("close", () => resolve());
+      ts.end(buf);
+    });
+    expect(calls).toBe(1);
+  });
+
+  it("close() emits a 'close' event and stops further output", async () => {
+    const zlib = createZlibShim();
+    const ts = zlib.createGzip();
+    let closed = false;
+    await new Promise<void>((resolve) => {
+      ts.on("close", () => {
+        closed = true;
+        resolve();
+      });
+      ts.end(Buffer.from("hello"));
+      ts.close();
+    });
+    expect(closed).toBe(true);
+    expect(ts.closed).toBe(true);
   });
 });

@@ -34,6 +34,7 @@ export class ZlibBase {
   #output: Buffer[] = [];
   #ended = false;
   #flowing = false;
+  #closed = false;
   #source: PushSource | null;
   #buffered: Uint8Array[] | null;
   #flushFn: ((chunks: Uint8Array[]) => Uint8Array | Promise<Uint8Array>) | null;
@@ -95,9 +96,11 @@ export class ZlibBase {
   // ---- readable/writable subset ----
 
   push(chunk: Buffer | null): boolean {
+    if (this.#closed) return false;
     if (chunk === null) {
       this.#ended = true;
       queueMicrotask(() => {
+        if (this.#closed) return;
         this.emit("end");
         this.emit("finish");
       });
@@ -109,11 +112,15 @@ export class ZlibBase {
   }
 
   #drain(): void {
+    if (this.#closed) return;
     const set = this.#listeners.get("data");
     if (!set || set.size === 0) return;
     this.#flowing = true;
     const queued = this.#output.splice(0);
-    for (const c of queued) this.emit("data", c);
+    for (const c of queued) {
+      if (this.#closed) return;
+      this.emit("data", c);
+    }
   }
 
   read(): Buffer | null {
@@ -125,6 +132,11 @@ export class ZlibBase {
     encodingOrCb?: BufferEncoding | ((err?: Error | null) => void),
     cb?: (err?: Error | null) => void,
   ): boolean {
+    if (this.#closed) {
+      const done = typeof encodingOrCb === "function" ? encodingOrCb : cb;
+      done?.(new Error("The stream has been closed"));
+      return false;
+    }
     const done = typeof encodingOrCb === "function" ? encodingOrCb : cb;
     try {
       this.#transform(toU8(chunk), false);
@@ -142,6 +154,7 @@ export class ZlibBase {
     encodingOrCb?: BufferEncoding | (() => void),
     cb?: () => void,
   ): this {
+    if (this.#closed) return this;
     const data = typeof chunk === "function" ? undefined : chunk;
     const done =
       (typeof chunk === "function" ? chunk : undefined) ??
@@ -195,8 +208,33 @@ export class ZlibBase {
     cb?.();
   }
 
+  /**
+   * `close()` — Node closes the underlying handle: no further `data`/`end`
+   * events are emitted, and a `close` event follows. Calling it from inside
+   * a `data` handler must stop the stream immediately (test-zlib-close-in-ondata
+   * asserts the handler runs exactly once).
+   */
   close(cb?: () => void): void {
-    cb?.();
+    if (this.#closed) {
+      cb?.();
+      return;
+    }
+    this.#closed = true;
+    this.#output = [];
+    this.#ended = true;
+    if (this.#source) {
+      // fflate throws "no stream handler" if ondata is nulled mid-stream;
+      // install a sink that swallows everything instead.
+      this.#source.ondata = () => {};
+    }
+    queueMicrotask(() => {
+      this.emit("close");
+      cb?.();
+    });
+  }
+
+  get closed(): boolean {
+    return this.#closed;
   }
 
   pipe<

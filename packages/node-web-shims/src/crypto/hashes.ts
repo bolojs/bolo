@@ -106,13 +106,16 @@ export interface HashOptions {
  * imperative surface — `update`, `digest`, `copy` — plus minimal
  * `write`/`end`/`read` sugar.
  */
-export class Hash {
+export class HashImpl {
   #algorithm: string;
   #outputLength: number | undefined;
   #chunks: Uint8Array[] = [];
   #finalized = false;
 
   constructor(algorithm: string, options?: HashOptions) {
+    if (typeof algorithm !== "string") {
+      throw argTypeError("algorithm", "string", algorithm);
+    }
     lookupHash(algorithm); // validate eagerly like Node
     this.#algorithm = algorithm;
     this.#outputLength = options?.outputLength;
@@ -128,13 +131,16 @@ export class Hash {
 
   update(data: BinaryLike, inputEncoding?: BufferEncoding): this {
     this.#assertLive();
+    if (typeof data !== "string" && !ArrayBuffer.isView(data)) {
+      throw argTypeError("data", ["string", "Buffer", "TypedArray", "DataView"], data);
+    }
     this.#chunks.push(toU8(data, inputEncoding));
     return this;
   }
 
   digest(): Buffer;
   digest(encoding: BufferEncoding): string;
-  digest(encoding?: BufferEncoding): Buffer | string {
+  digest(encoding?: BufferEncoding | { toString(): string }): Buffer | string {
     this.#assertLive();
     this.#finalized = true;
     const entry = lookupHash(this.#algorithm);
@@ -146,12 +152,18 @@ export class Hash {
         })
       : hashChunks(entry.hash!, chunks);
     const buf = Buffer.from(out);
-    return encoding === undefined ? buf : buf.toString(encoding);
+    if (encoding === undefined) return buf;
+    // Node converts truthy encodings to string first: an object with a
+    // throwing toString() must surface that error (nodejs/node#9819).
+    const enc = typeof encoding === "object" ? String(encoding) : (encoding as string);
+    // `digest('buffer')` is Node's spelling for "give me the raw bytes".
+    if (enc.toLowerCase() === "buffer") return buf;
+    return buf.toString(enc as BufferEncoding);
   }
 
-  copy(options?: HashOptions): Hash {
+  copy(options?: HashOptions): HashImpl {
     this.#assertLive();
-    const copy = new Hash(this.#algorithm, {
+    const copy = new HashImpl(this.#algorithm, {
       outputLength: options?.outputLength ?? this.#outputLength,
     });
     copy.#chunks = [...this.#chunks];
@@ -186,8 +198,39 @@ const hashChunks = (hash: HashFn, chunks: Uint8Array[]): Uint8Array => {
   return out;
 };
 
-export const createHash = (algorithm: string, options?: HashOptions): Hash =>
-  new Hash(algorithm, options);
+/** Node's `ERR_INVALID_ARG_TYPE` TypeError with a faithful message shape. */
+export const argTypeError = (name: string, types: string | string[], value: unknown): TypeError => {
+  const list = Array.isArray(types) ? types : [types];
+  const expected =
+    list.length === 1
+      ? `of type ${list[0]}`
+      : `one of type ${list.slice(0, -1).join(", ")} or ${list.at(-1)}`;
+  const received =
+    value === null
+      ? "null"
+      : typeof value === "object" && value !== undefined
+        ? `an instance of ${value.constructor?.name || "Object"}`
+        : `type ${typeof value} (${String(value)})`;
+  return Object.assign(
+    new TypeError(`The "${name}" argument must be ${expected}. Received ${received}`),
+    { code: "ERR_INVALID_ARG_TYPE" },
+  );
+};
+
+/**
+ * `crypto.Hash` — Node's constructor is a plain function that returns a new
+ * instance when called without `new` (a `class` cannot be invoked that way),
+ * so the class is wrapped in a callable that keeps the same prototype.
+ */
+export const Hash = function Hash(algorithm: string, options?: HashOptions): HashImpl {
+  return new HashImpl(algorithm, options);
+} as unknown as typeof HashImpl;
+Hash.prototype = HashImpl.prototype;
+
+export const createHash = (algorithm: string, options?: HashOptions): HashImpl => {
+  if (typeof algorithm !== "string") throw argTypeError("algorithm", "string", algorithm);
+  return new HashImpl(algorithm, options);
+};
 
 /** `crypto.hash` — one-shot digest (Node 21.2+). */
 export const hash = (

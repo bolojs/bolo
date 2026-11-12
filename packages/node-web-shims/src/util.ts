@@ -136,6 +136,7 @@ const inspectValue = (
   seen.set(obj, seen.size + 1);
   try {
     if (Array.isArray(obj)) {
+      if (obj.length === 0) return "[]";
       const max = opts.maxArrayLength ?? 100;
       const items = obj.slice(0, max).map((v) => inspectValue(v, opts, depth + 1, seen));
       if (obj.length > max) items.push(`... ${obj.length - max} more items`);

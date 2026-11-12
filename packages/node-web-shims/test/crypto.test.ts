@@ -168,6 +168,85 @@ describe("random", () => {
   });
 });
 
+describe("node fidelity", () => {
+  it("digest('buffer') returns raw bytes; a finalized Hash throws (Hash)", () => {
+    const h = c.createHash("sha1").update("data");
+    expect(h.digest("buffer")).toBeInstanceOf(Buffer);
+    expect(() => h.digest("buffer")).toThrowError(
+      expect.objectContaining({ code: "ERR_CRYPTO_HASH_FINALIZED" }),
+    );
+    expect(() => h.update("x")).toThrowError(
+      expect.objectContaining({ code: "ERR_CRYPTO_HASH_FINALIZED" }),
+    );
+  });
+
+  it("Hmac is callable without `new` and repeat digest is empty", () => {
+    const instance = (c.Hmac as unknown as (a: string, k: string) => unknown)("sha256", "Node");
+    expect(instance instanceof c.Hmac).toBe(true);
+    const h = c.createHmac("sha1", "key").update("data");
+    expect(h.digest("buffer")).toBeInstanceOf(Buffer);
+    expect(h.digest("buffer").length).toBe(0);
+    expect(h.digest("latin1")).toBe("");
+  });
+
+  it("validates createHash/createHmac args like Node", () => {
+    expect(() => (c.createHash as unknown as () => void)()).toThrowError(
+      expect.objectContaining({
+        code: "ERR_INVALID_ARG_TYPE",
+        message: expect.stringContaining('The "algorithm" argument'),
+      }),
+    );
+    expect(() => (c.createHash as unknown as () => void)().update?.()).toThrow(TypeError);
+    expect(() => c.createHash("sha256").update(undefined as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(() => c.createHmac(null as never, "key")).toThrowError(
+      expect.objectContaining({
+        code: "ERR_INVALID_ARG_TYPE",
+        message: 'The "hmac" argument must be of type string. Received null',
+      }),
+    );
+    expect(() => c.createHmac("sha1", null as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(() => c.createHmac("sha7", "key")).toThrowError(/Digest method not supported/);
+  });
+
+  it("randomUUID validates its options argument", () => {
+    expect(() => c.randomUUID(1 as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(() => c.randomUUID({ disableEntropyCache: "" as never })).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(c.randomUUID({ disableEntropyCache: true })).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+  });
+
+  it("randomBytes validates size and accepts a callback", async () => {
+    expect(() => c.randomBytes(-1)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(() => c.randomBytes("5" as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    const viaCb = await new Promise<Buffer>((res) => c.randomBytes(8, (_e, b) => res(b)));
+    expect(viaCb.length).toBe(8);
+    expect(c.randomBytes(0).length).toBe(0);
+  });
+
+  it("timingSafeEqual rejects non-equal lengths with a coded RangeError", () => {
+    expect(() => c.timingSafeEqual(Buffer.from("a"), Buffer.from("bb"))).toThrowError(
+      expect.objectContaining({ code: "ERR_CRYPTO_TIMING_SAFE_EQUAL_LENGTH" }),
+    );
+  });
+
+  it("pbkdf2Sync and scryptSync validate their digests", () => {
+    expect(() => c.pbkdf2Sync("p", "s", 10, 8, "nope" as never)).toThrow();
+  });
+});
+
 describe("keys", () => {
   it("createSecretKey wraps bytes and exports", () => {
     const raw = Buffer.from("0123456789abcdef0123456789abcdef");

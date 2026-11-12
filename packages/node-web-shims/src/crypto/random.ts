@@ -135,6 +135,35 @@ export const randomFill = <T extends FillTarget>(
   });
 };
 
+/** `crypto.randomBytes` — Node validates the size argument up front. */
+export const randomBytes = (
+  size: number,
+  callback?: (err: Error | null, buf: Buffer) => void,
+): Buffer | void => {
+  if (typeof size !== "number" || !Number.isSafeInteger(size) || size < 0) {
+    throw Object.assign(
+      new TypeError(
+        `The "size" argument must be of type number. Received ${
+          size === null ? "null" : `type ${typeof size}`
+        }`,
+      ),
+      { code: "ERR_INVALID_ARG_TYPE" },
+    );
+  }
+  if (size > 0x7fffffff) {
+    throw Object.assign(
+      new RangeError(`Attempt to allocate Buffer larger than maximum size: 0x7fffffff bytes`),
+      { code: "ERR_OUT_OF_RANGE" },
+    );
+  }
+  const out = Buffer.from(randomU8(size));
+  if (callback) {
+    queueMicrotask(() => callback(null, out));
+    return;
+  }
+  return out;
+};
+
 /** `crypto.pseudoRandomBytes` — Node's deprecated alias for randomBytes. */
 export const pseudoRandomBytes = (
   size: number,
