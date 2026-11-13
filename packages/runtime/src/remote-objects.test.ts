@@ -227,7 +227,10 @@ describe("worker VFS facade", () => {
     const shim = createFsShim(createFacade(vfs).vfs);
     shim.writeFileSync("/s.txt", "x");
 
-    expect(() => shim.createReadStream("/s.txt")).toThrow(/not supported by this VFS backend/);
+    // `createReadStream` falls back to the fd-driven VfsReadStream — reads
+    // work over the boundary even though hot lacks createReadStream.
+    const rs = shim.createReadStream("/s.txt") as unknown as NodeJS.ReadableStream;
+    expect(rs).toBeDefined();
     expect(() => shim.createWriteStream("/o.txt")).toThrow(/not supported by this VFS backend/);
     expect(() => shim.watchFile("/s.txt", () => {})).toThrow(/not supported by this VFS backend/);
     expect(() => shim.opendirSync("/")).toThrow(/not supported by this VFS backend/);

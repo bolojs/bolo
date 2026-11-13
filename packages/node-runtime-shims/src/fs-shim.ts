@@ -1,7 +1,8 @@
 import type { VfsBus } from "@bolojs/fs";
-import { createBufferShim, createEventsShim } from "@bolojs/node-web-shims";
+import { createBufferShim, createEventsShim, createStreamShim } from "@bolojs/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
+const { Readable: NodeReadable } = createStreamShim();
 // `createBufferShim`'s declared return type loses the `Buffer` member (same
 // declaration-emit quirk as child-process-shim.ts) — read it off the value.
 const { Buffer } = createBufferShim() as unknown as { Buffer: typeof globalThis.Buffer };
@@ -110,6 +111,81 @@ const invalidArgType = (name: string, expected: string, actual: unknown): TypeEr
     { code: "ERR_INVALID_ARG_TYPE" },
   );
 
+/** `signal.reason` — a DOMException 'AbortError' in browsers; fall back to an Error. */
+const abortReason = (signal: AbortSignal): unknown => {
+  const reason = (signal as { reason?: unknown }).reason;
+  if (reason !== undefined) return reason;
+  return Object.assign(new Error("The operation was aborted"), { name: "AbortError" });
+};
+
+/**
+ * Node honours `options.signal` on readFile/writeFile: an already-aborted
+ * signal rejects immediately, and an abort that lands while the operation is
+ * in flight wins over the result. Our hot-path reads complete within a
+ * microtask, so when a signal is present we yield one macrotask first —
+ * giving nextTick/microtask-scheduled aborts (the common test shape) a
+ * chance to land before the result is delivered.
+ */
+const checkAbort = async (signal: AbortSignal | undefined): Promise<void> => {
+  if (signal === undefined) return;
+  if (signal.aborted) throw abortReason(signal);
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  if (signal.aborted) throw abortReason(signal);
+};
+
+const signalOf = (opts: unknown): AbortSignal | undefined =>
+  opts !== null && typeof opts === "object" ? (opts as { signal?: AbortSignal }).signal : undefined;
+
+/**
+ * Node validates `options.signal` synchronously — a non-AbortSignal value is
+ * an ERR_INVALID_ARG_TYPE throw before any IO is scheduled (test-fs-readfile).
+ */
+const validateSignal = (opts: unknown): void => {
+  if (opts === null || typeof opts !== "object") return;
+  const signal = (opts as { signal?: unknown }).signal;
+  if (signal === undefined) return;
+  const ok =
+    typeof signal === "object" &&
+    signal !== null &&
+    typeof (signal as { addEventListener?: unknown }).addEventListener === "function" &&
+    typeof (signal as { removeEventListener?: unknown }).removeEventListener === "function";
+  if (!ok) {
+    throw Object.assign(
+      new TypeError(
+        `The "options.signal" argument must be an instance of AbortSignal.${describeReceived(signal)}`,
+      ),
+      { code: "ERR_INVALID_ARG_TYPE" },
+    );
+  }
+};
+
+/**
+ * Scan a callback-style fs call's trailing args for options objects carrying
+ * `signal`. Data args that are views/ArrayBuffers are skipped; anything else
+ * object-shaped (including arrays used as iterable data) is checked — a
+ * missing/valid signal is a no-op either way.
+ */
+const validateSignalsIn = (rest: unknown[]): void => {
+  for (const arg of rest) {
+    if (
+      arg !== null &&
+      typeof arg === "object" &&
+      !ArrayBuffer.isView(arg) &&
+      !(arg instanceof ArrayBuffer)
+    ) {
+      validateSignal(arg);
+    }
+  }
+};
+
+/** Node's `ERR_FS_FILE_TOO_LARGE` bound for readFile/readSync. */
+const K_IO_MAX_LENGTH = 2 ** 31 - 1;
+
+const fileTooLarge = (size: number): RangeError =>
+  Object.assign(new RangeError(`File size (${size}) is greater than 2 GiB`), {
+    code: "ERR_FS_FILE_TOO_LARGE",
+  });
+
 /**
  * Node's path argument type: `string | Buffer | URL` — fd-taking methods
  * (`readFile`/`writeFile`/`appendFile`/`stat`-family accept an open file
@@ -186,24 +262,43 @@ interface FsMkdirFn {
 export const createFsShim = (vfs: VfsBus) => {
   const readFileImpl = async (
     path: string | number,
-    opts?: { encoding?: string } | string,
+    opts?: { encoding?: string; signal?: AbortSignal } | string,
   ): Promise<string | Uint8Array> => {
     const encoding = typeof opts === "string" ? opts : opts?.encoding;
+    // Promise-path callers (fs.promises.*) skip the sync wrapper validation —
+    // a bad signal must reject here instead.
+    validateSignal(opts);
+    await checkAbort(signalOf(opts));
     // An open fd is served by the sync volume directly (Node reads the fd
     // position, same as fs.readFileSync(fd)).
     if (typeof path === "number") {
       const out = vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as
         | string
         | Uint8Array;
-      return typeof out === "string" ? out : Buffer.from(out);
+      if (typeof out === "string") {
+        return encoding !== undefined && encoding !== null ? out : Buffer.from(out);
+      }
+      return Buffer.from(out);
+    }
+    // Node refuses to buffer files larger than ~2 GiB.
+    if (vfs.hot.existsSync(path)) {
+      const size = (vfs.hot.statSync(path) as { size?: number })?.size;
+      if (typeof size === "number" && size > K_IO_MAX_LENGTH) throw fileTooLarge(size);
     }
     // Hot-layer files read through memfs so the no-encoding result is a real
-    // Buffer (Node parity — `vfs.readFile` returns a utf8 string).
+    // Buffer (Node parity — `vfs.readFile` returns a utf8 string). Without an
+    // encoding the result must ALWAYS be a Buffer — memfs can hand back ''
+    // for an empty file, which `assert.ok`-style consumers reject.
     if (vfs.hot.existsSync(path)) {
       const out = vfs.hot.readFileSync(path, encoding as BufferEncoding | undefined) as
         | string
         | Uint8Array;
-      return typeof out === "string" ? out : Buffer.from(out);
+      if (encoding !== undefined && encoding !== null) {
+        return typeof out === "string"
+          ? out
+          : Buffer.from(out).toString(encoding as BufferEncoding);
+      }
+      return Buffer.from(out as Uint8Array);
     }
     // Cold-layer (OPFS) fallthrough: eviction misses and cold-only paths.
     const result = await vfs.readFile(path);
@@ -217,8 +312,10 @@ export const createFsShim = (vfs: VfsBus) => {
   const writeFileImpl = async (
     path: string | number,
     data: string | Uint8Array,
-    opts?: { encoding?: string; flag?: string; mode?: number } | string,
+    opts?: { encoding?: string; flag?: string; mode?: number; signal?: AbortSignal } | string,
   ): Promise<void> => {
+    validateSignal(opts);
+    await checkAbort(signalOf(opts));
     // fd and flagged/moded writes go straight to memfs — `vfs.writeFile`
     // handles the plain string-path case (watchers + cold replication).
     if (
@@ -237,8 +334,73 @@ export const createFsShim = (vfs: VfsBus) => {
     await vfs.writeFile(path, data);
   };
 
+  /**
+   * Node's mkdir error contract the memfs backend does not always reproduce:
+   * `EEXIST` when the target exists (file always; directory only without
+   * `recursive`) and `ENOTDIR` when a recursive path crosses a non-directory
+   * ancestor — with `path` set to the full target and `syscall: 'mkdir'`.
+   */
+  const mkdirErr = (code: "EEXIST" | "ENOTDIR", path: string): Error =>
+    Object.assign(
+      new Error(
+        `${code}: ${code === "EEXIST" ? "file already exists" : "not a directory"}, mkdir '${path}'`,
+      ),
+      { code, errno: code === "EEXIST" ? -17 : -20, syscall: "mkdir", path },
+    );
+
+  /** Lexically normalize a posix VFS path (`.`/`..` segments). */
+  const normalizePath = (p: string): string => {
+    const out: string[] = [];
+    for (const seg of p.split("/")) {
+      if (seg === "" || seg === ".") continue;
+      if (seg === "..") {
+        if (out.length > 0) out.pop();
+        continue;
+      }
+      out.push(seg);
+    }
+    return `/${out.join("/")}`;
+  };
+
+  const mkdirPreflight = (path: string, recursive: boolean): void => {
+    const p = pathOf(path);
+    const norm = normalizePath(p);
+    let targetIsDir = false;
+    let targetExists = false;
+    try {
+      targetIsDir = (vfs.hot.statSync(norm) as { isDirectory(): boolean }).isDirectory();
+      targetExists = true;
+    } catch {
+      /* missing — fall through to ancestor check / backend */
+    }
+    if (targetExists) {
+      // Node: recursive mkdir on an existing directory is a silent success;
+      // every other existing target is EEXIST.
+      if (targetIsDir && recursive) return;
+      throw mkdirErr("EEXIST", p);
+    }
+    if (!recursive) return;
+    // The nearest existing ancestor must be a directory, else ENOTDIR.
+    const segs = norm.split("/").filter(Boolean);
+    for (let i = segs.length - 1; i >= 0; i--) {
+      const ancestor = `/${segs.slice(0, i).join("/")}`;
+      let st: { isDirectory(): boolean } | null = null;
+      try {
+        st = vfs.hot.statSync(ancestor === "/" ? "/" : ancestor) as {
+          isDirectory(): boolean;
+        };
+      } catch {
+        continue;
+      }
+      if (!st.isDirectory()) throw mkdirErr("ENOTDIR", p);
+      break;
+    }
+  };
+
   const mkdirImpl = async (path: string, opts?: { recursive?: boolean }): Promise<void> => {
-    await vfs.mkdir(path, opts);
+    const recursive = opts !== null && typeof opts === "object" && opts.recursive === true;
+    mkdirPreflight(path, recursive);
+    await vfs.mkdir(path, { recursive });
   };
 
   const rmImpl = async (path: string, opts?: { recursive?: boolean }): Promise<void> => {
@@ -354,6 +516,7 @@ export const createFsShim = (vfs: VfsBus) => {
 
   const readFile = ((path: string | number, ...rest: any[]) => {
     validatePath(path, "path", true);
+    validateSignalsIn(rest);
     return withCallback(readFileImpl)(
       (typeof path === "number" ? path : pathOf(path as string | Uint8Array | URL)) as never,
       ...rest,
@@ -362,6 +525,7 @@ export const createFsShim = (vfs: VfsBus) => {
   const writeFile = ((path: string | number, data: unknown, ...rest: any[]) => {
     validatePath(path, "path", true);
     validateWriteData(data);
+    validateSignalsIn(rest);
     return withCallback(writeFileImpl)(
       (typeof path === "number" ? path : pathOf(path as string | Uint8Array | URL)) as never,
       data as never,
@@ -412,13 +576,22 @@ export const createFsShim = (vfs: VfsBus) => {
   ): string | Uint8Array => {
     validatePath(path, "path", true);
     const encoding = typeof opts === "string" ? opts : opts?.encoding;
-    const out = vfs.hot.readFileSync(
-      (typeof path === "number" ? path : pathOf(path)) as never,
-      encoding as BufferEncoding | undefined,
-    ) as string | Uint8Array;
+    const p = typeof path === "number" ? path : pathOf(path);
+    if (typeof p === "string" && vfs.hot.existsSync(p)) {
+      const size = (vfs.hot.statSync(p) as { size?: number })?.size;
+      if (typeof size === "number" && size > K_IO_MAX_LENGTH) throw fileTooLarge(size);
+    }
+    const out = vfs.hot.readFileSync(p as never, encoding as BufferEncoding | undefined) as
+      | string
+      | Uint8Array;
     // memfs returns its own Buffer class; re-wrap so `instanceof Buffer`
     // holds against the shim's Buffer (worker RPC returns a plain Uint8Array).
-    return typeof out === "string" ? out : Buffer.from(out);
+    // No encoding ⇒ always a Buffer, even for an empty file (memfs may hand
+    // back '' there, which breaks Buffer-expecting consumers).
+    if (typeof out === "string") {
+      return encoding !== undefined && encoding !== null ? out : Buffer.from(out);
+    }
+    return Buffer.from(out);
   };
 
   const writeFileSync = (
@@ -437,9 +610,12 @@ export const createFsShim = (vfs: VfsBus) => {
 
   const mkdirSync = (path: string | Uint8Array | URL, opts?: { recursive?: boolean }) => {
     validatePath(path);
+    const p = pathOf(path);
+    const recursive = opts?.recursive === true;
+    mkdirPreflight(p, recursive);
     // memfs returns the first created path under `recursive` (Node ≥13.11
     // parity), undefined otherwise — forward it.
-    return vfs.hot.mkdirSync(pathOf(path), opts as never) as string | undefined;
+    return vfs.hot.mkdirSync(p, { recursive } as never) as string | undefined;
   };
 
   const rmSync = (path: string, opts?: { recursive?: boolean }): void => {
@@ -683,6 +859,88 @@ export const createFsShim = (vfs: VfsBus) => {
         }
       : () => Promise.reject(unsupported("promises.open"));
 
+  /**
+   * `fs.ReadStream` backed by the fd family on `vfs.hot` (`openSync`/
+   * `readSync`/`closeSync`). Live memfs streams cannot cross the worker
+   * boundary, so the remote facade lacks `createReadStream` — this stream
+   * pulls chunks synchronously through the same ops on both realms. The fd
+   * opens lazily on first read and failures surface as 'error' events, like
+   * Node (createReadStream never throws synchronously for a missing file).
+   */
+  class VfsReadStream extends NodeReadable {
+    readonly path: string;
+    bytesRead = 0;
+    pending = true;
+    private fdValue: number | null = null;
+    private readonly autoCloseFd: boolean;
+
+    constructor(
+      path: string | Uint8Array | URL,
+      opts?: { fd?: number; autoClose?: boolean; highWaterMark?: number },
+    ) {
+      super({ highWaterMark: opts?.highWaterMark });
+      this.path = pathOf(path);
+      if (typeof opts?.fd === "number") {
+        // An explicit fd is borrowed: Node does not auto-close it by default.
+        this.fdValue = opts.fd;
+        this.autoCloseFd = opts.autoClose ?? false;
+        this.pending = false;
+      } else {
+        this.autoCloseFd = opts?.autoClose ?? true;
+      }
+    }
+
+    private ensureOpen(): number {
+      if (this.fdValue === null) {
+        this.fdValue = vfs.hot.openSync(this.path, "r") as number;
+        this.pending = false;
+        this.emit("open", this.fdValue);
+      }
+      return this.fdValue;
+    }
+
+    private closeFd(): void {
+      const fd = this.fdValue;
+      this.fdValue = null;
+      if (fd !== null && this.autoCloseFd) {
+        try {
+          vfs.hot.closeSync(fd);
+        } catch {
+          /* already closed */
+        }
+      }
+    }
+
+    override _read(size: number): void {
+      if (this.destroyed) return;
+      try {
+        const fd = this.ensureOpen();
+        const length = Math.max(1, Math.min(size > 0 ? size : 64 * 1024, 1024 * 1024));
+        const buf = Buffer.alloc(length);
+        const n = vfs.hot.readSync(fd, buf, 0, length, null) as number;
+        this.bytesRead += n;
+        if (n <= 0) {
+          this.push(null);
+          this.closeFd();
+        } else {
+          this.push(n === buf.length ? buf : buf.subarray(0, n));
+        }
+      } catch (err) {
+        this.destroy(err instanceof Error ? err : new Error(String(err)));
+      }
+    }
+
+    override _destroy(err: Error | null, cb: (err?: Error | null) => void): void {
+      this.closeFd();
+      cb(err);
+    }
+
+    close(callback?: (err?: unknown) => void): void {
+      this.destroy();
+      callback?.();
+    }
+  }
+
   const realpathNativeFn = (hot.realpath as { native?: unknown } | undefined)?.native;
   const realpath = Object.assign(
     dualHot("realpath"),
@@ -704,13 +962,14 @@ export const createFsShim = (vfs: VfsBus) => {
   const promises = {
     // Two-layer-aware subset (kept: reads reach OPFS-cold paths on
     // eviction miss; writes go through the bus so watchers/middleware fire).
-    readFile: (path: unknown, opts?: { encoding?: string } | string) =>
-      path instanceof FileHandleShim
-        ? path.readFile(opts)
-        : readFileImpl(
-            typeof path === "number" ? path : pathOf(path as string | Uint8Array | URL),
-            opts,
-          ),
+    readFile: async (path: unknown, opts?: { encoding?: string } | string) => {
+      validatePath(path, "path", true);
+      if (path instanceof FileHandleShim) return path.readFile(opts);
+      return readFileImpl(
+        typeof path === "number" ? path : pathOf(path as string | Uint8Array | URL),
+        opts,
+      );
+    },
     writeFile: async (path: unknown, data: unknown, opts?: unknown) => {
       // The promises surface rejects rather than throwing — validate inside.
       validatePath(path, "path", true);
@@ -718,9 +977,15 @@ export const createFsShim = (vfs: VfsBus) => {
       if (path instanceof FileHandleShim) {
         return path.writeFile(data as string | Uint8Array, opts as never);
       }
+      if (typeof path === "number") {
+        return writeFileImpl(path, data as never, opts as never);
+      }
       return writeFileImpl(pathOf(path as string | Uint8Array | URL), data as never, opts as never);
     },
-    mkdir: mkdirImpl,
+    mkdir: async (path: unknown, opts?: { recursive?: boolean }) => {
+      validatePath(path);
+      return mkdirImpl(pathOf(path as string | Uint8Array | URL), opts);
+    },
     rm: rmImpl,
     readdir: readdirImpl,
     exists: existsImpl,
@@ -877,11 +1142,14 @@ export const createFsShim = (vfs: VfsBus) => {
       if (typeof hot.unwatchFile === "function") hot.unwatchFile(path, listener);
     },
     StatWatcher: (vfs.hot as unknown as { StatWatcher?: unknown }).StatWatcher,
-    // Streams backed by memfs' own stream classes (fs-node-builtins — no
-    // node:stream dependency, so they work in the browser realm). Live
-    // streams cannot cross the worker boundary — absent on the facade.
-    createReadStream: (path: string, opts?: unknown): FsStreamShim =>
-      syncHot("createReadStream")(path, opts) as unknown as FsStreamShim,
+    // Streams backed by memfs' own stream classes when the backend has them
+    // (main realm); on the worker facade live streams cannot cross the
+    // boundary, so reads fall back to the fd-driven VfsReadStream above.
+    createReadStream: (path: string, opts?: unknown): FsStreamShim => {
+      const native = hot["createReadStream"];
+      if (typeof native === "function") return native(path, opts) as FsStreamShim;
+      return new VfsReadStream(path, opts as never) as unknown as FsStreamShim;
+    },
     createWriteStream: (path: string, opts?: unknown): FsStreamShim =>
       syncHot("createWriteStream")(path, opts) as unknown as FsStreamShim,
     ReadStream: (vfs.hot as unknown as { ReadStream?: unknown }).ReadStream,

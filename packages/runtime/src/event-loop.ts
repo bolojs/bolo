@@ -79,10 +79,14 @@ export const createEventLoop = (deps: EventLoopDeps) => {
     const h: LoopHandle = {
       ref() {
         state.refed = true;
+        poke();
         return h;
       },
       unref() {
         state.refed = false;
+        // Liveness may have dropped to zero — wake sleepUntilNext so the
+        // loop re-evaluates instead of sleeping out its cap.
+        poke();
         return h;
       },
       hasRef: () => state.refed,
@@ -127,6 +131,7 @@ export const createEventLoop = (deps: EventLoopDeps) => {
       if (e.handle === h) {
         e.active = false;
         timers.delete(e);
+        poke();
       }
     }
   };
@@ -149,7 +154,12 @@ export const createEventLoop = (deps: EventLoopDeps) => {
     return rec.handle;
   };
   const clearImmediate = (h: unknown) => {
-    for (const r of immediates) if (r.handle === h) r.active = false;
+    for (const r of immediates) {
+      if (r.handle === h) {
+        r.active = false;
+        poke();
+      }
+    }
   };
 
   const hasRefed = () => {

@@ -751,10 +751,19 @@ const defaultHandleTracker = createNetHandleTracker();
 
 export interface SocketOptions extends NetConnectOptions {
   allowHalfOpen?: boolean;
+  /** stream.Writable/Readable options Node's Socket forwards through. */
+  highWaterMark?: number;
+  readableHighWaterMark?: number;
+  writableHighWaterMark?: number;
 }
 
 export interface Socket extends InstanceType<typeof stream.Duplex> {
   readonly connecting: boolean;
+  /**
+   * Node: true between `connect()` and the 'connect' event, and again after
+   * close/destroy. False once the connection is established.
+   */
+  readonly pending: boolean;
   readonly readyState: "opening" | "open" | "readOnly" | "writeOnly" | "closed";
   remoteAddress?: string;
   remotePort?: number;
@@ -781,6 +790,7 @@ export interface Socket extends InstanceType<typeof stream.Duplex> {
   _options: SocketOptions;
   _tracker: NetHandleTracker;
   _connecting: boolean;
+  _everConnected: boolean;
   _bytesRead: number;
   _bytesWritten: number;
   _reader?: ReadableStreamDefaultReader<Uint8Array>;
@@ -827,6 +837,14 @@ const toBytes = (chunk: unknown): Uint8Array =>
       ? TEXT_ENCODER.encode(chunk)
       : new Uint8Array(chunk as ArrayBuffer);
 
+const chunkByteLength = (chunk: unknown): number => {
+  if (chunk == null) return 0;
+  if (typeof chunk === "string") return TEXT_ENCODER.encode(chunk).byteLength;
+  if (chunk instanceof ArrayBuffer) return chunk.byteLength;
+  if (ArrayBuffer.isView(chunk)) return chunk.byteLength;
+  return (chunk as { length?: number }).length ?? 0;
+};
+
 /**
  * `net.Socket` — a real `stream.Duplex`. `_read` pumps the transport's
  * ReadableStream (honouring stream backpressure: the pump stops when `push`
@@ -855,13 +873,23 @@ export const Socket = function Socket(
     transport = undefined;
   }
   const opts = options ?? { port: 0 };
-  DuplexCtor.call(this, { allowHalfOpen: opts.allowHalfOpen ?? false });
+  DuplexCtor.call(this, {
+    allowHalfOpen: opts.allowHalfOpen ?? false,
+    ...(opts.highWaterMark !== undefined ? { highWaterMark: opts.highWaterMark } : {}),
+    ...(opts.readableHighWaterMark !== undefined
+      ? { readableHighWaterMark: opts.readableHighWaterMark }
+      : {}),
+    ...(opts.writableHighWaterMark !== undefined
+      ? { writableHighWaterMark: opts.writableHighWaterMark }
+      : {}),
+  });
 
   const self = this as unknown as SocketInternal;
   self._transport = transport ?? defaultLoopback;
   self._options = opts;
   self._tracker = defaultHandleTracker;
   self._connecting = false;
+  self._everConnected = false;
   self._bytesRead = 0;
   self._bytesWritten = 0;
   self._pendingWrites = [];
@@ -903,6 +931,7 @@ Socket.fromAcceptedConnection = (conn: AcceptedConnection, tracker?: NetHandleTr
   }) as SocketInternal;
   socket._tracker = tracker ?? defaultHandleTracker;
   socket._handle = socket._tracker.acquire();
+  socket._everConnected = true;
   socket.remoteAddress = conn.remoteAddress;
   socket.remotePort = conn.remotePort;
   socket.remoteFamily = `IPv${isIP(conn.remoteAddress) || 4}`;
@@ -926,7 +955,25 @@ Object.defineProperties(Socket.prototype, {
   },
   bytesWritten: {
     get(this: SocketInternal) {
-      return this._bytesWritten;
+      // Node: dispatched bytes + the in-flight chunk + everything still in
+      // the writable buffer (lib/net.js bytesWritten getter). Chunks handed
+      // to _write but queued behind a pending connect live in _pendingWrites
+      // and surface through the stream state's `writing`/`writelen`.
+      let bytes = this._bytesWritten;
+      const w = this._writableState;
+      if (w) {
+        if (w.writing) bytes += w.writelen;
+        for (let i = w.bufferedIndex; i < w.buffered.length; i++) {
+          bytes += chunkByteLength(w.buffered[i]?.chunk);
+        }
+      }
+      return bytes;
+    },
+    configurable: true,
+  },
+  pending: {
+    get(this: SocketInternal) {
+      return this._connecting || !this._everConnected || this.destroyed;
     },
     configurable: true,
   },
@@ -1010,6 +1057,7 @@ Socket.prototype.connect = function connect(
     ({ readable, writable, remoteAddress, remotePort, localAddress, localPort }) => {
       if (self.destroyed) return;
       self._connecting = false;
+      self._everConnected = true;
       if (remoteAddress !== undefined) self.remoteAddress = remoteAddress;
       if (remotePort !== undefined) self.remotePort = remotePort;
       self.localAddress = localAddress;
@@ -1078,6 +1126,9 @@ Socket.prototype._sendBytes = function _sendBytes(
   }
   self._writer.write(bytes).then(
     () => {
+      // Completed writes only — the bytesWritten getter adds the in-flight
+      // chunk (state.writelen) and the not-yet-_write buffered tail, matching
+      // Node's dispatched + pendingData + writableBuffer sum.
       self._bytesWritten += bytes.byteLength;
       self._refreshTimeout();
       cb();
@@ -1684,6 +1735,8 @@ export const createNetShim = (_sandbox?: unknown, options?: NetShimOptions) => {
     createConnection: connect,
     Server,
     Socket,
+    // Node's legacy alias: `net.Stream` is the Socket constructor.
+    Stream: Socket,
     isIP,
     isIPv4,
     isIPv6,

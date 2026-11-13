@@ -135,7 +135,11 @@ export class ShellService {
     this.bash = new Bash({ fs: new VfsBashFileSystem(deps.vfs), cwd: this.cwd });
   }
 
-  async execute(command: string, output?: Partial<OutputCallbacks>): Promise<ShellResult> {
+  async execute(
+    command: string,
+    output?: Partial<OutputCallbacks>,
+    cwd?: string,
+  ): Promise<ShellResult> {
     const stdoutChunks: string[] = [];
     const stderrChunks: string[] = [];
     const callbacks: OutputCallbacks = {
@@ -152,7 +156,7 @@ export class ShellService {
     };
 
     try {
-      const exitCode = await this.route(command, callbacks);
+      const exitCode = await this.route(command, callbacks, cwd);
       if (output?.tag !== undefined) this.processes.delete(output.tag);
       return {
         stdout: stdoutChunks.join(""),
@@ -209,16 +213,20 @@ export class ShellService {
     return p.startsWith("/") ? `${this.cwd}${p}` : `${this.cwd}/${p}`;
   }
 
-  private async route(command: string, output: OutputCallbacks): Promise<number> {
+  private async route(command: string, output: OutputCallbacks, cwd?: string): Promise<number> {
     const [cmd, ...rest] = command.trim().split(/\s+/);
+    // A scoped cwd (child_process spawnSync/execSync `cwd` option) applies to
+    // this command only — it must not leak into the shell's persistent cwd.
+    const effectiveCwd = cwd ?? this.cwd;
 
     if (cmd === "npm") return this.routeNpm(rest, output);
     if (cmd === "runtime") return this.routeRuntime(rest, output);
     if (cmd === "agent") return this.routeAgent(rest, output);
     if (cmd === "curl") return curl(rest, output);
-    if (cmd === "git") return git(rest, { vfs: this.deps.vfs, cwd: this.cwd, ...output });
+    if (cmd === "git") return git(rest, { vfs: this.deps.vfs, cwd: effectiveCwd, ...output });
     if (cmd === "nc") return nc(rest, output);
     if (cmd === "tcping") return tcping(rest, output);
+    if (cmd === "sleep") return this.routeSleep(rest, output);
     if (cmd === "node" || cmd === "bun") {
       const filePath = rest[0];
       if (!filePath) {
@@ -229,11 +237,26 @@ export class ShellService {
 
     // just-bash restores cwd to its pre-call value after each exec(), so the
     // shell's persistent working directory is threaded through explicitly.
-    const result = await this.bash.exec(command, { cwd: this.cwd });
+    const result = await this.bash.exec(command, { cwd: effectiveCwd });
     if (result.stdout) output.stdout(result.stdout);
     if (result.stderr) output.stderr(result.stderr);
-    this.cwd = result.env.PWD ?? this.cwd;
+    if (cwd === undefined) this.cwd = result.env.PWD ?? this.cwd;
     return result.exitCode;
+  }
+
+  /**
+   * GNU `sleep` — just-bash has no builtin for it, but core-tests spawn
+   * `sleep 0` through child_process. Seconds may be fractional; invalid or
+   * negative intervals fail like coreutils (exit 1 + diagnostic).
+   */
+  private async routeSleep(args: string[], output: OutputCallbacks): Promise<number> {
+    const secs = Number(args[0] ?? "");
+    if (!Number.isFinite(secs) || secs < 0) {
+      output.stderr(`sleep: invalid time interval '${args[0] ?? ""}'\n`);
+      return 1;
+    }
+    if (secs > 0) await new Promise((resolve) => setTimeout(resolve, secs * 1000));
+    return 0;
   }
 
   private async routeNpm(args: string[], output: OutputCallbacks): Promise<number> {
@@ -343,7 +366,9 @@ export class ShellService {
       sandbox: this.deps.swSandbox,
       syncServer: this.deps.syncServer!,
       xhrUrl: `${scope}__bolo_sync/${pid}`,
-      shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+      shellService: {
+        exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
+      },
       spawnThread: (spec, onMessage, onExit, onStdout, onStderr) =>
         this.spawnThreadProcess(spec, { onMessage, onExit, onStdout, onStderr }),
       quiescenceCapMs: this.deps.quiescenceCapMs,
@@ -401,7 +426,9 @@ export class ShellService {
       sandbox: this.deps.swSandbox,
       syncServer: this.deps.syncServer!,
       xhrUrl: `${scope}__bolo_sync/${pid}`,
-      shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+      shellService: {
+        exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
+      },
       // Threads themselves can spawn threads — the same op path recurses.
       spawnThread: (s, onMessage, onExit, onStdout, onStderr) =>
         this.spawnThreadProcess(s, { onMessage, onExit, onStdout, onStderr }),
@@ -508,7 +535,9 @@ export class ShellService {
         vfs: this.deps.vfs,
         sandbox: this.deps.swSandbox,
         onPortEvent,
-        shellService: { exec: (cmd, cmdArgs) => this.execute([cmd, ...cmdArgs].join(" ")) },
+        shellService: {
+          exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
+        },
         cwd: this.cwd,
         argv: ["node", entry],
         onStdout: output.stdout,
