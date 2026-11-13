@@ -210,9 +210,7 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
       // underlying Uint8Array refuses lengths past the 32-bit bound with
       // 'Invalid typed array length: N' — mirror it here.
       if (!ArrayBuffer.isView(value) && !(value instanceof ArrayBuffer)) {
-        const len = Array.isArray(value)
-          ? value.length
-          : (value as { length?: unknown }).length;
+        const len = Array.isArray(value) ? value.length : (value as { length?: unknown }).length;
         if (typeof len === "number") assertAllocatable(len);
       }
     }

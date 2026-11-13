@@ -51,8 +51,7 @@ const g = globalThis as {
 // queueMicrotask is the last resort — it interleaves with promise jobs
 // instead of draining first, which breaks Node's readable-event ordering.
 const nextTick = (fn: (...args: any[]) => void, ...args: unknown[]): void => {
-  const proc =
-    g.process ?? g.__browserContainers?.process ?? g.__browserContainers?.shims?.process;
+  const proc = g.process ?? g.__browserContainers?.process ?? g.__browserContainers?.shims?.process;
   const nt = proc?.nextTick;
   if (typeof nt === "function") {
     nt.call(proc, fn as (...a: unknown[]) => void, ...args);

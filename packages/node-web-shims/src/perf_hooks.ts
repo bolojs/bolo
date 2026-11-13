@@ -17,9 +17,11 @@ interface NativeObserverInstance {
 
 const NativePerformanceObserver = (globalThis as { PerformanceObserver?: unknown })
   .PerformanceObserver as
-  | (new (callback: (list: { getEntries(): PerformanceEntry[] }, observer: unknown) => void) => NativeObserverInstance) & {
+  | ((new (
+      callback: (list: { getEntries(): PerformanceEntry[] }, observer: unknown) => void,
+    ) => NativeObserverInstance) & {
       supportedEntryTypes?: string[];
-    }
+    })
   | undefined;
 
 const codedError = (code: string, name: string, message: string): Error =>
@@ -56,7 +58,9 @@ export class PerformanceObserverEntryList {
   }
 
   getEntriesByName(name: string, type?: string): PerformanceEntry[] {
-    return this._entries.filter((e) => e.name === name && (type === undefined || e.entryType === type));
+    return this._entries.filter(
+      (e) => e.name === name && (type === undefined || e.entryType === type),
+    );
   }
 
   getEntriesByType(type: string): PerformanceEntry[] {
@@ -64,8 +68,9 @@ export class PerformanceObserverEntryList {
   }
 }
 
-const toEntryList = (nativeList: { getEntries(): PerformanceEntry[] }): PerformanceObserverEntryList =>
-  new PerformanceObserverEntryList(nativeList.getEntries());
+const toEntryList = (nativeList: {
+  getEntries(): PerformanceEntry[];
+}): PerformanceObserverEntryList => new PerformanceObserverEntryList(nativeList.getEntries());
 
 type ObserverCallback = (list: PerformanceObserverEntryList, observer: unknown) => void;
 
@@ -101,11 +106,14 @@ export class PerformanceObserver {
         throw codedError(
           "ERR_INVALID_ARG_VALUE",
           "TypeError",
-          "The \"options.entryTypes\" property must be a non-empty array of strings",
+          'The "options.entryTypes" property must be a non-empty array of strings',
         );
       }
       for (const t of entryTypes) {
-        if (typeof t !== "string" || !(PerformanceObserver.supportedEntryTypes as readonly string[]).includes(t)) {
+        if (
+          typeof t !== "string" ||
+          !(PerformanceObserver.supportedEntryTypes as readonly string[]).includes(t)
+        ) {
           throw codedError(
             "ERR_INVALID_ARG_VALUE",
             "TypeError",
