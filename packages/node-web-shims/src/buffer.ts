@@ -72,10 +72,8 @@ const formatList = (array: string[], type = "or"): string => {
       return `${array[0]}`;
     case 2:
       return `${array[0]} ${type} ${array[1]}`;
-    case 3:
-      return `${array[0]}, ${array[1]}, ${type} ${array[2]}`;
     default:
-      return `${array.slice(0, -1).join(", ")}, ${type} ${array[array.length - 1]}`;
+      return `${array.slice(0, -1).join(", ")} ${type} ${array[array.length - 1]}`;
   }
 };
 
@@ -106,7 +104,7 @@ const invalidArgType = (name: string, expected: string | string[], actual: unkno
     if (instances.length > 0 || other.length > 0) msg += " or ";
   }
   if (instances.length > 0) {
-    msg += `an instance of ${formatList(instances)}`;
+    msg += `an instance of ${other.length > 0 ? instances.join(", ") : formatList(instances)}`;
     if (other.length > 0) msg += " or ";
   }
   if (other.length > 0) {
@@ -150,7 +148,9 @@ const outOfRange = (name: string, range: string, value: number): RangeError => {
 const bufferOutOfBounds = (name?: string): RangeError =>
   Object.assign(
     new RangeError(
-      name ? `"${name}" is outside of buffer bounds` : "Attempt to access memory outside buffer bounds",
+      name
+        ? `"${name}" is outside of buffer bounds`
+        : "Attempt to access memory outside buffer bounds",
     ),
     { code: "ERR_BUFFER_OUT_OF_BOUNDS" },
   );
@@ -221,7 +221,9 @@ const validateInteger = (
   }
   if (!Number.isInteger(value)) {
     throw Object.assign(
-      new RangeError(`The value of "${name}" is out of range. It must be an integer. Received ${String(value)}`),
+      new RangeError(
+        `The value of "${name}" is out of range. It must be an integer. Received ${String(value)}`,
+      ),
       { code: "ERR_OUT_OF_RANGE" },
     );
   }
@@ -238,7 +240,9 @@ const validateOffset = (value: unknown, name: string, min: number, max: number):
   }
   if (!Number.isInteger(value)) {
     throw Object.assign(
-      new RangeError(`The value of "${name}" is out of range. It must be an integer. Received ${String(value)}`),
+      new RangeError(
+        `The value of "${name}" is out of range. It must be an integer. Received ${String(value)}`,
+      ),
       { code: "ERR_OUT_OF_RANGE" },
     );
   }
@@ -337,10 +341,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
       }
       throw invalidArgType("string", ["string", "Buffer", "ArrayBuffer"], string);
     }
-    if (
-      typeof encoding === "string" &&
-      encoding.toLowerCase() === "base64url"
-    ) {
+    if (typeof encoding === "string" && encoding.toLowerCase() === "base64url") {
       return origByteLength.call(this, toBase64(string), "base64");
     }
     return origByteLength.call(this, string, encoding);
@@ -348,11 +349,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
 
   // --- Node-faithful Buffer.from (lib/buffer.js `Buffer.from`) -------------
 
-  const fromArrayBuffer = (
-    obj: ArrayBuffer,
-    byteOffset?: unknown,
-    length?: unknown,
-  ): unknown => {
+  const fromArrayBuffer = (obj: ArrayBuffer, byteOffset?: unknown, length?: unknown): unknown => {
     let offset: number;
     if (byteOffset === undefined) {
       offset = 0;
@@ -373,10 +370,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
         len = 0;
       }
     }
-    return origFrom.call(
-      BufferClass,
-      new Uint8Array(obj, offset, len),
-    );
+    return origFrom.call(BufferClass, new Uint8Array(obj, offset, len));
   };
 
   const toLength = (value: unknown): number => {
@@ -388,7 +382,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
 
   const fromArrayLike = (obj: { length: number; [index: number]: unknown }): unknown => {
     const len = toLength(obj.length);
-    if (len <= 0) return origFrom.call(BufferClass);
+    if (len <= 0) return origFrom.call(BufferClass, new Uint8Array(0));
     const out = new Uint8Array(len); // throws 'Invalid typed array length: N'
     for (let i = 0; i < len; i++) out[i] = obj[i] as number;
     return origFrom.call(BufferClass, out);
@@ -397,7 +391,16 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
   const fromObject = (obj: Record<string, unknown>): unknown => {
     if (obj.length !== undefined || isAnyArrayBuffer(obj.buffer)) {
       if (typeof obj.length !== "number") {
-        return origFrom.call(BufferClass);
+        // `{ buffer: arrayBuffer }` without a length — Node reads the whole
+        // buffer via byteOffset/length (both optional).
+        if (isAnyArrayBuffer(obj.buffer)) {
+          return fromArrayBuffer(
+            obj.buffer as ArrayBuffer,
+            (obj as { byteOffset?: unknown }).byteOffset,
+            (obj as { length?: unknown }).length,
+          );
+        }
+        return origFrom.call(BufferClass, new Uint8Array(0));
       }
       return fromArrayLike(obj as { length: number });
     }
@@ -415,10 +418,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
     length?: unknown,
   ): unknown {
     if (typeof value === "string") {
-      if (
-        typeof encodingOrOffset === "string" &&
-        encodingOrOffset.toLowerCase() === "base64url"
-      ) {
+      if (typeof encodingOrOffset === "string" && encodingOrOffset.toLowerCase() === "base64url") {
         return origFrom.call(this, toBase64(value), "base64");
       }
       if (typeof encodingOrOffset === "string") {
@@ -440,10 +440,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
       // Typed arrays (incl. Buffer) copy through feross's native path.
       // DataView has no .length — Node routes it through fromObject's
       // ArrayBuffer-buffer branch (empty buffer), so exclude it here.
-      if (
-        ArrayBuffer.isView(value) &&
-        typeof (value as { length?: unknown }).length === "number"
-      ) {
+      if (ArrayBuffer.isView(value) && typeof (value as { length?: unknown }).length === "number") {
         return origFrom.call(this, value);
       }
 
@@ -470,7 +467,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
 
     throw invalidArgType(
       "first argument",
-      ["string", "Buffer", "ArrayBuffer", "Array", "Array-like Object"],
+      ["string", "Buffer", "ArrayBuffer", "SharedArrayBuffer", "Array", "Array-like Object"],
       value,
     );
   };
@@ -484,10 +481,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
     length?: unknown,
   ): unknown {
     // Node's isTypedArray: an ArrayBuffer view with a length (excludes DataView).
-    if (
-      !ArrayBuffer.isView(view) ||
-      typeof (view as { length?: unknown }).length !== "number"
-    ) {
+    if (!ArrayBuffer.isView(view) || typeof (view as { length?: unknown }).length !== "number") {
       throw invalidArgType("view", ["TypedArray"], view);
     }
     const viewLength = (view as unknown as { length: number }).length;
@@ -617,11 +611,10 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
               BufferClass,
               encLower === "hex" ? fill : encLower === "base64url" ? toBase64(fill) : fill,
               encLower === "base64url" ? "base64" : encLower,
-            ) as Uint8Array;
+            ) as unknown as { toString(encoding?: string): string; length: number };
             const roundTrip =
               encLower === "hex"
-                ? (decoded.toString("hex") === fill.toLowerCase() ||
-                    decoded.toString("hex") === fill)
+                ? decoded.toString("hex") === fill.toLowerCase() || decoded.toString("hex") === fill
                 : true;
             if (!roundTrip || decoded.length === 0) {
               throw Object.assign(
@@ -750,7 +743,10 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
   };
 
   const proto = BufferClass.prototype as Record<string, (...args: unknown[]) => unknown>;
-  const wrapReadWrite = (name: string, sizeFor: (args: unknown[], isWrite: boolean) => number): void => {
+  const wrapReadWrite = (
+    name: string,
+    sizeFor: (args: unknown[], isWrite: boolean) => number,
+  ): void => {
     const orig = proto[name];
     if (typeof orig !== "function") return;
     const isWrite = name.startsWith("write");

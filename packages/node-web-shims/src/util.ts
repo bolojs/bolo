@@ -187,8 +187,7 @@ const inspectValue = (
         .map((b) => b.toString(16).padStart(2, "0"))
         .join(" ");
       const remaining = u8.length - actualMax;
-      const suffix =
-        remaining > 0 ? ` ... ${remaining} more byte${remaining > 1 ? "s" : ""}` : "";
+      const suffix = remaining > 0 ? ` ... ${remaining} more byte${remaining > 1 ? "s" : ""}` : "";
       return `<Buffer ${hex}${suffix}>`;
     }
     const arr = Array.from(obj as unknown as ArrayLike<number>).slice(
@@ -284,7 +283,10 @@ const formatImpl = (
 ): string => {
   // Node merges util.inspect.defaultOptions under the caller's options, so
   // `util.inspect.defaultOptions.numericSeparator = true` affects format too.
-  const merged: InspectOptions = { ...(inspect as { defaultOptions?: InspectOptions }).defaultOptions, ...inspectOptions };
+  const merged: InspectOptions = {
+    ...(inspect as { defaultOptions?: InspectOptions }).defaultOptions,
+    ...inspectOptions,
+  };
   inspectOptions = merged;
   const numericSeparator = inspectOptions?.numericSeparator === true;
   if (fmt === undefined && args.length === 0) return "";

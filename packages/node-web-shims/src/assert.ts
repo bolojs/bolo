@@ -166,11 +166,7 @@ class Comparison {
     for (const key of keys) {
       if (key in obj) {
         const a = actual?.[key];
-        if (
-          typeof a === "string" &&
-          obj[key] instanceof RegExp &&
-          (obj[key] as RegExp).test(a)
-        ) {
+        if (typeof a === "string" && obj[key] instanceof RegExp && (obj[key] as RegExp).test(a)) {
           this[key] = a;
         } else {
           this[key] = obj[key];
@@ -203,7 +199,13 @@ const compareExceptionKey = (
       err.operator = fn.name;
       throw err;
     }
-    innerFail({ actual, expected, message: message as string, operator: fn.name, stackStartFn: fn });
+    innerFail({
+      actual,
+      expected,
+      message: message as string,
+      operator: fn.name,
+      stackStartFn: fn,
+    });
   }
 };
 
@@ -272,11 +274,10 @@ const expectedException = (
     if (!message) {
       generatedMessage = true;
       let msg =
-        'The error is expected to be an instance of ' +
+        "The error is expected to be an instance of " +
         `"${(expected as { name?: string }).name}". Received `;
       if (actual instanceof Error) {
-        const name =
-          ((actual.constructor as { name?: string } | undefined)?.name) || actual.name;
+        const name = (actual.constructor as { name?: string } | undefined)?.name || actual.name;
         if ((expected as { name?: string }).name === name) {
           msg += "an error with identical name but a different prototype.";
         } else {
@@ -433,7 +434,12 @@ const hasMatchingError = (actual: unknown, expected: unknown): boolean => {
   return (expected as (a: unknown) => unknown).call({}, actual) === true;
 };
 
-const expectsNoError = (stackStartFn: AssertFn, actual: unknown, error: unknown, message: unknown): void => {
+const expectsNoError = (
+  stackStartFn: AssertFn,
+  actual: unknown,
+  error: unknown,
+  message: unknown,
+): void => {
   if (actual === NO_EXCEPTION_SENTINEL) return;
   if (typeof error === "string") {
     message = error;
@@ -460,7 +466,13 @@ const doesNotThrow = (...args: unknown[]): void => {
   expectsNoError(doesNotThrow as AssertFn, getActual(args[0]), args[1], args[2]);
 };
 const rejects = async (...args: unknown[]): Promise<void> => {
-  expectsError(rejects as AssertFn, await waitForActual(args[0]), args[1], args[2], args.length + 2);
+  expectsError(
+    rejects as AssertFn,
+    await waitForActual(args[0]),
+    args[1],
+    args[2],
+    args.length + 2,
+  );
 };
 const doesNotReject = async (...args: unknown[]): Promise<void> => {
   expectsNoError(doesNotReject as AssertFn, await waitForActual(args[0]), args[1], args[2]);
