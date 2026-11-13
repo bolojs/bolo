@@ -63,10 +63,7 @@ interface WorkerThreadsLike {
   readonly isMainThread?: boolean;
   readonly workerData?: unknown;
   readonly parentPort?: ParentPortLike | null;
-  readonly Worker?: new (
-    filename: string,
-    opts?: Record<string, unknown>,
-  ) => WorkerThreadInstance;
+  readonly Worker?: new (filename: string, opts?: Record<string, unknown>) => WorkerThreadInstance;
 }
 
 interface ProcessLike {
@@ -78,8 +75,8 @@ interface ProcessLike {
 }
 
 const shims = (): Record<string, unknown> | undefined =>
-  (globalThis as { __browserContainers?: { shims?: Record<string, unknown> } })
-    .__browserContainers?.shims;
+  (globalThis as { __browserContainers?: { shims?: Record<string, unknown> } }).__browserContainers
+    ?.shims;
 
 const workerThreads = (): WorkerThreadsLike | undefined =>
   shims()?.worker_threads as WorkerThreadsLike | undefined;
