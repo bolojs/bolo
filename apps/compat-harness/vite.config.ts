@@ -1,20 +1,20 @@
-import { existsSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
-import { defineConfig, type Plugin } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import { nodeWebShims } from '@bolojs/node-web-shims/vite-plugin';
+import { existsSync } from "node:fs";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+import { defineConfig, type Plugin } from "vite";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
+import { nodeWebShims } from "@bolojs/node-web-shims/vite-plugin";
 
-const shimsDir = fileURLToPath(new URL('../../packages/node-web-shims/dist/', import.meta.url));
+const shimsDir = fileURLToPath(new URL("../../packages/node-web-shims/dist/", import.meta.url));
 // Same rationale as apps/demo/vite.config.ts: unenv's own runtime modules
 // import deep subpaths directly (e.g. `stream.mjs` imports
 // `node:stream/promises`) with no dedicated wrapper in node-web-shims, so
 // resolve straight to unenv's module — from node-web-shims' own package
 // scope, not this app's, since this app has no direct unenv dependency.
 const requireFromNodeWebShims = createRequire(
-  fileURLToPath(new URL('../../packages/node-web-shims/package.json', import.meta.url)),
+  fileURLToPath(new URL("../../packages/node-web-shims/package.json", import.meta.url)),
 );
-const streamPromisesShim = requireFromNodeWebShims.resolve('unenv/node/stream/promises');
+const streamPromisesShim = requireFromNodeWebShims.resolve("unenv/node/stream/promises");
 
 const requireFromApp = createRequire(import.meta.url);
 // vite-plugin-node-polyfills@0.28.0 injects internal imports
@@ -22,14 +22,14 @@ const requireFromApp = createRequire(import.meta.url);
 // plugin under Vite 6 can't resolve (tries to open the path as a literal file).
 // Pre-resolve them via a plugin hook that runs before commonjs.
 const resolvePolyfillsShim = (): Plugin => ({
-  name: 'resolve-polyfills-shims',
-  enforce: 'pre',
+  name: "resolve-polyfills-shims",
+  enforce: "pre",
   resolveId(source: string) {
-    if (source.startsWith('vite-plugin-node-polyfills/shims/')) {
+    if (source.startsWith("vite-plugin-node-polyfills/shims/")) {
       const resolved = requireFromApp.resolve(source);
       // Prefer ESM (.js) over CJS (.cjs) — Vite 6's CJS interop misses
       // `exports.default` in these shims due to their __esModule marker.
-      const esm = resolved.replace(/\.cjs$/, '.js');
+      const esm = resolved.replace(/\.cjs$/, ".js");
       return existsSync(esm) ? esm : resolved;
     }
     return null;
@@ -41,7 +41,7 @@ export default defineConfig({
     resolvePolyfillsShim(),
     nodeWebShims(),
     nodePolyfills({
-      include: ['buffer'],
+      include: ["buffer"],
       globals: { Buffer: true, global: true, process: true },
     }),
   ],
@@ -49,37 +49,37 @@ export default defineConfig({
   // (`await configureBrowserLogging()`). Vite's default worker format is
   // IIFE which can't host TLA — emit ES workers instead so Rollup keeps it.
   // ponytail: top-level Vite config in v8, not nested under `build`.
-  worker: { format: 'es' },
+  worker: { format: "es" },
   // rolldown/browser's WASI+threads binary needs SharedArrayBuffer, which
   // requires cross-origin isolation — without these headers it traps with
   // a bare "unreachable" WASM RuntimeError on every bundleEntry() call.
   server: {
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'credentialless',
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "credentialless",
     },
   },
   preview: {
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'credentialless',
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "credentialless",
     },
   },
   build: {
-    target: 'esnext',
+    target: "esnext",
     rollupOptions: {
       external: [
-        'typescript',     // wasm-registry tsc tool + vite-server
+        "typescript", // wasm-registry tsc tool + vite-server
         // rolldown/oxc are loaded locally in dev (see src/main.ts), but the
         // production `vite build` (unused by the actual refresh pipeline,
         // which only runs the dev server) still can't resolve oxc-transform's
         // browser.js — it references @oxc-transform/binding-wasm32-wasi, a
         // platform binding that's never installed. Keep both external here;
         // this option only affects `vite build`, not the dev server.
-        'oxc-transform',  // wasm-registry oxc-transform tool
-        '@rolldown/browser', // wasm-registry rolldown/browser bundler
-        'sass',           // wasm-registry sass tool
-        '@swc/wasm-web',  // wasm-registry swc tool (WASM binary loaded via CDN)
+        "oxc-transform", // wasm-registry oxc-transform tool
+        "@rolldown/browser", // wasm-registry rolldown/browser bundler
+        "sass", // wasm-registry sass tool
+        "@swc/wasm-web", // wasm-registry swc tool (WASM binary loaded via CDN)
       ],
     },
   },
@@ -89,9 +89,9 @@ export default defineConfig({
       // rewrite `node:stream/promises`), so use exact-match RegExps and give
       // the one subpath actually imported (`node:stream/promises`) its own,
       // more specific entry ahead of it.
-      { find: 'node:stream/promises', replacement: streamPromisesShim },
+      { find: "node:stream/promises", replacement: streamPromisesShim },
       { find: /^node:events$/, replacement: `${shimsDir}events.js` },
-      { find: /^node:net$/, replacement: requireFromNodeWebShims.resolve('unenv/node/net') },
+      { find: /^node:net$/, replacement: requireFromNodeWebShims.resolve("unenv/node/net") },
       { find: /^node:path$/, replacement: `${shimsDir}path.js` },
       { find: /^node:stream$/, replacement: `${shimsDir}stream.js` },
       { find: /^node:async_hooks$/, replacement: `${shimsDir}async_hooks.js` },
@@ -117,19 +117,19 @@ export default defineConfig({
   // asset/worker URLs.
   optimizeDeps: {
     exclude: [
-      'bolojs',
-      'oxc-transform',
-      '@rolldown/browser',
-      'typescript',
-      'sass',
-      '@swc/wasm-web',
+      "bolojs",
+      "oxc-transform",
+      "@rolldown/browser",
+      "typescript",
+      "sass",
+      "@swc/wasm-web",
     ],
     esbuildOptions: {
       plugins: [
         {
-          name: 'resolve-bare-builtins',
+          name: "resolve-bare-builtins",
           setup(build) {
-            const bare = ['crypto', 'events', 'path', 'stream', 'util', 'assert', 'os', 'tty'];
+            const bare = ["crypto", "events", "path", "stream", "util", "assert", "os", "tty"];
             for (const name of bare) {
               build.onResolve({ filter: new RegExp(`^${name}$`) }, () => ({
                 path: `${shimsDir}${name}.js`,

@@ -46,11 +46,19 @@ describe("bundleEntry + materializeVirtualStore", () => {
       packages: new Map([
         [
           "pkgA@1.0.0",
-          pkg({ name: "pkgA", depPath: "pkgA@1.0.0", resolvedDependencies: { shared: "shared@1.5.0" } }),
+          pkg({
+            name: "pkgA",
+            depPath: "pkgA@1.0.0",
+            resolvedDependencies: { shared: "shared@1.5.0" },
+          }),
         ],
         [
           "pkgB@1.0.0",
-          pkg({ name: "pkgB", depPath: "pkgB@1.0.0", resolvedDependencies: { shared: "shared@2.0.0" } }),
+          pkg({
+            name: "pkgB",
+            depPath: "pkgB@1.0.0",
+            resolvedDependencies: { shared: "shared@2.0.0" },
+          }),
         ],
         ["shared@1.5.0", pkg({ name: "shared", version: "1.5.0", depPath: "shared@1.5.0" })],
         ["shared@2.0.0", pkg({ name: "shared", version: "2.0.0", depPath: "shared@2.0.0" })],

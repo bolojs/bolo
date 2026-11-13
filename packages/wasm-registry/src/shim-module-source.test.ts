@@ -30,7 +30,7 @@ describe("shimModuleSource", () => {
       classKeys: new Set(["Worker"]),
     });
     expect(src).toContain("const __moduleExports = {};");
-    expect(src).toContain('for (const __k of Reflect.ownKeys(__shim)) {');
+    expect(src).toContain("for (const __k of Reflect.ownKeys(__shim)) {");
     expect(src).toContain('__moduleExports["Worker"] = __bc_callCompat(__shim["Worker"]);');
     expect(src).toContain("export default __moduleExports;");
     expect(src).toContain('export { __moduleExports as "module.exports" };');

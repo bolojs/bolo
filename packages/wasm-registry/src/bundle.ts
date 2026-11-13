@@ -907,8 +907,7 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
         // the same MODULE_NOT_FOUND path in Node. A *bare* specifier whose
         // package IS installed but whose exports shape we cannot follow
         // still falls through to the esm.sh fallback below.
-        const notInstalled =
-          isRelative || !findPackageDir(vfs, importerDir, barePackageName(path));
+        const notInstalled = isRelative || !findPackageDir(vfs, importerDir, barePackageName(path));
         if (notInstalled) {
           warnings?.push(
             `"${id}" required by "${importer}" is not installed — deferring to a require-time MODULE_NOT_FOUND`,
@@ -1184,9 +1183,7 @@ export const shimModuleSource = (
   // descriptors (live getters stay live) and only swaps the class values for
   // their call-compatible wrappers.
   const classKeyList =
-    compat && !compat.selfIsClass && !compat.moduleIsFunction
-      ? [...(compat.classKeys ?? [])]
-      : [];
+    compat && !compat.selfIsClass && !compat.moduleIsFunction ? [...(compat.classKeys ?? [])] : [];
   const moduleRef = classKeyList.length > 0 ? "__moduleExports" : selfRef;
   return [
     `const __shim = ${shimExpr ?? registryShimExpr(builtin)};`,
