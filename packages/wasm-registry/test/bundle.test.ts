@@ -496,3 +496,118 @@ describe("wasm-registry: transformScript", () => {
     await expect(transformScript("const x = ;")).rejects.toThrow();
   });
 });
+
+describe("wasm-registry: runtime interop", () => {
+  const importBundle = (code: string) =>
+    import(
+      /* @vite-ignore */ `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`
+    ) as Promise<Record<string, unknown>>;
+
+  it("re-exports the api var as default for esbuild's dual-format CJS wrapper", async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      "/node_modules/ts-pkg/package.json",
+      JSON.stringify({ name: "ts-pkg", main: "index.js" }),
+    );
+    // typescript.js shape: the whole body sits in an IIFE whose `module`
+    // parameter is a fake module object; the real `module` only exists under
+    // CJS. Rolldown sees a script with no exports, so `import tsDefault`
+    // would be undefined without the appended default export.
+    seed(
+      vfs,
+      "/node_modules/ts-pkg/index.js",
+      [
+        "var ts = {}; ((module) => {",
+        '"use strict";',
+        "var api = { transpile: (s) => 'out:' + s };",
+        "module.exports = api;",
+        "})({ get exports() { return ts; }, set exports(v) { ts = v; if (typeof module !== 'undefined' && module.exports) { module.exports = v; } } });",
+      ].join("\n"),
+    );
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import tsDefault, * as tsNs from 'ts-pkg'; export default tsDefault?.transpile?.('x') ?? tsNs.default?.transpile?.('x');",
+    );
+
+    const { code } = await bundleEntry("/src/entry.ts", { vfs });
+
+    const mod = await importBundle(code);
+    expect(mod.default).toBe("out:x");
+  });
+
+  it("tolerates a class-keyed shim export that is not a function at bundle runtime", async () => {
+    class Worker {}
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import { Worker, isMainThread } from 'node:worker_threads'; export default [Worker, isMainThread];",
+    );
+    const { code } = await bundleEntry("/src/entry.ts", {
+      vfs,
+      getShim: (b) => (b === "worker_threads" ? { Worker, isMainThread: true } : undefined),
+    });
+    // The live registry differs from build time: Worker is absent, so the
+    // generated `__bc_callCompat(__shim["Worker"])` receives undefined — a
+    // primitive WeakMap key would throw "Invalid value used as weak map key".
+    (globalThis as { __browserContainers?: unknown }).__browserContainers = {
+      shims: { worker_threads: { isMainThread: true } },
+    };
+    try {
+      const mod = await importBundle(code);
+      expect(mod.default).toEqual([undefined, true]);
+    } finally {
+      delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
+    }
+  });
+
+  it("keeps EventEmitter.call(this) subclassing working through call-compat", async () => {
+    class FakeEmitter {
+      _events: Record<string, ((...a: unknown[]) => void)[]> = {};
+      on(ev: string, fn: (...a: unknown[]) => void) {
+        (this._events[ev] ??= []).push(fn);
+        return this;
+      }
+      emit(ev: string, ...args: unknown[]) {
+        for (const f of this._events[ev] ?? []) f.apply(this, args);
+        return true;
+      }
+    }
+    // `events.EventEmitter === events` — the self-referential static the
+    // events shim really carries.
+    (FakeEmitter as unknown as Record<string, unknown>).EventEmitter = FakeEmitter;
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      "/src/entry.ts",
+      [
+        "import { EventEmitter } from 'node:events';",
+        "function Legacy() { EventEmitter.call(this); this.tag = 'x'; }",
+        "Legacy.prototype = Object.create(EventEmitter.prototype);",
+        "Legacy.prototype.constructor = Legacy;",
+        "Object.setPrototypeOf(Legacy, EventEmitter);",
+        "const inst = new Legacy();",
+        "let fired = false;",
+        "inst.on('e', () => { fired = true; });",
+        "inst.emit('e');",
+        "export default [fired, inst instanceof EventEmitter, inst.tag, Legacy.EventEmitter === EventEmitter];",
+      ].join("\n"),
+    );
+    const { code } = await bundleEntry("/src/entry.ts", {
+      vfs,
+      getShim: (b) =>
+        b === "events" ? (FakeEmitter as unknown as Record<string, unknown>) : undefined,
+    });
+    (globalThis as { __browserContainers?: unknown }).__browserContainers = {
+      shims: { events: FakeEmitter },
+    };
+    try {
+      const mod = await importBundle(code);
+      expect(mod.default).toEqual([true, true, "x", true]);
+    } finally {
+      delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
+    }
+  });
+});

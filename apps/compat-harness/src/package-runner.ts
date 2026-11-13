@@ -165,7 +165,7 @@ export class PackageMatrixRunner {
   private readonly packageTimeoutMs: number;
   private readonly isolation: "fresh-boot" | "shared";
   private readonly onResult: ((result: PackageResult) => void) | undefined;
-  private readonly onPackageStart: ((name: string) => void) | undefined;
+  private readonly onPackageStart: ((name: string, timeoutMs: number) => void) | undefined;
   private readonly skip: Set<string>;
 
   constructor(
@@ -176,8 +176,10 @@ export class PackageMatrixRunner {
       matrix?: PackageMatrix;
       /** Called after every finished package, so the caller can persist progress incrementally. */
       onResult?: (result: PackageResult) => void;
-      /** Called just before a package starts, so the caller can track liveness. */
-      onPackageStart?: (name: string) => void;
+      /** Called just before a package starts, so the caller can track liveness.
+       * `timeoutMs` is the effective per-package deadline (entry override or the
+       * runner default) so watchdogs don't kill long-but-honest packages early. */
+      onPackageStart?: (name: string, timeoutMs: number) => void;
       /** Package names to skip: already completed by an earlier (killed) run. */
       skip?: Iterable<string>;
     } = {},
@@ -199,7 +201,7 @@ export class PackageMatrixRunner {
     const results: PackageResult[] = [];
     for (const pkg of this.matrix.packages) {
       if (this.skip.has(pkg.name)) continue;
-      this.onPackageStart?.(pkg.name);
+      this.onPackageStart?.(pkg.name, pkg.timeoutMs ?? this.packageTimeoutMs);
       const result = await this.runOne(pkg);
       const expectation = EXPECTATIONS[pkg.name];
       if (expectation) result.expectation = expectation;

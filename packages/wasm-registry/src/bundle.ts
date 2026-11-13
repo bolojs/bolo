@@ -581,17 +581,27 @@ var __bc_clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm
 // function-based constructors do.
 var __bc_isClass = (v) => {
   if (typeof v !== 'function') return false;
-  try { return /^class[\s{]/.test(Function.prototype.toString.call(v)); } catch { return false; }
+  try { return /^class[\\s{]/.test(Function.prototype.toString.call(v)); } catch { return false; }
 };
 var __bc_callCompatCache = new WeakMap();
 var __bc_callCompat = (C) => {
+  // Generated shim code calls this on values that were classes at bundle
+  // build time; the live registry can differ (missing key, primitive,
+  // already-wrapped function, plain function). Anything that is not a real
+  // class must pass through — feeding a non-object/function to the WeakMap
+  // below throws "Invalid value used as weak map key", and wrapping a
+  // non-class changes its call semantics.
+  if (!__bc_isClass(C)) return C;
   var cached = __bc_callCompatCache.get(C);
   if (cached) return cached;
   var F = function (...args) {
     // new F() / class S extends F: a real instance with S's prototype.
     if (new.target !== undefined) return Reflect.construct(C, args, new.target);
-    // F() with no receiver: behave like new F().
-    if (this === undefined || this === null || this === globalThis) return Reflect.construct(C, args);
+    // F() with no receiver (or a primitive receiver): behave like new F().
+    if (this === undefined || this === null || this === globalThis ||
+        (typeof this !== 'object' && typeof this !== 'function')) {
+      return Reflect.construct(C, args);
+    }
     // F.call(this): initialize the foreign object like Node's function ctor.
     var inst = Reflect.construct(C, args);
     for (var k of Reflect.ownKeys(inst)) {
@@ -802,6 +812,31 @@ const NATIVE_STUB = {
 const HAS_DEFAULT_EXPORT = /\bexport\s+default\b|\bexport\s*\{[^}]*\bdefault\b/;
 const LOOKS_ESM = /^\s*(?:import|export)\s/m;
 
+// Static ESM statements only — a dynamic `import()` call or `import.meta`
+// inside a script-style file must not disqualify the esbuild-wrapper path.
+const HAS_ESM_STATEMENT = /^\s*(?:import\s*\.\s*meta|import(?!\s*\()[\s{'"*]|export[\s{'"*.])/m;
+
+// esbuild's dual-format CJS wrapper — `var api = {}; ((module) => { ... })
+// ({ get exports() { return api; }, set exports(v) { api = v; if (typeof
+// module !== "undefined" && module.exports) module.exports = v; } })` — used
+// by typescript.js and other esbuild-bundled packages. The only
+// `module.exports` writes are param-shadowed, so rolldown sees a script with
+// zero exports and `import ts from "typescript"` yields undefined. The api
+// var is exactly the surface Node's require() produces; re-exporting it as
+// the default restores the interop shapes consumers rely on.
+const ESBUILD_WRAPPER_IIFE = /\(\s*module\s*\)\s*=>/;
+const ESBUILD_WRAPPER_SETTER = /set\s+exports\s*\(/;
+const ESBUILD_WRAPPER_GETTER = /get\s+exports\s*\(\s*\)\s*\{\s*return\s+([A-Za-z_$][\w$]*)/;
+
+const esbuildWrapperDefaultExport = (contents: string): string => {
+  if (HAS_ESM_STATEMENT.test(contents)) return "";
+  if (!contents.includes("module.exports")) return "";
+  if (!ESBUILD_WRAPPER_IIFE.test(contents) || !ESBUILD_WRAPPER_SETTER.test(contents)) return "";
+  const name = ESBUILD_WRAPPER_GETTER.exec(contents)?.[1];
+  if (!name || !new RegExp(`\\bvar\\s+${name}\\b`).test(contents)) return "";
+  return `\nexport default ${name};`;
+};
+
 // Bundler convention (vite/webpack/esm.sh): `import x from "pkg"` on a module
 // with only named exports yields the namespace object, matching what Node's
 // CJS interop does for require()-shaped packages. Without it, `import yaml
@@ -991,8 +1026,11 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
     const prelude =
       implicitGlobalDecl("__filename", JSON.stringify(id), contents) +
       implicitGlobalDecl("__dirname", JSON.stringify(resolveDir), contents);
+    // esbuild's dual-format wrapper hides the exports behind a param-shadowed
+    // `module` — append a default export of the captured api var (typescript).
+    const esbuildDefault = ext === ".js" ? esbuildWrapperDefaultExport(contents) : "";
     return {
-      code: (prelude ? prelude + "\n" : "") + contents,
+      code: (prelude ? prelude + "\n" : "") + contents + esbuildDefault,
       map: null,
       moduleSideEffects: "no-treeshake",
     };

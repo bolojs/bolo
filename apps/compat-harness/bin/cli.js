@@ -278,13 +278,17 @@ const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => 
 
   let currentPackage = null;
   let packageStartedAt = Date.now();
+  // Per-package deadline reported by the in-page runner (matrix timeoutMs
+  // override or the 60s default) — the watchdog must not kill a package that
+  // is legitimately allowed more time than the global default.
+  let currentTimeoutMs = PACKAGE_TIMEOUT_MS;
 
   const recordTimeout = async (name, elapsed) => {
     const timedOut = {
       name,
       class: "unknown",
       status: "fail",
-      error: `TIMEOUT after ${PACKAGE_TIMEOUT_MS}ms (page main thread hung)`,
+      error: `TIMEOUT after ${currentTimeoutMs}ms (page main thread hung)`,
       duration: elapsed,
     };
     seen.add(name);
@@ -325,7 +329,7 @@ const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => 
       const elapsed = Date.now() - packageStartedAt;
       const verdict = classifyHeartbeat({
         elapsedMs: elapsed,
-        deadlineMs: PACKAGE_TIMEOUT_MS,
+        deadlineMs: currentTimeoutMs,
         probeResult: probe,
       });
       if (verdict === "hung") {
@@ -341,8 +345,10 @@ const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => 
     if (next && next !== currentPackage) {
       currentPackage = next;
       packageStartedAt = probe.startedAt ?? Date.now();
+      currentTimeoutMs = probe.timeoutMs ?? PACKAGE_TIMEOUT_MS;
     } else if (!next) {
       currentPackage = null;
+      currentTimeoutMs = PACKAGE_TIMEOUT_MS;
     }
 
     if (!currentPackage) {
@@ -364,7 +370,7 @@ const runPackageMatrix = async ({ page, context, url, skip, onResult, log }) => 
     const elapsed = Date.now() - packageStartedAt;
     const verdict = classifyHeartbeat({
       elapsedMs: elapsed,
-      deadlineMs: PACKAGE_TIMEOUT_MS,
+      deadlineMs: currentTimeoutMs,
       graceMs: DEFAULT_GRACE_MS,
       probeResult: probe,
     });

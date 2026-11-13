@@ -83,6 +83,7 @@
     {
       "name": "parcel",
       "class": "Bundler",
+      "timeoutMs": 120000,
       "source": "import parcel from 'parcel';\ntry {\n  if (typeof parcel !== 'object' && typeof parcel !== 'function') throw new Error('unexpected export');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
     },
     {
@@ -93,6 +94,7 @@
     {
       "name": "jest",
       "class": "Testing",
+      "timeoutMs": 120000,
       "bind": "import * as jest from 'jest'",
       "probe": "Object.keys(jest).length > 0"
     },
