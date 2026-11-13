@@ -111,6 +111,25 @@ const invalidArgType = (name: string, expected: string, actual: unknown): TypeEr
     { code: "ERR_INVALID_ARG_TYPE" },
   );
 
+/**
+ * Node validates `options.recursive` for mkdir/mkdirSync/promises.mkdir with
+ * a dedicated message (`The "options.recursive" property must be of type
+ * boolean.` + the received-type suffix). `undefined` is allowed (option
+ * absent); every other non-boolean — including `null` — throws
+ * ERR_INVALID_ARG_TYPE synchronously on the callback/sync surfaces.
+ */
+const validateRecursiveOption = (opts: unknown): void => {
+  if (opts === null || typeof opts !== "object") return;
+  const recursive = (opts as { recursive?: unknown }).recursive;
+  if (recursive === undefined || typeof recursive === "boolean") return;
+  throw Object.assign(
+    new TypeError(
+      `The "options.recursive" property must be of type boolean.${describeReceived(recursive)}`,
+    ),
+    { code: "ERR_INVALID_ARG_TYPE" },
+  );
+};
+
 /** `signal.reason` — a DOMException 'AbortError' in browsers; fall back to an Error. */
 const abortReason = (signal: AbortSignal): unknown => {
   const reason = (signal as { reason?: unknown }).reason;
@@ -254,9 +273,9 @@ interface FsWriteFileFn {
   ): void;
 }
 interface FsMkdirFn {
-  (path: string, opts?: { recursive?: boolean }): Promise<void>;
-  (path: string, cb: (err: unknown) => void): void;
-  (path: string, opts: { recursive?: boolean }, cb: (err: unknown) => void): void;
+  (path: string, opts?: { recursive?: boolean }): Promise<string | undefined>;
+  (path: string, cb: (err: unknown, path?: string) => void): void;
+  (path: string, opts: { recursive?: boolean }, cb: (err: unknown, path?: string) => void): void;
 }
 
 export const createFsShim = (vfs: VfsBus) => {
@@ -316,6 +335,22 @@ export const createFsShim = (vfs: VfsBus) => {
   ): Promise<void> => {
     validateSignal(opts);
     await checkAbort(signalOf(opts));
+    // Node opens the target with the requested flag: a read-only flag ('r',
+    // 'rs', or an O_RDONLY numeric flag) fails the write with EBADF.
+    if (typeof path !== "number" && opts !== null && typeof opts === "object") {
+      const flag = (opts as { flag?: unknown }).flag;
+      const readOnly =
+        (typeof flag === "string" && flag.startsWith("r") && !flag.includes("+")) ||
+        (typeof flag === "number" && Number.isInteger(flag) && (flag & 0b11) === 0);
+      if (readOnly) {
+        throw Object.assign(new Error("EBADF: bad file descriptor, write"), {
+          code: "EBADF",
+          errno: -9,
+          syscall: "write",
+          path: String(path),
+        });
+      }
+    }
     // fd and flagged/moded writes go straight to memfs — `vfs.writeFile`
     // handles the plain string-path case (watchers + cold replication).
     if (
@@ -397,10 +432,35 @@ export const createFsShim = (vfs: VfsBus) => {
     }
   };
 
-  const mkdirImpl = async (path: string, opts?: { recursive?: boolean }): Promise<void> => {
+  /**
+   * Node's `firstPathCreated` for recursive mkdir: the shallowest path
+   * segment that does not yet exist (the first directory the mkdir -p walk
+   * will create). `undefined` when the whole chain already exists.
+   */
+  const firstCreatedPath = (path: string): string | undefined => {
+    const norm = normalizePath(pathOf(path));
+    const segs = norm.split("/").filter(Boolean);
+    let cur = "";
+    for (const seg of segs) {
+      cur += `/${seg}`;
+      try {
+        vfs.hot.statSync(cur);
+      } catch {
+        return cur;
+      }
+    }
+    return undefined;
+  };
+
+  const mkdirImpl = async (
+    path: string,
+    opts?: { recursive?: boolean },
+  ): Promise<string | undefined> => {
     const recursive = opts !== null && typeof opts === "object" && opts.recursive === true;
     mkdirPreflight(path, recursive);
+    const first = recursive ? firstCreatedPath(path) : undefined;
     await vfs.mkdir(path, { recursive });
+    return first;
   };
 
   const rmImpl = async (path: string, opts?: { recursive?: boolean }): Promise<void> => {
@@ -534,6 +594,12 @@ export const createFsShim = (vfs: VfsBus) => {
   }) as unknown as FsWriteFileFn;
   const mkdir = ((path: unknown, ...rest: any[]) => {
     validatePath(path);
+    // Node validates options.recursive synchronously — before the callback
+    // is even registered — so scan the non-function args here rather than
+    // inside the async impl (which would only produce a rejection).
+    for (const arg of rest) {
+      if (typeof arg !== "function") validateRecursiveOption(arg);
+    }
     return withCallback(mkdirImpl)(pathOf(path as string | Uint8Array | URL), ...rest);
   }) as unknown as FsMkdirFn;
   const rm = withCallback(rmImpl);
@@ -601,6 +667,22 @@ export const createFsShim = (vfs: VfsBus) => {
   ): void => {
     validatePath(path, "path", true);
     validateWriteData(data);
+    // Same read-only-flag contract as the async form: Node's writeFileSync
+    // with flag 'r' throws EBADF synchronously.
+    if (typeof path !== "number" && opts !== null && typeof opts === "object") {
+      const flag = (opts as { flag?: unknown }).flag;
+      const readOnly =
+        (typeof flag === "string" && flag.startsWith("r") && !flag.includes("+")) ||
+        (typeof flag === "number" && Number.isInteger(flag) && (flag & 0b11) === 0);
+      if (readOnly) {
+        throw Object.assign(new Error("EBADF: bad file descriptor, write"), {
+          code: "EBADF",
+          errno: -9,
+          syscall: "write",
+          path: String(path),
+        });
+      }
+    }
     vfs.hot.writeFileSync(
       (typeof path === "number" ? path : pathOf(path)) as never,
       data as never,
@@ -610,12 +692,16 @@ export const createFsShim = (vfs: VfsBus) => {
 
   const mkdirSync = (path: string | Uint8Array | URL, opts?: { recursive?: boolean }) => {
     validatePath(path);
+    validateRecursiveOption(opts);
     const p = pathOf(path);
     const recursive = opts?.recursive === true;
     mkdirPreflight(p, recursive);
-    // memfs returns the first created path under `recursive` (Node ≥13.11
-    // parity), undefined otherwise — forward it.
-    return vfs.hot.mkdirSync(p, { recursive } as never) as string | undefined;
+    // Node ≥13.11 returns the first created path for recursive mkdir,
+    // undefined otherwise — computed before the write so it reflects the
+    // pre-mkdir tree regardless of backend return-value quirks.
+    const first = recursive ? firstCreatedPath(p) : undefined;
+    vfs.hot.mkdirSync(p, { recursive } as never);
+    return first;
   };
 
   const rmSync = (path: string, opts?: { recursive?: boolean }): void => {
@@ -670,6 +756,9 @@ export const createFsShim = (vfs: VfsBus) => {
   const hotPromises = vfs.hot.promises as unknown as
     | Record<string, ((...args: any[]) => any) | undefined>
     | undefined;
+  // Node guarantees fs.constants === fs.promises.constants by reference;
+  // read once so a facade that deserializes per access cannot split them.
+  const fsConstants = vfs.hot.constants;
 
   const unsupported = (name: string): Error =>
     new Error(`fs.${name} is not supported by this VFS backend`);
@@ -713,6 +802,31 @@ export const createFsShim = (vfs: VfsBus) => {
     return () => {
       throw unsupported(name);
     };
+  };
+
+  /**
+   * The in-memory VFS cannot honestly back a multi-GiB file: memfs reports
+   * ~4 GiB of mock free space, which lets `fs.statfsSync`-driven capacity
+   * checks (Node's test/common tmpdir `hasEnoughSpace`) green-light
+   * operations like `truncateSync(2 ** 31)` that would allocate gigabytes
+   * and crash the worker. Cap reported free blocks at 1 GiB (256K × 4 KiB
+   * blocks) — still far beyond any real fixture, honest about the medium.
+   */
+  const STATFS_MAX_BAVAIL_BLOCKS = 256 * 1024;
+  const capStatfsBavail = <T>(stats: T): T => {
+    if (stats === null || typeof stats !== "object") return stats;
+    const s = stats as { bavail?: unknown; bfree?: unknown };
+    const cap = (v: unknown): unknown => {
+      if (typeof v === "bigint") {
+        const c = BigInt(STATFS_MAX_BAVAIL_BLOCKS);
+        return v > c ? c : v;
+      }
+      if (typeof v === "number") return Math.min(v, STATFS_MAX_BAVAIL_BLOCKS);
+      return v;
+    };
+    if (s.bavail !== undefined) s.bavail = cap(s.bavail);
+    if (s.bfree !== undefined) s.bfree = cap(s.bfree);
+    return stats;
   };
 
   /**
@@ -984,6 +1098,8 @@ export const createFsShim = (vfs: VfsBus) => {
     },
     mkdir: async (path: unknown, opts?: { recursive?: boolean }) => {
       validatePath(path);
+      // The promises surface rejects rather than throwing — validate inside.
+      validateRecursiveOption(opts);
       return mkdirImpl(pathOf(path as string | Uint8Array | URL), opts);
     },
     rm: rmImpl,
@@ -1014,13 +1130,13 @@ export const createFsShim = (vfs: VfsBus) => {
     realpath: promiseHot("realpath"),
     rename: promiseHot("rename"),
     rmdir: promiseHot("rmdir"),
-    statfs: promiseHot("statfs"),
+    statfs: async (...args: any[]) => capStatfsBavail(await promiseHot("statfs")(...args)),
     truncate: promiseHot("truncate"),
     unlink: promiseHot("unlink"),
     utimes: promiseHot("utimes"),
     watch: promiseHot("watch"),
     glob: promiseHot("glob"),
-    constants: vfs.hot.constants,
+    constants: fsConstants,
     FileHandle: FileHandleShim,
   };
 
@@ -1114,8 +1230,21 @@ export const createFsShim = (vfs: VfsBus) => {
     renameSync: (oldPath: string, newPath: string) => vfs.hot.renameSync(oldPath, newPath),
     rmdir: dualHot("rmdir"),
     rmdirSync: (path: string, opts?: unknown) => vfs.hot.rmdirSync(path, opts as never),
-    statfs: dualHot("statfs"),
-    statfsSync: (path: string, opts?: unknown) => syncVol("statfsSync")(path, opts),
+    // Same free-space cap as statfsSync/promises.statfs — applied to the
+    // callback arg and the promise result (capStatfsBavail mutates in place).
+    statfs: ((...args: any[]) => {
+      const last = args[args.length - 1];
+      if (typeof last === "function") {
+        args[args.length - 1] = (err: unknown, stats?: unknown) => {
+          if (!err) capStatfsBavail(stats);
+          last(err, stats);
+        };
+        return dualHot("statfs")(...args);
+      }
+      return (dualHot("statfs")(...args) as Promise<unknown>).then((s) => capStatfsBavail(s));
+    }) as never,
+    statfsSync: (path: string, opts?: unknown) =>
+      capStatfsBavail(syncVol("statfsSync")(path, opts)),
     truncate: dualHot("truncate"),
     truncateSync: (path: string, len?: number) => vfs.hot.truncateSync(path, len),
     unlink: dualHot("unlink"),
@@ -1161,7 +1290,7 @@ export const createFsShim = (vfs: VfsBus) => {
     // ships the same table as real fs.constants; the worker facade fetches
     // it over the wire. Optional-chained so construction still survives a
     // VFS backend without it.
-    constants: vfs.hot.constants,
+    constants: fsConstants,
     F_OK: (vfs.hot as unknown as { constants?: { F_OK?: number } }).constants?.F_OK,
     R_OK: (vfs.hot as unknown as { constants?: { R_OK?: number } }).constants?.R_OK,
     W_OK: (vfs.hot as unknown as { constants?: { W_OK?: number } }).constants?.W_OK,

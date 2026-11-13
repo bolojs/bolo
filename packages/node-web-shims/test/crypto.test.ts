@@ -71,6 +71,46 @@ describe("hashes", () => {
   it("rejects unknown algorithms", () => {
     expect(() => c.createHash("nope-9000")).toThrow(/digest/i);
   });
+
+  it("validates options.outputLength like Node", () => {
+    // XOF defaults and explicit lengths.
+    expect(c.createHash("shake128").digest("hex")).toBe("7f9c2ba4e88f827d616045507605853e");
+    expect(c.createHash("shake128", { outputLength: 5 }).digest("hex")).toBe("7f9c2ba4e8");
+    expect(c.createHash("shake128", { outputLength: 0 }).digest("hex")).toBe("");
+    expect(c.createHash("shake256", { outputLength: 16 }).digest("hex")).toBe(
+      "46b9dd2b0ba88d13233b3feb743eeb24",
+    );
+    // Non-XOF accepts only its own digest length.
+    expect(c.createHash("sha224", { outputLength: 28 }).digest("hex")).toBe(
+      nodeCrypto.createHash("sha224").digest("hex"),
+    );
+    expect(() => c.createHash("sha256", { outputLength: 28 })).toThrowError(
+      expect.objectContaining({ code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH" }),
+    );
+    for (const outputLength of [null, {}, "foo", false]) {
+      expect(() => c.createHash("sha256", { outputLength: outputLength as never })).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+      );
+    }
+    for (const outputLength of [-1, 0.5, Infinity, 2 ** 90]) {
+      expect(() => c.createHash("sha256", { outputLength })).toThrowError(
+        expect.objectContaining({ code: "ERR_OUT_OF_RANGE" }),
+      );
+    }
+  });
+
+  it("copy() carries and overrides outputLength", () => {
+    const a = c.createHash("shake128", { outputLength: 5 }).update("abc");
+    const b = a.copy();
+    const d = b.copy({ outputLength: 0 });
+    expect(a.digest("hex")).toBe(
+      nodeCrypto.createHash("shake128", { outputLength: 5 }).update("abc").digest("hex"),
+    );
+    expect(d.digest("hex")).toBe("");
+    expect(() => c.createHash("sha256").copy({ outputLength: 1 })).toThrowError(
+      expect.objectContaining({ code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH" }),
+    );
+  });
 });
 
 describe("hmac", () => {
@@ -98,6 +138,21 @@ describe("hmac", () => {
     const theirs = nodeCrypto.createHmac("sha256", "secret-key");
     theirs.end("message");
     expect(ours.read()?.toString("hex")).toBe(theirs.read()?.toString("hex"));
+  });
+
+  it("reports unknown digests as ERR_CRYPTO_INVALID_DIGEST", () => {
+    expect(() => c.createHmac("sha7", "key")).toThrowError(
+      expect.objectContaining({ code: "ERR_CRYPTO_INVALID_DIGEST" }),
+    );
+    expect(() => c.createHmac("sha7", "key")).toThrow(/Invalid digest/);
+  });
+
+  it("digest is idempotent after finalization (empty digest on repeat)", () => {
+    const h = c.createHmac("sha1", "key").update("data");
+    const first = h.digest("latin1");
+    expect(first.length).toBeGreaterThan(0);
+    expect(h.digest("latin1")).toBe("");
+    expect(h.digest("buffer").length).toBe(0);
   });
 });
 
@@ -222,7 +277,11 @@ describe("node fidelity", () => {
     expect(() => c.createHmac("sha1", null as never)).toThrowError(
       expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
     );
-    expect(() => c.createHmac("sha7", "key")).toThrowError(/Digest method not supported/);
+    // Node: createHmac reports ERR_CRYPTO_INVALID_DIGEST; createHash reports
+    // a plain "Digest method not supported" — the surfaces differ.
+    expect(() => c.createHmac("sha7", "key")).toThrowError(
+      expect.objectContaining({ code: "ERR_CRYPTO_INVALID_DIGEST" }),
+    );
   });
 
   it("randomUUID validates its options argument", () => {

@@ -100,6 +100,29 @@ export interface HashOptions {
   outputLength?: number;
 }
 
+/** Node's `options.outputLength` contract for createHash/Hash/copy. */
+const MAX_OUTPUT_LENGTH = 0x7fffffff;
+
+const validateOutputLength = (entry: HashEntry, outputLength: unknown): number | undefined => {
+  if (outputLength === undefined) return undefined;
+  if (typeof outputLength !== "number") {
+    throw argTypeError("options.outputLength", "number", outputLength);
+  }
+  if (!Number.isInteger(outputLength) || outputLength < 0 || outputLength > MAX_OUTPUT_LENGTH) {
+    throw Object.assign(new RangeError(`The value of "options.outputLength" is out of range`), {
+      code: "ERR_OUT_OF_RANGE",
+    });
+  }
+  // Non-XOF algorithms only accept their own digest length; XOFs (SHAKE)
+  // accept any length including 0.
+  if (!entry.xof && entry.hash && outputLength !== entry.size) {
+    throw Object.assign(new Error(`Digest method not supported for the given output length`), {
+      code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH",
+    });
+  }
+  return outputLength;
+};
+
 /**
  * `crypto.Hash` — streaming digest over a pure-JS hash. Not a real
  * `stream.Transform` (unenv's streams are non-functional); exposes Node's
@@ -116,9 +139,9 @@ export class HashImpl {
     if (typeof algorithm !== "string") {
       throw argTypeError("algorithm", "string", algorithm);
     }
-    lookupHash(algorithm); // validate eagerly like Node
+    const entry = lookupHash(algorithm); // validate eagerly like Node
     this.#algorithm = algorithm;
-    this.#outputLength = options?.outputLength;
+    this.#outputLength = validateOutputLength(entry, options?.outputLength);
   }
 
   #assertLive(): void {
@@ -254,11 +277,33 @@ export const argTypeError = (name: string, types: string | string[], value: unkn
 };
 
 /**
+ * Node's `process.emitWarning` reached through globalThis so the crypto
+ * module also works where `process` is a shim object (DEP0179/DEP0181 —
+ * the `crypto.Hash`/`crypto.Hmac` constructors are deprecated).
+ */
+const emittedDeprecations = new Set<string>();
+
+export const emitDeprecationWarning = (message: string, code: string): void => {
+  // Node's emitDeprecationWarning fires once per code per process — repeat
+  // uses of the deprecated constructor stay quiet (test-crypto-hmac calls
+  // `crypto.Hmac()` twice but expects exactly one DEP0181).
+  if (emittedDeprecations.has(code)) return;
+  emittedDeprecations.add(code);
+  const proc = (globalThis as { process?: { emitWarning?: (...args: unknown[]) => void } }).process;
+  // Node delivers 'warning' asynchronously — callers routinely register
+  // their listener after triggering the deprecated API (as
+  // test-crypto-hash/-hmac do), so defer to a microtask like Node does.
+  queueMicrotask(() => proc?.emitWarning?.(message, "DeprecationWarning", code));
+};
+
+/**
  * `crypto.Hash` — Node's constructor is a plain function that returns a new
  * instance when called without `new` (a `class` cannot be invoked that way),
  * so the class is wrapped in a callable that keeps the same prototype.
+ * Calling it emits DEP0179 like Node.
  */
 export const Hash = function Hash(algorithm: string, options?: HashOptions): HashImpl {
+  emitDeprecationWarning("crypto.Hash constructor is deprecated.", "DEP0179");
   return new HashImpl(algorithm, options);
 } as unknown as typeof HashImpl;
 Hash.prototype = HashImpl.prototype;

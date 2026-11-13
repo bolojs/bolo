@@ -410,6 +410,9 @@ export class OutgoingMessageImpl extends Writable {
 
   setHeader(name: string, value: string | number | readonly string[]): this {
     if (this.headersSent) throw headersSentError();
+    // Node validates the name's TYPE before stringifying: a numeric name
+    // throws ERR_INVALID_HTTP_TOKEN even though "3840" is a valid token.
+    validateHeaderName(name);
     const key = String(name).toLowerCase();
     this.responseHeaders[key] = normalizeHeaderValue(String(name), value);
     this.headerDisplayNames.set(key, String(name));
@@ -534,8 +537,11 @@ class ServerResponseImpl extends OutgoingMessageImpl {
       for (let i = 0; i + 1 < source.length; i += 2) {
         const name = source[i];
         const value = source[i + 1];
+        // Pass the raw name so a non-string entry fails Node's
+        // ERR_INVALID_HTTP_TOKEN check instead of being stringified first.
+        const valStr = normalizeHeaderValue(name as string, value);
         const key = String(name).toLowerCase();
-        this.responseHeaders[key] = normalizeHeaderValue(String(name), value);
+        this.responseHeaders[key] = valStr;
         this.headerDisplayNames.set(key, String(name));
       }
       return;
@@ -1082,7 +1088,9 @@ export class ServerImpl extends EventEmitter implements HttpServer {
 
     queueMicrotask(() => {
       this.emit("listening");
-      cb?.();
+      // Node invokes the listen callback as a 'listening' listener, so `this`
+      // is the server (`server.listen(0, function() { this.address() })`).
+      cb?.call(this);
     });
     return this;
   }

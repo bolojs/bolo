@@ -1228,28 +1228,31 @@ export const shimModuleSource = (
   compat?: ShimClassCompat,
 ): string => {
   const selfRef = compat?.selfIsClass ? "__self" : "__shim";
-  // Object-shaped shims with class-valued exports need the same treatment on
-  // the module object itself: `require('x').Klass.call(this)` reads the prop
-  // off module.exports, not off a named export. The copy preserves property
-  // descriptors (live getters stay live) and only swaps the class values for
-  // their call-compatible wrappers.
+  // Node guarantees builtin-module identity: `require('fs/promises') ===
+  // require('fs').promises` and `require('x') === process.getBuiltinModule('x')`.
+  // A descriptor copy of the shim would break that (test-fs-promises-exists),
+  // so class-valued exports are wrapped IN PLACE on the live shim object —
+  // `__bc_callCompat` is WeakMap-cached, making re-wraps idempotent, and the
+  // wrapped function preserves construction/instanceof while adding
+  // `Ctor.call(this)` compatibility.
   const classKeyList =
     compat && !compat.selfIsClass && !compat.moduleIsFunction ? [...(compat.classKeys ?? [])] : [];
-  const moduleRef = classKeyList.length > 0 ? "__moduleExports" : selfRef;
+  const moduleRef = selfRef;
   return [
     `const __shim = ${shimExpr ?? registryShimExpr(builtin)};`,
     ...(compat?.selfIsClass ? ["const __self = __bc_callCompat(__shim);"] : []),
     ...(classKeyList.length > 0
       ? [
-          "const __moduleExports = {};",
-          "for (const __k of Reflect.ownKeys(__shim)) {",
-          "  const __d = Object.getOwnPropertyDescriptor(__shim, __k);",
-          "  if (__d) Object.defineProperty(__moduleExports, __k, __d);",
+          "for (const __k of [",
+          ...classKeyList.map((k) => JSON.stringify(k) + ","),
+          "]) {",
+          "  try {",
+          "    const __d = Object.getOwnPropertyDescriptor(__shim, __k);",
+          "    if (__d && 'value' in __d) {",
+          "      Object.defineProperty(__shim, __k, { ...__d, value: __bc_callCompat(__d.value) });",
+          "    }",
+          "  } catch { /* non-configurable export — named exports still get the wrapper */ }",
           "}",
-          ...classKeyList.map(
-            (k) =>
-              `__moduleExports[${JSON.stringify(k)}] = __bc_callCompat(__shim[${JSON.stringify(k)}]);`,
-          ),
         ]
       : []),
     `export default ${moduleRef};`,

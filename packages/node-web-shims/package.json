@@ -2,6 +2,20 @@
   "name": "@bolojs/node-web-shims",
   "version": "0.3.0",
   "description": "node:* to Web API shims (crypto, stream, buffer, path, url, events, os, http, worker_threads); usable standalone.",
+  "homepage": "https://bolojs.dev/docs/api/",
+  "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/node-web-shims"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,18 +31,15 @@
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
     "lint": "oxlint src",
     "format": "oxfmt --check src",
     "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@types/node": "^26.1.1",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.0",
-    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@noble/curves": "2.4.0",
@@ -38,23 +49,12 @@
     "pathe": "^2.0.0",
     "unenv": "2.0.0-rc.24"
   },
-  "license": "Apache-2.0",
-  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bolojs/bolo.git",
-    "directory": "packages/node-web-shims"
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.0",
+    "vitest": "^4.1.10"
   },
-  "homepage": "https://bolojs.dev/docs/api/",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "!dist/**/*.test.*",
-    "!dist/**/*.test.*.map"
-  ],
   "engines": {
     "node": ">=24.0.0"
   }

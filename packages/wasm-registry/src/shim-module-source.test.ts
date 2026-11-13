@@ -23,17 +23,20 @@ describe("shimModuleSource", () => {
     expect(src).toContain('export const once = __shim["once"];');
   });
 
-  it("builds a module-exports copy when an object shim has class-valued exports", () => {
+  it("wraps class-valued exports in place so module identity survives", () => {
     // worker_threads/async_hooks shape: plain-object shim whose props are
     // classes — require('x').Klass.call(this) reads the prop off module.exports.
+    // The wrap mutates the live shim (callCompat is WeakMap-cached) rather than
+    // copying it: Node requires require('fs/promises') === fs.promises and
+    // require('x') === process.getBuiltinModule('x').
     const src = shimModuleSource("worker_threads", ["Worker", "isMainThread"], undefined, {
       classKeys: new Set(["Worker"]),
     });
-    expect(src).toContain("const __moduleExports = {};");
-    expect(src).toContain("for (const __k of Reflect.ownKeys(__shim)) {");
-    expect(src).toContain('__moduleExports["Worker"] = __bc_callCompat(__shim["Worker"]);');
-    expect(src).toContain("export default __moduleExports;");
-    expect(src).toContain('export { __moduleExports as "module.exports" };');
+    expect(src).toContain("Object.defineProperty(__shim, __k,");
+    expect(src).toContain("__bc_callCompat(__d.value)");
+    expect(src).not.toContain("__moduleExports");
+    expect(src).toContain("export default __shim;");
+    expect(src).toContain('export { __shim as "module.exports" };');
     expect(src).toContain('export const Worker = __bc_callCompat(__shim["Worker"]);');
     expect(src).toContain('export const isMainThread = __shim["isMainThread"];');
   });

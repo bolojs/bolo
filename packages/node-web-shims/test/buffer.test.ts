@@ -166,12 +166,10 @@ describe("node-web-shims: buffer", () => {
     // The tail should be zero-filled.
     expect(Buffer.concat([empty], 100)).toEqual(Buffer.alloc(100));
     expect(Buffer.concat([empty], 4096)).toEqual(Buffer.alloc(4096));
-    expect(Buffer.concat([random10], 40)).toEqual(
-      Buffer.concat([random10, Buffer.alloc(30)]),
+    expect(Buffer.concat([random10], 40)).toEqual(Buffer.concat([random10, Buffer.alloc(30)]));
+    expect(Buffer.concat([new Uint8Array([0x41, 0x42]), new Uint8Array([0x43, 0x44])])).toEqual(
+      Buffer.from("ABCD"),
     );
-    expect(
-      Buffer.concat([new Uint8Array([0x41, 0x42]), new Uint8Array([0x43, 0x44])]),
-    ).toEqual(Buffer.from("ABCD"));
     // A single-item list must still return a new buffer.
     const one = [Buffer.from("asdf")];
     const flatOne = Buffer.concat(one);
@@ -262,7 +260,7 @@ describe("node-web-shims: buffer", () => {
       expect.objectContaining({
         code: "ERR_INVALID_ARG_TYPE",
         name: "TypeError",
-        message: 'The "size" argument must be of type number. Received type string (\'x\')',
+        message: "The \"size\" argument must be of type number. Received type string ('x')",
       }),
     );
     expect(alloc(1, Buffer.alloc(0))).toThrowError(

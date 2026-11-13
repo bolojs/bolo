@@ -2,7 +2,7 @@ import { hmac as nobleHmac } from "@noble/hashes/hmac.js";
 import type { CHash } from "@noble/hashes/utils.js";
 
 import { Buffer, concatU8, toU8, type BinaryLike } from "../internal/binary.js";
-import { argTypeError, lookupHash } from "./hashes.js";
+import { argTypeError, emitDeprecationWarning, lookupHash } from "./hashes.js";
 import { KeyObject, getKeyMaterial } from "./keys.js";
 
 export type SecretKeyInput = BinaryLike | KeyObject;
@@ -37,7 +37,17 @@ export class HmacImpl {
     if (typeof algorithm !== "string") {
       throw argTypeError("hmac", "string", algorithm);
     }
-    const entry = lookupHash(algorithm); // validate eagerly like Node
+    let entry;
+    try {
+      entry = lookupHash(algorithm); // validate eagerly like Node
+    } catch {
+      // Node reports unknown HMAC digests as ERR_CRYPTO_INVALID_DIGEST
+      // ("Invalid digest: …"), not the hash-side "Digest method not
+      // supported" phrasing.
+      throw Object.assign(new Error(`Invalid digest: ${algorithm}`), {
+        code: "ERR_CRYPTO_INVALID_DIGEST",
+      });
+    }
     if (entry.xof || !entry.hash) {
       throw Object.assign(new Error(`Invalid digest: ${algorithm}`), {
         code: "ERR_CRYPTO_INVALID_DIGEST",
@@ -122,6 +132,7 @@ export class HmacImpl {
  * plain function wrapping the class preserves `instanceof` via prototype.
  */
 export const Hmac = function Hmac(algorithm: string, key: SecretKeyInput): HmacImpl {
+  emitDeprecationWarning("crypto.Hmac constructor is deprecated.", "DEP0181");
   return new HmacImpl(algorithm, key);
 } as unknown as typeof HmacImpl;
 Hmac.prototype = HmacImpl.prototype;

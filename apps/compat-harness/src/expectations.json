@@ -61,19 +61,19 @@
   },
   "test/parallel/test-module-wrap.js": {
     "lane": "B",
-    "reason": "spawns a child node process via execFileSync (synchronous child_process unsupported in a browser by default)",
-    "location": "packages/node-runtime-shims/src/child-process-shim.ts",
-    "remediation": "wire the spawnSyncProcess seam (sync channel inside a process worker)"
+    "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
+    "location": "packages/node-runtime-shims/src/module-shim.ts",
+    "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
   },
   "test/parallel/test-module-wrapper.js": {
     "lane": "B",
-    "reason": "spawns a child node process via execFileSync (synchronous child_process unsupported in a browser by default)",
-    "location": "packages/node-runtime-shims/src/child-process-shim.ts",
-    "remediation": "wire the spawnSyncProcess seam (sync channel inside a process worker)"
+    "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
+    "location": "packages/node-runtime-shims/src/module-shim.ts",
+    "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
   },
   "test/parallel/test-net-connect-buffer.js": {
     "lane": "B",
-    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
+    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend); in-process loopback connect times out in-container",
     "location": "packages/node-runtime-shims/src/net-shim.ts",
     "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
   },

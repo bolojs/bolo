@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createHttpShim } from "./http-shim";
+import { createHttpShim, ServerImpl } from "./http-shim";
 import type { SWSandbox } from "@bolojs/sandbox";
 
 describe("http-shim - Port Discovery Events", () => {
@@ -187,5 +187,78 @@ describe("http-shim - Agent construction", () => {
     a.detach();
     expect(agent.get("https://example.com")).toBeDefined();
     agent.destroy();
+  });
+});
+
+describe("http-shim - ServerResponse Node validation parity", () => {
+  let mockSandbox: SWSandbox;
+  const mockOnFetch = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSandbox = {
+      onFetch: mockOnFetch,
+      setPolicyRegistry: vi.fn(),
+      handleInterceptedRequest: vi.fn(),
+      origin: "http://localhost:3000",
+      swPath: "/sw.js",
+    } as unknown as SWSandbox;
+  });
+
+  const listen = (server: ServerImpl) =>
+    new Promise<void>((resolve) => {
+      server.listen(0, function (this: unknown) {
+        // Node invokes the listen callback with `this` bound to the server.
+        expect(this).toBe(server);
+        resolve();
+      });
+    });
+
+  it("listen callback runs with this === server", async () => {
+    const { createServer } = createHttpShim(mockSandbox);
+    const server = createServer();
+    await listen(server);
+    await server.close();
+  });
+
+  it("setHeader/writeHead validate names and propagate status + raw headers", async () => {
+    const { createServer } = createHttpShim(mockSandbox);
+    const server = createServer((req, res) => {
+      // Numeric names fail Node's type check even though "3840" is a valid
+      // token — the raw value must reach validateHeaderName unstringified.
+      expect(() => res.setHeader(3840 as never, "bar")).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_HTTP_TOKEN" }),
+      );
+      expect(() => res.setHeader("bad header", "x")).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_HTTP_TOKEN" }),
+      );
+      res.writeHead(418, ["X-Teapot", "yes", "X-Count", 42] as never);
+      expect(res.statusCode).toBe(418);
+      res.end("teapot");
+    });
+    await listen(server);
+    const handler = mockOnFetch.mock.calls[0][0] as (req: Request) => Promise<Response>;
+    const resp = await handler(new Request("http://localhost/__virtual__/1/"));
+    expect(resp.status).toBe(418);
+    expect(resp.headers.get("x-teapot")).toBe("yes");
+    expect(resp.headers.get("x-count")).toBe("42");
+    expect(await resp.text()).toBe("teapot");
+    await server.close();
+  });
+
+  it("writeHead rejects a second call with ERR_HTTP_HEADERS_SENT", async () => {
+    const { createServer } = createHttpShim(mockSandbox);
+    const server = createServer((req, res) => {
+      res.writeHead(200, { "x-a": "1" });
+      expect(() => res.writeHead(200)).toThrowError(
+        expect.objectContaining({ code: "ERR_HTTP_HEADERS_SENT" }),
+      );
+      res.end("ok");
+    });
+    await listen(server);
+    const handler = mockOnFetch.mock.calls[0][0] as (req: Request) => Promise<Response>;
+    const resp = await handler(new Request("http://localhost/__virtual__/1/"));
+    expect(resp.status).toBe(200);
+    await server.close();
   });
 });

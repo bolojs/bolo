@@ -1,3 +1,5 @@
+import { isIP } from "./net-shim.js";
+
 export interface DnsShimOptions {
   /**
    * DNS-over-HTTPS endpoint used for all lookups. Defaults to Cloudflare's DoH.
@@ -97,10 +99,22 @@ const parseNaptr = (data: string): NaptrRecord => {
   };
 };
 
+const invalidArgType = (name: string, expected: string, actual: unknown): TypeError =>
+  Object.assign(
+    new TypeError(
+      `The "${name}" argument must be of type ${expected}. Received ${
+        actual === null ? "null" : `type ${typeof actual}`
+      }`,
+    ),
+    { code: "ERR_INVALID_ARG_TYPE" },
+  );
+
 export class Resolver {
   private servers: string[];
   private readonly timeout?: number;
   private readonly channel?: string;
+  /** Addresses recorded by setLocalAddress (DoH cannot bind a local address). */
+  private localAddresses: string[] = [];
 
   constructor(options?: DnsOptions) {
     this.servers = [DEFAULT_ENDPOINT];
@@ -117,6 +131,44 @@ export class Resolver {
       throw new Error("Servers array must not be empty");
     }
     this.servers = [...servers];
+  }
+
+  /**
+   * `resolver.setLocalAddress(...addresses)` — Node validates each address
+   * is a string literal IP, allows at most one IPv4 and one IPv6, and
+   * requires at least one argument. The values are recorded for API parity;
+   * DoH lookups cannot bind a local address, so they do not affect queries.
+   */
+  setLocalAddress(...addresses: unknown[]): void {
+    if (addresses.length === 0) {
+      throw invalidArgType("address", "string", undefined);
+    }
+    let hasV4 = false;
+    let hasV6 = false;
+    for (const address of addresses) {
+      if (typeof address !== "string") {
+        throw invalidArgType("address", "string", address);
+      }
+      const family = isIP(address);
+      if (family === 4) {
+        if (hasV4) {
+          throw new Error("Only one IPv4 address can be specified");
+        }
+        hasV4 = true;
+      } else if (family === 6) {
+        if (hasV6) {
+          throw new Error("Only one IPv6 address can be specified");
+        }
+        hasV6 = true;
+      } else {
+        throw new Error(`Invalid IP address: ${address}`);
+      }
+    }
+    this.localAddresses = addresses as string[];
+  }
+
+  getLocalAddress(): string[] {
+    return [...this.localAddresses];
   }
 
   private query = (name: string, type: string): Promise<DohResponse> =>
@@ -294,9 +346,23 @@ export const getServers = (): string[] => defaultResolver.getServers();
 
 export const setServers = (servers: string[]): void => defaultResolver.setServers(servers);
 
-// No-op stubs for APIs that have no meaningful browser equivalent.
-export const setDefaultResultOrder = (_order: "verbatim" | "ipv4first"): void => {};
-export const getDefaultResultOrder = (): "verbatim" | "ipv4first" => "verbatim";
+// Result order is recorded for API parity (Node's default is 'verbatim');
+// DoH answers arrive in resolver order and the shim does not re-sort them,
+// which matches 'verbatim' semantics. Invalid values throw like Node.
+let defaultResultOrder: "verbatim" | "ipv4first" = "verbatim";
+
+export const setDefaultResultOrder = (order: "verbatim" | "ipv4first"): void => {
+  if (order !== "verbatim" && order !== "ipv4first") {
+    throw Object.assign(
+      new TypeError(
+        `The argument 'order' must be one of: 'verbatim', 'ipv4first'. Received ${String(order)}`,
+      ),
+      { code: "ERR_INVALID_ARG_VALUE" },
+    );
+  }
+  defaultResultOrder = order;
+};
+export const getDefaultResultOrder = (): "verbatim" | "ipv4first" => defaultResultOrder;
 
 export const promises = {
   lookup: (hostname: string) => defaultResolver.lookup(hostname),
@@ -312,6 +378,8 @@ export const promises = {
   resolveNs: (hostname: string) => defaultResolver.resolveNs(hostname),
   resolveSoa: (hostname: string) => defaultResolver.resolveSoa(hostname),
   resolveNaptr: (hostname: string, flags?: string) => defaultResolver.resolveNaptr(hostname, flags),
+  setDefaultResultOrder,
+  getDefaultResultOrder,
   Resolver,
 };
 
