@@ -1,5 +1,8 @@
 import unenvAssert from "unenv/node/assert";
 import { inspect } from "./util.js";
+import { AssertionError as NodeAssertionError } from "./util/assertion-error.js";
+import { isDeepEqual, isDeepStrictEqual } from "./util/comparisons.js";
+import { getErrMessage } from "./util/ok-expression.js";
 
 export * from "unenv/node/assert";
 
@@ -12,16 +15,21 @@ const codedTypeError = (code: string, message: string): TypeError =>
 // invalid `message` args → `ERR_INVALID_ARG_TYPE`, and rejects/doesNotReject
 // validation failures → `ERR_INVALID_ARG_TYPE`/`ERR_INVALID_RETURN_VALUE`;
 // validate and code those here instead.
-const wrapChecked = <A extends unknown[], R>(
-  fn: (...args: A) => R,
+/**
+ * Argument validation shared by the comparison assertions: missing required
+ * arguments throw ERR_MISSING_ARGS; a message that is neither a string nor
+ * an Error throws ERR_INVALID_ARG_TYPE. (unenv does neither.)
+ */
+const checked = <A extends unknown[]>(
   argNames: string[],
-): ((...args: A) => R) =>
-  ((...args: A) => {
+  fn: (this: unknown, ...args: A) => void,
+): ((...args: A) => void) =>
+  function (...args: A) {
     if (args.length < argNames.length) {
       const missing = argNames
         .slice(args.length)
         .map((n) => `"${n}"`)
-        .join(", ");
+        .join(" and ");
       throw codedTypeError(
         "ERR_MISSING_ARGS",
         `The ${missing} argument${args.length + 1 === argNames.length ? "" : "s"} must be specified`,
@@ -35,7 +43,7 @@ const wrapChecked = <A extends unknown[], R>(
       );
     }
     return fn(...args);
-  }) as (...args: A) => R;
+  };
 
 /**
  * Node's expected-type list formatting for ERR_INVALID_ARG_TYPE
@@ -72,7 +80,9 @@ const invalidArgType = (name: string, expected: string[], actual: unknown): Type
   const instances: string[] = [];
   const other: string[] = [];
   for (const value of expected) {
-    if (K_TYPES.has(value)) types.push(value.toLowerCase());
+    // Node treats the lowercase built-in names as types and the
+    // capitalised ones as constructors ("an instance of Error").
+    if (K_TYPES.has(value) && value !== "Object") types.push(value.toLowerCase());
     else if (CLASS_RE.test(value)) instances.push(value);
     else other.push(value);
   }
@@ -105,7 +115,7 @@ const invalidArgType = (name: string, expected: string[], actual: unknown): Type
 // ---------------------------------------------------------------------------
 
 const NO_EXCEPTION_SENTINEL = {};
-const AssertionErrorClass = unenvAssert.AssertionError as unknown as new (options: {
+const AssertionErrorClass = NodeAssertionError as unknown as new (options: {
   actual?: unknown;
   expected?: unknown;
   message?: string;
@@ -123,11 +133,30 @@ type AssertFn = (...args: never[]) => unknown;
 const innerFail = (obj: {
   actual?: unknown;
   expected?: unknown;
-  message?: string;
+  message?: unknown;
   operator?: string;
   stackStartFn?: AssertFn;
 }): never => {
-  throw new AssertionErrorClass(obj);
+  // Node: `if (obj.message instanceof Error) throw obj.message`.
+  if (obj.message instanceof Error) throw obj.message;
+  throw new AssertionErrorClass(obj as { message?: string });
+};
+
+/**
+ * Brand-safe error check: `instanceof Error` fails for errors created in
+ * another realm (e.g. inside `vm.runInNewContext`), which Node still treats
+ * as errors.
+ */
+const isErrorLike = (value: unknown): value is Error =>
+  value instanceof Error ||
+  (typeof value === "object" &&
+    value !== null &&
+    Object.prototype.toString.call(value) === "[object Error]");
+
+/** The constructor name of an error, across realms. */
+const errorNameOf = (value: Error): string => {
+  const ctor = (value as { constructor?: { name?: string } }).constructor;
+  return ctor?.name ?? value.name;
 };
 
 const isErrorSubclass = (fn: unknown): boolean =>
@@ -276,8 +305,8 @@ const expectedException = (
       let msg =
         "The error is expected to be an instance of " +
         `"${(expected as { name?: string }).name}". Received `;
-      if (actual instanceof Error) {
-        const name = (actual.constructor as { name?: string } | undefined)?.name || actual.name;
+      if (isErrorLike(actual)) {
+        const name = errorNameOf(actual);
         if ((expected as { name?: string }).name === name) {
           msg += "an error with identical name but a different prototype.";
         } else {
@@ -376,7 +405,7 @@ const expectsError = (
 ): void => {
   if (typeof error === "string") {
     if (argCount === 4) {
-      throw invalidArgType("error", ["Object", "Error", "Function", "RegExp"], error);
+      throw invalidArgType("error", ["Function", "Error", "RegExp", "Object"], error);
     }
     if (typeof actual === "object" && actual !== null) {
       if ((actual as { message?: unknown }).message === error) {
@@ -394,7 +423,7 @@ const expectsError = (
     message = error;
     error = undefined;
   } else if (error != null && typeof error !== "object" && typeof error !== "function") {
-    throw invalidArgType("error", ["Object", "Error", "Function", "RegExp"], error);
+    throw invalidArgType("error", ["Function", "Error", "RegExp", "Object"], error);
   }
 
   if (actual === NO_EXCEPTION_SENTINEL) {
@@ -459,8 +488,59 @@ const expectsNoError = (
   throw actual;
 };
 
+/** Brand-safe RegExp check (cross-realm regexes are still regexes). */
+const isRegExpLike = (value: unknown): value is RegExp =>
+  value instanceof RegExp || Object.prototype.toString.call(value) === "[object RegExp]";
+
+/**
+ * Node's `internalMatch` (lib/assert.js) — shared by `match` and
+ * `doesNotMatch`. unenv's version throws a bare `Error('regexp')`.
+ */
+const internalMatch = (
+  string: unknown,
+  regexp: unknown,
+  message: unknown,
+  fn: AssertFn,
+  expectMatch: boolean,
+): void => {
+  if (!isRegExpLike(regexp)) {
+    throw invalidArgType("regexp", ["RegExp"], regexp);
+  }
+  if (typeof string !== "string" || (regexp.exec(string) !== null) !== expectMatch) {
+    if (message instanceof Error) throw message;
+    const generatedMessage = !message;
+    const generated =
+      typeof string !== "string"
+        ? `The "string" argument must be of type string. Received type ${typeof string} (${inspect(string)})`
+        : (expectMatch
+            ? "The input did not match the regular expression "
+            : "The input was expected to not match the regular expression ") +
+          `${inspect(regexp)}. Input:\n\n${inspect(string)}\n`;
+    const err = new AssertionErrorClass({
+      actual: string,
+      expected: regexp,
+      message: (message as string) || generated,
+      operator: fn.name,
+      stackStartFn: fn,
+    }) as Error & { generatedMessage?: boolean };
+    err.generatedMessage = generatedMessage;
+    throw err;
+  }
+};
+
+const match = (string: unknown, regexp: unknown, message?: unknown): void => {
+  internalMatch(string, regexp, message, match as unknown as AssertFn, true);
+};
+
+const doesNotMatch = (string: unknown, regexp: unknown, message?: unknown): void => {
+  internalMatch(string, regexp, message, doesNotMatch as unknown as AssertFn, false);
+};
+
 const throws = (...args: unknown[]): void => {
-  expectsError(throws as AssertFn, getActual(args[0]), args[1], args[2], args.length + 2);
+  // Node: `assert.throws = function throws(promiseFn, ...args)` calls
+  // `expectsError(throws, getActual(promiseFn), ...args)`, so the arity seen
+  // by expectsError is 2 + rest.length — i.e. `args.length + 1` here.
+  expectsError(throws as AssertFn, getActual(args[0]), args[1], args[2], args.length + 1);
 };
 const doesNotThrow = (...args: unknown[]): void => {
   expectsNoError(doesNotThrow as AssertFn, getActual(args[0]), args[1], args[2]);
@@ -471,7 +551,7 @@ const rejects = async (...args: unknown[]): Promise<void> => {
     await waitForActual(args[0]),
     args[1],
     args[2],
-    args.length + 2,
+    args.length + 1,
   );
 };
 const doesNotReject = async (...args: unknown[]): Promise<void> => {
@@ -527,47 +607,225 @@ const determineSpecificType = (value: unknown): string => {
   }
 };
 
-const deepStrictEqual = wrapChecked(unenvAssert.deepStrictEqual, ["actual", "expected"]);
-const notDeepStrictEqual = wrapChecked(unenvAssert.notDeepStrictEqual, ["actual", "expected"]);
-const strictEqual = wrapChecked(unenvAssert.strictEqual, ["actual", "expected"]);
-const notStrictEqual = wrapChecked(unenvAssert.notStrictEqual, ["actual", "expected"]);
-const equal = wrapChecked(unenvAssert.equal, ["actual", "expected"]);
-const notEqual = wrapChecked(unenvAssert.notEqual, ["actual", "expected"]);
-const deepEqual = wrapChecked(unenvAssert.deepEqual, ["actual", "expected"]);
-const notDeepEqual = wrapChecked(unenvAssert.notDeepEqual, ["actual", "expected"]);
+// ---------------------------------------------------------------------------
+// The comparison assertions (lib/assert.js) — ported from Node v22 because
+// unenv's implementations use a JSON.stringify approximation and throw
+// messages like `2 strictEqual '2'` instead of Node's diff.
+// ---------------------------------------------------------------------------
+
+const innerOk = (fn: AssertFn, argLen: number, value: unknown, message?: unknown): void => {
+  if (value) return;
+  let generatedMessage = false;
+  if (argLen === 0) {
+    generatedMessage = true;
+    message = "No value argument passed to `assert.ok()`";
+  } else if (message == null) {
+    generatedMessage = true;
+    message = getErrMessage(undefined, fn as (...args: never[]) => unknown);
+  } else if (message instanceof Error) {
+    throw message;
+  }
+  const err = new AssertionErrorClass({
+    actual: value,
+    expected: true,
+    message: message as string,
+    operator: "==",
+    stackStartFn: fn,
+  }) as Error & { generatedMessage?: boolean };
+  err.generatedMessage = generatedMessage;
+  throw err;
+};
+
+const ok = (...args: unknown[]): void => {
+  innerOk(ok as AssertFn, args.length, args[0], args[1]);
+};
+
+const equal = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    // eslint-disable-next-line eqeqeq
+    if (actual != expected && !(Number.isNaN(actual) && Number.isNaN(expected))) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "==",
+        stackStartFn: equal as AssertFn,
+      });
+    }
+  },
+);
+
+const notEqual = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    // eslint-disable-next-line eqeqeq
+    if (actual == expected || (Number.isNaN(actual) && Number.isNaN(expected))) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "!=",
+        stackStartFn: notEqual as AssertFn,
+      });
+    }
+  },
+);
+
+const deepEqual = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    if (!isDeepEqual(actual, expected)) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "deepEqual",
+        stackStartFn: deepEqual as AssertFn,
+      });
+    }
+  },
+);
+
+const notDeepEqual = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    if (isDeepEqual(actual, expected)) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "notDeepEqual",
+        stackStartFn: notDeepEqual as AssertFn,
+      });
+    }
+  },
+);
+
+const deepStrictEqual = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    if (!isDeepStrictEqual(actual, expected)) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "deepStrictEqual",
+        stackStartFn: deepStrictEqual as AssertFn,
+      });
+    }
+  },
+);
+
+const notDeepStrictEqual = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    if (isDeepStrictEqual(actual, expected)) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "notDeepStrictEqual",
+        stackStartFn: notDeepStrictEqual as AssertFn,
+      });
+    }
+  },
+);
+
+const strictEqual = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    if (!Object.is(actual, expected)) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "strictEqual",
+        stackStartFn: strictEqual as AssertFn,
+      });
+    }
+  },
+);
+
+const notStrictEqual = checked(
+  ["actual", "expected"],
+  function (this: unknown, actual: unknown, expected: unknown, message?: unknown): void {
+    if (Object.is(actual, expected)) {
+      innerFail({
+        actual,
+        expected,
+        message: message as string | undefined,
+        operator: "notStrictEqual",
+        stackStartFn: notStrictEqual as AssertFn,
+      });
+    }
+  },
+);
+
+/** Node's `assert.fail` (lib/assert.js). */
+const fail = function (
+  this: unknown,
+  actual?: unknown,
+  expected?: unknown,
+  message?: unknown,
+  operator?: string,
+  stackStartFn?: AssertFn,
+): never {
+  const argsLen = arguments.length;
+  let internalMessage = false;
+  if (actual == null && argsLen <= 1) {
+    internalMessage = true;
+    message = "Failed";
+  } else if (argsLen === 1) {
+    message = actual;
+    actual = undefined;
+  } else if (argsLen === 2) {
+    operator = "!=";
+  }
+  if (message instanceof Error) throw message;
+  const err = new AssertionErrorClass({
+    actual,
+    expected,
+    operator: operator === undefined ? "fail" : operator,
+    stackStartFn: stackStartFn ?? (fail as AssertFn),
+    message: message as string | undefined,
+  }) as Error & { generatedMessage?: boolean };
+  if (internalMessage) err.generatedMessage = true;
+  throw err;
+};
 
 // Callable `assert(value)` — same shape as Node (`module.exports = assert`).
-const assert = Object.assign(
-  (...args: Parameters<typeof unenvAssert.ok>) => unenvAssert.ok(...args),
-  unenvAssert,
-  {
-    deepStrictEqual,
-    notDeepStrictEqual,
-    strictEqual,
-    notStrictEqual,
-    equal,
-    notEqual,
-    deepEqual,
-    notDeepEqual,
-    throws,
-    doesNotThrow,
-    rejects,
-    doesNotReject,
-  },
-);
+const assert = Object.assign((...args: unknown[]) => ok(...args), unenvAssert, {
+  ok,
+  fail,
+  deepStrictEqual,
+  notDeepStrictEqual,
+  strictEqual,
+  notStrictEqual,
+  equal,
+  notEqual,
+  deepEqual,
+  notDeepEqual,
+  throws,
+  doesNotThrow,
+  rejects,
+  doesNotReject,
+  match,
+  doesNotMatch,
+});
+
+// Node's AssertionError (with the v22 diff rendering) replaces unenv's.
+assert.AssertionError = NodeAssertionError as unknown as typeof assert.AssertionError;
 
 // `assert.strict` — the strict-mode facade (`equal` → `strictEqual`, etc.).
-const strict = Object.assign(
-  (...args: Parameters<typeof unenvAssert.ok>) => unenvAssert.ok(...args),
-  assert,
-  {
-    equal: strictEqual,
-    deepEqual: deepStrictEqual,
-    notEqual: notStrictEqual,
-    notDeepEqual: notDeepStrictEqual,
-  },
-);
+const strict = Object.assign((...args: unknown[]) => ok(...args), assert, {
+  equal: strictEqual,
+  deepEqual: deepStrictEqual,
+  notEqual: notStrictEqual,
+  notDeepEqual: notDeepStrictEqual,
+});
 strict.strict = strict;
+strict.AssertionError = assert.AssertionError;
 assert.strict = strict;
 
 export {
@@ -582,13 +840,11 @@ export {
   notDeepEqual,
 };
 
-export const ok = assert.ok;
-export const fail = assert.fail;
+export { ok, fail };
 export { throws, doesNotThrow, rejects, doesNotReject };
 export const ifError = assert.ifError;
-export const match = assert.match;
-export const doesNotMatch = assert.doesNotMatch;
-export const AssertionError = assert.AssertionError;
+export { match, doesNotMatch };
+export const AssertionError = NodeAssertionError;
 export const CallTracker = assert.CallTracker;
 export const partialDeepStrictEqual = assert.partialDeepStrictEqual;
 
