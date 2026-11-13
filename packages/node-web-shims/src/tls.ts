@@ -4,12 +4,13 @@
 // checking, secure-context option holding, the legacy deprecated exports with
 // their exact Node 22 warning codes/messages) is ported from Node 22
 // lib/tls.js and lib/internal/tls/*. Anything that needs a real TLS handshake
-// (connect, server listen/accept) throws ERR_NOT_IMPLEMENTED — WebSocket and
-// fetch give the browser TLS, but there is no way to run a raw TLS session
-// over an arbitrary transport.
+// (connect, server listen/accept) throws ERR_BOL_UNSUPPORTED_TLS_BACKEND —
+// WebSocket and fetch give the browser TLS, but there is no way to run a raw
+// TLS session over an arbitrary transport without an injected tlsBackend.
 
 import { EventEmitter } from "./events.js";
 import { Buffer } from "./internal/binary.js";
+import { unsupportedError } from "./coded-error.js";
 
 interface NodeError extends Error {
   code: string;
@@ -19,10 +20,11 @@ const nodeError = (code: string, message: string): NodeError =>
   Object.assign(new Error(message), { code });
 
 const notImplemented = (what: string): NodeError =>
-  nodeError(
-    "ERR_NOT_IMPLEMENTED",
-    `${what} is not implemented: TLS handshakes are unavailable in the browser`,
-  );
+  unsupportedError(
+    "TLS_BACKEND",
+    `${what} requires a TLS backend: TLS handshakes over an arbitrary transport have no ` +
+      `Web API equivalent. Register one via createLiveShimRegistry({ tlsBackend })`,
+  ) as NodeError;
 
 // process.emitWarning calls go through globalThis so the module also works
 // outside Node (where the warning is silently dropped).
@@ -283,7 +285,8 @@ export interface SecureContextOptions {
 
 /**
  * A real context-options holder — everything passed to createSecureContext
- * is kept, but there is no backing SSL_CTX because no handshake can run.
+ * is kept, but there is no backing SSL_CTX because no handshake can run
+ * without a tlsBackend.
  */
 export class SecureContext {
   context: SecureContextOptions;
@@ -297,7 +300,7 @@ export const createSecureContext = (options?: SecureContextOptions): SecureConte
   new SecureContext(options);
 
 /** Duplex-ish TLS socket shape. Any operation needing a live TLS session
- * throws ERR_NOT_IMPLEMENTED; the class exists so instanceof/shape checks
+ * throws ERR_BOL_UNSUPPORTED_TLS_BACKEND; the class exists so instanceof/shape checks
  * and legacy createSecurePair callers keep working. */
 export class TLSSocket extends EventEmitter {
   encrypted = true;

@@ -133,6 +133,19 @@ describe("net-shim", () => {
     );
   });
 
+  it("NoopTransport errors carry the ERR_BOL_UNSUPPORTED_NET_BACKEND seam code", () => {
+    const connectErr = (() => {
+      try {
+        new NoopTransport().connect({ port: 1 }, () => {});
+      } catch (e) {
+        return e as Error & { code?: string };
+      }
+      throw new Error("expected connect to throw");
+    })();
+    expect(connectErr.code).toBe("ERR_BOL_UNSUPPORTED_NET_BACKEND");
+    expect(String(connectErr)).toContain("[ERR_BOL_UNSUPPORTED_NET_BACKEND]");
+  });
+
   it("createNetShim with no tcpRelay falls back to loopback (ECONNREFUSED on unbound ports)", async () => {
     const netShim = createNetShim(undefined);
     const socket = netShim.connect({ port: 1 });

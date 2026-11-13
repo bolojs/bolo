@@ -2,11 +2,13 @@
 //
 // Socket lifecycle (create/bind/close/abort-signal, event ordering, error
 // codes) mirrors Node's lib/dgram.js. Actually sending or receiving UDP is
-// impossible in the browser, so send() reports ERR_NOT_IMPLEMENTED through
-// the callback (Node's async callback-error contract) instead of throwing
-// synchronously, and every socket-tuning method throws ERR_NOT_IMPLEMENTED.
+// impossible in the browser, so send() reports ERR_BOL_UNSUPPORTED_DGRAM_BACKEND
+// through the callback (Node's async callback-error contract) instead of
+// throwing synchronously, and every socket-tuning method throws the same
+// coded error naming the missing dgramBackend seam.
 
 import { EventEmitter } from "./events.js";
+import { unsupportedError } from "./coded-error.js";
 
 interface NodeError extends Error {
   code: string;
@@ -16,10 +18,11 @@ const nodeError = (code: string, message: string): NodeError =>
   Object.assign(new Error(message), { code });
 
 const notImplemented = (what: string): NodeError =>
-  nodeError(
-    "ERR_NOT_IMPLEMENTED",
-    `${what} is not implemented: UDP sockets are unavailable in the browser`,
-  );
+  unsupportedError(
+    "DGRAM_BACKEND",
+    `${what} requires a UDP backend: datagrams have no Web API equivalent. ` +
+      `Register one via createLiveShimRegistry({ dgramBackend })`,
+  ) as NodeError;
 
 export type SocketType = "udp4" | "udp6";
 export type SocketFamily = "IPv4" | "IPv6";
@@ -147,7 +150,7 @@ export class Socket extends EventEmitter {
 
   /**
    * send(msg[, port[, address]][, callback]) — real UDP is impossible, so the
-   * callback receives an ERR_NOT_IMPLEMENTED error asynchronously, matching
+   * callback receives an ERR_BOL_UNSUPPORTED_DGRAM_BACKEND error asynchronously, matching
    * Node's contract of reporting send failures through the callback. Without
    * a callback the error is emitted as 'error'.
    */

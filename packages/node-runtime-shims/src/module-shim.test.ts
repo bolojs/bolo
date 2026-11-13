@@ -127,6 +127,31 @@ describe("createModuleShim", () => {
     expect(require("./data.json")).toEqual({ ok: true });
   });
 
+  it("codes every seam-miss error with ERR_BOL_UNSUPPORTED_* naming the seam", () => {
+    const vfs = new VfsBus();
+    const moduleShim = createModuleShim({ vfs, getShim: () => undefined });
+    const require = moduleShim.createRequire("/entry.ts");
+    const codeOf = (fn: () => unknown): string | undefined => {
+      try {
+        fn();
+      } catch (e) {
+        return (e as { code?: string }).code;
+      }
+      return undefined;
+    };
+
+    expect(codeOf(() => require("node:dgram"))).toBe("ERR_BOL_UNSUPPORTED_DGRAM_BACKEND");
+    expect(codeOf(() => require("node:tls"))).toBe("ERR_BOL_UNSUPPORTED_TLS_BACKEND");
+    expect(codeOf(() => require("node:worker_threads"))).toBe(
+      "ERR_BOL_UNSUPPORTED_NODE_BUILTIN",
+    );
+    expect(codeOf(() => require("./native.node"))).toBe(
+      "ERR_BOL_UNSUPPORTED_NATIVE_ADDON_LOADER",
+    );
+    expect(codeOf(() => require("lodash"))).toBe("ERR_BOL_UNSUPPORTED_DYNAMIC_REQUIRE");
+    expect(codeOf(() => require.resolve("lodash"))).toBe("ERR_BOL_UNSUPPORTED_REQUIRE_RESOLVE");
+  });
+
   it("throws a clear error for a dynamic require of an npm package", () => {
     const vfs = new VfsBus();
     const moduleShim = createModuleShim({ vfs, getShim: () => undefined });

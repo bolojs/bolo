@@ -26,3 +26,16 @@ export const withCode = <E extends Error>(err: E, code: string, name?: string): 
   });
   return err;
 };
+
+/**
+ * Error for a shim path that is structurally unsupported unless the host
+ * injects the named seam/backend. The code is greppable:
+ * `ERR_BOL_UNSUPPORTED_<SEAM>` where <SEAM> names the missing extension
+ * point — TLS_BACKEND, DGRAM_BACKEND, NATIVE_ADDON_LOADER, NET_BACKEND,
+ * SPAWN_SYNC, SPAWN_PROCESS, SPAWN_WORKER, INSPECTOR_BACKEND, ... — so an
+ * agent hitting it knows exactly which `createLiveShimRegistry` option (or
+ * absence of browser mapping) is responsible, instead of debugging a raw
+ * "not implemented" or an undefined binding.
+ */
+export const unsupportedError = (seam: string, message: string): Error =>
+  withCode(new Error(message), `ERR_BOL_UNSUPPORTED_${seam}`);

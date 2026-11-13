@@ -1,4 +1,5 @@
 import { createEventsShim } from "./events.js";
+import { unsupportedError } from "./coded-error.js";
 
 const { EventEmitter } = createEventsShim();
 
@@ -611,7 +612,8 @@ export const createWorkerThreadsShim = (
         queueMicrotask(() => {
           this.emit(
             "error",
-            new Error(
+            unsupportedError(
+              "SPAWN_WORKER",
               "worker_threads.Worker cannot spawn a thread in this realm: no spawnWorker " +
                 "backend was registered and no browser Worker is available",
             ),

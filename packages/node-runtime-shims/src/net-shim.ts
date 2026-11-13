@@ -1,5 +1,5 @@
 import type { NetConnectOptions, StreamSocket } from "./live.js";
-import { events, stream } from "@bolojs/node-web-shims";
+import { events, stream, unsupportedError } from "@bolojs/node-web-shims";
 
 const EventEmitter = events;
 const DuplexCtor = stream.Duplex;
@@ -165,7 +165,7 @@ export class NoopTransport implements ByteTransport {
     _onControl?: (msg: object) => void,
     _onError?: (err: Error) => void,
   ): Promise<never> {
-    throw new Error(NOOP_CONNECT_ERROR);
+    throw unsupportedError("NET_BACKEND", NOOP_CONNECT_ERROR);
   }
 
   listen(
@@ -174,7 +174,7 @@ export class NoopTransport implements ByteTransport {
     _onConnection: (conn: AcceptedConnection) => void,
     _onControl: (msg: object) => void,
   ): Promise<never> {
-    throw new Error(NOOP_LISTEN_ERROR);
+    throw unsupportedError("NET_BACKEND", NOOP_LISTEN_ERROR);
   }
 }
 

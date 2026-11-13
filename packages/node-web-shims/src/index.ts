@@ -37,7 +37,7 @@ export { createConstantsShim, default as constants } from "./constants.js";
 export { createPerfHooksShim, default as perf_hooks } from "./perf_hooks.js";
 export { createTimersShim, default as timers } from "./timers.js";
 export { createTimersPromisesShim, default as timers_promises } from "./timers_promises.js";
-export { withCode } from "./coded-error.js";
+export { withCode, unsupportedError } from "./coded-error.js";
 export { createPunycodeShim, default as punycode } from "./punycode.js";
 export {
   createDiagnosticsChannelShim,
