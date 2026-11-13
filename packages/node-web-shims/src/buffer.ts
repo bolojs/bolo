@@ -106,7 +106,9 @@ const invalidArgType = (name: string, expected: string | string[], actual: unkno
     if (instances.length > 0 || other.length > 0) msg += " or ";
   }
   if (instances.length > 0) {
-    msg += `an instance of ${other.length > 0 ? instances.join(", ") : formatList(instances)}`;
+    // Node always formats the instance list with `formatList(instances, 'or')`
+    // (lib/internal/errors.js) — three or more entries get the Oxford comma.
+    msg += `an instance of ${formatList(instances)}`;
     if (other.length > 0) msg += " or ";
   }
   if (other.length > 0) {

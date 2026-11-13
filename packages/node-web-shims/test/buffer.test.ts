@@ -183,7 +183,7 @@ describe("node-web-shims: buffer", () => {
     const { Buffer } = createBufferShim();
     const prefix =
       "The first argument must be of type string or an instance of " +
-      "Buffer, ArrayBuffer, SharedArrayBuffer, Array or an Array-like Object.";
+      "Buffer, ArrayBuffer, or Array or an Array-like Object.";
     const cases: Array<[unknown, string]> = [
       [{}, " Received an instance of Object"],
       [new Boolean(true), " Received an instance of Boolean"],
@@ -223,7 +223,7 @@ describe("node-web-shims: buffer", () => {
         code: "ERR_INVALID_ARG_TYPE",
         message:
           "The first argument must be of type string or an instance of " +
-          "Buffer, ArrayBuffer, SharedArrayBuffer, Array or an Array-like Object. " +
+          "Buffer, ArrayBuffer, or Array or an Array-like Object. " +
           "Received an instance of Object",
       }),
     );
