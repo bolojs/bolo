@@ -187,16 +187,31 @@ export const createEventLoop = (deps: EventLoopDeps) => {
   })();
   const yieldTask = () => new Promise<void>((r) => realSet(() => hop(r), 0));
 
+  // >0 while a user callback (timer/immediate fn) is executing. nextTick
+  // callers inside that window defer to the loop's own drainTicks so the
+  // queue survives a throwing callback like Node's does.
+  let callbackDepth = 0;
+
   const runCallback = async (fn: () => void) => {
+    let threw = false;
+    callbackDepth++;
     try {
       fn();
     } catch (err) {
+      threw = true;
       deps.onUncaught(err);
+    } finally {
+      callbackDepth--;
     }
-    try {
-      deps.drainTicks?.();
-    } catch (err) {
-      deps.onUncaught(err);
+    // Node does not drain the nextTick queue after a callback that threw —
+    // the fatal-exception path ends the tick, and queued ticks run after the
+    // remaining callbacks of the phase (test-timers-immediate-queue-throw).
+    if (!threw) {
+      try {
+        deps.drainTicks?.();
+      } catch (err) {
+        deps.onUncaught(err);
+      }
     }
     setClock(clock()); // fold program time spent in the callback into the virtual clock
     await yieldTask();
@@ -289,5 +304,7 @@ export const createEventLoop = (deps: EventLoopDeps) => {
     yieldTask,
     run,
     poke,
+    /** True while a timer/immediate callback (or its uncaught handler) runs. */
+    inCallback: () => callbackDepth > 0,
   };
 };

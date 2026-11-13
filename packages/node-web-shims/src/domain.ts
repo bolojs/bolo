@@ -21,7 +21,20 @@ interface ProcessLike {
   domain?: Domain | null;
 }
 
-const getProcess = (): ProcessLike | undefined => (globalThis as { process?: ProcessLike }).process;
+interface BrowserContainersLike {
+  shims?: { process?: ProcessLike };
+  process?: ProcessLike;
+}
+
+// Inside a process worker the live `process` is the container's process shim
+// on `__browserContainers.shims.process` — there is no global `process` in
+// that realm, so reading only `globalThis.process` would leave
+// `process.domain` permanently unsynced.
+const getProcess = (): ProcessLike | undefined => {
+  const bc = (globalThis as { __browserContainers?: BrowserContainersLike })
+    .__browserContainers;
+  return bc?.shims?.process ?? bc?.process ?? (globalThis as { process?: ProcessLike }).process;
+};
 
 const setProcessDomain = (domain: Domain | null | undefined): void => {
   const proc = getProcess();

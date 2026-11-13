@@ -236,6 +236,20 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     );
   };
 
+  const queueTick = (fn: (...args: unknown[]) => void, ...args: unknown[]) => {
+    if (typeof fn !== "function") {
+      const err = new TypeError(
+        `The "callback" argument must be of type function. Received ${
+          fn === null || fn === undefined ? String(fn) : `type ${typeof fn}`
+        }`,
+      ) as TypeError & { code: string };
+      err.code = "ERR_INVALID_ARG_TYPE";
+      throw err;
+    }
+    if (process._exiting) return;
+    tickQueue.push(() => fn(...args));
+  };
+
   const process = Object.assign(new EventEmitter(), {
     // Node's error text says `Cannot delete property 'exitCode' of #<process>`;
     // the object stringifies via its constructor, so name the class.
@@ -281,21 +295,21 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     /** True once 'exit' has begun; Node ignores nextTick callbacks scheduled after that. */
     _exiting: false,
     nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) => {
-      if (typeof fn !== "function") {
-        const err = new TypeError(
-          `The "callback" argument must be of type function. Received ${
-            fn === null || fn === undefined ? String(fn) : `type ${typeof fn}`
-          }`,
-        ) as TypeError & { code: string };
-        err.code = "ERR_INVALID_ARG_TYPE";
-        throw err;
-      }
-      if (process._exiting) return;
-      tickQueue.push(() => fn(...args));
+      queueTick(fn, ...args);
       if (!tickScheduled) {
         tickScheduled = true;
         queueMicrotask(drainTicks);
       }
+    },
+    /**
+     * Queue a tick without arming the microtask fallback drain. The process
+     * worker's event loop calls this for nextTick()s scheduled inside a loop
+     * callback: Node holds the tick queue across a throwing callback, and
+     * the loop's own drainTicks (after each non-throwing callback, plus the
+     * beforeExit drains) owns delivery in that window.
+     */
+    _nextTickDeferred: (fn: (...args: unknown[]) => void, ...args: unknown[]) => {
+      queueTick(fn, ...args);
     },
     cwd: () => cwd,
     chdir: (dir: string) => {
@@ -380,6 +394,15 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     },
     hasUncaughtExceptionCaptureCallback: () => uncaughtExceptionCapture !== null,
     getBuiltinModule: (name: string): unknown => options.getBuiltinModule?.(stripNodePrefix(name)),
+  });
+
+  // `process.domain` — Node defines it as a writable slot that is `null`
+  // outside any domain; the domain shim's enter/exit keep it in sync.
+  Object.defineProperty(process, "domain", {
+    enumerable: true,
+    configurable: true,
+    writable: true,
+    value: null,
   });
 
   // `Object.assign` copies accessor *values*, not the accessor itself — define

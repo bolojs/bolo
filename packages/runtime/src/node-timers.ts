@@ -7,6 +7,8 @@ import {
 import { withCode } from "@bolojs/node-web-shims/dist/coded-error.js";
 import { createTimersPromisesShim } from "@bolojs/node-web-shims/dist/timers_promises.js";
 import { customPromisifySymbol } from "@bolojs/node-web-shims/dist/util.js";
+import { active as currentDomain } from "@bolojs/node-web-shims/dist/domain.js";
+import type { Domain } from "@bolojs/node-web-shims/dist/domain.js";
 
 /**
  * Node-flavoured timers for a process worker: `Timeout`/`Immediate` objects
@@ -92,6 +94,10 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     private pending = false;
     private readonly runContext = AsyncLocalStorage.snapshot();
     private readonly asyncId = emitInit("Timeout");
+    // Node captures the active domain when the timer is created (async
+    // init) and enters it around the callback — errors thrown inside route
+    // to that domain's 'error' handler at fatal time.
+    private readonly domain: Domain | null | undefined = currentDomain;
 
     constructor(fn: (...a: unknown[]) => void, after: unknown, args: unknown[], repeat: boolean) {
       let ms = Number(after);
@@ -116,6 +122,13 @@ export const createNodeTimers = (host: NodeTimersHost) => {
 
     private fire() {
       this.pending = false;
+      const domain = this.domain;
+      let threw = false;
+      // Enter the captured domain for the callback's duration. On a throw
+      // the domain stays entered: Node's fatal-exception path reads
+      // `process.domain` to route the error to the domain's 'error' handler
+      // (uncaughtExceptionCaptureCallback), which then clears the stack.
+      domain?.enter();
       try {
         if (typeof this._onTimeout === "function") {
           this.runContext(() =>
@@ -124,7 +137,11 @@ export const createNodeTimers = (host: NodeTimersHost) => {
             ),
           );
         }
+      } catch (er) {
+        threw = true;
+        throw er;
       } finally {
+        if (!threw) domain?.exit();
         const repeat = this._repeat;
         const again =
           repeat != null &&
@@ -190,6 +207,8 @@ export const createNodeTimers = (host: NodeTimersHost) => {
     native: LoopHandle;
     private readonly runContext = AsyncLocalStorage.snapshot();
     private readonly asyncId = emitInit("Immediate");
+    // Same domain capture as Timeout — see the comment there.
+    private readonly domain: Domain | null | undefined = currentDomain;
     constructor(fn: (...a: unknown[]) => void, args: unknown[]) {
       this._onImmediate = fn;
       this._argv = args;
@@ -199,6 +218,9 @@ export const createNodeTimers = (host: NodeTimersHost) => {
       if (this._destroyed) return;
       this._destroyed = true;
       this.refed = false;
+      const domain = this.domain;
+      let threw = false;
+      domain?.enter();
       try {
         if (this._onImmediate) {
           this.runContext(() =>
@@ -207,7 +229,11 @@ export const createNodeTimers = (host: NodeTimersHost) => {
             ),
           );
         }
+      } catch (er) {
+        threw = true;
+        throw er;
       } finally {
+        if (!threw) domain?.exit();
         this._onImmediate = null;
       }
     }
