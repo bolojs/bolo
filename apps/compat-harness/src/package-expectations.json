@@ -1,0 +1,32 @@
+{
+  "esbuild": {
+    "lane": "B",
+    "reason": "drives a native platform binary through child_process and an ESM binary loader; the npm package has no in-browser build",
+    "remediation": "use esbuild-wasm (the official WASM build) once the WASM loader lands in #149"
+  },
+  "argon2": {
+    "lane": "B",
+    "reason": "native .node addon built with node-gyp; argon2 itself ships no browser or WASM build",
+    "remediation": "use @node-rs/argon2-wasm (official WASM build) once the WASM loader lands in #149"
+  },
+  "bcrypt": {
+    "lane": "B",
+    "reason": "native .node addon via node-pre-gyp; bcrypt ships no WASM or browser build",
+    "remediation": "use bcryptjs (pure JS, API-compatible); no WASM loader required"
+  },
+  "lightningcss": {
+    "lane": "B",
+    "reason": "loads a native .node binding through per-platform optional dependencies; no WASM fallback ships in this package",
+    "remediation": "lightningcss WASM build once the WASM loader lands in #149"
+  },
+  "rspack": {
+    "lane": "C",
+    "reason": "@rspack/core requires its native Rust binding (@rspack/binding-*, a .node addon) via dynamic require; the browser build is a separate package",
+    "remediation": "use @rspack/browser; @rspack/core itself has no WASM path"
+  },
+  "turbo": {
+    "lane": "C",
+    "reason": "turbo is a wrapper around a native Rust binary; there is no browser-compatible build",
+    "remediation": "none; keep turbo on Node, no WASM or browser story exists"
+  }
+}

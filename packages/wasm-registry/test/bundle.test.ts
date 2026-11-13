@@ -1,190 +1,206 @@
-import { describe, it, expect } from 'vitest';
-import { VfsBus } from '@bolojs/fs';
-import { bundleEntry, mapJsrSpecifier, transformScript } from '../src/bundle';
+import { describe, it, expect } from "vitest";
+import { VfsBus } from "@bolojs/fs";
+import { bundleEntry, mapJsrSpecifier, transformScript } from "../src/bundle";
 
 const seed = (vfs: VfsBus, path: string, contents: string) => {
-  const dir = path.slice(0, path.lastIndexOf('/'));
+  const dir = path.slice(0, path.lastIndexOf("/"));
   if (dir && !vfs.hot.existsSync(dir)) vfs.hot.mkdirSync(dir, { recursive: true });
   vfs.hot.writeFileSync(path, contents);
 };
 
-describe('wasm-registry: bundleEntry', () => {
-  it('bundles a relative import into a single self-contained module', async () => {
+describe("wasm-registry: bundleEntry", () => {
+  it("bundles a relative import into a single self-contained module", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/util.ts', 'export const greet = (name: string) => `hi ${name}`;');
-    seed(vfs, '/src/entry.ts', "import { greet } from './util'; console.log(greet('world'));");
+    seed(vfs, "/src/util.ts", "export const greet = (name: string) => `hi ${name}`;");
+    seed(vfs, "/src/entry.ts", "import { greet } from './util'; console.log(greet('world'));");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
-    expect(code).toContain('greet');
+    expect(code).toContain("greet");
     expect(code).not.toMatch(/from\s+["']\.\/util["']/);
   });
 
-  it('resolves a bare package import via package.json main and inlines it', async () => {
-    const vfs = new VfsBus();
-    seed(vfs, '/node_modules/hono/package.json', JSON.stringify({ name: 'hono', main: 'index.js' }));
-    seed(vfs, '/node_modules/hono/index.js', 'export const Hono = class { get() {} };');
-    seed(vfs, '/src/entry.ts', "import { Hono } from 'hono'; new Hono();");
-
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
-
-    expect(warnings).toEqual([]);
-    expect(code).toContain('class');
-    expect(code).not.toMatch(/from\s+["']hono["']/);
-  });
-
-  it('routes a node:* import to the live shim registry via globalThis', async () => {
-    const vfs = new VfsBus();
-    seed(vfs, '/src/entry.ts', "import fs from 'node:fs'; fs.readFile('/x');");
-
-    const shim = { readFile: () => {} };
-    const { code, warnings } = await bundleEntry('/src/entry.ts', {
-      vfs,
-      getShim: (builtin) => (builtin === 'fs' ? shim : undefined),
-    });
-
-    expect(warnings).toEqual([]);
-    expect(code).toContain('globalThis.__browserContainers.shims');
-    expect(code).not.toMatch(/from\s+["']node:fs["']/);
-  });
-
-  it('leaves an unsupported builtin external with a warning instead of failing the build', async () => {
-    const vfs = new VfsBus();
-    seed(vfs, '/src/entry.ts', "import tls from 'node:tls'; void tls;");
-
-    const { warnings } = await bundleEntry('/src/entry.ts', { vfs, getShim: () => undefined });
-
-    expect(warnings.some((w) => w.includes('node:tls'))).toBe(true);
-  });
-
-  it('resolves a package via a nested conditional `exports` map (browser > import > default) (A5)', async () => {
+  it("resolves a bare package import via package.json main and inlines it", async () => {
     const vfs = new VfsBus();
     seed(
       vfs,
-      '/node_modules/pkg/package.json',
+      "/node_modules/hono/package.json",
+      JSON.stringify({ name: "hono", main: "index.js" }),
+    );
+    seed(vfs, "/node_modules/hono/index.js", "export const Hono = class { get() {} };");
+    seed(vfs, "/src/entry.ts", "import { Hono } from 'hono'; new Hono();");
+
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain("class");
+    expect(code).not.toMatch(/from\s+["']hono["']/);
+  });
+
+  it("routes a node:* import to the live shim registry via globalThis", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/src/entry.ts", "import fs from 'node:fs'; fs.readFile('/x');");
+
+    const shim = { readFile: () => {} };
+    const { code, warnings } = await bundleEntry("/src/entry.ts", {
+      vfs,
+      getShim: (builtin) => (builtin === "fs" ? shim : undefined),
+    });
+
+    expect(warnings).toEqual([]);
+    expect(code).toContain("globalThis.__browserContainers.shims");
+    expect(code).not.toMatch(/from\s+["']node:fs["']/);
+  });
+
+  it("leaves an unsupported builtin external with a warning instead of failing the build", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/src/entry.ts", "import tls from 'node:tls'; void tls;");
+
+    const { warnings } = await bundleEntry("/src/entry.ts", { vfs, getShim: () => undefined });
+
+    expect(warnings.some((w) => w.includes("node:tls"))).toBe(true);
+  });
+
+  it("resolves a package via a nested conditional `exports` map (browser > import > default) (A5)", async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      "/node_modules/pkg/package.json",
       JSON.stringify({
-        name: 'pkg',
+        name: "pkg",
         exports: {
-          '.': {
-            browser: { import: './browser.mjs', default: './browser.cjs' },
-            node: './node.cjs',
-            default: './fallback.js',
+          ".": {
+            browser: { import: "./browser.mjs", default: "./browser.cjs" },
+            node: "./node.cjs",
+            default: "./fallback.js",
           },
         },
       }),
     );
-    seed(vfs, '/node_modules/pkg/browser.mjs', 'export const via = "browser-mjs";');
-    seed(vfs, '/node_modules/pkg/node.cjs', 'export const via = "node-cjs";');
-    seed(vfs, '/src/entry.ts', "import { via } from 'pkg'; console.log(via);");
+    seed(vfs, "/node_modules/pkg/browser.mjs", 'export const via = "browser-mjs";');
+    seed(vfs, "/node_modules/pkg/node.cjs", 'export const via = "node-cjs";');
+    seed(vfs, "/src/entry.ts", "import { via } from 'pkg'; console.log(via);");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
-    expect(code).toContain('browser-mjs');
+    expect(code).toContain("browser-mjs");
   });
 
-  it('resolves a wildcard `exports` subpath pattern (A5)', async () => {
+  it("resolves a wildcard `exports` subpath pattern (A5)", async () => {
     const vfs = new VfsBus();
     seed(
       vfs,
-      '/node_modules/pkg/package.json',
-      JSON.stringify({ name: 'pkg', exports: { './features/*': './src/features/*.js' } }),
+      "/node_modules/pkg/package.json",
+      JSON.stringify({ name: "pkg", exports: { "./features/*": "./src/features/*.js" } }),
     );
-    seed(vfs, '/node_modules/pkg/src/features/foo.js', 'export const foo = 1;');
-    seed(vfs, '/src/entry.ts', "import { foo } from 'pkg/features/foo'; console.log(foo);");
+    seed(vfs, "/node_modules/pkg/src/features/foo.js", "export const foo = 1;");
+    seed(vfs, "/src/entry.ts", "import { foo } from 'pkg/features/foo'; console.log(foo);");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
     // rolldown inlines the exported constant across modules, so the declaration is folded away.
-    expect(code).toContain('log(1)');
+    expect(code).toContain("log(1)");
     expect(code).not.toMatch(/from\s+["']pkg\/features\/foo["']/);
   });
 
-  it('honors a string `browser` field as the main-entry override (A5)', async () => {
+  it("honors a string `browser` field as the main-entry override (A5)", async () => {
     const vfs = new VfsBus();
     seed(
       vfs,
-      '/node_modules/pkg/package.json',
-      JSON.stringify({ name: 'pkg', main: 'node.js', browser: 'browser.js' }),
+      "/node_modules/pkg/package.json",
+      JSON.stringify({ name: "pkg", main: "node.js", browser: "browser.js" }),
     );
-    seed(vfs, '/node_modules/pkg/node.js', 'export const via = "node";');
-    seed(vfs, '/node_modules/pkg/browser.js', 'export const via = "browser";');
-    seed(vfs, '/src/entry.ts', "import { via } from 'pkg'; console.log(via);");
+    seed(vfs, "/node_modules/pkg/node.js", 'export const via = "node";');
+    seed(vfs, "/node_modules/pkg/browser.js", 'export const via = "browser";');
+    seed(vfs, "/src/entry.ts", "import { via } from 'pkg'; console.log(via);");
 
-    const { code } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(code).toContain('"browser"');
     expect(code).not.toContain('"node"');
   });
 
-  it('honors an object `browser` field remap, including stubbing a module to `false` (A5)', async () => {
+  it("honors an object `browser` field remap, including stubbing a module to `false` (A5)", async () => {
     const vfs = new VfsBus();
     seed(
       vfs,
-      '/node_modules/pkg/package.json',
+      "/node_modules/pkg/package.json",
       JSON.stringify({
-        name: 'pkg',
-        main: 'index.js',
-        browser: { './server-only.js': './client-only.js', fs: false },
+        name: "pkg",
+        main: "index.js",
+        browser: { "./server-only.js": "./client-only.js", fs: false },
       }),
     );
-    seed(vfs, '/node_modules/pkg/index.js', "import fs from 'fs'; import { via } from './server-only.js'; export const result = { via, hasFs: typeof fs };");
-    seed(vfs, '/node_modules/pkg/server-only.js', 'export const via = "server";');
-    seed(vfs, '/node_modules/pkg/client-only.js', 'export const via = "client";');
-    seed(vfs, '/src/entry.ts', "import { result } from 'pkg'; console.log(result);");
+    seed(
+      vfs,
+      "/node_modules/pkg/index.js",
+      "import fs from 'fs'; import { via } from './server-only.js'; export const result = { via, hasFs: typeof fs };",
+    );
+    seed(vfs, "/node_modules/pkg/server-only.js", 'export const via = "server";');
+    seed(vfs, "/node_modules/pkg/client-only.js", 'export const via = "client";');
+    seed(vfs, "/src/entry.ts", "import { result } from 'pkg'; console.log(result);");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
     expect(code).toContain('"client"');
     expect(code).not.toContain('"server"');
   });
 
-  it('resolves a package-internal `#subpath` import via the `imports` field (A5)', async () => {
+  it("resolves a package-internal `#subpath` import via the `imports` field (A5)", async () => {
     const vfs = new VfsBus();
     seed(
       vfs,
-      '/node_modules/pkg/package.json',
-      JSON.stringify({ name: 'pkg', main: 'index.js', imports: { '#dep': './real-dep.js' } }),
+      "/node_modules/pkg/package.json",
+      JSON.stringify({ name: "pkg", main: "index.js", imports: { "#dep": "./real-dep.js" } }),
     );
-    seed(vfs, '/node_modules/pkg/index.js', "export { value } from '#dep';");
-    seed(vfs, '/node_modules/pkg/real-dep.js', 'export const value = "resolved-via-imports-field";');
-    seed(vfs, '/src/entry.ts', "import { value } from 'pkg'; console.log(value);");
+    seed(vfs, "/node_modules/pkg/index.js", "export { value } from '#dep';");
+    seed(
+      vfs,
+      "/node_modules/pkg/real-dep.js",
+      'export const value = "resolved-via-imports-field";',
+    );
+    seed(vfs, "/src/entry.ts", "import { value } from 'pkg'; console.log(value);");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
-    expect(code).toContain('resolved-via-imports-field');
+    expect(code).toContain("resolved-via-imports-field");
   });
 
-  it('falls back an unresolvable bare import to an esm.sh URL instead of failing the build (A5)', async () => {
+  it("falls back an unresolvable bare import to an esm.sh URL instead of failing the build (A5)", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/entry.ts', "import { z } from 'zod'; void z;");
+    seed(vfs, "/src/entry.ts", "import { z } from 'zod'; void z;");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
-    expect(code).toContain('https://esm.sh/zod');
-    expect(warnings.some((w) => w.includes('esm.sh/zod'))).toBe(true);
+    expect(code).toContain("https://esm.sh/zod");
+    expect(warnings.some((w) => w.includes("esm.sh/zod"))).toBe(true);
   });
 
-  it('falls back an uninstalled transitive dep of an installed package to esm.sh, versioned (A5)', async () => {
+  it("falls back an uninstalled transitive dep of an installed package to esm.sh, versioned (A5)", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', version: '2.3.4', main: 'index.js' }));
-    seed(vfs, '/node_modules/pkg/index.js', "export { helper } from 'pkg/internal';");
-    seed(vfs, '/src/entry.ts', "import { helper } from 'pkg'; console.log(helper);");
+    seed(
+      vfs,
+      "/node_modules/pkg/package.json",
+      JSON.stringify({ name: "pkg", version: "2.3.4", main: "index.js" }),
+    );
+    seed(vfs, "/node_modules/pkg/index.js", "export { helper } from 'pkg/internal';");
+    seed(vfs, "/src/entry.ts", "import { helper } from 'pkg'; console.log(helper);");
 
-    const { code } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code } = await bundleEntry("/src/entry.ts", { vfs });
 
-    expect(code).toContain('https://esm.sh/pkg@2.3.4/internal');
+    expect(code).toContain("https://esm.sh/pkg@2.3.4/internal");
   });
 
-  it('routes bundled console.log/error through the injected process shim, not the native console (B4)', async () => {
+  it("routes bundled console.log/error through the injected process shim, not the native console (B4)", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/entry.ts', 'console.log("out", 1); console.error("err");');
+    seed(vfs, "/src/entry.ts", 'console.log("out", 1); console.error("err");');
 
-    const { code } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code } = await bundleEntry("/src/entry.ts", { vfs });
 
     const stdout: string[] = [];
     const stderr: string[] = [];
@@ -197,98 +213,120 @@ describe('wasm-registry: bundleEntry', () => {
       },
     };
     try {
-      await import(/* @vite-ignore */ `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`);
+      await import(
+        /* @vite-ignore */ `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`
+      );
     } finally {
       delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
     }
 
-    expect(stdout.join('')).toBe('out 1\n');
-    expect(stderr.join('')).toBe('err\n');
+    expect(stdout.join("")).toBe("out 1\n");
+    expect(stderr.join("")).toBe("err\n");
   });
 
-  it('rewrites a jsr: scoped specifier to the installed @jsr mirror package', async () => {
+  it("rewrites a jsr: scoped specifier to the installed @jsr mirror package", async () => {
     const vfs = new VfsBus();
     seed(
       vfs,
-      '/node_modules/@jsr/scope__name/package.json',
-      JSON.stringify({ name: '@jsr/scope__name', main: 'index.js' }),
+      "/node_modules/@jsr/scope__name/package.json",
+      JSON.stringify({ name: "@jsr/scope__name", main: "index.js" }),
     );
-    seed(vfs, '/node_modules/@jsr/scope__name/index.js', 'export const jsrValue = "from-jsr";');
-    seed(vfs, '/src/entry.ts', "import { jsrValue } from 'jsr:@scope/name'; console.log(jsrValue);");
+    seed(vfs, "/node_modules/@jsr/scope__name/index.js", 'export const jsrValue = "from-jsr";');
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import { jsrValue } from 'jsr:@scope/name'; console.log(jsrValue);",
+    );
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
-    expect(code).toContain('from-jsr');
+    expect(code).toContain("from-jsr");
     expect(code).not.toMatch(/from\s+["']jsr:/);
   });
 
-  it('bundles a .json import via rolldown native json handling (default + named)', async () => {
+  it("bundles a .json import via rolldown native json handling (default + named)", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/data.json', JSON.stringify({ a: 1, name: 'pkg' }));
-    seed(vfs, '/src/entry.ts', "import data, { name } from './data.json'; console.log(data.a, name);");
+    seed(vfs, "/src/data.json", JSON.stringify({ a: 1, name: "pkg" }));
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import data, { name } from './data.json'; console.log(data.a, name);",
+    );
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
     expect(code).toContain('"pkg"');
   });
 
-  it('degrades a .json file whose contents are not valid JSON instead of failing the build', async () => {
+  it("degrades a .json file whose contents are not valid JSON instead of failing the build", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/empty.json', '');
-    seed(vfs, '/src/entry.ts', "import data from './empty.json'; console.log(data);");
+    seed(vfs, "/src/empty.json", "");
+    seed(vfs, "/src/entry.ts", "import data from './empty.json'; console.log(data);");
 
-    const { warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
-    expect(warnings.some((w) => w.includes('empty.json'))).toBe(true);
+    expect(warnings.some((w) => w.includes("empty.json"))).toBe(true);
   });
 
-  it('strips a shebang line before parsing a module', async () => {
+  it("strips a shebang line before parsing a module", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/cli.js', '#!/usr/bin/env node\nexport const main = "ran";');
-    seed(vfs, '/src/entry.ts', "import { main } from './cli.js'; console.log(main);");
+    seed(vfs, "/src/cli.js", '#!/usr/bin/env node\nexport const main = "ran";');
+    seed(vfs, "/src/entry.ts", "import { main } from './cli.js'; console.log(main);");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
     expect(code).toContain('"ran"');
   });
 
-  it('does not redeclare __dirname when the module declares its own', async () => {
+  it("does not redeclare __dirname when the module declares its own", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/self.js', 'const __dirname = "/self";\nexport const dir = __dirname;');
-    seed(vfs, '/src/entry.ts', "import { dir } from './self.js'; console.log(dir);");
+    seed(vfs, "/src/self.js", 'const __dirname = "/self";\nexport const dir = __dirname;');
+    seed(vfs, "/src/entry.ts", "import { dir } from './self.js'; console.log(dir);");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
     expect(code).toContain('"/self"');
   });
 
-  it('synthesizes a namespace default export for ESM modules without one', async () => {
+  it("synthesizes a namespace default export for ESM modules without one", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', main: 'index.mjs' }));
-    seed(vfs, '/node_modules/pkg/index.mjs', 'export const load = () => 1;\nexport const dump = () => 2;');
-    seed(vfs, '/src/entry.ts', "import pkg, { load } from 'pkg'; console.log(typeof pkg.load, load());");
+    seed(vfs, "/node_modules/pkg/package.json", JSON.stringify({ name: "pkg", main: "index.mjs" }));
+    seed(
+      vfs,
+      "/node_modules/pkg/index.mjs",
+      "export const load = () => 1;\nexport const dump = () => 2;",
+    );
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import pkg, { load } from 'pkg'; console.log(typeof pkg.load, load());",
+    );
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
     // The wrapper materializes a namespace object carrying the named exports.
-    expect(code).toContain('load');
+    expect(code).toContain("load");
     expect(code).not.toMatch(/from\s+["']pkg["']/);
   });
 
-  it('routes subpath builtins to the parent shim property (fs.promises, path.posix)', async () => {
+  it("routes subpath builtins to the parent shim property (fs.promises, path.posix)", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/entry.ts', "import fsp from 'node:fs/promises'; import posix from 'node:path/posix'; void fsp; void posix;");
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import fsp from 'node:fs/promises'; import posix from 'node:path/posix'; void fsp; void posix;",
+    );
 
     const fsShim = { promises: { readFile: () => {} } };
     const pathShim = { posix: { join: () => {} } };
-    const { code, warnings } = await bundleEntry('/src/entry.ts', {
+    const { code, warnings } = await bundleEntry("/src/entry.ts", {
       vfs,
-      getShim: (builtin) => (builtin === 'fs' ? fsShim : builtin === 'path' ? pathShim : undefined),
+      getShim: (builtin) => (builtin === "fs" ? fsShim : builtin === "path" ? pathShim : undefined),
     });
 
     expect(warnings).toEqual([]);
@@ -296,81 +334,280 @@ describe('wasm-registry: bundleEntry', () => {
     expect(code).toContain('shims["path"]["posix"]');
   });
 
-  it('aliases dns/promises to the already-promise-based dns shim', async () => {
+  it("aliases dns/promises to the already-promise-based dns shim", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/entry.ts', "import dns from 'node:dns/promises'; void dns;");
+    seed(vfs, "/src/entry.ts", "import dns from 'node:dns/promises'; void dns;");
 
     const dnsShim = { lookup: () => Promise.resolve([]) };
-    const { code, warnings } = await bundleEntry('/src/entry.ts', {
+    const { code, warnings } = await bundleEntry("/src/entry.ts", {
       vfs,
-      getShim: (builtin) => (builtin === 'dns' ? dnsShim : undefined),
+      getShim: (builtin) => (builtin === "dns" ? dnsShim : undefined),
     });
 
     expect(warnings).toEqual([]);
     expect(code).toContain('shims["dns"]');
   });
 
-  it('routes node:console to the banner console instead of esm.sh', async () => {
+  it("routes node:console to the banner console instead of esm.sh", async () => {
     const vfs = new VfsBus();
-    seed(vfs, '/src/entry.ts', "import console from 'node:console'; console.log('hi');");
+    seed(vfs, "/src/entry.ts", "import console from 'node:console'; console.log('hi');");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
-    expect(code).not.toContain('esm.sh/console');
+    expect(code).not.toContain("esm.sh/console");
   });
 
-  it('rewrites a jsr: unscoped specifier to the installed @jsr mirror package', async () => {
+  it("defers an unresolvable require() inside node_modules to a require-time MODULE_NOT_FOUND", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/node_modules/pkg/package.json", JSON.stringify({ name: "pkg", main: "index.js" }));
+    seed(
+      vfs,
+      "/node_modules/pkg/index.js",
+      "try { require('./missing.node'); } catch (e) { module.exports = e.code; }",
+    );
+    seed(vfs, "/src/entry.ts", "import code from 'pkg'; console.log(code);");
+
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
+
+    expect(warnings.some((w) => w.includes("missing.node"))).toBe(true);
+    expect(code).toContain("MODULE_NOT_FOUND");
+  });
+
+  it("still throws at build time for an unresolvable static import inside node_modules", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/node_modules/pkg/package.json", JSON.stringify({ name: "pkg", main: "index.js" }));
+    seed(vfs, "/node_modules/pkg/index.js", "import './missing.js'; export const x = 1;");
+    seed(vfs, "/src/entry.ts", "import { x } from 'pkg'; console.log(x);");
+
+    await expect(bundleEntry("/src/entry.ts", { vfs })).rejects.toThrow(/Cannot resolve module/);
+  });
+
+  it("does not defer node: builtin requires to the missing-module stub", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/node_modules/pkg/package.json", JSON.stringify({ name: "pkg", main: "index.js" }));
+    seed(vfs, "/node_modules/pkg/index.js", "const fs = require('node:fs'); module.exports = fs;");
+    seed(vfs, "/src/entry.ts", "import fs from 'pkg'; console.log(fs);");
+
+    const fsShim = { readFile: () => {} };
+    const { code, warnings } = await bundleEntry("/src/entry.ts", {
+      vfs,
+      getShim: (builtin) => (builtin === "fs" ? fsShim : undefined),
+    });
+
+    expect(warnings.filter((w) => w.includes("deferring"))).toEqual([]);
+    expect(code).toContain('shims["fs"]');
+    expect(code).not.toContain("Cannot find module '");
+  });
+
+  it("stubs a .node native addon as an empty module instead of a binary parse error", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/node_modules/pkg/package.json", JSON.stringify({ name: "pkg", main: "index.js" }));
+    seed(
+      vfs,
+      "/node_modules/pkg/index.js",
+      "const binding = require('./binding.node'); module.exports = binding;",
+    );
+    seed(vfs, "/node_modules/pkg/binding.node", "MZ\u0000\u0000binary");
+    seed(vfs, "/src/entry.ts", "import binding from 'pkg'; console.log(binding);");
+
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
+
+    expect(warnings.some((w) => w.includes("native addon"))).toBe(true);
+    expect(code).not.toContain("MZ");
+  });
+
+  it("stubs NUL-byte binary content reached through a non-.node path", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/src/blob.bin", "PK\u0000\u0004binary");
+    seed(vfs, "/src/entry.ts", "import './blob.bin'; console.log('ok');");
+
+    const { warnings } = await bundleEntry("/src/entry.ts", { vfs });
+
+    expect(warnings.some((w) => w.includes("binary content"))).toBe(true);
+  });
+
+  it("defers an unknown node: builtin to a require-time MODULE_NOT_FOUND instead of an esm.sh URL", async () => {
+    const vfs = new VfsBus();
+    seed(vfs, "/src/entry.ts", "import x from 'node:sqlite'; void x;");
+
+    const { code } = await bundleEntry("/src/entry.ts", { vfs });
+
+    // Packages probe optional builtins behind try/catch — a lazy
+    // MODULE_NOT_FOUND preserves that path, an esm.sh URL would not.
+    expect(code).toContain("node:sqlite");
+    expect(code).toContain("MODULE_NOT_FOUND");
+    expect(code).not.toMatch(/esm\.sh/);
+  });
+
+  it("rewrites a jsr: unscoped specifier to the installed @jsr mirror package", async () => {
     const vfs = new VfsBus();
     seed(
       vfs,
-      '/node_modules/@jsr/plain/package.json',
-      JSON.stringify({ name: '@jsr/plain', main: 'index.js' }),
+      "/node_modules/@jsr/plain/package.json",
+      JSON.stringify({ name: "@jsr/plain", main: "index.js" }),
     );
-    seed(vfs, '/node_modules/@jsr/plain/index.js', 'export const plain = 42;');
-    seed(vfs, '/src/entry.ts', "import { plain } from 'jsr:plain'; console.log(plain);");
+    seed(vfs, "/node_modules/@jsr/plain/index.js", "export const plain = 42;");
+    seed(vfs, "/src/entry.ts", "import { plain } from 'jsr:plain'; console.log(plain);");
 
-    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+    const { code, warnings } = await bundleEntry("/src/entry.ts", { vfs });
 
     expect(warnings).toEqual([]);
-    expect(code).toContain('42');
+    expect(code).toContain("42");
     expect(code).not.toMatch(/from\s+["']jsr:/);
   });
 });
 
-describe('wasm-registry: mapJsrSpecifier', () => {
-  it('maps scoped and unscoped jsr specifiers to the npm-compatibility mirror', () => {
-    expect(mapJsrSpecifier('jsr:@scope/name')).toBe('@jsr/scope__name');
-    expect(mapJsrSpecifier('jsr:name')).toBe('@jsr/name');
+describe("wasm-registry: mapJsrSpecifier", () => {
+  it("maps scoped and unscoped jsr specifiers to the npm-compatibility mirror", () => {
+    expect(mapJsrSpecifier("jsr:@scope/name")).toBe("@jsr/scope__name");
+    expect(mapJsrSpecifier("jsr:name")).toBe("@jsr/name");
   });
 
-  it('preserves subpaths on the mirror package', () => {
-    expect(mapJsrSpecifier('jsr:@scope/name/sub')).toBe('@jsr/scope__name/sub');
-    expect(mapJsrSpecifier('jsr:name/sub')).toBe('@jsr/name/sub');
+  it("preserves subpaths on the mirror package", () => {
+    expect(mapJsrSpecifier("jsr:@scope/name/sub")).toBe("@jsr/scope__name/sub");
+    expect(mapJsrSpecifier("jsr:name/sub")).toBe("@jsr/name/sub");
   });
 });
 
-describe('wasm-registry: transformScript', () => {
-  it('strips TypeScript syntax from a single file with no bundling (A7)', async () => {
-    const { code, warnings } = await transformScript('const x: number = 42;\nconst arr: string[] = [];\nx');
+describe("wasm-registry: transformScript", () => {
+  it("strips TypeScript syntax from a single file with no bundling (A7)", async () => {
+    const { code, warnings } = await transformScript(
+      "const x: number = 42;\nconst arr: string[] = [];\nx",
+    );
 
     expect(warnings).toEqual([]);
-    expect(code).not.toContain(': number');
-    expect(code).not.toContain(': string[]');
-    expect(code).toContain('const x = 42');
+    expect(code).not.toContain(": number");
+    expect(code).not.toContain(": string[]");
+    expect(code).toContain("const x = 42");
   });
 
-  it('correctly erases a nested object type/interface (A7)', async () => {
+  it("correctly erases a nested object type/interface (A7)", async () => {
     const { code } = await transformScript(
       'interface Config { a: { b: string; c: number }; d: string[] }\nconst cfg: Config = { a: { b: "x", c: 1 }, d: [] };',
     );
 
     expect(code).not.toMatch(/interface|:\s*Config/);
     expect(code).toContain('b: "x"');
-    expect(code).toContain('c: 1');
+    expect(code).toContain("c: 1");
   });
 
-  it('surfaces a syntax error instead of silently producing broken JS (A7)', async () => {
-    await expect(transformScript('const x = ;')).rejects.toThrow();
+  it("surfaces a syntax error instead of silently producing broken JS (A7)", async () => {
+    await expect(transformScript("const x = ;")).rejects.toThrow();
+  });
+});
+
+describe("wasm-registry: runtime interop", () => {
+  const importBundle = (code: string) =>
+    import(
+      /* @vite-ignore */ `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`
+    ) as Promise<Record<string, unknown>>;
+
+  it("re-exports the api var as default for esbuild's dual-format CJS wrapper", async () => {
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      "/node_modules/ts-pkg/package.json",
+      JSON.stringify({ name: "ts-pkg", main: "index.js" }),
+    );
+    // typescript.js shape: the whole body sits in an IIFE whose `module`
+    // parameter is a fake module object; the real `module` only exists under
+    // CJS. Rolldown sees a script with no exports, so `import tsDefault`
+    // would be undefined without the appended default export.
+    seed(
+      vfs,
+      "/node_modules/ts-pkg/index.js",
+      [
+        "var ts = {}; ((module) => {",
+        '"use strict";',
+        "var api = { transpile: (s) => 'out:' + s };",
+        "module.exports = api;",
+        "})({ get exports() { return ts; }, set exports(v) { ts = v; if (typeof module !== 'undefined' && module.exports) { module.exports = v; } } });",
+      ].join("\n"),
+    );
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import tsDefault, * as tsNs from 'ts-pkg'; export default tsDefault?.transpile?.('x') ?? tsNs.default?.transpile?.('x');",
+    );
+
+    const { code } = await bundleEntry("/src/entry.ts", { vfs });
+
+    const mod = await importBundle(code);
+    expect(mod.default).toBe("out:x");
+  });
+
+  it("tolerates a class-keyed shim export that is not a function at bundle runtime", async () => {
+    class Worker {}
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      "/src/entry.ts",
+      "import { Worker, isMainThread } from 'node:worker_threads'; export default [Worker, isMainThread];",
+    );
+    const { code } = await bundleEntry("/src/entry.ts", {
+      vfs,
+      getShim: (b) => (b === "worker_threads" ? { Worker, isMainThread: true } : undefined),
+    });
+    // The live registry differs from build time: Worker is absent, so the
+    // generated `__bc_callCompat(__shim["Worker"])` receives undefined — a
+    // primitive WeakMap key would throw "Invalid value used as weak map key".
+    (globalThis as { __browserContainers?: unknown }).__browserContainers = {
+      shims: { worker_threads: { isMainThread: true } },
+    };
+    try {
+      const mod = await importBundle(code);
+      expect(mod.default).toEqual([undefined, true]);
+    } finally {
+      delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
+    }
+  });
+
+  it("keeps EventEmitter.call(this) subclassing working through call-compat", async () => {
+    class FakeEmitter {
+      _events: Record<string, ((...a: unknown[]) => void)[]> = {};
+      on(ev: string, fn: (...a: unknown[]) => void) {
+        (this._events[ev] ??= []).push(fn);
+        return this;
+      }
+      emit(ev: string, ...args: unknown[]) {
+        for (const f of this._events[ev] ?? []) f.apply(this, args);
+        return true;
+      }
+    }
+    // `events.EventEmitter === events` — the self-referential static the
+    // events shim really carries.
+    (FakeEmitter as unknown as Record<string, unknown>).EventEmitter = FakeEmitter;
+    const vfs = new VfsBus();
+    seed(
+      vfs,
+      "/src/entry.ts",
+      [
+        "import { EventEmitter } from 'node:events';",
+        "function Legacy() { EventEmitter.call(this); this.tag = 'x'; }",
+        "Legacy.prototype = Object.create(EventEmitter.prototype);",
+        "Legacy.prototype.constructor = Legacy;",
+        "Object.setPrototypeOf(Legacy, EventEmitter);",
+        "const inst = new Legacy();",
+        "let fired = false;",
+        "inst.on('e', () => { fired = true; });",
+        "inst.emit('e');",
+        "export default [fired, inst instanceof EventEmitter, inst.tag, Legacy.EventEmitter === EventEmitter];",
+      ].join("\n"),
+    );
+    const { code } = await bundleEntry("/src/entry.ts", {
+      vfs,
+      getShim: (b) =>
+        b === "events" ? (FakeEmitter as unknown as Record<string, unknown>) : undefined,
+    });
+    (globalThis as { __browserContainers?: unknown }).__browserContainers = {
+      shims: { events: FakeEmitter },
+    };
+    try {
+      const mod = await importBundle(code);
+      expect(mod.default).toEqual([true, true, "x", true]);
+    } finally {
+      delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
+    }
   });
 });

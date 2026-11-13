@@ -2,10 +2,11 @@
   "name": "@bolojs/compat-harness",
   "version": "0.1.1",
   "private": true,
-  "type": "module",
+  "license": "Apache-2.0",
   "bin": {
     "compat-harness": "./bin/cli.js"
   },
+  "type": "module",
   "scripts": {
     "build": "vite build",
     "dev": "portless run --name compat-harness --force vite",
@@ -31,7 +32,6 @@
     "vite-plugin-node-polyfills": "^0.28.0",
     "vitest": "^4.1.10"
   },
-  "license": "Apache-2.0",
   "engines": {
     "node": ">=24.0.0"
   }

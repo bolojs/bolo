@@ -474,6 +474,12 @@ const applyBrowserFieldRemap = (
   return undefined;
 };
 
+/** Package name portion of a bare specifier (`@scope/name/sub` → `@scope/name`). */
+const barePackageName = (specifier: string): string => {
+  const parts = specifier.split("/");
+  return specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
+};
+
 const resolveBarePackage = (
   vfs: VfsBus,
   fromDir: string,
@@ -562,6 +568,125 @@ var __bc_setImmediate = __bcTimers?.setImmediate ?? ((fn, ...args) => {
   return imm;
 });
 var __bc_clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm.cancelled = true; });
+
+// Class-call compat: unenv ships real ES classes for several builtins
+// (EventEmitter, EventEmitterAsyncResource, ...), but Node's originals are
+// *functions*, and legacy packages (readable-stream, winston, express) still
+// subclass them via \`Emitter.call(this)\` — a bare class export throws
+// "Class constructor cannot be invoked without 'new'" at that call site.
+// The wrapper keeps the class fully constructable (\`new\`, \`extends\`,
+// instanceof all preserved: F.prototype === C.prototype and constructed
+// instances carry the class prototype) while letting a bare call stamp the
+// constructor's own properties onto a foreign \`this\`, exactly like Node's
+// function-based constructors do.
+var __bc_isClass = (v) => {
+  if (typeof v !== 'function') return false;
+  try { return /^class[\\s{]/.test(Function.prototype.toString.call(v)); } catch { return false; }
+};
+var __bc_callCompatCache = new WeakMap();
+var __bc_callCompat = (C) => {
+  // Generated shim code calls this on values that were classes at bundle
+  // build time; the live registry can differ (missing key, primitive,
+  // already-wrapped function, plain function). Anything that is not a real
+  // class must pass through — feeding a non-object/function to the WeakMap
+  // below throws "Invalid value used as weak map key", and wrapping a
+  // non-class changes its call semantics.
+  if (!__bc_isClass(C)) return C;
+  var cached = __bc_callCompatCache.get(C);
+  if (cached) return cached;
+  var F = function (...args) {
+    // new F() / class S extends F: a real instance with S's prototype.
+    if (new.target !== undefined) return Reflect.construct(C, args, new.target);
+    // F() with no receiver (or a primitive receiver): behave like new F().
+    if (this === undefined || this === null || this === globalThis ||
+        (typeof this !== 'object' && typeof this !== 'function')) {
+      return Reflect.construct(C, args);
+    }
+    // F.call(this): initialize the foreign object like Node's function ctor.
+    var inst = Reflect.construct(C, args);
+    for (var k of Reflect.ownKeys(inst)) {
+      var d = Object.getOwnPropertyDescriptor(inst, k);
+      if (d) Object.defineProperty(this, k, d);
+    }
+    return this;
+  };
+  // Cache BEFORE copying statics so a class whose own properties reference
+  // back to it (or another wrapped class) cannot recurse.
+  __bc_callCompatCache.set(C, F);
+  for (var k2 of Reflect.ownKeys(C)) {
+    if (k2 === 'prototype' || k2 === 'length' || k2 === 'name' || k2 === 'arguments' || k2 === 'caller') continue;
+    var desc = Object.getOwnPropertyDescriptor(C, k2);
+    if (desc && 'value' in desc) {
+      // \`events.EventEmitter === events\`: self-references point at the
+      // wrapper so \`require('events').EventEmitter\` stays call-compatible.
+      if (desc.value === C) desc = { ...desc, value: F };
+      else if (__bc_isClass(desc.value)) desc = { ...desc, value: __bc_callCompat(desc.value) };
+    }
+    Object.defineProperty(F, k2, desc);
+  }
+  Object.setPrototypeOf(F, C);
+  Object.defineProperty(F, 'prototype', { value: C.prototype, writable: true });
+  Object.defineProperty(F, 'name', { value: C.name, configurable: true });
+  return F;
+};
+
+// Free \`require\` survives bundling in three places: UMD feature guards that
+// take a Node branch (\`typeof require !== 'undefined' ? require('url') : ...
+// — sass.dart.js), try/catch optional-dependency probes (native bindings),
+// and rolldown's emitted \`__require\` helper for \`require(expr)\` it could not
+// resolve statically. Binding on globalThis answers all three — a scoped
+// \`var require\` would be a parse-time redeclare against any bundled module
+// that declares its own top-level \`const require = createRequire(...)\`.
+// Builtin names resolve to the live shim registry; everything else throws
+// Node's MODULE_NOT_FOUND so the caller's fallback path runs.
+var __bc_selfAliases = ${JSON.stringify(SUBPATH_SELF_ALIASES)};
+var __bc_require = (id) => {
+  var name = typeof id === 'string' && id.startsWith('node:') ? id.slice(5) : id;
+  var shims = __bcGlobals()?.shims;
+  if (shims) {
+    var v = shims[name];
+    if (v === undefined && __bc_selfAliases[name]) v = shims[__bc_selfAliases[name]];
+    if (v === undefined) {
+      var slash = name.indexOf('/');
+      var parent = slash !== -1 ? shims[name.slice(0, slash)] : undefined;
+      if (parent && (typeof parent === 'object' || typeof parent === 'function')) {
+        v = parent[name.slice(slash + 1)];
+      }
+    }
+    if (v !== undefined) return __bc_isClass(v) ? __bc_callCompat(v) : v;
+  }
+  var err = new Error('Cannot find module ' + JSON.stringify(id));
+  err.code = 'MODULE_NOT_FOUND';
+  throw err;
+};
+__bc_require.resolve = (id) => id;
+__bc_require.main = undefined;
+__bc_require.extensions = {};
+__bc_require.cache = {};
+// The module shim's createRequire covers what the lookup above cannot:
+// subpath builtins its wider table knows (assert/strict, timers/promises),
+// relative .json requires, and .node loads through nativeAddonLoader. When
+// it also fails the original MODULE_NOT_FOUND is rethrown — bare npm
+// specifiers cannot be require()'d post-bundle and probes rely on the code.
+var __bc_modRequire = __bcGlobals()?.shims?.module?.createRequire?.('/');
+if (typeof __bc_modRequire === 'function') {
+  var __bc_baseRequire = __bc_require;
+  __bc_require = (id) => {
+    try {
+      return __bc_baseRequire(id);
+    } catch (e) {
+      if (e && e.code === 'MODULE_NOT_FOUND') {
+        try { return __bc_modRequire(id); } catch (_) { /* fall through */ }
+      }
+      throw e;
+    }
+  };
+  __bc_require.resolve = __bc_baseRequire.resolve;
+  __bc_require.main = __bc_baseRequire.main;
+  __bc_require.extensions = __bc_baseRequire.extensions;
+  __bc_require.cache = __bc_baseRequire.cache;
+}
+if (typeof globalThis.require !== 'function') globalThis.require = __bc_require;
 
 var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;
@@ -660,10 +785,70 @@ const implicitGlobalDecl = (name: string, literal: string, contents: string): st
 // `export default` — see load() below.
 const NS_DEFAULT_PREFIX = "bolo-ns-default:";
 
+// Virtual-id prefix for a module that does not exist in the VFS but was
+// require()/dynamic-import()'d from inside node_modules — see resolveId().
+// The emitted module throws Node's MODULE_NOT_FOUND at require time, which
+// is what optional-dependency probes (native bindings, platform packages)
+// expect to catch.
+const MISSING_MODULE_PREFIX = "bolo-missing-module:";
+
+// unenv ships real ES classes for several builtins (EventEmitter,
+// EventEmitterAsyncResource, ...). Node's originals are functions that
+// legacy packages still invoke as `Ctor.call(this)` for old-style
+// subclassing — a bare class export breaks them at the call site, which
+// only a function-shaped wrapper can fix. The banner emits the runtime
+// half (`__bc_callCompat`); this is the build-time detector that decides
+// which shim values need it.
+const isClassValue = (value: unknown): boolean => {
+  if (typeof value !== "function") return false;
+  try {
+    return /^class[\s{]/.test(Function.prototype.toString.call(value));
+  } catch {
+    return false;
+  }
+};
+
+// An empty module for native addon binaries (.node files, NUL-byte
+// payloads). Loader chains like rollup's requireWithFriendlyError and the
+// napi-rs binding probes destructure the require() result and degrade to a
+// fallback — an empty object gets them there, where a binary PARSE_ERROR
+// would kill the whole bundle.
+const NATIVE_STUB = {
+  code: "export default {};",
+  map: null,
+  moduleType: "js" as const,
+  moduleSideEffects: "no-treeshake" as const,
+};
+
 // `export default`, `export {x as default}`, and `export {default} from` all
 // provide a default export; `export *` never does.
 const HAS_DEFAULT_EXPORT = /\bexport\s+default\b|\bexport\s*\{[^}]*\bdefault\b/;
 const LOOKS_ESM = /^\s*(?:import|export)\s/m;
+
+// Static ESM statements only — a dynamic `import()` call or `import.meta`
+// inside a script-style file must not disqualify the esbuild-wrapper path.
+const HAS_ESM_STATEMENT = /^\s*(?:import\s*\.\s*meta|import(?!\s*\()[\s{'"*]|export[\s{'"*.])/m;
+
+// esbuild's dual-format CJS wrapper — `var api = {}; ((module) => { ... })
+// ({ get exports() { return api; }, set exports(v) { api = v; if (typeof
+// module !== "undefined" && module.exports) module.exports = v; } })` — used
+// by typescript.js and other esbuild-bundled packages. The only
+// `module.exports` writes are param-shadowed, so rolldown sees a script with
+// zero exports and `import ts from "typescript"` yields undefined. The api
+// var is exactly the surface Node's require() produces; re-exporting it as
+// the default restores the interop shapes consumers rely on.
+const ESBUILD_WRAPPER_IIFE = /\(\s*module\s*\)\s*=>/;
+const ESBUILD_WRAPPER_SETTER = /set\s+exports\s*\(/;
+const ESBUILD_WRAPPER_GETTER = /get\s+exports\s*\(\s*\)\s*\{\s*return\s+([A-Za-z_$][\w$]*)/;
+
+const esbuildWrapperDefaultExport = (contents: string): string => {
+  if (HAS_ESM_STATEMENT.test(contents)) return "";
+  if (!contents.includes("module.exports")) return "";
+  if (!ESBUILD_WRAPPER_IIFE.test(contents) || !ESBUILD_WRAPPER_SETTER.test(contents)) return "";
+  const name = ESBUILD_WRAPPER_GETTER.exec(contents)?.[1];
+  if (!name || !new RegExp(`\\bvar\\s+${name}\\b`).test(contents)) return "";
+  return `\nexport default ${name};`;
+};
 
 // Bundler convention (vite/webpack/esm.sh): `import x from "pkg"` on a module
 // with only named exports yields the namespace object, matching what Node's
@@ -679,9 +864,55 @@ const maybeWrapNamespaceDefault = (vfs: VfsBus, file: string): string => {
   return `${NS_DEFAULT_PREFIX}${file}`;
 };
 
+/**
+ * Memoizes the read-only `hot` calls bundling relies on for the duration of
+ * one `bundleEntry`. Every resolveId costs O(specifiers x ancestors)
+ * existsSync/statSync probes — package-dir walks, browser-field ancestor
+ * lookups, extension guesses, index fallbacks — and on wide dependency
+ * graphs (micromark pulls ~40 packages) the repeated synchronous VFS
+ * round-trips dominate the budget: each probe is a same-thread OPFS/sync
+ * call whose cost is small individually but multiplies into tens of
+ * thousands of invocations. Nothing writes to the VFS mid-build, so
+ * per-path results are stable for the whole call.
+ */
+const memoizeVfsHot = (vfs: VfsBus): VfsBus => {
+  const cacheable = new Set([
+    "existsSync",
+    "statSync",
+    "lstatSync",
+    "realpathSync",
+    "readFileSync",
+    "readdirSync",
+  ]);
+  const caches = new Map<string, Map<string, unknown>>(
+    [...cacheable].map((name) => [name, new Map()]),
+  );
+  const hot = new Proxy(vfs.hot, {
+    get(target, prop, _receiver) {
+      const value = Reflect.get(target, prop);
+      if (typeof prop !== "string" || !cacheable.has(prop) || typeof value !== "function") {
+        return typeof value === "function" ? value.bind(target) : value;
+      }
+      const cache = caches.get(prop)!;
+      const fn = value as (...args: unknown[]) => unknown;
+      return (...args: unknown[]) => {
+        const key = args.map((a) => String(a)).join("\0");
+        if (cache.has(key)) return cache.get(key);
+        const result = fn.apply(target, args);
+        cache.set(key, result);
+        return result;
+      };
+    },
+  });
+  // The bundler's plugin layer only ever touches `vfs.hot` — a facade is
+  // enough, and avoids spreading a class instance (which drops prototype
+  // methods a future caller might need).
+  return { hot } as VfsBus;
+};
+
 const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
   name: "bolo-vfs",
-  async resolveId(id, importer) {
+  async resolveId(id, importer, options) {
     const importerDir = importer ? dirname(importer) : "/";
 
     // Wrap resolved ESM files that lack a default export — except files
@@ -706,6 +937,33 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
       ? resolveFile(vfs, path.startsWith("/") ? path : joinPath(importerDir, path))
       : resolveBarePackage(vfs, importerDir, path);
 
+    if (!resolved && importer?.includes("/node_modules/")) {
+      const kind = options?.kind;
+      // Node builtins (`require('node:fs')`, `require('events')`) are not
+      // "missing modules" — vfsPlugin returns null for them so the
+      // nodeAliasPlugin behind it can bind the live shim.
+      const builtinName = id.startsWith("node:") ? id.slice(5) : id;
+      const isBuiltin = NODE_BUILTIN_NAMES.has(builtinName);
+      if (!isBuiltin && (kind === "require-call" || kind === "dynamic-import")) {
+        // Packages routinely require() optional modules — native addon
+        // paths (./build/Release/*.node), platform bindings
+        // (@rollup/rollup-linux-*, @parcel/watcher-*), optional peers —
+        // behind try/catch. A build-time failure would kill the bundle
+        // before the fallback branch runs, so defer to a module that throws
+        // Node's own "Cannot find module" when the require executes. This
+        // covers relative specifiers too: `require('./missing.node')` hits
+        // the same MODULE_NOT_FOUND path in Node. A *bare* specifier whose
+        // package IS installed but whose exports shape we cannot follow
+        // still falls through to the esm.sh fallback below.
+        const notInstalled = isRelative || !findPackageDir(vfs, importerDir, barePackageName(path));
+        if (notInstalled) {
+          warnings?.push(
+            `"${id}" required by "${importer}" is not installed — deferring to a require-time MODULE_NOT_FOUND`,
+          );
+          return `${MISSING_MODULE_PREFIX}${id}`;
+        }
+      }
+    }
     if (!resolved && isRelative) {
       throw new Error(`Cannot resolve module "${id}" from "${importer || "<entry>"}"`);
     }
@@ -714,6 +972,16 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
   async load(id) {
     if (id.startsWith("bolo-empty-stub:")) {
       return { code: "export default {};", map: null };
+    }
+    if (id.startsWith(MISSING_MODULE_PREFIX)) {
+      const spec = id.slice(MISSING_MODULE_PREFIX.length);
+      return {
+        code:
+          `const err = new Error(${JSON.stringify(`Cannot find module '${spec}'`)});\n` +
+          `err.code = "MODULE_NOT_FOUND";\nthrow err;`,
+        map: null,
+        moduleSideEffects: "no-treeshake",
+      };
     }
     if (id.startsWith(NS_DEFAULT_PREFIX)) {
       // `export *` never re-exports a default, so the synthesized default is
@@ -727,7 +995,19 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
     // Only handle VFS paths; let other plugins (e.g. node-shim) handle their own virtual schemes.
     if (!id.startsWith("/")) return null;
     const ext = extname(id);
+    // Native addon binaries cannot run in the browser — return the empty
+    // module BEFORE reading the file as utf8 (a multi-MB .node blob as a
+    // string is waste) so loader chains degrade instead of dying on a
+    // binary PARSE_ERROR.
+    if (ext === ".node") {
+      warnings?.push(`"${id}" is a native addon — stubbed as an empty module (no browser build)`);
+      return { ...NATIVE_STUB };
+    }
     let contents = vfs.hot.readFileSync(id, "utf8") as string;
+    if (contents.includes("\0")) {
+      warnings?.push(`"${id}" is binary content — stubbed as an empty module (no browser build)`);
+      return { ...NATIVE_STUB };
+    }
     const resolveDir = dirname(id);
     if (ext === ".json") {
       try {
@@ -759,8 +1039,11 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
     const prelude =
       implicitGlobalDecl("__filename", JSON.stringify(id), contents) +
       implicitGlobalDecl("__dirname", JSON.stringify(resolveDir), contents);
+    // esbuild's dual-format wrapper hides the exports behind a param-shadowed
+    // `module` — append a default export of the captured api var (typescript).
+    const esbuildDefault = ext === ".js" ? esbuildWrapperDefaultExport(contents) : "";
     return {
-      code: (prelude ? prelude + "\n" : "") + contents,
+      code: (prelude ? prelude + "\n" : "") + contents + esbuildDefault,
       map: null,
       moduleSideEffects: "no-treeshake",
     };
@@ -779,12 +1062,17 @@ const esmShFallbackPlugin = (vfs: VfsBus, warnings: string[]): Plugin => ({
   name: "bolo-esm-sh-fallback",
   async resolveId(id, importer) {
     if (id.startsWith(".") || id.startsWith("/") || id.startsWith("#")) return null;
-    if (NODE_BUILTIN_NAMES.has(id)) return null;
     // Already a fully-qualified URL (e.g. package-runner.ts writes
     // `import x from 'https://esm.sh/axios'` directly) — leave it as-is
     // rather than treating "https:" as a bare package name and rebuilding
     // it through buildEsmShUrl, which doubles the esm.sh prefix.
     if (id.startsWith("https://") || id.startsWith("http://")) return { id, external: true };
+    // Any other scheme (`node:`, `jsr:`, `data:`, `blob:`, virtual ids) has
+    // no esm.sh equivalent — returning null lets rolldown report an honest
+    // unresolved-import error instead of fetching a garbage CDN URL. Bare
+    // builtin names without the `node:` prefix are covered by the set check.
+    if (id.includes(":")) return null;
+    if (NODE_BUILTIN_NAMES.has(id)) return null;
 
     const importerDir = importer ? dirname(importer) : "/";
     const isScoped = id.startsWith("@");
@@ -883,10 +1171,42 @@ const nodeAliasPlugin = (
       builtin === "console"
         ? BANNER_CONSOLE_KEYS
         : Object.keys(resolved.shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
-    const contents = shimModuleSource(builtin, keys, resolved.expr);
+    // Class-valued shim exports need the banner's `__bc_callCompat` wrapper
+    // so `require('events').EventEmitter.call(this)`-style legacy subclassing
+    // keeps working — see isClassValue above.
+    const shim = resolved.shim;
+    const selfIsClass = isClassValue(shim);
+    const classKeys = new Set<string>();
+    const selfKeys = new Set<string>();
+    for (const key of keys) {
+      const value = shim[key];
+      if (!isClassValue(value)) continue;
+      if (value === shim) selfKeys.add(key);
+      else classKeys.add(key);
+    }
+    const contents = shimModuleSource(builtin, keys, resolved.expr, {
+      classKeys,
+      selfKeys,
+      selfIsClass,
+      // Callable shims (assert) can't be shallow-copied into a plain object
+      // without losing callability — skip the module-object wrap for them.
+      moduleIsFunction: typeof (shim as unknown) === "function",
+    });
     return { code: contents, map: null };
   },
 });
+
+/** Per-key class-compat metadata for {@link shimModuleSource}. */
+export interface ShimClassCompat {
+  /** Export keys whose shim value is an ES class needing call-compat. */
+  readonly classKeys?: ReadonlySet<string>;
+  /** Export keys whose value IS the shim object itself (`events.EventEmitter === events`). */
+  readonly selfKeys?: ReadonlySet<string>;
+  /** The shim itself is an ES class — wrap default and module.exports. */
+  readonly selfIsClass?: boolean;
+  /** The shim is callable (assert) — a descriptor copy would lose callability. */
+  readonly moduleIsFunction?: boolean;
+}
 
 /**
  * Source of the virtual module that re-exports a container's live builtin
@@ -894,16 +1214,59 @@ const nodeAliasPlugin = (
  * normally a `__browserContainers.shims[...]` lookup, but subpath aliases read
  * one level deeper (`shims["fs"]["promises"]`) and `console` binds to the
  * banner global.
+ *
+ * `compat` marks class-valued shim exports for the banner's `__bc_callCompat`
+ * wrapper: unenv ships real ES classes where Node's originals are functions
+ * (EventEmitter), and bare `Ctor.call(this)` subclassing — the pattern
+ * readable-stream/winston still use — throws on a real class. The wrapper is
+ * emitted by GLOBALS_BANNER, so this source is only valid inside a bundle.
  */
-export const shimModuleSource = (builtin: string, keys: string[], shimExpr?: string): string =>
-  [
+export const shimModuleSource = (
+  builtin: string,
+  keys: string[],
+  shimExpr?: string,
+  compat?: ShimClassCompat,
+): string => {
+  const selfRef = compat?.selfIsClass ? "__self" : "__shim";
+  // Object-shaped shims with class-valued exports need the same treatment on
+  // the module object itself: `require('x').Klass.call(this)` reads the prop
+  // off module.exports, not off a named export. The copy preserves property
+  // descriptors (live getters stay live) and only swaps the class values for
+  // their call-compatible wrappers.
+  const classKeyList =
+    compat && !compat.selfIsClass && !compat.moduleIsFunction ? [...(compat.classKeys ?? [])] : [];
+  const moduleRef = classKeyList.length > 0 ? "__moduleExports" : selfRef;
+  return [
     `const __shim = ${shimExpr ?? registryShimExpr(builtin)};`,
-    "export default __shim;",
+    ...(compat?.selfIsClass ? ["const __self = __bc_callCompat(__shim);"] : []),
+    ...(classKeyList.length > 0
+      ? [
+          "const __moduleExports = {};",
+          "for (const __k of Reflect.ownKeys(__shim)) {",
+          "  const __d = Object.getOwnPropertyDescriptor(__shim, __k);",
+          "  if (__d) Object.defineProperty(__moduleExports, __k, __d);",
+          "}",
+          ...classKeyList.map(
+            (k) =>
+              `__moduleExports[${JSON.stringify(k)}] = __bc_callCompat(__shim[${JSON.stringify(k)}]);`,
+          ),
+        ]
+      : []),
+    `export default ${moduleRef};`,
     // Node's CJS interop: require('assert') is the shim itself, so callable
-    // builtins (assert, ...) work as `assert(cond)`.
-    'export { __shim as "module.exports" };',
-    ...keys.map((k) => `export const ${k} = __shim[${JSON.stringify(k)}];`),
+    // builtins (assert, ...) work as `assert(cond)`. For class shims this is
+    // the call-compatible wrapper, so `require('events')` stays both
+    // constructable and Ctor.call-able like Node's function constructor.
+    `export { ${moduleRef} as "module.exports" };`,
+    ...keys.map((k) => {
+      if (compat?.selfKeys?.has(k)) return `export const ${k} = __self;`;
+      if (compat?.classKeys?.has(k)) {
+        return `export const ${k} = __bc_callCompat(__shim[${JSON.stringify(k)}]);`;
+      }
+      return `export const ${k} = __shim[${JSON.stringify(k)}];`;
+    }),
   ].join("\n");
+};
 
 const jsrAliasPlugin = (): Plugin => ({
   name: "bolo-jsr-alias",
@@ -924,15 +1287,17 @@ export const bundleEntry = async (
 
   const warnings: string[] = [];
 
+  // One memoized VFS view for the whole build — see memoizeVfsHot.
+  const vfs = memoizeVfsHot(options.vfs);
   const bundle = await rolldown({
     input: entry,
     cwd: options.cwd ?? "/",
     treeshake: false,
     plugins: [
       jsrAliasPlugin(),
-      vfsPlugin(options.vfs, warnings),
+      vfsPlugin(vfs, warnings),
       nodeAliasPlugin(options.getShim, warnings),
-      esmShFallbackPlugin(options.vfs, warnings),
+      esmShFallbackPlugin(vfs, warnings),
     ],
     transform: {
       define: {

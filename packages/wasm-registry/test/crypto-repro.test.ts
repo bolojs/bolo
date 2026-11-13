@@ -22,62 +22,67 @@ import {
 describe("wasm-registry: real-package crypto repro", () => {
   // rolldown's WASM backend can hit "memory access out of bounds" under
   // heavy parallel load (observed on CI and in full-repo runs) — retry.
-  it("installs jsonwebtoken via PackageManager and signs/verifies a token", { retry: 2 }, async () => {
-    const vfs = new VfsBus();
-    vfs.hot.writeFileSync(
-      "/package.json",
-      JSON.stringify({ dependencies: { jsonwebtoken: "9.0.2" } }),
-    );
-    const pm = new PackageManager({ vfs, cwd: "/" });
-    await pm.install();
+  it(
+    "installs jsonwebtoken via PackageManager and signs/verifies a token",
+    { retry: 2 },
+    async () => {
+      const vfs = new VfsBus();
+      vfs.hot.writeFileSync(
+        "/package.json",
+        JSON.stringify({ dependencies: { jsonwebtoken: "9.0.2" } }),
+      );
+      const pm = new PackageManager({ vfs, cwd: "/" });
+      await pm.install();
 
-    const entry = `
+      const entry = `
       import jwt from 'jsonwebtoken';
       const token = jwt.sign({ sub: 'subject-42' }, 'secret', { algorithm: 'HS256' });
       const decoded = jwt.verify(token, 'secret');
       if (decoded.sub !== 'subject-42') throw new Error('decode mismatch: ' + decoded.sub);
       console.log('JWT_OK', decoded.sub);
     `;
-    vfs.hot.mkdirSync("/src", { recursive: true });
-    vfs.hot.writeFileSync("/src/entry.ts", entry);
+      vfs.hot.mkdirSync("/src", { recursive: true });
+      vfs.hot.writeFileSync("/src/entry.ts", entry);
 
-    const stdout: string[] = [];
-    const processShim = {
-      env: {},
-      argv: [],
-      version: "v20.0.0",
-      versions: { node: "20.0.0" },
-      platform: "browser",
-      nextTick: (cb: (...a: unknown[]) => void, ...args: unknown[]) =>
-        queueMicrotask(() => cb(...args)),
-      cwd: () => "/",
-      stdout: { write: (s: string) => stdout.push(s) },
-      stderr: { write: (s: string) => stdout.push(s) },
-    };
-    const shims: Record<string, unknown> = {
-      crypto: cryptoShim,
-      buffer: bufferShim,
-      util: utilShim,
-      stream: streamShim,
-      zlib: zlibShim,
-      events: eventsShim,
-      process: processShim,
-    };
+      const stdout: string[] = [];
+      const processShim = {
+        env: {},
+        argv: [],
+        version: "v20.0.0",
+        versions: { node: "20.0.0" },
+        platform: "browser",
+        nextTick: (cb: (...a: unknown[]) => void, ...args: unknown[]) =>
+          queueMicrotask(() => cb(...args)),
+        cwd: () => "/",
+        stdout: { write: (s: string) => stdout.push(s) },
+        stderr: { write: (s: string) => stdout.push(s) },
+      };
+      const shims: Record<string, unknown> = {
+        crypto: cryptoShim,
+        buffer: bufferShim,
+        util: utilShim,
+        stream: streamShim,
+        zlib: zlibShim,
+        events: eventsShim,
+        process: processShim,
+      };
 
-    const { code, warnings } = await bundleEntry("/src/entry.ts", {
-      vfs,
-      getShim: (builtin) => shims[builtin] as Record<string, unknown> | undefined,
-    });
+      const { code, warnings } = await bundleEntry("/src/entry.ts", {
+        vfs,
+        getShim: (builtin) => shims[builtin] as Record<string, unknown> | undefined,
+      });
 
-    expect(warnings).toEqual([]);
+      expect(warnings).toEqual([]);
 
-    (globalThis as unknown as { __browserContainers: unknown }).__browserContainers = { shims };
-    try {
-      await import(`data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`);
-    } finally {
-      delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
-    }
+      (globalThis as unknown as { __browserContainers: unknown }).__browserContainers = { shims };
+      try {
+        await import(`data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`);
+      } finally {
+        delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
+      }
 
-    expect(stdout.join("")).toContain("JWT_OK subject-42");
-  }, 120_000);
+      expect(stdout.join("")).toContain("JWT_OK subject-42");
+    },
+    120_000,
+  );
 });

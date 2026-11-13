@@ -53,7 +53,13 @@ declare global {
     __testResults: { module: string; results: TestResult[] }[] | null;
     __packageResults: PackageResult[] | null;
     /** Liveness + incremental-result channel for the CLI watchdog. */
-    __packageProgress: { current: string | null; startedAt: number; last?: string } | null;
+    __packageProgress: {
+      current: string | null;
+      startedAt: number;
+      last?: string;
+      /** Effective per-package deadline — lets the CLI watchdog match the runner. */
+      timeoutMs?: number;
+    } | null;
     /** Called by the runner after each package; the CLI forwards it to the partial JSONL. */
     [PARTIAL_CHANNEL]?: (result: PackageResult) => void;
     /** Publishes PARTIAL_CHANNEL so the CLI can discover it instead of hardcoding it. */
@@ -206,8 +212,8 @@ window.__runNodeTests = async (filter?: string) => {
 window.__runPackageMatrix = async (options?: { skip?: string[] }) => {
   const runner = new PackageMatrixRunner({
     skip: options?.skip ?? window.__packageSkip ?? undefined,
-    onPackageStart: (name) => {
-      window.__packageProgress = { current: name, startedAt: Date.now() };
+    onPackageStart: (name, timeoutMs) => {
+      window.__packageProgress = { current: name, startedAt: Date.now(), timeoutMs };
     },
     onResult: (result) => {
       window.__packageProgress = { current: null, startedAt: Date.now(), last: result.name };

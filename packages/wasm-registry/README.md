@@ -27,7 +27,9 @@ Register additional WASM tools (formatters, linters, other transpilers) via the 
 ```ts
 import { registerWasmTool } from "@bolojs/registry";
 
-registerWasmTool("my-tool", async (input) => { /* ... */ });
+registerWasmTool("my-tool", async (input) => {
+  /* ... */
+});
 ```
 
 ## Docs

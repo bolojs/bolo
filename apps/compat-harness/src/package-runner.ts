@@ -1,6 +1,22 @@
 import packageMatrix from "./package-matrix.json" with { type: "json" };
+import packageExpectations from "./package-expectations.json" with { type: "json" };
 import type { CompatHarness } from "./main.js";
 import { classifyPackageProbe } from "./classify.js";
+
+/**
+ * Structured native/WASM classification for packages that cannot run
+ * as-is in the browser (src/package-expectations.json):
+ * - lane A: expected to work; a failure is an interop bug to fix.
+ * - lane B: needs the WASM loader tracked in #149 (or a WASM alternative).
+ * - lane C: unsupported native lane; no browser/WASM story exists.
+ */
+export interface PackageExpectation {
+  lane: "A" | "B" | "C";
+  reason: string;
+  remediation: string;
+}
+
+const EXPECTATIONS = packageExpectations as unknown as Record<string, PackageExpectation>;
 
 export interface PackageResult {
   name: string;
@@ -10,6 +26,8 @@ export interface PackageResult {
   /** Full combined stdout+stderr of the probe (and install) — kept for passes too. */
   output?: string;
   duration?: number;
+  /** Native/WASM lane classification, when the package has one. */
+  expectation?: PackageExpectation;
 }
 
 export interface PackageEntry {
@@ -147,7 +165,7 @@ export class PackageMatrixRunner {
   private readonly packageTimeoutMs: number;
   private readonly isolation: "fresh-boot" | "shared";
   private readonly onResult: ((result: PackageResult) => void) | undefined;
-  private readonly onPackageStart: ((name: string) => void) | undefined;
+  private readonly onPackageStart: ((name: string, timeoutMs: number) => void) | undefined;
   private readonly skip: Set<string>;
 
   constructor(
@@ -158,8 +176,10 @@ export class PackageMatrixRunner {
       matrix?: PackageMatrix;
       /** Called after every finished package, so the caller can persist progress incrementally. */
       onResult?: (result: PackageResult) => void;
-      /** Called just before a package starts, so the caller can track liveness. */
-      onPackageStart?: (name: string) => void;
+      /** Called just before a package starts, so the caller can track liveness.
+       * `timeoutMs` is the effective per-package deadline (entry override or the
+       * runner default) so watchdogs don't kill long-but-honest packages early. */
+      onPackageStart?: (name: string, timeoutMs: number) => void;
       /** Package names to skip: already completed by an earlier (killed) run. */
       skip?: Iterable<string>;
     } = {},
@@ -181,8 +201,10 @@ export class PackageMatrixRunner {
     const results: PackageResult[] = [];
     for (const pkg of this.matrix.packages) {
       if (this.skip.has(pkg.name)) continue;
-      this.onPackageStart?.(pkg.name);
+      this.onPackageStart?.(pkg.name, pkg.timeoutMs ?? this.packageTimeoutMs);
       const result = await this.runOne(pkg);
+      const expectation = EXPECTATIONS[pkg.name];
+      if (expectation) result.expectation = expectation;
       results.push(result);
       this.onResult?.(result);
     }

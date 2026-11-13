@@ -2,9 +2,26 @@
   "name": "@bolojs/registry",
   "version": "0.3.0",
   "description": "In-browser bundler (rolldown + oxc-transform) with a registerWasmTool() extension seam for bolo.",
+  "homepage": "https://bolojs.dev/docs/api/#extending-bolo",
+  "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/wasm-registry"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -14,10 +31,10 @@
   },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
-    "@bolojs/pm": "workspace:*",
     "@bolojs/fs": "workspace:*",
-    "@rolldown/browser": "^1.1.5",
+    "@bolojs/pm": "workspace:*",
     "@oxc-transform/binding-wasm32-wasi": "0.140.0",
+    "@rolldown/browser": "^1.1.5",
     "oxc-transform": "^0.140.0"
   },
   "devDependencies": {
@@ -26,23 +43,6 @@
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   },
-  "license": "Apache-2.0",
-  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bolojs/bolo.git",
-    "directory": "packages/wasm-registry"
-  },
-  "homepage": "https://bolojs.dev/docs/api/#extending-bolo",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "!dist/**/*.test.*",
-    "!dist/**/*.test.*.map"
-  ],
   "engines": {
     "node": ">=24.0.0"
   }

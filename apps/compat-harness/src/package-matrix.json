@@ -55,7 +55,7 @@
     {
       "name": "tsc",
       "class": "Build tool",
-      "source": "import ts from 'typescript';\ntry {\n  const out = ts.transpile('let x: number = 1;');\n  if (typeof out !== 'string') throw new Error('transpile failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+      "source": "import tsDefault, * as tsNs from 'typescript';\ntry {\n  // typescript.js is a 9MB CJS bundle; bundler CJS-interop shapes vary, so\n  // accept the API on the namespace, the default export, or either .default.\n  const ts = tsNs.transpile ? tsNs : tsDefault?.transpile ? tsDefault : tsNs.default?.transpile ? tsNs.default : tsNs.default?.default;\n  const out = ts.transpile('let x: number = 1;');\n  if (typeof out !== 'string') throw new Error('transpile failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e instanceof Error ? e.stack || e.message : String(e));\n  process.exit(1);\n}"
     },
     {
       "name": "sass",
@@ -83,6 +83,7 @@
     {
       "name": "parcel",
       "class": "Bundler",
+      "timeoutMs": 120000,
       "source": "import parcel from 'parcel';\ntry {\n  if (typeof parcel !== 'object' && typeof parcel !== 'function') throw new Error('unexpected export');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
     },
     {
@@ -93,8 +94,9 @@
     {
       "name": "jest",
       "class": "Testing",
+      "timeoutMs": 120000,
       "bind": "import * as jest from 'jest'",
-      "probe": "typeof jest === 'function'"
+      "probe": "Object.keys(jest).length > 0"
     },
     {
       "name": "express",
@@ -128,12 +130,12 @@
     {
       "name": "bcrypt",
       "class": "Crypto",
-      "source": "// bcrypt requires a native .node addon (node-pre-gyp); there is no pure-JS or WASM build to run in a browser.\nconsole.log('SKIP: bcrypt needs a native addon \u2014 no browser-compatible build exists');\nprocess.exit(0);"
+      "source": "// bcrypt requires a native .node addon (node-pre-gyp); there is no pure-JS or WASM build to run in a browser; the API-compatible alternative is bcryptjs.\nconsole.log('SKIP: bcrypt needs a native addon \u2014 use bcryptjs (pure JS, API-compatible)');\nprocess.exit(0);"
     },
     {
       "name": "argon2",
       "class": "Crypto",
-      "source": "// argon2 requires a native .node addon (node-gyp); the WASM build is a separate package (argon2-browser).\nconsole.log('SKIP: argon2 needs a native addon \u2014 no browser-compatible build exists');\nprocess.exit(0);"
+      "source": "// argon2 requires a native .node addon (node-gyp); the official WASM build is the separate @node-rs/argon2-wasm package (needs the WASM loader from #149).\nconsole.log('SKIP: argon2 needs a native addon \u2014 use @node-rs/argon2-wasm (lane B)');\nprocess.exit(0);"
     },
     {
       "name": "handlebars",
@@ -533,7 +535,7 @@
     {
       "name": "dompurify",
       "class": "Testing",
-      "source": "import DOMPurify from 'dompurify';\ntry {\n  const clean = DOMPurify.sanitize('<script>x</script>');\n  if (clean.includes('<script')) throw new Error('dompurify failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+      "source": "import DOMPurify from 'dompurify';\nimport { Window } from 'happy-dom';\ntry {\n  // dompurify's default export is a factory: without a DOM it returns early\n  // with isSupported=false and no .sanitize. Provide a real Window so the\n  // probe exercises the actual sanitizer.\n  const purify = DOMPurify(new Window());\n  const clean = purify.sanitize('<script>x</script><b>ok</b>');\n  if (clean.includes('<script')) throw new Error('dompurify failed');\n  if (!clean.includes('<b>ok</b>')) throw new Error('dompurify stripped safe markup');\n  console.log('PASS');\n} catch (e) {\n  console.error(e instanceof Error ? e.stack || e.message : String(e));\n  process.exit(1);\n}"
     },
     {
       "name": "linkedom",

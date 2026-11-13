@@ -322,6 +322,20 @@ const init = (emitter: { _events?: unknown; _eventsCount?: number }): void => {
   }
 };
 
+// Node defines `EventEmitter.prototype.on` as the *same function object* as
+// `addListener` — `on` does not dispatch through `this.addListener`. unenv
+// keeps them separate, with `on` calling `this.addListener(...)`. That breaks
+// legacy stream subclasses (readable-stream's `Readable.prototype.on` calls
+// `Stream.prototype.on.call(this)` while aliasing `addListener` back to `on`):
+// the dispatch ping-pongs `on → addListener → on` until the stack overflows.
+// Re-alias so `on` runs the base registration directly, matching Node.
+const addListenerImpl = _EventEmitter.prototype.addListener;
+Object.defineProperty(_EventEmitter.prototype, "on", {
+  value: addListenerImpl,
+  writable: true,
+  configurable: true,
+});
+
 // Several of these names exist on unenv's class as getter-only statics —
 // `Object.assign` would throw `Cannot set property … which has only a
 // getter`. defineProperties redefines them as enumerable data properties.
