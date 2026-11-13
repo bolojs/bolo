@@ -319,6 +319,86 @@ describe("fs shim", () => {
     await shim.rmdir(dir2);
   });
 
+  it("mkdir validates options.recursive synchronously like Node", () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    for (const recursive of ["", 1, {}, [], null, Symbol("test"), () => {}]) {
+      expect(() => shim.mkdir("/x", { recursive } as never, () => {})).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+      );
+      expect(() => shim.mkdirSync("/x", { recursive } as never)).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+      );
+    }
+    // undefined is allowed (option absent).
+    expect(() => shim.mkdirSync("/x", { recursive: undefined } as never)).not.toThrow();
+  });
+
+  it("recursive mkdir returns the first created path", async () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    // All folders new → shallowest missing segment.
+    expect(await shim.mkdir("/a/b/c", { recursive: true })).toBe("/a");
+    expect(shim.existsSync("/a/b/c")).toBe(true);
+    // Only the middle segment is new → the shallowest missing segment.
+    shim.mkdirSync("/d");
+    expect(await shim.mkdir("/d/e/f", { recursive: true })).toBe("/d/e");
+    // Nothing new → undefined.
+    expect(await shim.mkdir("/d/e/f", { recursive: true })).toBeUndefined();
+    // Sync + callback forms agree.
+    expect(shim.mkdirSync("/g/h", { recursive: true })).toBe("/g");
+    const viaCb = await new Promise<string | undefined>((resolve, reject) => {
+      shim.mkdir("/i/j", { recursive: true }, (err: unknown, p?: string) =>
+        err ? reject(err) : resolve(p),
+      );
+    });
+    expect(viaCb).toBe("/i");
+    // promises.mkdir resolves with it too.
+    expect(await shim.promises.mkdir("/k/l", { recursive: true })).toBe("/k");
+    // Non-recursive mkdir returns undefined.
+    expect(await shim.mkdir("/m")).toBeUndefined();
+    expect(shim.mkdirSync("/n")).toBeUndefined();
+  });
+
+  it("writeFile with a read-only flag fails with EBADF", async () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    shim.writeFileSync("/ro.txt", "data");
+    await expect(shim.writeFile("/ro.txt", "x", { flag: "r" })).rejects.toMatchObject({
+      code: "EBADF",
+    });
+    await new Promise<void>((resolve) => {
+      shim.writeFile("/ro.txt", "x", { flag: "r" }, (err: unknown) => {
+        expect((err as { code?: string }).code).toBe("EBADF");
+        resolve();
+      });
+    });
+    expect(() => shim.writeFileSync("/ro.txt", "x", { flag: "r" })).toThrowError(
+      expect.objectContaining({ code: "EBADF" }),
+    );
+    // Writable flags still work ('w' truncates like Node).
+    await shim.writeFile("/ro.txt", "y", { flag: "w" });
+    expect(shim.readFileSync("/ro.txt", "utf8")).toBe("y");
+    // fd writes ignore the flag contract (fd already open).
+    const fd = shim.openSync("/ro.txt", "r+");
+    await shim.writeFile(fd, "z");
+    shim.closeSync(fd);
+    expect(shim.readFileSync("/ro.txt", "utf8")).toBe("z");
+  });
+
+  it("statfsSync reports bounded free space (in-memory VFS cannot back GiB files)", () => {
+    const vfs = new VfsBus();
+    const shim = createFsShim(vfs);
+
+    const stats = shim.statfsSync("/") as { bavail: number; bsize: number; blocks: number };
+    expect(stats.bavail * stats.bsize).toBeLessThanOrEqual(1024 * 1024 * 1024);
+    expect(stats.bsize).toBeGreaterThan(0);
+    expect(stats.blocks).toBeGreaterThan(0);
+  });
+
   it("cp/cpSync copy recursively and statfs reports filesystem stats", async () => {
     const vfs = new VfsBus();
     const shim = createFsShim(vfs);
