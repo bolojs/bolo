@@ -12,6 +12,13 @@ export const PENDING_STATUS = "pending";
 
 export const PENDING_NOTE = "Under re-validation";
 
+// "unsupported" = won't work in the browser: every remaining failure is
+// platform-bound (lane C, no browser-faithful mapping) or the package has no
+// browser-compatible build at all. Rendered grey, distinct from fixable red.
+export const UNSUPPORTED_STATUS = "unsupported";
+
+export const UNSUPPORTED_NOTE = "Won't work in the browser";
+
 export const isValidated = (nodeCompat, packageMatrix) =>
   nodeCompat?.validated === true && packageMatrix?.validated === true;
 

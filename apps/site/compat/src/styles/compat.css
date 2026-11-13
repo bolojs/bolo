@@ -5,6 +5,8 @@
   --partial-bg: #fef9c3;
   --fail: #ef4444;
   --fail-bg: #fee2e2;
+  --unsupported: #6b7280;
+  --unsupported-bg: #e5e7eb;
   --unknown: #a3a3a3;
   --unknown-bg: #f5f5f5;
 }
@@ -16,6 +18,8 @@
   --partial-bg: #713f12;
   --fail: #f87171;
   --fail-bg: #7f1d1d;
+  --unsupported: #9ca3af;
+  --unsupported-bg: #1f2937;
   --unknown: #737373;
   --unknown-bg: #262626;
 }
@@ -589,9 +593,15 @@ body {
 
 .search-command-field {
   width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
 }
 
 .search-command-input-wrap {
+  flex: 1 1 16rem;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -660,6 +670,81 @@ body {
   pointer-events: none;
 }
 
+/* Filter controls share the search row (right side); they wrap below the
+   input on narrow screens rather than overflowing. */
+.search-command-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.search-command-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.search-command-filter:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+}
+
+.search-command-filter.is-active {
+  color: var(--fg);
+  border-color: var(--fg);
+  background: var(--border);
+}
+
+.search-command-filter:focus-visible,
+.search-command-clear:focus-visible,
+.search-command-btn:focus-visible,
+.search-command-row:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.search-command-filters-sep {
+  width: 1px;
+  height: 0.875rem;
+  background: var(--border);
+  margin-inline: 0.25rem;
+}
+
+.search-command-clear {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.search-command-clear:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+}
+
 .search-command-results {
   width: 100%;
   margin-top: 1.25rem;
@@ -683,10 +768,6 @@ body {
   transition: opacity 0.2s ease;
 }
 
-.search-command-matches[hidden] {
-  display: none;
-}
-
 .search-command-item {
   border-bottom: 1px solid var(--border);
   transition: background-color 0.15s ease;
@@ -696,12 +777,55 @@ body {
   background-color: var(--border);
 }
 
-.search-command-link {
+.search-command-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  width: 100%;
   padding: 1rem 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-command-name-wrap .search-command-dot {
+  flex-shrink: 0;
+}
+
+.search-command-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.search-command-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.search-command-btn:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+  text-decoration: none;
 }
 
 .search-command-name {
@@ -761,6 +885,10 @@ body {
 
 .search-command-dot.status-fail {
   background: var(--fail);
+}
+
+.search-command-dot.status-unsupported {
+  background: var(--unsupported);
 }
 
 .search-command-dot.status-pending {
@@ -868,7 +996,7 @@ body {
     padding-inline: 0;
   }
 
-  .search-command-link {
+  .search-command-row {
     padding: 0.75rem 0;
   }
 
@@ -969,6 +1097,17 @@ body {
 .hover-card-badge.status-fail {
   background: var(--fail-bg);
   color: var(--fail);
+}
+
+.hover-card-badge.status-unsupported {
+  background: var(--unsupported-bg);
+  color: var(--unsupported);
+}
+
+.hover-card-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
 }
 
 .hover-card-category {

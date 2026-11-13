@@ -1,7 +1,14 @@
 import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isValidated, rowStatus, PENDING_STATUS, PENDING_NOTE } from "./status.js";
+import {
+  isValidated,
+  rowStatus,
+  PENDING_STATUS,
+  PENDING_NOTE,
+  UNSUPPORTED_STATUS,
+  UNSUPPORTED_NOTE,
+} from "./status.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sourceDir = join(__dirname, "..", "..", "landing", "public", "results");
@@ -14,6 +21,41 @@ const nodeCompat = JSON.parse(readFileSync(join(sourceDir, "node-compat.json"), 
 const packageMatrix = JSON.parse(readFileSync(join(sourceDir, "package-matrix.json"), "utf8"));
 const tools = JSON.parse(readFileSync(join(sourceDir, "tools.json"), "utf8"));
 const validated = isValidated(nodeCompat, packageMatrix);
+
+// Lane ledgers live with the harness that produces the results. They are the
+// authority for "won't work in the browser" classification: lane C means no
+// browser-faithful mapping exists, so red "fail" would be misleading.
+const harnessSrcDir = join(__dirname, "..", "..", "..", "compat-harness", "src");
+const nodeExpectations = JSON.parse(
+  readFileSync(join(harnessSrcDir, "expectations.json"), "utf8"),
+);
+const packageExpectations = JSON.parse(
+  readFileSync(join(harnessSrcDir, "package-expectations.json"), "utf8"),
+);
+
+// node-compat.json test entries carry only the basename; ledger keys are full
+// paths, so index the ledger by basename for fallback lookups.
+const laneByTestFile = new Map(
+  Object.entries(nodeExpectations).map(([file, entry]) => [
+    file.split("/").pop(),
+    entry?.lane,
+  ]),
+);
+
+const testLane = (t) => t.expectedFail?.lane ?? laneByTestFile.get(t.file);
+
+// A node-core module is "unsupported" when it has at least one failing test
+// and EVERY failing test is lane C — i.e. it has no fixable gap left. Modules
+// with any lane A/B (shim bug / unbuilt seam) or unlisted failure stay red.
+const moduleIsUnsupported = (mod) => {
+  const failures = (mod.tests ?? []).filter((t) => t.status === "fail");
+  return failures.length > 0 && failures.every((t) => testLane(t) === "C");
+};
+
+// npm packages the harness skipped with an explicit "no browser-compatible
+// build" verdict and no tool/WASM story overriding them are genuinely
+// impossible in-browser (native-only addons, node-gyp-only packages).
+const NO_BROWSER_BUILD = /no browser-compatible build exists/i;
 
 const nodeMap = new Map(nodeCompat.modules.map((m) => [m.name, m]));
 const pkgMap = new Map(packageMatrix.packages.map((p) => [p.name, p]));
@@ -183,6 +225,8 @@ function cellFromStatus(status, source) {
       return { status: "fail", note: source === "tool" ? "Not browser ready" : "Not supported" };
     case PENDING_STATUS:
       return { status: PENDING_STATUS, note: PENDING_NOTE };
+    case UNSUPPORTED_STATUS:
+      return { status: UNSUPPORTED_STATUS, note: UNSUPPORTED_NOTE };
     default:
       return { status: "unknown", note: "No data" };
   }
@@ -292,6 +336,16 @@ function makeRow(spec) {
   } else if (mod) {
     status = coreStatus(mod);
     source = "core";
+  }
+
+  // "Won't work" override: applied before the pending gate so unvalidated
+  // harness data still shows "under re-validation" rather than a verdict.
+  if (source === "core" && mod && moduleIsUnsupported(mod)) {
+    status = UNSUPPORTED_STATUS;
+  } else if (packageExpectations[spec.name]?.lane === "C") {
+    status = UNSUPPORTED_STATUS;
+  } else if (!tool && pkg?.status === "skip" && NO_BROWSER_BUILD.test(pkg.output ?? "")) {
+    status = UNSUPPORTED_STATUS;
   }
 
   status = rowStatus(validated, { tool, pkg, mod }, status);
