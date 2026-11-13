@@ -1,4 +1,5 @@
 import type { VfsBus } from "@bolojs/fs";
+import { unsupportedError } from "@bolojs/node-web-shims";
 
 // Same list `unenv/node/module` ships (`builtinModules`), kept in sync with
 // its https://github.com/unjs/unenv source rather than importing it, since
@@ -118,12 +119,14 @@ export const createModuleShim = (options: ModuleShimOptions) => {
         if (shim !== undefined) return shim;
 
         if (PLUGGABLE_BUILTIN_NAMES.includes(bare)) {
-          throw new Error(
+          throw unsupportedError(
+            `${bare.toUpperCase()}_BACKEND`,
             `require("${specifier}") has no browser implementation built in. ` +
               `Register a custom backend: createLiveShimRegistry({ ${bare}Backend: yourImpl })`,
           );
         }
-        throw new Error(
+        throw unsupportedError(
+          "NODE_BUILTIN",
           `require("${specifier}") has no browser shim registered for node builtin "${bare}".`,
         );
       }
@@ -131,7 +134,8 @@ export const createModuleShim = (options: ModuleShimOptions) => {
       // Native addon (.node)
       if (specifier.endsWith(".node") && (specifier.startsWith(".") || specifier.startsWith("/"))) {
         if (!nativeAddonLoader) {
-          throw new Error(
+          throw unsupportedError(
+            "NATIVE_ADDON_LOADER",
             `require("${specifier}") is a native addon. Pass nativeAddonLoader to ` +
               `createLiveShimRegistry to handle .node imports.`,
           );
@@ -152,7 +156,8 @@ export const createModuleShim = (options: ModuleShimOptions) => {
         return JSON.parse(vfs.hot.readFileSync(resolved, "utf8") as string);
       }
 
-      throw new Error(
+      throw unsupportedError(
+        "DYNAMIC_REQUIRE",
         `require("${specifier}") is not supported: dynamic require() of npm packages is not available in ` +
           "the browser runtime after bundling. Use a static `import` instead.",
       );
@@ -165,7 +170,8 @@ export const createModuleShim = (options: ModuleShimOptions) => {
         if (specifier.startsWith(".") || specifier.startsWith("/")) {
           return specifier.startsWith("/") ? specifier : joinPath(dirname(filename), specifier);
         }
-        throw new Error(
+        throw unsupportedError(
+          "REQUIRE_RESOLVE",
           `require.resolve("${specifier}") is not supported for npm packages post-bundle.`,
         );
       },

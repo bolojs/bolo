@@ -125,6 +125,20 @@ describe("child_process shim", () => {
     expect(() => shim.spawnSync("true")).toThrow(/not supported/);
   });
 
+  it("sync child_process errors carry the ERR_BOL_UNSUPPORTED_SPAWN_SYNC seam code", () => {
+    const shim = createChildProcessShim();
+    const codeOf = (fn: () => unknown): string | undefined => {
+      try {
+        fn();
+      } catch (e) {
+        return (e as { code?: string }).code;
+      }
+      return undefined;
+    };
+    expect(codeOf(() => shim.spawnSync("true"))).toBe("ERR_BOL_UNSUPPORTED_SPAWN_SYNC");
+    expect(codeOf(() => shim.execSync("true"))).toBe("ERR_BOL_UNSUPPORTED_SPAWN_SYNC");
+  });
+
   it("execFile dispatches file + argv and reports stdout via callback", async () => {
     const calls: Array<{ cmd: string; args: string[] }> = [];
     const registry = {

@@ -1,4 +1,9 @@
-import { createEventsShim, createStreamShim, createBufferShim } from "@bolojs/node-web-shims";
+import {
+  createEventsShim,
+  createStreamShim,
+  createBufferShim,
+  unsupportedError,
+} from "@bolojs/node-web-shims";
 import { UV_ENOBUFS } from "./errno.js";
 
 const { EventEmitter } = createEventsShim();
@@ -362,11 +367,16 @@ export const createChildProcessShim = (
     args?: string[] | Record<string, unknown>,
     options?: Record<string, unknown>,
   ): ChildProcess => {
-    if (!createWorker) throw new Error(FORK_NOT_SUPPORTED);
+    if (!createWorker) throw unsupportedError("SPAWN_PROCESS", FORK_NOT_SUPPORTED);
     const argv = toArgv(Array.isArray(args) ? args : []);
     const forkOptions = args && !Array.isArray(args) ? args : options;
     const worker = createWorker(modulePath, argv, envFrom(forkOptions), cwdFrom(forkOptions));
-    if (!worker) throw new Error(`createWorker returned no worker for ${modulePath}`);
+    if (!worker) {
+      throw unsupportedError(
+        "SPAWN_PROCESS",
+        `createWorker returned no worker for ${modulePath}`,
+      );
+    }
     const child = new WorkerChildProcessImpl(worker);
     child.spawnfile = "node";
     child.spawnargs = ["node", modulePath, ...argv];
@@ -556,7 +566,7 @@ export const createChildProcessShim = (
   };
 
   const runSyncOrThrow = (req: SyncRunRequest): SyncRunResult => {
-    if (!runSync) throw new Error(SYNC_NOT_SUPPORTED);
+    if (!runSync) throw unsupportedError("SPAWN_SYNC", SYNC_NOT_SUPPORTED);
     return runSync(req);
   };
 

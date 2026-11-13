@@ -27,12 +27,12 @@ describe("node-web-shims: inspector", () => {
     );
   });
 
-  it("open with a valid port fails honestly with ERR_NOT_IMPLEMENTED (no debug port in the browser)", () => {
+  it("open with a valid port fails honestly with ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND (no debug port in the browser)", () => {
     expect(() => open(0, undefined, false)).toThrowError(
-      expect.objectContaining({ code: "ERR_NOT_IMPLEMENTED" }),
+      expect.objectContaining({ code: "ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND" }),
     );
     expect(() => open()).toThrowError(
-      expect.objectContaining({ code: "ERR_NOT_IMPLEMENTED" }),
+      expect.objectContaining({ code: "ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND" }),
     );
   });
 
@@ -80,7 +80,7 @@ describe("node-web-shims: inspector", () => {
     );
   });
 
-  it("Session.post invokes the callback asynchronously with ERR_NOT_IMPLEMENTED", async () => {
+  it("Session.post invokes the callback asynchronously with ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND", async () => {
     const session = new Session();
     session.connect();
     let sync = true;
@@ -90,7 +90,7 @@ describe("node-web-shims: inspector", () => {
     });
     expect(sync).toBe(false);
     expect(error).toBeInstanceOf(Error);
-    expect((error as unknown as { code?: string }).code).toBe("ERR_NOT_IMPLEMENTED");
+    expect((error as unknown as { code?: string }).code).toBe("ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND");
   });
 
   it("default export exposes the module surface", () => {

@@ -189,8 +189,12 @@ function cellFromStatus(status, source) {
 }
 
 function coreStatus(module) {
-  if (module.passed === module.total) return "pass";
-  if (module.passed === 0) return "fail";
+  // `expectedFail` counts lane-C platform-bound failures only: they have no
+  // browser-faithful mapping, so they neither help nor hurt the fixable-gap
+  // score. Lane A (shim bugs) and lane B (unbuilt seam work) still count.
+  const fixableTotal = module.total - (module.expectedFail ?? 0);
+  if (module.passed === fixableTotal) return fixableTotal === 0 ? "partial" : "pass";
+  if (module.passed === 0 && fixableTotal > 0) return "fail";
   return "partial";
 }
 
@@ -248,8 +252,19 @@ function makeDetails(row, pending) {
     details.raw = JSON.stringify(pkg, null, 2);
   } else if (mod) {
     details.features.push(`${mod.passed}/${mod.total} tests passed`);
+    if (mod.expectedFail) {
+      details.features.push(
+        `${mod.expectedFail} platform-bound expected failures (lane C, no browser-faithful mapping)`,
+      );
+    }
     details.knownIssues.push(
-      ...mod.tests.filter((t) => t.status !== "pass").map((t) => `${t.file}: ${t.error}`),
+      ...mod.tests
+        .filter((t) => t.status !== "pass")
+        .map(
+          (t) =>
+            `${t.expectedFail ? `[lane ${t.expectedFail.lane}] ` : ""}${t.file}: ${t.error}` +
+            (t.unexpectedPass ? " (STALE expected-fail — passed anyway)" : ""),
+        ),
     );
     if (details.knownIssues.length === 0) details.knownIssues = ["No known issues"];
     details.raw = JSON.stringify(mod.tests, null, 2);

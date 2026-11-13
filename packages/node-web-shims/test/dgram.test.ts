@@ -107,7 +107,7 @@ describe("node-web-shims: dgram", () => {
   // Mirrors test-dgram-send-callback-buffer-empty-address.js's contract:
   // send failures are reported through the callback, asynchronously, never
   // thrown synchronously.
-  it("send() reports ERR_NOT_IMPLEMENTED through the callback asynchronously", async () => {
+  it("send() reports ERR_BOL_UNSUPPORTED_DGRAM_BACKEND through the callback asynchronously", async () => {
     const dgram = createDgramShim();
     const client = dgram.createSocket("udp4");
     client.bind(0);
@@ -122,7 +122,7 @@ describe("node-web-shims: dgram", () => {
       sync = false;
     });
     expect((error as Error & { firedSynchronously: boolean }).firedSynchronously).toBe(false);
-    expect(error).toMatchObject({ code: "ERR_NOT_IMPLEMENTED" });
+    expect(error).toMatchObject({ code: "ERR_BOL_UNSUPPORTED_DGRAM_BACKEND" });
     client.close();
   });
 
@@ -137,19 +137,19 @@ describe("node-web-shims: dgram", () => {
     socket.close();
   });
 
-  it("ref()/unref() are chainable no-ops; tuning methods throw ERR_NOT_IMPLEMENTED", () => {
+  it("ref()/unref() are chainable no-ops; tuning methods throw ERR_BOL_UNSUPPORTED_DGRAM_BACKEND", () => {
     const dgram = createDgramShim();
     const socket = dgram.createSocket("udp4");
     expect(socket.ref()).toBe(socket);
     expect(socket.unref()).toBe(socket);
     expect(() => socket.setTTL(64)).toThrowError(
-      expect.objectContaining({ code: "ERR_NOT_IMPLEMENTED" }) as Error,
+      expect.objectContaining({ code: "ERR_BOL_UNSUPPORTED_DGRAM_BACKEND" }) as Error,
     );
     expect(() => socket.addMembership("224.0.0.1")).toThrowError(
-      expect.objectContaining({ code: "ERR_NOT_IMPLEMENTED" }) as Error,
+      expect.objectContaining({ code: "ERR_BOL_UNSUPPORTED_DGRAM_BACKEND" }) as Error,
     );
     expect(() => socket.setBroadcast(true)).toThrowError(
-      expect.objectContaining({ code: "ERR_NOT_IMPLEMENTED" }) as Error,
+      expect.objectContaining({ code: "ERR_BOL_UNSUPPORTED_DGRAM_BACKEND" }) as Error,
     );
   });
 });

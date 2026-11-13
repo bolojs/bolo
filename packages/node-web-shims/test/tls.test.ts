@@ -103,22 +103,22 @@ describe("node-web-shims: tls", () => {
     expect(tls.checkServerIdentity("example.com", { subject: { CN: "example.com" } })).toBeUndefined();
   });
 
-  it("connect() validates arguments then throws ERR_NOT_IMPLEMENTED", () => {
+  it("connect() validates arguments then throws ERR_BOL_UNSUPPORTED_TLS_BACKEND", () => {
     const tls = createTlsShim();
     expect(() => tls.connect(443, "example.com")).toThrowError(
-      expect.objectContaining({ code: "ERR_NOT_IMPLEMENTED" }) as Error,
+      expect.objectContaining({ code: "ERR_BOL_UNSUPPORTED_TLS_BACKEND" }) as Error,
     );
     expect(() => tls.connect(99999)).toThrowError(
       expect.objectContaining({ code: "ERR_SOCKET_BAD_PORT" }) as Error,
     );
   });
 
-  it("createServer() returns a Server whose listen() throws ERR_NOT_IMPLEMENTED", () => {
+  it("createServer() returns a Server whose listen() throws ERR_BOL_UNSUPPORTED_TLS_BACKEND", () => {
     const tls = createTlsShim();
     const server = tls.createServer({});
     expect(server).toBeDefined();
     expect(() => server.listen(443)).toThrowError(
-      expect.objectContaining({ code: "ERR_NOT_IMPLEMENTED" }) as Error,
+      expect.objectContaining({ code: "ERR_BOL_UNSUPPORTED_TLS_BACKEND" }) as Error,
     );
   });
 });

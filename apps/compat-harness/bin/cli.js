@@ -455,6 +455,19 @@ const main = async () => {
     let output;
     if (options.mode === "node-tests") {
       const modules = await page.evaluate((f) => window.__runNodeTests(f), options.tests);
+      // A ledger entry that now passes is stale: the fix landed (or the entry
+      // was wrong). Loud on stderr so nobody debugs a ghost expectation.
+      const stale = modules.flatMap((m) =>
+        m.results
+          .filter((r) => r.unexpectedPass)
+          .map((r) => `${m.module}/${r.file} [lane ${r.expectedFail?.lane ?? "?"}]`),
+      );
+      if (stale.length > 0) {
+        console.error(
+          `ALARM: ${stale.length} expected-fail ledger entries now pass (stale expectations):`,
+        );
+        for (const s of stale) console.error(`  ${s}`);
+      }
       output = toNodeCompatReport(modules, { nodeVersion: await readNodeVersion() });
       if (options.rawOutput) {
         await writeFile(options.rawOutput, JSON.stringify(modules, null, 2) + "\n");

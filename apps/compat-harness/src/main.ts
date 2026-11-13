@@ -177,12 +177,25 @@ window.__runNodeTests = async (filter?: string) => {
   const results = await runner.runAll(filter ? new RegExp(filter) : undefined);
   await runner.teardown();
   window.__testResults = results;
+  // A ledger entry that now passes is stale: the fix landed (or the entry was
+  // wrong). Alarm loudly so expectations.json gets updated instead of rotting.
+  const stale = results.flatMap((m) =>
+    m.results
+      .filter((r) => r.unexpectedPass)
+      .map((r) => `${m.module}/${r.file} [lane ${r.expectedFail?.lane}]`),
+  );
+  if (stale.length > 0) {
+    console.warn(
+      `STALE EXPECTED-FAIL: ${stale.length} ledger entries passed — remove them from src/expectations.json:\n  ${stale.join("\n  ")}`,
+    );
+  }
   console.table(
     results.flatMap((m) =>
       m.results.map((r) => ({
         module: m.module,
         file: r.file.split("/").pop() ?? r.file,
-        status: r.status,
+        status: r.unexpectedPass ? `${r.status} (stale expected-fail)` : r.status,
+        lane: r.expectedFail?.lane ?? "",
         duration: r.duration ? `${r.duration.toFixed(0)}ms` : "n/a",
       })),
     ),
@@ -233,7 +246,9 @@ const renderResults = (
       const fileName = r.file.split("/").pop() ?? r.file;
       const header = document.createElement("div");
       header.className = r.status;
-      header.innerHTML = `<strong>${m.module} / ${fileName}</strong>: ${r.status} ${
+      const laneTag = r.expectedFail ? ` [expected-fail lane ${r.expectedFail.lane}]` : "";
+      const staleTag = r.unexpectedPass ? " [STALE — remove from expectations.json]" : "";
+      header.innerHTML = `<strong>${m.module} / ${fileName}</strong>: ${r.status}${laneTag}${staleTag} ${
         r.duration ? `(${r.duration.toFixed(0)}ms)` : ""
       }`;
       const pre = document.createElement("pre");

@@ -4,7 +4,7 @@ import type { CompatHarness } from "./main.js";
 import { commonIndexSource, countdownSource, internalShimSources } from "./test-common.js";
 import { assertCanariesFail, runCanaries } from "./canaries.js";
 import { classifyNodeTest } from "./classify.js";
-import expectations from "./expectations.json";
+import { expectedFailEntry, type ExpectedFailEntry } from "./expected-fail.js";
 
 export interface ModuleManifest {
   version: string;
@@ -19,13 +19,22 @@ export interface TestResult {
   exitCode: number;
   output: string;
   duration?: number;
-  /** One-line reason this test cannot pass in a browser (src/expectations.json). */
-  expectedFail?: string;
+  /**
+   * Ledger entry (src/expectations.json) when this file is a known
+   * expected failure, on any lane. Lane A/B still count as failures; only
+   * lane C is platform-bound.
+   */
+  expectedFail?: ExpectedFailEntry;
+  /** The ledger expected a failure but the test passed — stale expectation. */
+  unexpectedPass?: boolean;
 }
 
 const expectedFailOf = (file: string, status: TestResult["status"]) => {
-  const reason = (expectations as Record<string, string>)[file];
-  return reason && status !== "pass" ? { expectedFail: reason } : {};
+  const entry = expectedFailEntry(file);
+  if (!entry) return {};
+  return status === "pass"
+    ? { expectedFail: entry, unexpectedPass: true }
+    : { expectedFail: entry };
 };
 
 export class NodeTestRunner {
@@ -123,6 +132,7 @@ export class NodeTestRunner {
         exitCode: -1,
         output: `TIMEOUT after ${this.testTimeoutMs}ms`,
         duration: performance.now() - start,
+        ...expectedFailOf(file, "fail"),
       };
     }
     const { exitCode, output, duration } = outcome;

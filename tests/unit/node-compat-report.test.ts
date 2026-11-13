@@ -2,6 +2,15 @@ import { describe, it, expect } from "vitest";
 // @ts-expect-error plain-JS module, no type declarations
 import { toNodeCompatReport } from "../../apps/compat-harness/bin/node-compat-report.js";
 
+const laneC = {
+  lane: "C",
+  reason: "platform-bound",
+  location: "packages/x.ts",
+  remediation: "none",
+};
+const laneA = { ...laneC, lane: "A" };
+const laneB = { ...laneC, lane: "B" };
+
 const modules = [
   {
     module: "path",
@@ -53,6 +62,9 @@ describe("toNodeCompatReport", () => {
     expect(report.pass).toBe(1);
     expect(report.fail).toBe(2);
     expect(report.skip).toBe(1);
+    expect(report.expectedFail).toBe(0);
+    expect(report.expectedFailByLane).toEqual({ A: 0, B: 0, C: 0 });
+    expect(report.staleExpected).toBe(0);
   });
 
   it("per-module entries carry name/passed/total/tests", () => {
@@ -92,5 +104,67 @@ describe("toNodeCompatReport", () => {
       { nodeVersion: "22.0.0" },
     );
     expect(report.modules[0].tests[0].error).toBe("Uncaught TypeError: boom");
+  });
+});
+
+describe("toNodeCompatReport expected-fail lanes", () => {
+  const ledgered = toNodeCompatReport(
+    [
+      {
+        module: "tls",
+        results: [
+          {
+            file: "test/parallel/test-tls-a.js",
+            status: "fail",
+            exitCode: 1,
+            output: "boom",
+            expectedFail: laneB,
+          },
+          {
+            file: "test/parallel/test-tls-b.js",
+            status: "fail",
+            exitCode: 1,
+            output: "boom",
+            expectedFail: laneC,
+          },
+          {
+            file: "test/parallel/test-tls-c.js",
+            status: "fail",
+            exitCode: 1,
+            output: "boom",
+          },
+          {
+            file: "test/parallel/test-tls-d.js",
+            status: "pass",
+            exitCode: 0,
+            output: "ok",
+            expectedFail: laneA,
+            unexpectedPass: true,
+          },
+        ],
+      },
+    ],
+    { nodeVersion: "22.0.0" },
+  );
+
+  it("lane C failures are expected-fail, lanes A/B stay failures", () => {
+    // 3 raw fails - 1 lane-C = 2 fixable failures; lane B still counts.
+    expect(ledgered.fail).toBe(2);
+    expect(ledgered.expectedFail).toBe(1);
+    expect(ledgered.expectedFailByLane).toEqual({ A: 0, B: 1, C: 1 });
+    expect(ledgered.staleExpected).toBe(1);
+    expect(ledgered.pass).toBe(1);
+    expect(ledgered.total).toBe(4);
+  });
+
+  it("per-test entries carry the ledger entry and stale flag", () => {
+    const [tls] = ledgered.modules;
+    expect(tls.expectedFail).toBe(1);
+    expect(tls.expectedFailByLane).toEqual({ A: 0, B: 1, C: 1 });
+    expect(tls.tests[0].expectedFail).toEqual(laneB);
+    expect(tls.tests[1].expectedFail).toEqual(laneC);
+    expect(tls.tests[2].expectedFail).toBeUndefined();
+    expect(tls.tests[3].unexpectedPass).toBe(true);
+    expect(tls.tests[3].expectedFail).toEqual(laneA);
   });
 });

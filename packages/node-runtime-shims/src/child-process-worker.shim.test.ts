@@ -141,6 +141,12 @@ describe("child_process Worker spawn", () => {
     const shim = createChildProcessShim();
     expect(() => shim.fork("./script.js")).toThrow(/POSIX fork/);
     expect(() => shim.fork("./script.js")).toThrow(/ADR-0007/);
+    try {
+      shim.fork("./script.js");
+      expect.unreachable();
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe("ERR_BOL_UNSUPPORTED_SPAWN_PROCESS");
+    }
   });
 
   it("send posts IPC message to worker", () => {

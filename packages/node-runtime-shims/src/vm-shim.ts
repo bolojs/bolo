@@ -6,6 +6,7 @@ import {
   type QuickJSRuntime,
 } from "quickjs-emscripten-core";
 import releaseSyncVariant from "@jitl/quickjs-wasmfile-release-sync";
+import { unsupportedError } from "@bolojs/node-web-shims";
 
 // ponytail: separate QuickJS heap per context; no shared prototypes across the boundary.
 // JSON-round-trippable values only. vm.Module/SourceTextModule deferred post-v1.
@@ -223,7 +224,10 @@ const runInNewContextInternal = (
   options?: RunInContextOptions,
 ): unknown => {
   if (options?.timeout !== undefined && options.timeout > 0 && !quickJSModule) {
-    throw new Error("vm timeout requires initialized QuickJS module");
+    throw unsupportedError(
+      "VM_BACKEND",
+      "vm timeout requires initialized QuickJS module",
+    );
   }
   if (quickJSModule) {
     const ctx = createContextInternal(context);

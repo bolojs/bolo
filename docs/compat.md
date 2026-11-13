@@ -101,6 +101,12 @@ Builtins that require capabilities a browser cannot provide safely or at all. Ca
 - `https`: aliases the `http` shim in the browser context.
 - Native addons (NAPI) are pluggable via `nativeAddonLoader`; otherwise they throw.
 
+Every structurally unsupported path throws a coded `ERR_BOL_UNSUPPORTED_<SEAM>` error
+(`packages/node-web-shims/src/coded-error.ts`) naming the missing extension point —
+`TLS_BACKEND`, `DGRAM_BACKEND`, `NET_BACKEND`, `NATIVE_ADDON_LOADER`, `SPAWN_SYNC`,
+`SPAWN_PROCESS`, `SPAWN_WORKER`, `INSPECTOR_BACKEND`, `VM_BACKEND` — instead of a raw
+"not implemented" or an undefined binding, so the failure points at the seam to wire.
+
 ## Bottom line
 
 The runtime targets workloads that run on Cloudflare Workers, Deno Deploy, or edge runtimes, plus

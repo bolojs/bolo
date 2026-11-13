@@ -1,4 +1,5 @@
 import { createEventsShim } from "./events.js";
+import { unsupportedError } from "./coded-error.js";
 
 const { EventEmitter } = createEventsShim();
 
@@ -6,8 +7,8 @@ const { EventEmitter } = createEventsShim();
  * node:inspector shim — honest stub.
  *
  * No V8 debug port can listen in a browser, so `open()` validates its
- * arguments exactly like node and then throws `ERR_NOT_IMPLEMENTED` rather
- * than pretending to listen. The activation state machine is real: an
+ * arguments exactly like node and then throws `ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND`
+ * rather than pretending to listen. The activation state machine is real: an
  * activated inspector (which only a host embedding a real backend could
  * produce, e.g. a future `--inspect` equivalent) makes the next `open()`
  * throw `ERR_INSPECTOR_ALREADY_ACTIVATED` and gives `url()` a value;
@@ -23,11 +24,9 @@ let activated = false;
 let activatedUrl: string | undefined;
 
 const notImplemented = (what: string): Error =>
-  Object.assign(
-    new Error(`${what} is not implemented in the browser (node:inspector has no debug port)`),
-    {
-      code: "ERR_NOT_IMPLEMENTED",
-    },
+  unsupportedError(
+    "INSPECTOR_BACKEND",
+    `${what} requires an inspector backend: the DevTools protocol session cannot be bridged to a browser debug port`,
   );
 
 /**
@@ -132,7 +131,7 @@ export class Session extends EventEmitter {
   /**
    * `post(method, params?, callback?)`. Method validation is synchronous
    * (ERR_INVALID_ARG_TYPE, node 22 message shape); the callback then fires
-   * asynchronously with ERR_NOT_IMPLEMENTED — there is no inspector to reach.
+   * asynchronously with ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND — there is no inspector to reach.
    */
   post(
     method: string,
