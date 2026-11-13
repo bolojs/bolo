@@ -1,22 +1,4 @@
 {
-  "test/parallel/test-child-process-spawnsync.js": {
-    "lane": "B",
-    "reason": "spawns a child process via spawnSync (synchronous child_process unsupported in a browser by default)",
-    "location": "packages/node-runtime-shims/src/child-process-shim.ts",
-    "remediation": "wire the spawnSyncProcess seam (sync channel inside a process worker) or document the async spawn() alternative"
-  },
-  "test/parallel/test-dgram-abort-closed.js": {
-    "lane": "B",
-    "reason": "UDP sockets have no browser transport; the dgram skeleton reports coded ERR_BOL_UNSUPPORTED_DGRAM_BACKEND on send",
-    "location": "packages/node-web-shims/src/dgram.ts",
-    "remediation": "register a dgramBackend via createLiveShimRegistry (UDP has no Web API equivalent; needs a relay)"
-  },
-  "test/parallel/test-dgram-bind.js": {
-    "lane": "B",
-    "reason": "UDP sockets have no browser transport; bind() is lifecycle-only and send() needs a real dgramBackend",
-    "location": "packages/node-web-shims/src/dgram.ts",
-    "remediation": "register a dgramBackend via createLiveShimRegistry (UDP has no Web API equivalent; needs a relay)"
-  },
   "test/parallel/test-dgram-send-callback-buffer-empty-address.js": {
     "lane": "B",
     "reason": "UDP send callback semantics need a real socket backend; the skeleton can only report unsupported",
@@ -41,23 +23,11 @@
     "location": "packages/node-web-shims/src/inspector.ts",
     "remediation": "none browser-faithful: no V8 debug port can listen in a browser"
   },
-  "test/parallel/test-inspector-open-port-integer-overflow.js": {
-    "lane": "C",
-    "reason": "inspector.open() validates then throws ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND; no debug port can listen in a browser",
-    "location": "packages/node-web-shims/src/inspector.ts",
-    "remediation": "none browser-faithful: no V8 debug port can listen in a browser"
-  },
   "test/parallel/test-inspector-stops-no-file.js": {
     "lane": "C",
     "reason": "no inspector backend can exist: the DevTools protocol session cannot be bridged to a browser debug port",
     "location": "packages/node-web-shims/src/inspector.ts",
     "remediation": "none browser-faithful: no V8 debug port can listen in a browser"
-  },
-  "test/parallel/test-module-main-extension-lookup.js": {
-    "lane": "B",
-    "reason": "spawns a child node process via execFileSync (synchronous child_process unsupported in a browser by default)",
-    "location": "packages/node-runtime-shims/src/child-process-shim.ts",
-    "remediation": "wire the spawnSyncProcess seam (sync channel inside a process worker)"
   },
   "test/parallel/test-module-wrap.js": {
     "lane": "B",
@@ -77,12 +47,6 @@
     "location": "packages/node-runtime-shims/src/net-shim.ts",
     "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
   },
-  "test/parallel/test-next-tick-domain.js": {
-    "lane": "A",
-    "reason": "needs the deprecated node:domain module bound correctly onto process.nextTick/domain interaction",
-    "location": "packages/node-web-shims/src/domain.ts",
-    "remediation": "fix the domain shim's nextTick/timer domain binding (minimal domain shim is feasible)"
-  },
   "test/parallel/test-os-checked-function.js": {
     "lane": "C",
     "reason": "unenv os.homedir is a pure JS stub that never consults internalBinding('os'), so the test's getHomeDirectory monkey-patch is never invoked (no faithful os binding to expose)",
@@ -95,71 +59,23 @@
     "location": "packages/node-web-shims/src/perf_hooks.ts",
     "remediation": "wire observe()/disconnect() to the browser PerformanceObserver instead of the unenv stub"
   },
-  "test/parallel/test-process-beforeexit.js": {
-    "lane": "B",
-    "reason": "needs net.createServer().listen(0) (TCP relay / netBackend)",
-    "location": "packages/node-runtime-shims/src/net-shim.ts",
-    "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-  },
-  "test/parallel/test-process-exit-code-validation.js": {
-    "lane": "B",
-    "reason": "spawns a child node process via spawnSync (synchronous child_process unsupported in a browser by default)",
-    "location": "packages/node-runtime-shims/src/child-process-shim.ts",
-    "remediation": "wire the spawnSyncProcess seam (sync channel inside a process worker)"
-  },
-  "test/parallel/test-process-exit-code.js": {
-    "lane": "B",
-    "reason": "spawns child node processes via spawn(); children can't exec node in-container (exit 127) and the parent exits before their exit handlers run",
-    "location": "packages/node-runtime-shims/src/child-process-shim.ts",
-    "remediation": "make spawn() of the node binary resolve inside the container (spawnProcess seam) and match exit-handler ordering"
-  },
-  "test/parallel/test-process-really-exit.js": {
-    "lane": "B",
-    "reason": "spawns a child node process via spawnSync (synchronous child_process unsupported in a browser by default)",
-    "location": "packages/node-runtime-shims/src/child-process-shim.ts",
-    "remediation": "wire the spawnSyncProcess seam (sync channel inside a process worker)"
-  },
-  "test/parallel/test-repl-no-terminal.js": {
-    "lane": "C",
-    "reason": "no repl backend can exist: the REPL has no browser analogue",
-    "location": "packages/node-web-shims/src/repl.ts",
-    "remediation": "none browser-faithful"
-  },
   "test/parallel/test-repl-stdin-push-null.js": {
     "lane": "C",
     "reason": "no repl backend can exist: the REPL has no browser analogue",
     "location": "packages/node-web-shims/src/repl.ts",
     "remediation": "none browser-faithful"
   },
-  "test/parallel/test-repl-throw-null-or-undefined.js": {
-    "lane": "C",
-    "reason": "no repl backend can exist: the REPL has no browser analogue",
-    "location": "packages/node-web-shims/src/repl.ts",
-    "remediation": "none browser-faithful"
-  },
-  "test/parallel/test-timers-clearImmediate-als.js": {
+  "test/parallel/test-timers-immediate-promisified.js": {
     "lane": "A",
-    "reason": "needs AsyncLocalStorage context propagation through setImmediate (async_hooks shim has no async context)",
-    "location": "packages/node-web-shims/src/async_hooks.ts",
-    "remediation": "implement async context propagation in the async_hooks/timers shim"
-  },
-  "test/parallel/test-timers-max-duration-warning.js": {
-    "lane": "A",
-    "reason": "expects 6 TimeoutOverflowWarning emissions via libuv-level timer lists; shim emits 3",
-    "location": "packages/node-web-shims/src/timers.ts",
-    "remediation": "match Node's libuv timer-list accounting for TimeoutOverflowWarning emissions"
-  },
-  "test/parallel/test-timers-promises-scheduler.js": {
-    "lane": "A",
-    "reason": "node:timers/promises scheduler.wait still uses the unenv timer, not the worker event loop, so it races a loop timer",
+    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
     "location": "packages/node-web-shims/src/timers_promises.ts",
-    "remediation": "back scheduler.wait with the loop-wired tracked timers"
+    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
   },
-  "test/parallel/test-timers-promises.js": {
+  "test/parallel/test-timers-interval-promisified.js": {
     "lane": "A",
-    "reason": "node:timers/promises resolves but the live registry's timers.promises is an empty interop artifact",
-    "location": "packages/node-runtime-shims/src/live.ts",
-    "remediation": "register the real timers/promises shim in the live registry instead of the interop artifact"
+    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
+    "location": "packages/node-web-shims/src/timers_promises.ts",
+    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
   },
   "test/parallel/test-timers-socket-timeout-removes-other-socket-unref-timer.js": {
     "lane": "B",
@@ -167,11 +83,11 @@
     "location": "packages/node-runtime-shims/src/net-shim.ts",
     "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
   },
-  "test/parallel/test-timers-unrefed-in-callback.js": {
-    "lane": "B",
-    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
-    "location": "packages/node-runtime-shims/src/net-shim.ts",
-    "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
+  "test/parallel/test-timers-timeout-promisified.js": {
+    "lane": "A",
+    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
+    "location": "packages/node-web-shims/src/timers_promises.ts",
+    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
   },
   "test/parallel/test-tls-legacy-deprecated.js": {
     "lane": "B",
@@ -208,23 +124,5 @@
     "reason": "needs a js_stream JSStream with a native _externalStream (util.types.isExternal is hard-coded false) plus vm.runInNewContext/vm.SourceTextModule semantics; none are faithfully shimable from the harness",
     "location": "packages/node-web-shims/src/util.ts",
     "remediation": "none browser-faithful: native stream/external markers cannot be forged"
-  },
-  "test/parallel/test-v8-deserialize-buffer.js": {
-    "lane": "C",
-    "reason": "v8 module has no browser shim (ValueSerializer internals not exposed)",
-    "location": "packages/node-web-shims/src/v8.ts",
-    "remediation": "none browser-faithful: V8 serializer internals are not exposed to browsers"
-  },
-  "test/parallel/test-v8-flag-pool-size-0.js": {
-    "lane": "C",
-    "reason": "needs globalThis.gc and V8 flag control (not exposed to browsers)",
-    "location": "packages/node-web-shims/src/v8.ts",
-    "remediation": "none browser-faithful: V8 flags and gc() are not exposed to browsers"
-  },
-  "test/parallel/test-v8-getheapsnapshot-twice.js": {
-    "lane": "C",
-    "reason": "heap snapshots are V8-internal (not exposed to browsers)",
-    "location": "packages/node-web-shims/src/v8.ts",
-    "remediation": "none browser-faithful: heap snapshots are a V8-internal API"
   }
 }
