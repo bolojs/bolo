@@ -72,8 +72,10 @@ const formatList = (array: string[], type = "or"): string => {
       return `${array[0]}`;
     case 2:
       return `${array[0]} ${type} ${array[1]}`;
+    case 3:
+      return `${array[0]}, ${array[1]}, ${type} ${array[2]}`;
     default:
-      return `${array.slice(0, -1).join(", ")} ${type} ${array[array.length - 1]}`;
+      return `${array.slice(0, -1).join(", ")}, ${type} ${array[array.length - 1]}`;
   }
 };
 
@@ -392,17 +394,13 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
   };
 
   const fromObject = (obj: Record<string, unknown>): unknown => {
+    // Node's fromObject (lib/buffer.js): any object with a `length` property
+    // or an ArrayBuffer `buffer` slot is treated as array-like — but only a
+    // *numeric* length produces bytes; anything else yields an empty Buffer.
+    // That covers `{ buffer: arrayBuffer }` (length undefined → empty),
+    // DataView (no `length`), and non-numeric `length` values alike.
     if (obj.length !== undefined || isAnyArrayBuffer(obj.buffer)) {
       if (typeof obj.length !== "number") {
-        // `{ buffer: arrayBuffer }` without a length — Node reads the whole
-        // buffer via byteOffset/length (both optional).
-        if (isAnyArrayBuffer(obj.buffer)) {
-          return fromArrayBuffer(
-            obj.buffer as ArrayBuffer,
-            (obj as { byteOffset?: unknown }).byteOffset,
-            (obj as { length?: unknown }).length,
-          );
-        }
         return origFrom.call(BufferClass, new Uint8Array(0));
       }
       return fromArrayLike(obj as { length: number });
@@ -470,7 +468,7 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
 
     throw invalidArgType(
       "first argument",
-      ["string", "Buffer", "ArrayBuffer", "SharedArrayBuffer", "Array", "Array-like Object"],
+      ["string", "Buffer", "ArrayBuffer", "Array", "Array-like Object"],
       value,
     );
   };
