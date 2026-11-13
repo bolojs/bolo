@@ -2,22 +2,22 @@
   "esbuild": {
     "lane": "B",
     "reason": "drives a native platform binary through child_process and an ESM binary loader; the npm package has no in-browser build",
-    "remediation": "use esbuild-wasm (the official WASM build) once the WASM loader lands in #149"
+    "remediation": "esbuild-wasm is registered as a curated WASM tool (#149): single-file transform via the JS API, stdin/file input, --version; bundling flags remain unsupported"
   },
   "argon2": {
     "lane": "B",
     "reason": "native .node addon built with node-gyp; argon2 itself ships no browser or WASM build",
-    "remediation": "use @node-rs/argon2-wasm (official WASM build) once the WASM loader lands in #149"
+    "remediation": "the default nativeAddonLoader maps argon2's .node require to argon2-wasm@0.9.0 (#149); packages should prefer argon2-wasm directly for full API coverage"
   },
   "bcrypt": {
     "lane": "B",
     "reason": "native .node addon via node-pre-gyp; bcrypt ships no WASM or browser build",
-    "remediation": "use bcryptjs (pure JS, API-compatible); no WASM loader required"
+    "remediation": "the default nativeAddonLoader maps bcrypt's .node require to bcryptjs (pure JS, API-compatible) (#149); packages should prefer bcryptjs directly"
   },
   "lightningcss": {
     "lane": "B",
     "reason": "loads a native .node binding through per-platform optional dependencies; no WASM fallback ships in this package",
-    "remediation": "lightningcss WASM build once the WASM loader lands in #149"
+    "remediation": "the default nativeAddonLoader maps lightningcss's .node require to lightningcss-wasm (napi-wasm) (#149); packages should prefer lightningcss-wasm directly for full API coverage"
   },
   "rspack": {
     "lane": "C",

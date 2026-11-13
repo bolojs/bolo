@@ -1,6 +1,7 @@
 import type { SandboxBackend } from "./sandbox-backend.js";
 import type { ContainerCheckpoint } from "./checkpoint.js";
 import type { ShellService } from "./shell-service.js";
+import type { WasmRegistry } from "@bolojs/node-runtime-shims";
 import type { VfsBus } from "@bolojs/fs";
 import type { ReplResult } from "./repl-service.js";
 
@@ -23,6 +24,13 @@ export interface BootOptions {
   dangerouslyAllowSameOrigin?: boolean;
   /** Inject a pre-configured shell service (e.g. custom net backend). */
   shellService?: ShellService;
+  /**
+   * Override the WASM tool registry used for `child_process` dispatch and
+   * direct shell commands. Default: the curated registry (`esbuild`, `swc`)
+   * bound to the container VFS. Pass a custom `createWasmRegistry()` (after
+   * `registerWasmTool` calls) to extend or replace the tool set.
+   */
+  wasmRegistry?: WasmRegistry;
   /** Override VfsBus construction (e.g. seed from a pre-warmed OPFS snapshot). */
   vfsFactory?: () => VfsBus;
   /**

@@ -9,6 +9,12 @@ import {
 import type { ProcessShim, SpawnedProcess } from "@bolojs/node-runtime-shims";
 import { createRpcPeer } from "./rpc.js";
 import { createRemoteDeps } from "./remote-objects.js";
+import {
+  registerCuratedWasmTools,
+  createWasmNativeAddonLoader,
+  warmWasmAddons,
+  wasmAddonSpecifiers,
+} from "@bolojs/registry";
 import { createSyncCaller } from "./sync-channel.js";
 import { createNodeTimers } from "./node-timers.js";
 import { createEventLoop } from "./event-loop.js";
@@ -287,6 +293,20 @@ const runProcess = async (msg: ProcRunMessage) => {
     hasShellService: msg.hasShellService,
   });
 
+  // Process workers are separate realms: the main thread's registerWasmTool
+  // registry and warmed addon map do NOT cross postMessage. Re-register the
+  // curated tool set and build this realm's own .node → WASM-variant loader.
+  // (child_process dispatch still rides the remote wasmRegistry proxy to the
+  // main thread; the local registry covers realm-local lookups.)
+  if (msg.hasWasmRegistry) {
+    registerCuratedWasmTools({ vfs: remote.vfs });
+  }
+  const wasmAddons: Record<string, unknown> = {};
+  const nativeAddonLoader = createWasmNativeAddonLoader({
+    vfs: remote.vfs,
+    addons: wasmAddons,
+  });
+
   const shims = createLiveShimRegistry({
     vfs: remote.vfs,
     sandbox: remote.sandbox,
@@ -308,6 +328,7 @@ const runProcess = async (msg: ProcRunMessage) => {
           threadId: msg.thread!.threadId,
         }
       : undefined,
+    nativeAddonLoader,
   });
   processShim = shims.process as ProcessShim;
   const nextTick = processShim.nextTick;
@@ -434,6 +455,13 @@ const runProcess = async (msg: ProcRunMessage) => {
   let explicitExit: number | undefined;
   let fatal: unknown;
   try {
+    // `.node` requires inside the bundle resolve through nativeAddonLoader,
+    // which is synchronous — the variant packages must be warm before the
+    // module executes. Cheap string probe; bundles without native addons
+    // skip the CDN fetch entirely.
+    if (msg.code.includes(".node")) {
+      Object.assign(wasmAddons, await warmWasmAddons(wasmAddonSpecifiers()));
+    }
     const blob = new Blob([msg.code], { type: "text/javascript" });
     const url = URL.createObjectURL(blob);
     const mod = (await import(/* @vite-ignore */ url)) as {

@@ -26,6 +26,24 @@ export {
 export type { WasmTool, WasmToolResult, WasmToolLoader };
 export { createWasiTool } from "./wasi-executor.js";
 export type { WasiToolOptions, WasiPreopen } from "./wasi-executor.js";
+export {
+  registerCuratedWasmTools,
+  createCuratedWasmRegistry,
+  esmShModuleLoader,
+} from "./curated-tools.js";
+export type { CuratedToolsOptions, CuratedModuleLoader } from "./curated-tools.js";
+export {
+  NATIVE_ADDON_WASM_VARIANTS,
+  createWasmNativeAddonLoader,
+  warmWasmAddons,
+  wasmAddonSpecifiers,
+  esmShAddonModuleLoader,
+} from "./native-addon-resolver.js";
+export type {
+  WasmNativeAddonLoader,
+  WasmNativeAddonLoaderOptions,
+  WasmAddonModuleLoader,
+} from "./native-addon-resolver.js";
 export { bundleEntry, transformScript, resetBundler } from "./bundle.js";
 export type {
   BundleEntryOptions,

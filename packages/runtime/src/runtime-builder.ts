@@ -17,6 +17,7 @@ import { createExport } from "./export.js";
 import { installNavigatorUserAgent } from "@bolojs/node-web-shims";
 import { BrowserViteServer } from "@bolojs/vite-server";
 import { createSyncServer } from "./sync-channel.js";
+import { createWasmRegistry, registerCuratedWasmTools } from "@bolojs/registry";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -141,6 +142,16 @@ export class RuntimeBuilder {
       const packageManager = this.createPackageManager(vfs);
       const events = createEventEmitter();
       const syncServer = createSyncServer({ sandbox });
+      // Default: curated WASM tool registry (esbuild/swc) bound to this
+      // container's VFS. BootOptions.wasmRegistry overrides for custom tool
+      // sets; process workers re-register the same curated set in their own
+      // realm (see node-process-worker.ts).
+      const wasmRegistry =
+        this.options.wasmRegistry ??
+        (() => {
+          registerCuratedWasmTools({ vfs });
+          return createWasmRegistry();
+        })();
       const shellService = this.createShellService({
         vfs,
         swSandbox: sandbox,
@@ -150,6 +161,7 @@ export class RuntimeBuilder {
         sandbox: agentSandbox ?? undefined,
         workdir,
         syncServer,
+        wasmRegistry,
       });
 
       const fs = createFileSystem(vfs);
