@@ -17,7 +17,7 @@ interface NativeObserverInstance {
 
 const NativePerformanceObserver = (globalThis as { PerformanceObserver?: unknown })
   .PerformanceObserver as
-  | (new (callback: (list: PerformanceEntryList, observer: unknown) => void) => NativeObserverInstance) & {
+  | (new (callback: (list: { getEntries(): PerformanceEntry[] }, observer: unknown) => void) => NativeObserverInstance) & {
       supportedEntryTypes?: string[];
     }
   | undefined;
@@ -64,7 +64,7 @@ export class PerformanceObserverEntryList {
   }
 }
 
-const toEntryList = (nativeList: PerformanceEntryList): PerformanceObserverEntryList =>
+const toEntryList = (nativeList: { getEntries(): PerformanceEntry[] }): PerformanceObserverEntryList =>
   new PerformanceObserverEntryList(nativeList.getEntries());
 
 type ObserverCallback = (list: PerformanceObserverEntryList, observer: unknown) => void;
@@ -153,7 +153,7 @@ export class PerformanceObserver {
 
   takeRecords(): PerformanceEntry[] {
     const records = this._native?.takeRecords();
-    return records ? [...records.getEntries()] : [];
+    return records ? [...records] : [];
   }
 
   // Async-context stubs matching unenv's PerformanceObserver surface.

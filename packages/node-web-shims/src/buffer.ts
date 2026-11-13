@@ -187,7 +187,6 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
         if (typeof primitive === "string") {
           return origFrom.call(this, primitive, encodingOrOffset);
         }
-        value = primitive;
       }
       const okType =
         ArrayBuffer.isView(value) ||
