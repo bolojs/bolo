@@ -11,9 +11,16 @@ describe("node-web-shims: assert", () => {
     expect(() => assert.strictEqual(1, 2, "one is not two")).toThrowError("one is not two");
   });
 
-  it("generates a diagnostic message when none is given (unenv patch)", () => {
-    expect(() => assert.strictEqual(1, 2)).toThrowError(/1.*strictEqual.*2/);
-    expect(() => assert.deepStrictEqual({ a: 1 }, { a: 2 })).toThrowError(/deepStrictEqual/);
+  it("generates Node's diff message when none is given", () => {
+    expect(() => assert.strictEqual(1, 2)).toThrowError(
+      "Expected values to be strictly equal:\n\n1 !== 2\n",
+    );
+    expect(() => assert.deepStrictEqual({ a: 1 }, { a: 2 })).toThrowError(
+      /Expected values to be strictly deep-equal:/,
+    );
+    expect(() => assert.notStrictEqual(2, 2)).toThrowError(
+      'Expected "actual" to be strictly unequal to: 2',
+    );
   });
 
   it("still exposes actual/expected/operator on the thrown error", () => {

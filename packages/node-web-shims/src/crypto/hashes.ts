@@ -143,7 +143,6 @@ export class HashImpl {
     this.#algorithm = algorithm;
     this.#outputLength = validateOutputLength(entry, options?.outputLength);
   }
-
   #assertLive(): void {
     if (this.#finalized) {
       throw Object.assign(new Error("Digest already called"), {
@@ -186,9 +185,11 @@ export class HashImpl {
 
   copy(options?: HashOptions): HashImpl {
     this.#assertLive();
-    const copy = new HashImpl(this.#algorithm, {
-      outputLength: options?.outputLength ?? this.#outputLength,
-    });
+    // Node's `hash.copy(options)` builds `new Hash(this[kHandle], options)`;
+    // without an explicit `options.outputLength` the copy reverts to the
+    // algorithm default (it does not inherit `this.#outputLength` — see
+    // test-crypto-hash's shake256 `{outputLength: 0}.copy()` case).
+    const copy = new HashImpl(this.#algorithm, options);
     copy.#chunks = [...this.#chunks];
     return copy;
   }
@@ -283,13 +284,32 @@ export const argTypeError = (name: string, types: string | string[], value: unkn
  */
 const emittedDeprecations = new Set<string>();
 
+interface EmitWarningProcess {
+  emitWarning?: (...args: unknown[]) => void;
+}
+
+interface BrowserContainersLike {
+  shims?: { process?: EmitWarningProcess };
+  process?: EmitWarningProcess;
+}
+
+// Inside a process worker the live `process` is the container's process shim
+// on `__browserContainers.shims.process` — the same realm lookup that
+// `src/domain.ts` uses for `process.domain`.
+const getEmitWarningProcess = (): EmitWarningProcess | undefined => {
+  const bc = (globalThis as { __browserContainers?: BrowserContainersLike }).__browserContainers;
+  return (
+    bc?.shims?.process ?? bc?.process ?? (globalThis as { process?: EmitWarningProcess }).process
+  );
+};
+
 export const emitDeprecationWarning = (message: string, code: string): void => {
   // Node's emitDeprecationWarning fires once per code per process — repeat
   // uses of the deprecated constructor stay quiet (test-crypto-hmac calls
   // `crypto.Hmac()` twice but expects exactly one DEP0181).
   if (emittedDeprecations.has(code)) return;
   emittedDeprecations.add(code);
-  const proc = (globalThis as { process?: { emitWarning?: (...args: unknown[]) => void } }).process;
+  const proc = getEmitWarningProcess();
   // Node delivers 'warning' asynchronously — callers routinely register
   // their listener after triggering the deprecated API (as
   // test-crypto-hash/-hmac do), so defer to a microtask like Node does.

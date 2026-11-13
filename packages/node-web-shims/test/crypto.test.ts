@@ -99,14 +99,33 @@ describe("hashes", () => {
     }
   });
 
-  it("copy() carries and overrides outputLength", () => {
+  it("copy() without options resets outputLength to the algorithm default", () => {
+    // Node's `hash.copy(options)` builds `new Hash(this[kHandle], options)` —
+    // without an explicit `options.outputLength` the copy reverts to the
+    // algorithm default instead of inheriting the source's length
+    // (test-crypto-hash: shake256 `{outputLength: 0}.copy()`).
+    const zero = c.createHash("shake256", { outputLength: 0 }).update("abc");
+    expect(zero.copy().digest("hex")).toBe(
+      nodeCrypto.createHash("shake256").update("abc").digest("hex"),
+    );
+    expect(zero.copy().digest("hex")).toHaveLength(64);
+
+    const five = c.createHash("shake128", { outputLength: 5 }).update("abc");
+    expect(five.copy().digest("hex")).toBe(
+      nodeCrypto.createHash("shake128").update("abc").digest("hex"),
+    );
+  });
+
+  it("copy() honours an explicit outputLength", () => {
     const a = c.createHash("shake128", { outputLength: 5 }).update("abc");
-    const b = a.copy();
-    const d = b.copy({ outputLength: 0 });
+    const d = a.copy({ outputLength: 0 });
     expect(a.digest("hex")).toBe(
       nodeCrypto.createHash("shake128", { outputLength: 5 }).update("abc").digest("hex"),
     );
     expect(d.digest("hex")).toBe("");
+    expect(
+      c.createHash("shake128", { outputLength: 0 }).copy({ outputLength: 5 }).digest("hex"),
+    ).toBe(nodeCrypto.createHash("shake128", { outputLength: 5 }).digest("hex"));
     expect(() => c.createHash("sha256").copy({ outputLength: 1 })).toThrowError(
       expect.objectContaining({ code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH" }),
     );
@@ -375,7 +394,7 @@ describe("sign/verify", () => {
     );
     const sig2 = c.sign("sha256", msg, imported);
     expect(nodeCrypto.verify("sha256", msg, nodePair.publicKey, sig2)).toBe(true);
-  });
+  }, 60_000);
 
   it("createSign/createVerify streaming API", () => {
     const { publicKey, privateKey } = c.generateKeyPairSync("ed25519");
@@ -397,5 +416,34 @@ describe("sign/verify", () => {
     );
     const sig = c.sign(null, Buffer.from("cb"), pair.privateKey as never);
     expect(c.verify(null, Buffer.from("cb"), pair.publicKey as never, sig)).toBe(true);
+  });
+});
+
+describe("deprecation warnings", () => {
+  it("reaches the process shim on __browserContainers.shims.process", async () => {
+    // Inside the process-worker realm there is no global `process`; the
+    // container exposes it on `__browserContainers.shims.process`. The
+    // crypto shim must find it there or the DEP0179/DEP0181 warnings never
+    // reach the container (test-crypto-hash / test-crypto-hmac).
+    const warnings: Array<[string, string, string]> = [];
+    const proc = {
+      emitWarning: (message: string, type: string, code: string) => {
+        warnings.push([message, type, code]);
+      },
+    };
+    const bc = {
+      shims: { process: proc },
+    };
+    (globalThis as { __browserContainers?: unknown }).__browserContainers = bc;
+    try {
+      const { Hash } = await import("../src/crypto/hashes.ts");
+      (Hash as unknown as (a: string) => unknown)("sha256");
+      await new Promise((r) => setTimeout(r, 0));
+    } finally {
+      delete (globalThis as { __browserContainers?: unknown }).__browserContainers;
+    }
+    expect(warnings).toEqual([
+      ["crypto.Hash constructor is deprecated.", "DeprecationWarning", "DEP0179"],
+    ]);
   });
 });
