@@ -35,7 +35,7 @@ export class HmacImpl {
 
   constructor(algorithm: string, key: SecretKeyInput) {
     if (typeof algorithm !== "string") {
-      throw argTypeError("hmac", "string", algorithm);
+      throw argTypeError("algorithm", "string", algorithm);
     }
     const entry = lookupHash(algorithm); // validate eagerly like Node
     if (entry.xof || !entry.hash) {
@@ -131,6 +131,6 @@ export const createHmac = (
   key: SecretKeyInput,
   _options?: unknown,
 ): HmacImpl => {
-  if (typeof algorithm !== "string") throw argTypeError("hmac", "string", algorithm);
+  if (typeof algorithm !== "string") throw argTypeError("algorithm", "string", algorithm);
   return new HmacImpl(algorithm, key);
 };

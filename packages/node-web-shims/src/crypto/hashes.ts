@@ -198,6 +198,46 @@ const hashChunks = (hash: HashFn, chunks: Uint8Array[]): Uint8Array => {
   return out;
 };
 
+/**
+ * Node's `determineSpecificType` (lib/internal/errors.js) — the text after
+ * "Received" in `ERR_INVALID_ARG_TYPE`. Strings are single-quoted,
+ * objects name their constructor, numbers spell out NaN/Infinity/-0.
+ */
+const determineSpecificType = (value: unknown): string => {
+  if (value === null) return "null";
+  if (value === undefined) return "undefined";
+  switch (typeof value) {
+    case "bigint":
+      return `type bigint (${value}n)`;
+    case "number":
+      if (value === 0) return 1 / value === -Infinity ? "type number (-0)" : "type number (0)";
+      if (Number.isNaN(value)) return "type number (NaN)";
+      if (value === Infinity) return "type number (Infinity)";
+      if (value === -Infinity) return "type number (-Infinity)";
+      return `type number (${value})`;
+    case "boolean":
+      return value ? "type boolean (true)" : "type boolean (false)";
+    case "symbol":
+      return `type symbol (${String(value)})`;
+    case "function":
+      return `function ${(value as Function).name}`;
+    case "object": {
+      const ctor = (value as { constructor?: { name?: string } }).constructor;
+      if (ctor && typeof ctor.name === "string" && ctor.name !== "") {
+        return `an instance of ${ctor.name}`;
+      }
+      return "an instance of Object";
+    }
+    case "string": {
+      let s = value as string;
+      if (s.length > 28) s = `${s.slice(0, 25)}...`;
+      return s.includes("'") ? `type string (${JSON.stringify(s)})` : `type string ('${s}')`;
+    }
+    default:
+      return `type ${typeof value} (${String(value)})`;
+  }
+};
+
 /** Node's `ERR_INVALID_ARG_TYPE` TypeError with a faithful message shape. */
 export const argTypeError = (name: string, types: string | string[], value: unknown): TypeError => {
   const list = Array.isArray(types) ? types : [types];
@@ -205,14 +245,10 @@ export const argTypeError = (name: string, types: string | string[], value: unkn
     list.length === 1
       ? `of type ${list[0]}`
       : `one of type ${list.slice(0, -1).join(", ")} or ${list.at(-1)}`;
-  const received =
-    value === null
-      ? "null"
-      : typeof value === "object" && value !== undefined
-        ? `an instance of ${value.constructor?.name || "Object"}`
-        : `type ${typeof value} (${String(value)})`;
   return Object.assign(
-    new TypeError(`The "${name}" argument must be ${expected}. Received ${received}`),
+    new TypeError(
+      `The "${name}" argument must be ${expected}. Received ${determineSpecificType(value)}`,
+    ),
     { code: "ERR_INVALID_ARG_TYPE" },
   );
 };

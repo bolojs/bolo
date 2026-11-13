@@ -37,15 +37,25 @@ const Buffer = _Buffer as typeof import("node:buffer").Buffer & {
 
 const g = globalThis as {
   process?: { nextTick?: (fn: (...a: unknown[]) => void, ...args: unknown[]) => void };
+  __browserContainers?: {
+    process?: { nextTick?: (fn: (...a: unknown[]) => void, ...args: unknown[]) => void };
+    shims?: {
+      process?: { nextTick?: (fn: (...a: unknown[]) => void, ...args: unknown[]) => void };
+    };
+  };
 };
 
 // Prefer the realm's process.nextTick when one exists (Node semantics:
-// drains before promise jobs); otherwise queueMicrotask preserves FIFO order
-// between queued callbacks, which is all the stream machinery relies on.
+// drains before promise jobs); container realms keep the process shim on
+// `__browserContainers` rather than a global `process`, so check both.
+// queueMicrotask is the last resort — it interleaves with promise jobs
+// instead of draining first, which breaks Node's readable-event ordering.
 const nextTick = (fn: (...args: any[]) => void, ...args: unknown[]): void => {
-  const nt = g.process?.nextTick;
+  const proc =
+    g.process ?? g.__browserContainers?.process ?? g.__browserContainers?.shims?.process;
+  const nt = proc?.nextTick;
   if (typeof nt === "function") {
-    nt.call(g.process, fn as (...a: unknown[]) => void, ...args);
+    nt.call(proc, fn as (...a: unknown[]) => void, ...args);
   } else {
     queueMicrotask(() => (fn as (...a: unknown[]) => void)(...args));
   }

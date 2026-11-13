@@ -1,4 +1,5 @@
 import unenvAssert from "unenv/node/assert";
+import { inspect } from "./util.js";
 
 export * from "unenv/node/assert";
 
@@ -64,7 +65,7 @@ const wrapWaitForActual = (): void => {
           throw Object.assign(
             new TypeError(
               "Expected instance of Promise to be returned from the " +
-                `"promiseFn" function but got ${describeReturn(value)}.`,
+                `"promiseFn" function but got ${inspect(value)}.`,
             ),
             { code: "ERR_INVALID_RETURN_VALUE" },
           );
@@ -81,7 +82,7 @@ const wrapWaitForActual = (): void => {
         throw codedTypeError(
           "ERR_INVALID_ARG_TYPE",
           'The "promiseFn" argument must be of type function or an instance of ' +
-            `Promise. Received ${describeReturn(promiseFn)}`,
+            `Promise. Received ${determineSpecificType(promiseFn)}`,
         );
       }
       return inner(promiseFn, ...rest);
@@ -93,15 +94,46 @@ const wrapWaitForActual = (): void => {
   }
 };
 
-const describeReturn = (value: unknown): string => {
-  if (value === undefined) return "undefined";
+/**
+ * Node's `determineSpecificType` (lib/internal/errors.js) — the "Received …"
+ * half of ERR_INVALID_ARG_TYPE. Same rendering as buffer.ts's copy: strings
+ * are single-quoted (JSON-quoted when they contain a quote, truncated past
+ * 28 chars), numbers spell out NaN/Infinity/-0, objects name their
+ * constructor.
+ */
+const determineSpecificType = (value: unknown): string => {
   if (value === null) return "null";
-  if (typeof value === "function") return `function ${value.name || "(anonymous)"}`;
-  if (typeof value === "object") {
-    const ctor = (value as { constructor?: { name?: string } }).constructor?.name;
-    return ctor ? `an instance of ${ctor}` : "an object";
+  if (value === undefined) return "undefined";
+  switch (typeof value) {
+    case "bigint":
+      return `type bigint (${value}n)`;
+    case "number":
+      if (value === 0) return 1 / value === -Infinity ? "type number (-0)" : "type number (0)";
+      if (Number.isNaN(value)) return "type number (NaN)";
+      if (value === Infinity) return "type number (Infinity)";
+      if (value === -Infinity) return "type number (-Infinity)";
+      return `type number (${value})`;
+    case "boolean":
+      return value ? "type boolean (true)" : "type boolean (false)";
+    case "symbol":
+      return `type symbol (${String(value)})`;
+    case "function":
+      return `function ${(value as Function).name}`;
+    case "object": {
+      const ctor = (value as { constructor?: { name?: string } }).constructor;
+      if (ctor && typeof ctor.name === "string" && ctor.name !== "") {
+        return `an instance of ${ctor.name}`;
+      }
+      return "an instance of Object";
+    }
+    case "string": {
+      let s = value as string;
+      if (s.length > 28) s = `${s.slice(0, 25)}...`;
+      return s.includes("'") ? `type string (${JSON.stringify(s)})` : `type string ('${s}')`;
+    }
+    default:
+      return `type ${typeof value} (${String(value)})`;
   }
-  return `type ${typeof value} (${String(value)})`;
 };
 
 wrapWaitForActual();

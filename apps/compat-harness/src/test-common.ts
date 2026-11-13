@@ -384,6 +384,26 @@ const bindings = {
       return () => Math.floor(performance.now() - started);
     })(),
   },
+  // Node's performance binding exposes performanceObserverCounts — a live
+  // {entryType: count} map of buffered entries. The perf_hooks shim derives
+  // the same numbers from the realm performance buffer.
+  performance: {
+    get performanceObserverCounts() {
+      return (
+        globalThis.__browserContainers?.shims?.perf_hooks?.performanceObserverCounts ?? {}
+      );
+    },
+  },
+  // js_stream: Node's binding wraps a JS-implemented stream for C++
+  // consumers. The vendored tests only need the constructor surface — a
+  // faithful byte-pipe is out of scope for the browser container.
+  js_stream: {
+    JSStream: class JSStream {
+      constructor() {
+        this._externalStream = undefined;
+      }
+    },
+  },
 };
 
 const internalBinding = (id) => {

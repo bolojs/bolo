@@ -42,6 +42,7 @@ interface InspectOptions {
   readonly breakLength?: number;
   readonly compact?: boolean | number;
   readonly sorted?: boolean | ((a: string, b: string) => number);
+  readonly numericSeparator?: boolean;
 }
 
 const escapeString = (s: string): string =>
@@ -62,6 +63,55 @@ const fnName = (fn: Function): string => {
   return `[Function${name}]`;
 };
 
+/**
+ * `numericSeparator` grouping, matching Node ≥21: integer digits group in
+ * threes from the right, fractional digits group in threes from the left,
+ * the sign stays outside the grouping, and exponent/NaN/Infinity forms are
+ * left untouched. BigInts group their decimal digits and keep the `n`.
+ */
+const groupIntDigits = (digits: string): string => {
+  if (digits.length < 4) return digits;
+  const first = digits.length % 3 === 0 ? 3 : digits.length % 3;
+  let out = digits.slice(0, first);
+  for (let i = first; i < digits.length; i += 3) {
+    out += `_${digits.slice(i, i + 3)}`;
+  }
+  return out;
+};
+
+const groupFracDigits = (digits: string): string => {
+  if (digits.length < 4) return digits;
+  let out = digits.slice(0, 3);
+  for (let i = 3; i < digits.length; i += 3) {
+    out += `_${digits.slice(i, i + 3)}`;
+  }
+  return out;
+};
+
+const formatNumber = (n: number, numericSeparator: boolean): string => {
+  if (Object.is(n, -0)) return "-0";
+  const s = String(n);
+  if (!numericSeparator || !Number.isFinite(n) || /[eE]/.test(s)) return s;
+  const negative = s.startsWith("-");
+  const body = negative ? s.slice(1) : s;
+  const dot = body.indexOf(".");
+  const intPart = dot === -1 ? body : body.slice(0, dot);
+  const fracPart = dot === -1 ? "" : body.slice(dot + 1);
+  const grouped =
+    dot === -1
+      ? groupIntDigits(intPart)
+      : `${groupIntDigits(intPart)}.${groupFracDigits(fracPart)}`;
+  return `${negative ? "-" : ""}${grouped}`;
+};
+
+const formatBigInt = (v: bigint, numericSeparator: boolean): string => {
+  const s = `${v}`;
+  if (!numericSeparator) return `${s}n`;
+  const negative = s.startsWith("-");
+  const digits = negative ? s.slice(1) : s;
+  return `${negative ? "-" : ""}${groupIntDigits(digits)}n`;
+};
+
 const inspectValue = (
   value: unknown,
   opts: InspectOptions,
@@ -69,6 +119,7 @@ const inspectValue = (
   seen: Map<object, number>,
 ): string => {
   if (value === null) return "null";
+  const numericSeparator = opts.numericSeparator === true;
   switch (typeof value) {
     case "undefined":
       return "undefined";
@@ -76,9 +127,9 @@ const inspectValue = (
       return String(value);
     case "number":
       // Node renders negative zero as '-0' (inspect(-0) === '-0').
-      return Object.is(value, -0) ? "-0" : String(value);
+      return formatNumber(value, numericSeparator);
     case "bigint":
-      return `${value}n`;
+      return formatBigInt(value, numericSeparator);
     case "symbol":
       return String(value);
     case "string": {
@@ -210,13 +261,15 @@ export const inspect = Object.assign(
 const FORMAT_SPECIFIER = /%[%sdifjoOc]/g;
 
 /** Node renders negative zero as '-0' in every numeric conversion. */
-const numberToString = (n: number): string => (Object.is(n, -0) ? "-0" : String(n));
+const numberToString = (n: number, numericSeparator = false): string =>
+  formatNumber(n, numericSeparator);
 
 const formatImpl = (
   inspectOptions: InspectOptions | undefined,
   fmt: unknown,
   args: unknown[],
 ): string => {
+  const numericSeparator = inspectOptions?.numericSeparator === true;
   if (fmt === undefined && args.length === 0) return "";
   if (typeof fmt !== "string") {
     return [fmt, ...args]
@@ -237,19 +290,21 @@ const formatImpl = (
         if (typeof arg === "object" && arg !== null) {
           return inspectValue(arg, inspectOptions ?? {}, 0, new Map());
         }
-        if (typeof arg === "bigint") return `${arg}n`;
-        return typeof arg === "number" ? numberToString(arg) : String(arg as string);
+        if (typeof arg === "bigint") return formatBigInt(arg, numericSeparator);
+        return typeof arg === "number"
+          ? numberToString(arg, numericSeparator)
+          : String(arg as string);
       case "d":
-        if (typeof arg === "bigint") return `${arg}n`;
+        if (typeof arg === "bigint") return formatBigInt(arg, numericSeparator);
         if (typeof arg === "symbol") return "NaN";
-        return numberToString(Number(arg));
+        return numberToString(Number(arg), numericSeparator);
       case "i":
-        if (typeof arg === "bigint") return `${arg}n`;
+        if (typeof arg === "bigint") return formatBigInt(arg, numericSeparator);
         if (typeof arg === "symbol") return "NaN";
-        return numberToString(Number.parseInt(String(arg), 10));
+        return numberToString(Number.parseInt(String(arg), 10), numericSeparator);
       case "f":
         if (typeof arg === "symbol") return "NaN";
-        return numberToString(Number(arg));
+        return numberToString(Number(arg), numericSeparator);
       case "j":
         try {
           return `${JSON.stringify(arg)}`;
