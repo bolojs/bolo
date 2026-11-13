@@ -79,13 +79,18 @@ describe("createDnsShim", () => {
     expect(typeof r.getServers).toBe("function");
   });
 
-  it("exposes setDefaultResultOrder and getDefaultResultOrder stubs", () => {
+  it("exposes setDefaultResultOrder and getDefaultResultOrder", () => {
     const dns = createDnsShim();
     expect(typeof dns.setDefaultResultOrder).toBe("function");
     expect(typeof dns.getDefaultResultOrder).toBe("function");
-    // No-ops: calling them must not throw.
-    expect(() => dns.setDefaultResultOrder("ipv4first")).not.toThrow();
     expect(dns.getDefaultResultOrder()).toBe("verbatim");
+    expect(() => dns.setDefaultResultOrder("ipv4first")).not.toThrow();
+    expect(dns.getDefaultResultOrder()).toBe("ipv4first");
+    // Node rejects unknown orders.
+    expect(() => dns.setDefaultResultOrder("bogus" as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_VALUE" }),
+    );
+    dns.setDefaultResultOrder("verbatim");
   });
 
   it("exposes a promises subpath with the full DNS surface", async () => {
@@ -298,5 +303,25 @@ describe("Resolver", () => {
 
     expect(result).toEqual(["1.2.3.4"]);
     expect(fetchCalls[0].url).toContain("type=A");
+  });
+
+  it("setLocalAddress validates like Node", () => {
+    const resolver = new Resolver();
+    // One IPv4 and one IPv6 literal is the valid combination.
+    expect(() => resolver.setLocalAddress("127.0.0.1", "::1")).not.toThrow();
+    expect(resolver.getLocalAddress()).toEqual(["127.0.0.1", "::1"]);
+    // Duplicate families, invalid literals, non-strings, and no args throw.
+    expect(() => resolver.setLocalAddress("127.0.0.1", "10.0.0.1")).toThrow(/IPv4/);
+    expect(() => resolver.setLocalAddress("::1", "fe80::1")).toThrow(/IPv6/);
+    expect(() => resolver.setLocalAddress("localhost")).toThrow(/Invalid IP/);
+    expect(() => resolver.setLocalAddress(123 as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(() => resolver.setLocalAddress("127.0.0.1", 42 as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
+    expect(() => resolver.setLocalAddress()).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+    );
   });
 });
