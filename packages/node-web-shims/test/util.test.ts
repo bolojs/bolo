@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createUtilShim, format, inspect, types } from "../src/util.ts";
+import { createUtilShim, format, formatWithOptions, inspect, types } from "../src/util.ts";
 
 describe("node-web-shims: util", () => {
   it("should match node:util type shape", () => {
@@ -85,6 +85,27 @@ describe("node-web-shims: util", () => {
     expect(inspect(undefined)).toBe("undefined");
     expect(inspect(null)).toBe("null");
     expect(inspect(/re/g)).toBe("/re/g");
+  });
+
+  it("numericSeparator groups digits like Node ≥21 (test-util-format)", () => {
+    expect(inspect(1234567, { numericSeparator: true })).toBe("1_234_567");
+    expect(inspect(-1234567, { numericSeparator: true })).toBe("-1_234_567");
+    expect(inspect(1234.12345, { numericSeparator: true })).toBe("1_234.123_45");
+    expect(inspect(12345678901234567890n, { numericSeparator: true })).toBe(
+      "12_345_678_901_234_567_890n",
+    );
+    // Exponent, NaN and Infinity forms are left untouched.
+    expect(inspect(1e21, { numericSeparator: true })).toBe("1e+21");
+    expect(inspect(NaN, { numericSeparator: true })).toBe("NaN");
+    expect(inspect(Infinity, { numericSeparator: true })).toBe("Infinity");
+    // Default stays unseparated.
+    expect(inspect(1234567)).toBe("1234567");
+    expect(
+      formatWithOptions({ numericSeparator: true }, "%d", 118059162071741140000),
+    ).toBe("118_059_162_071_741_140_000");
+    expect(formatWithOptions({ numericSeparator: true }, "%i", 1234567)).toBe("1_234_567");
+    expect(formatWithOptions({ numericSeparator: true }, "%f", 1234.5)).toBe("1_234.5");
+    expect(format("%d", 1234567)).toBe("1234567");
   });
 
   it("honours util.inspect.custom", () => {

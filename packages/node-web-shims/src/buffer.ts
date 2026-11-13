@@ -173,7 +173,9 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
     // Node: non-string, non-view, non-array-like first argument → coded
     // TypeError. feross's Buffer accepts anything shapeless here.
     if (typeof value !== "string") {
-      // Node honors Symbol.toPrimitive (e.g. `Buffer.from({ [Symbol.toPrimitive]: () => 'x' })`).
+      // Node honors Symbol.toPrimitive (e.g. `Buffer.from({ [Symbol.toPrimitive]: () => 'x' })`)
+      // and continues validation on the *result*: a non-string primitive is
+      // what "Received" reports, not the wrapper object.
       if (
         value !== null &&
         typeof value === "object" &&
@@ -202,6 +204,14 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
           ),
           { code: "ERR_INVALID_ARG_TYPE" },
         );
+      }
+      // Array-like inputs allocate `length` bytes through feross's internal
+      // allocator, which bypasses the patched allocUnsafe static. Node's
+      // underlying Uint8Array refuses lengths past the 32-bit bound with
+      // 'Invalid typed array length: N' — mirror it here.
+      if (!ArrayBuffer.isView(value) && !(value instanceof ArrayBuffer)) {
+        const len = Array.isArray(value) ? value.length : (value as { length?: unknown }).length;
+        if (typeof len === "number") assertAllocatable(len);
       }
     }
     return origFrom.apply(this, arguments as unknown as [unknown, unknown, unknown]);
@@ -261,6 +271,14 @@ if (BufferClass && !BufferClass.__bolo_base64url_patched) {
   BufferClass.concat = function (list: unknown, length?: unknown): unknown {
     if (!Array.isArray(list)) {
       throw invalidArgType("list", "an instance of Array", list);
+    }
+    if (length !== undefined) {
+      if (typeof length !== "number") {
+        throw invalidArgType("length", "of type number", length);
+      }
+      // concat allocates `length` bytes through feross's internal allocator;
+      // Node's Uint8Array refuses past the 32-bit bound.
+      assertAllocatable(length);
     }
     list.forEach((item: unknown, index: number) => {
       if (!BufferClass.isBuffer(item) && !(item instanceof Uint8Array)) {

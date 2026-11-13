@@ -597,7 +597,15 @@ var __bc_Console = class {
   error(...args) { this._write('stderr', args); }
   trace(...args) { this._write('stderr', ['Trace:', ...args]); }
   assert(cond, ...args) { if (!cond) this._write('stderr', ['Assertion failed' + (args.length ? ':' : ''), ...args]); }
-  clear() {}
+  // Node's Console.prototype.clear writes the ANSI clear-screen sequence to
+  // stdout with no trailing newline (test-console-clear expects exactly
+  // '\x1b[1;1H\x1b[0J').
+  clear() {
+    var seq = '\\x1b[1;1H\\x1b[0J';
+    var sink = this._stdout;
+    if (sink && typeof sink.write === 'function') sink.write(seq);
+    else __bcGlobals()?.shims?.process?.stdout?.write(seq);
+  }
   count(label = 'default') {
     // Implicit string coercion throws TypeError for Symbol labels, matching
     // node:console (test-console-count).
@@ -867,7 +875,7 @@ const nodeAliasPlugin = (
       };
     }
     const keys =
-      builtin === "console" && !getShim?.("console")
+      builtin === "console"
         ? BANNER_CONSOLE_KEYS
         : Object.keys(resolved.shim).filter((k) => VALID_JS_IDENTIFIER.test(k));
     const contents = shimModuleSource(builtin, keys, resolved.expr);
@@ -940,7 +948,15 @@ export const bundleEntry = async (
       },
     },
     onLog(level, log, _logger) {
-      if (level === "warn") warnings.push(String(log));
+      if (level !== "warn") return;
+      // Rolldown's EVAL warning ("Use of direct eval") fires for Node core
+      // tests that legitimately probe eval scoping; the bundle still runs —
+      // eval executes in the bundle's function scope, which is the same
+      // limitation indirect eval has always had here. Don't surface it as a
+      // build warning or compat runs fail on an informational notice.
+      const message = String(log);
+      if (message.includes("[EVAL]")) return;
+      warnings.push(message);
     },
   });
 
