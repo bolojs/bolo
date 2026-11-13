@@ -320,6 +320,78 @@ describe('wasm-registry: bundleEntry', () => {
     expect(code).not.toContain('esm.sh/console');
   });
 
+  it('defers an unresolvable require() inside node_modules to a require-time MODULE_NOT_FOUND', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', main: 'index.js' }));
+    seed(
+      vfs,
+      '/node_modules/pkg/index.js',
+      "try { require('./missing.node'); } catch (e) { module.exports = e.code; }",
+    );
+    seed(vfs, '/src/entry.ts', "import code from 'pkg'; console.log(code);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings.some((w) => w.includes('missing.node'))).toBe(true);
+    expect(code).toContain('MODULE_NOT_FOUND');
+  });
+
+  it('still throws at build time for an unresolvable static import inside node_modules', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', main: 'index.js' }));
+    seed(vfs, '/node_modules/pkg/index.js', "import './missing.js'; export const x = 1;");
+    seed(vfs, '/src/entry.ts', "import { x } from 'pkg'; console.log(x);");
+
+    await expect(bundleEntry('/src/entry.ts', { vfs })).rejects.toThrow(/Cannot resolve module/);
+  });
+
+  it('does not defer node: builtin requires to the missing-module stub', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', main: 'index.js' }));
+    seed(vfs, '/node_modules/pkg/index.js', "const fs = require('node:fs'); module.exports = fs;");
+    seed(vfs, '/src/entry.ts', "import fs from 'pkg'; console.log(fs);");
+
+    const fsShim = { readFile: () => {} };
+    const { code, warnings } = await bundleEntry('/src/entry.ts', {
+      vfs,
+      getShim: (builtin) => (builtin === 'fs' ? fsShim : undefined),
+    });
+
+    expect(warnings.filter((w) => w.includes('deferring'))).toEqual([]);
+    expect(code).toContain('shims["fs"]');
+    expect(code).not.toContain("Cannot find module '");
+  });
+
+  it('stubs a .node native addon as an empty module instead of a binary parse error', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/node_modules/pkg/package.json', JSON.stringify({ name: 'pkg', main: 'index.js' }));
+    seed(vfs, '/node_modules/pkg/index.js', "const binding = require('./binding.node'); module.exports = binding;");
+    seed(vfs, '/node_modules/pkg/binding.node', 'MZ\u0000\u0000binary');
+    seed(vfs, '/src/entry.ts', "import binding from 'pkg'; console.log(binding);");
+
+    const { code, warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings.some((w) => w.includes('native addon'))).toBe(true);
+    expect(code).not.toContain('MZ');
+  });
+
+  it('stubs NUL-byte binary content reached through a non-.node path', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/blob.bin', 'PK\u0000\u0004binary');
+    seed(vfs, '/src/entry.ts', "import './blob.bin'; console.log('ok');");
+
+    const { warnings } = await bundleEntry('/src/entry.ts', { vfs });
+
+    expect(warnings.some((w) => w.includes('binary content'))).toBe(true);
+  });
+
+  it('fails honestly on an unknown node: builtin instead of an esm.sh URL', async () => {
+    const vfs = new VfsBus();
+    seed(vfs, '/src/entry.ts', "import x from 'node:sqlite'; void x;");
+
+    await expect(bundleEntry('/src/entry.ts', { vfs })).rejects.toThrow();
+  });
+
   it('rewrites a jsr: unscoped specifier to the installed @jsr mirror package', async () => {
     const vfs = new VfsBus();
     seed(
