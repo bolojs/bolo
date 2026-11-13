@@ -49,6 +49,9 @@ export type {
   SyncRunner,
   SyncRunRequest,
   SyncRunResult,
+  WorkerOptions,
+  WorkerSpawnSpec,
+  WorkerLike,
 } from "./child-process-shim.js";
 export { createProcessShim, ProcessExit } from "./process-shim.js";
 export type { ProcessShim, ProcessShimOptions } from "./process-shim.js";

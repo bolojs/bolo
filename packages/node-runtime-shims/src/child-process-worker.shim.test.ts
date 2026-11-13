@@ -51,7 +51,13 @@ describe("child_process Worker spawn", () => {
     const shim = createChildProcessShim(undefined, undefined, { createWorker });
 
     const child = shim.spawn("node", ["./script.js"], { cwd: "/", env: { FOO: "bar" } });
-    expect(createWorker).toHaveBeenCalledWith("./script.js", [], { FOO: "bar" }, "/");
+    expect(createWorker).toHaveBeenCalledWith({
+      filename: "./script.js",
+      code: undefined,
+      args: [],
+      env: { FOO: "bar" },
+      cwd: "/",
+    });
     expect(typeof child.pid).toBe("number");
 
     const stdoutChunks: string[] = [];
@@ -121,7 +127,12 @@ describe("child_process Worker spawn", () => {
     const shim = createChildProcessShim(undefined, undefined, { createWorker });
 
     const child = shim.fork("./script.js", ["--flag"], { cwd: "/app" });
-    expect(createWorker).toHaveBeenCalledWith("./script.js", ["--flag"], undefined, "/app");
+    expect(createWorker).toHaveBeenCalledWith({
+      filename: "./script.js",
+      args: ["--flag"],
+      env: undefined,
+      cwd: "/app",
+    });
 
     fake.simulateMessage({ type: "exit", code: 7 });
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -134,7 +145,46 @@ describe("child_process Worker spawn", () => {
     const shim = createChildProcessShim(undefined, undefined, { createWorker });
 
     shim.fork("./script.js", { cwd: "/app" });
-    expect(createWorker).toHaveBeenCalledWith("./script.js", [], undefined, "/app");
+    expect(createWorker).toHaveBeenCalledWith({
+      filename: "./script.js",
+      args: [],
+      env: undefined,
+      cwd: "/app",
+    });
+  });
+
+  it("spawn node parses -e/--eval/--print flags into eval specs", () => {
+    const createWorker = vi.fn(() => new FakeWorker());
+    const shim = createChildProcessShim(undefined, undefined, { createWorker });
+
+    shim.spawn("node", ["-e", "src()"], { cwd: "/" });
+    expect(createWorker).toHaveBeenLastCalledWith({
+      filename: undefined,
+      code: "src()",
+      args: [],
+      env: undefined,
+      cwd: "/",
+    });
+
+    // `-pe` clusters print+eval: the script is the next argv, wrapped so the
+    // eval result is logged (direct eval keeps the worker prelude's require).
+    shim.spawn("node", ["-pe", "1 + 1"]);
+    expect(createWorker).toHaveBeenLastCalledWith({
+      filename: undefined,
+      code: 'console.log(eval("1 + 1"))',
+      args: [],
+      env: undefined,
+      cwd: undefined,
+    });
+
+    shim.spawn("node", ["--eval=src()"]);
+    expect(createWorker).toHaveBeenLastCalledWith({
+      filename: undefined,
+      code: "src()",
+      args: [],
+      env: undefined,
+      cwd: undefined,
+    });
   });
 
   it("fork throws clear error without Worker factory", () => {

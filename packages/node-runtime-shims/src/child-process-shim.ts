@@ -38,13 +38,18 @@ export interface WorkerLike {
   onerror: ((event: ErrorEvent) => void) | null;
 }
 
+export interface WorkerSpawnSpec {
+  /** Bundled entry file (`node <file>` / `fork(modulePath)`). */
+  filename?: string;
+  /** Eval'd source (`node -e`/`--eval`/`-p`/`--print`). */
+  code?: string;
+  args: readonly string[];
+  env?: Record<string, string>;
+  cwd?: string;
+}
+
 export interface WorkerOptions {
-  createWorker?: (
-    scriptPath: string,
-    args: string[],
-    env?: Record<string, string>,
-    cwd?: string,
-  ) => WorkerLike | undefined;
+  createWorker?: (spec: WorkerSpawnSpec) => WorkerLike | undefined;
 }
 
 /**
@@ -341,9 +346,19 @@ export const createChildProcessShim = (
   ): WorkerChildProcessImpl | undefined => {
     if (!createWorker) return undefined;
     if (!isNodeCommand(command) || args.length === 0) return undefined;
-    const scriptPath = args[0];
-    const workerArgs = args.slice(1);
-    const worker = createWorker(scriptPath, workerArgs, envFrom(options), cwdFrom(options));
+    // `node <argv>` may carry flags (`-e`, `-pe`, `--eval`, ...) ahead of the
+    // entry — parse them like the sync path does instead of treating argv[0]
+    // as a filename (spawn(process.execPath, ['-pe', src]) is common in the
+    // Node test suite).
+    const spec = nodeRunSpec(args);
+    if (spec.filename === undefined && spec.code === undefined) return undefined;
+    const worker = createWorker({
+      filename: spec.filename,
+      code: spec.code,
+      args: spec.args ?? [],
+      env: envFrom(options),
+      cwd: cwdFrom(options),
+    });
     if (!worker) return undefined;
     const child = new WorkerChildProcessImpl(worker);
     child.spawnfile = command;
@@ -370,7 +385,12 @@ export const createChildProcessShim = (
     if (!createWorker) throw unsupportedError("SPAWN_PROCESS", FORK_NOT_SUPPORTED);
     const argv = toArgv(Array.isArray(args) ? args : []);
     const forkOptions = args && !Array.isArray(args) ? args : options;
-    const worker = createWorker(modulePath, argv, envFrom(forkOptions), cwdFrom(forkOptions));
+    const worker = createWorker({
+      filename: modulePath,
+      args: argv,
+      env: envFrom(forkOptions),
+      cwd: cwdFrom(forkOptions),
+    });
     if (!worker) {
       throw unsupportedError("SPAWN_PROCESS", `createWorker returned no worker for ${modulePath}`);
     }
@@ -521,25 +541,58 @@ export const createChildProcessShim = (
   };
 
   /**
-   * `node <argv>` → a run-sync spec. `-e`/`--eval` run source directly;
-   * `-p`/`--print` prints the eval result; other bare flags are dropped
-   * (no CLI-flag surface exists in the browser runtime). The first non-flag
-   * arg is the entry filename.
+   * `node <argv>` → a run spec. `-e`/`--eval` run source directly;
+   * `-p`/`--print` prints the eval result; short flags may cluster
+   * (`-pe`, `-ep`, `-pie`); `--eval=`/`--print=` take inline source; other
+   * bare flags are dropped (no CLI-flag surface exists in the browser
+   * runtime). The first non-flag arg is the entry filename.
    */
   const nodeRunSpec = (argv: readonly string[]): SyncRunRequest => {
     const rest = [...argv];
-    while (rest.length > 0 && rest[0].startsWith("-")) {
-      const flag = rest.shift()!;
-      if (flag === "-e" || flag === "--eval") {
-        return { code: rest.shift() ?? "", args: rest };
+    let print = false;
+    const takeEval = (inline: string | undefined): SyncRunRequest => {
+      const src = inline !== undefined && inline !== "" ? inline : (rest.shift() ?? "");
+      // Direct eval (not `(0, eval)`): the worker eval prelude's `require`,
+      // `process`, `Buffer` bindings are module-scoped consts that only a
+      // direct eval can see — `node -p 'require("fs")'` must work.
+      const code = print ? `console.log(eval(${JSON.stringify(src)}))` : src;
+      return { code, args: rest };
+    };
+    while (rest.length > 0) {
+      const flag = rest[0];
+      if (flag === "--") {
+        rest.shift();
+        break;
       }
-      if (flag === "-p" || flag === "--print") {
-        const src = rest.shift() ?? "";
-        return { code: `console.log((0, eval)(${JSON.stringify(src)}))`, args: rest };
+      if (!flag.startsWith("-") || flag === "-") break;
+      rest.shift();
+      if (flag.startsWith("--")) {
+        const eq = flag.indexOf("=");
+        const name = eq === -1 ? flag : flag.slice(0, eq);
+        const inline = eq === -1 ? undefined : flag.slice(eq + 1);
+        if (name === "--eval") return takeEval(inline);
+        if (name === "--print") {
+          print = true;
+          return takeEval(inline);
+        }
+        // Other long flags (--inspect, --no-warnings, ...) have no script
+        // semantics we model; skip them.
+        continue;
       }
-      if (flag === "-i" || flag === "--interactive") {
-        return { code: "", args: rest };
+      // Short-flag cluster: 'e' consumes the script (rest of the cluster or
+      // the next argv); 'p' is eval+print — it sets print and, like Node's
+      // `-p script`, takes the script itself when no 'e' follows in the
+      // cluster. Every other char is ignored.
+      let wantsEval = false;
+      for (let i = 1; i < flag.length; i++) {
+        const c = flag[i];
+        if (c === "e") return takeEval(flag.slice(i + 1) || undefined);
+        if (c === "p") {
+          print = true;
+          wantsEval = true;
+        }
       }
+      if (wantsEval) return takeEval(undefined);
     }
     const filename = rest.shift();
     if (filename === undefined) return { code: "", args: [] };
