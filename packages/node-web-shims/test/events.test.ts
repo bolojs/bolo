@@ -52,6 +52,26 @@ describe("node-web-shims: events", () => {
     await expect(p).resolves.toEqual([42]);
   });
 
+  it("on is the same function as addListener (Node alias semantics)", () => {
+    const shim = createEventsShim();
+    expect(shim.EventEmitter.prototype.on).toBe(shim.EventEmitter.prototype.addListener);
+  });
+
+  it("on does not recurse through stream-style subclasses that alias addListener to on", () => {
+    // readable-stream's Readable.prototype.on calls Stream.prototype.on while
+    // Readable.prototype.addListener aliases back to Readable.prototype.on.
+    // Node's `on === addListener` impl makes that safe; a dispatching `on`
+    // (unenv's `on` calls `this.addListener`) ping-pongs until stack overflow.
+    const shim = createEventsShim();
+    class Legacy extends shim.EventEmitter {}
+    Object.assign(Legacy.prototype, { addListener: Legacy.prototype.on });
+    const emitter = new Legacy();
+    let fired = false;
+    emitter.on("x", () => (fired = true));
+    emitter.emit("x");
+    expect(fired).toBe(true);
+  });
+
   it("init initializes emitter internals", () => {
     const shim = createEventsShim();
     const target = {} as { _events?: unknown; _eventsCount?: number };
