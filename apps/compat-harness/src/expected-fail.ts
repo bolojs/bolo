@@ -51,9 +51,7 @@ export const ledgerOutcome = (
 };
 
 /** Validates ledger shape; used by tests and safe to call at module load. */
-export const validateLedger = (
-  entries: Record<string, ExpectedFailEntry>,
-): string[] => {
+export const validateLedger = (entries: Record<string, ExpectedFailEntry>): string[] => {
   const problems: string[] = [];
   for (const [file, entry] of Object.entries(entries)) {
     if (!LANES.includes(entry?.lane)) problems.push(`${file}: invalid lane ${entry?.lane}`);
