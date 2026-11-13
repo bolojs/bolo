@@ -270,12 +270,13 @@ export const createLiveShimRegistry = (
       options.shellService,
       options.spawnProcess
         ? {
-            createWorker: (scriptPath, args, env, cwd) => {
+            createWorker: (spec) => {
               const proc = options.spawnProcess!({
-                filename: scriptPath,
-                args,
-                env,
-                cwd,
+                filename: spec.filename,
+                code: spec.code,
+                args: spec.args,
+                env: spec.env,
+                cwd: spec.cwd,
               });
               return proc ? spawnedProcessToWorkerLike(proc) : undefined;
             },

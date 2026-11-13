@@ -131,6 +131,22 @@ const handleUncaught = (err: unknown): boolean => {
     finish(err.code);
     return true;
   }
+  // Node routes fatal errors through the active domain first
+  // (uncaughtExceptionCaptureCallback → process.domain._errorHandler); a
+  // domain 'error' handler that returns true swallows the exception before
+  // 'uncaughtException' listeners or the default crash path run.
+  const domain = (
+    processShim as unknown as {
+      domain?: { _errorHandler?: (e: unknown) => boolean } | null;
+    } | null
+  )?.domain;
+  if (domain && typeof domain._errorHandler === "function") {
+    try {
+      if (domain._errorHandler(err)) return true;
+    } catch (er2) {
+      err = er2;
+    }
+  }
   if (
     processShim &&
     (processShim.listenerCount("uncaughtException") > 0 ||
@@ -295,6 +311,16 @@ const runProcess = async (msg: ProcRunMessage) => {
   });
   processShim = shims.process as ProcessShim;
   const nextTick = processShim.nextTick;
+  // Ticks queued inside an event-loop callback go through the deferred queue:
+  // the loop drains them after each non-throwing callback, and Node holds the
+  // queue across a throwing one (test-timers-immediate-queue-throw). `loop`
+  // is assigned before any bundled code can call nextTick.
+  const deferredTick = (
+    processShim as unknown as {
+      _nextTickDeferred?: (fn: (...a: unknown[]) => void, ...args: unknown[]) => void;
+    }
+  )._nextTickDeferred;
+  let loop: ReturnType<typeof createEventLoop> | undefined;
   processShim.nextTick = ((fn: unknown, ...args: unknown[]) => {
     if (typeof fn !== "function") return nextTick(fn as never, ...args);
     // Capture the async context (AsyncLocalStorage store) and announce the
@@ -304,11 +330,12 @@ const runProcess = async (msg: ProcRunMessage) => {
     // Node does not report nextTick through 'init', only through
     // before/after — so reserve an id instead of announcing a resource.
     const asyncId = reserveAsyncId();
-    return nextTick(
-      (...cbArgs: unknown[]) =>
-        runInAsyncScope(asyncId, () => Reflect.apply(fn, undefined, cbArgs)) as unknown,
-      ...args,
-    );
+    const wrapped = (...cbArgs: unknown[]) =>
+      runInAsyncScope(asyncId, () => Reflect.apply(fn, undefined, cbArgs)) as unknown;
+    if (loop?.inCallback() && deferredTick) {
+      return deferredTick(wrapped, ...args);
+    }
+    return nextTick(wrapped, ...args);
   }) as ProcessShim["nextTick"];
   // PROC_RUN carries the spawn-time env (already a plain cloneable record);
   // the live registry has no env option, so seed the shim env here. Wrap the
@@ -375,7 +402,7 @@ const runProcess = async (msg: ProcRunMessage) => {
   // `__browserContainers.timers` (GLOBALS_BANNER) and the `node:timers` shim;
   // infrastructure timers (logtape, rpc) use the realm's real globals and never
   // count as handles.
-  const loop = createEventLoop({
+  loop = createEventLoop({
     drainTicks: () => processShim?.drainTicks(),
     onUncaught: handleUncaught,
     isExited: () => exited,
