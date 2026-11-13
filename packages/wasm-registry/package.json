@@ -45,5 +45,14 @@
   },
   "engines": {
     "node": ">=24.0.0"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./binary-loader": "./dist/binary-loader.js",
+    "./bundle": "./dist/bundle.js",
+    "./curated-tools": "./dist/curated-tools.js",
+    "./native-addon-resolver": "./dist/native-addon-resolver.js",
+    "./registry": "./dist/registry.js",
+    "./wasi-executor": "./dist/wasi-executor.js"
   }
 }

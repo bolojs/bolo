@@ -9,13 +9,13 @@ import {
 import type { ProcessShim, SpawnedProcess } from "@bolojs/node-runtime-shims";
 import { createRpcPeer } from "./rpc.js";
 import { createRemoteDeps } from "./remote-objects.js";
+import { registerCuratedWasmTools } from "@bolojs/registry/curated-tools";
 import {
-  registerCuratedWasmTools,
   createWasmNativeAddonLoader,
   warmWasmAddons,
   wasmAddonSpecifiers,
   bundleHasNativeAddon,
-} from "@bolojs/registry";
+} from "@bolojs/registry/native-addon-resolver";
 import { createSyncCaller } from "./sync-channel.js";
 import { createNodeTimers } from "./node-timers.js";
 import { createEventLoop } from "./event-loop.js";
