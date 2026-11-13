@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-13T09:01:08.147Z",
+  "generatedAt": "2026-11-13T09:41:05.170Z",
   "validated": true,
   "total": 167,
-  "pass": 122,
-  "fail": 44,
+  "pass": 127,
+  "fail": 39,
   "skip": 1,
   "modules": [
     {
@@ -153,12 +153,12 @@
         {
           "file": "test-util-inspect.js",
           "status": "fail",
-          "error": "Uncaught Error: No such binding: js_stream"
+          "error": "Uncaught Error: No such binding: util"
         },
         {
           "file": "test-util-types.js",
           "status": "fail",
-          "error": "Uncaught Error: No such binding: js_stream"
+          "error": "Uncaught AssertionError: Want undefined to match isExternal"
         }
       ]
     },
@@ -170,7 +170,7 @@
         {
           "file": "test-assert.js",
           "status": "fail",
-          "error": "[bundle warning] home/harness/test/parallel/test-assert.js (950:8) \u001b[33m[EVAL] \u001b[0mUse of direct `eval` function is strongly discouraged as it poses security risks and may cause issues with minification."
+          "error": "Uncaught AssertionError: {\"message\":\"2 notStrictEqual 2\",\"name\":\"AssertionError\"} deepStrictEqual {\"message\":\"Expected \\\"actual\\\" to be strictly unequal to: 2\",\"name\":\"AssertionError\"}"
         },
         {
           "file": "test-assert-fail.js",
@@ -179,7 +179,7 @@
         {
           "file": "test-assert-async.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"promiseFn\\\" argument must be of type function or an instance of Promise. Received type string (fail)\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"message\":\"The \\\"promiseFn\\\" argument must be of type function or an instance..."
+          "error": "Uncaught AssertionError: {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got Map(0) {  }.\",\"code\":\"ERR_INVALID_RETURN_VALUE\",\"name\":\"TypeError\"} deepStrictEqual {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got..."
         }
       ]
     },
@@ -211,7 +211,7 @@
         {
           "file": "test-fs-mkdir.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (Error)."
+          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
         },
         {
           "file": "test-fs-write-file.js",
@@ -233,7 +233,7 @@
         {
           "file": "test-crypto-hash.js",
           "status": "fail",
-          "error": "Uncaught Error: fs.createReadStream is not supported by this VFS backend"
+          "error": "Uncaught AssertionError: '' strictEqual '46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762f'"
         },
         {
           "file": "test-crypto-hmac.js",
@@ -254,7 +254,7 @@
         {
           "file": "test-http-status-code.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Failed to fetch"
+          "error": "TIMEOUT after 30000ms"
         },
         {
           "file": "test-http-methods.js",
@@ -269,7 +269,7 @@
     },
     {
       "name": "process",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
@@ -282,8 +282,7 @@
         },
         {
           "file": "test-process-hrtime.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: {\"code\":\"ERR_OUT_OF_RANGE\",\"name\":\"RangeError\",\"message\":\"The \\\"time\\\" argument must contain exactly 2 elements. Received 0 elements\"} deepStrictEqual {\"code\":\"ERR_OUT_OF_RANGE\",\"name\":\"RangeError\",\"message\":\"The value of \\\"time\\\" is out of range. It must be 2. Received 0\"}"
+          "status": "pass"
         }
       ]
     },
@@ -524,7 +523,7 @@
         {
           "file": "test-console-clear.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: '' strictEqual '\u001b[1;1H\u001b[0J'"
+          "error": "Uncaught AssertionError: '\u001b[1;1H\u001b[0J' strictEqual ''"
         },
         {
           "file": "test-console-count.js",
@@ -538,18 +537,16 @@
     },
     {
       "name": "child_process",
-      "passed": 0,
+      "passed": 2,
       "total": 2,
       "tests": [
         {
           "file": "test-child-process-spawnsync.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'code')"
+          "status": "pass"
         },
         {
           "file": "test-child-process-execsync-maxbuf.js",
-          "status": "fail",
-          "error": "Uncaught Error: [unenv] util.getSystemErrorName is not implemented yet!"
+          "status": "pass"
         }
       ]
     },
@@ -580,7 +577,7 @@
         {
           "file": "test-performanceobserver.js",
           "status": "fail",
-          "error": "Uncaught Error: No such binding: performance"
+          "error": "Uncaught TypeError: Cannot read properties of undefined (reading '0')"
         }
       ]
     },
@@ -592,7 +589,7 @@
         {
           "file": "test-net-connect-buffer.js",
           "status": "fail",
-          "error": "Uncaught TypeError: net.Stream is not a function"
+          "error": "TIMEOUT after 30000ms"
         }
       ]
     },
@@ -625,12 +622,12 @@
         {
           "file": "test-https-request-arguments.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Failed to fetch"
+          "error": "TIMEOUT after 30000ms"
         },
         {
           "file": "test-https-close.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Failed to fetch"
+          "error": "TIMEOUT after 30000ms"
         }
       ]
     },
@@ -904,7 +901,7 @@
     },
     {
       "name": "process-exit",
-      "passed": 7,
+      "passed": 9,
       "total": 9,
       "tests": [
         {
@@ -913,8 +910,7 @@
         },
         {
           "file": "test-process-beforeexit.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-process-exit-code-validation.js",
@@ -942,8 +938,7 @@
         },
         {
           "file": "test-process-really-exit.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: '' strictEqual 'really exited'"
+          "status": "pass"
         }
       ]
     },
