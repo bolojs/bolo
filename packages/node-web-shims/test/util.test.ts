@@ -24,7 +24,10 @@ describe("node-web-shims: util", () => {
 
   it("format() substitutes specifiers like Node", () => {
     expect(format("%s:%d", "a", 3)).toBe("a:3");
-    expect(format("100%%")).toBe("100%");
+    // Node leaves "%%" alone when the format string is the only argument
+    // (the placeholder loop needs a following argument).
+    expect(format("100%%")).toBe("100%%");
+    expect(format("100%% %s", "x")).toBe("100% x");
     expect(format("%j", { a: 1 })).toBe('{"a":1}');
   });
 
