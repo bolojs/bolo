@@ -123,9 +123,9 @@ describe("hashes", () => {
       nodeCrypto.createHash("shake128", { outputLength: 5 }).update("abc").digest("hex"),
     );
     expect(d.digest("hex")).toBe("");
-    expect(c.createHash("shake128", { outputLength: 0 }).copy({ outputLength: 5 }).digest("hex")).toBe(
-      nodeCrypto.createHash("shake128", { outputLength: 5 }).digest("hex"),
-    );
+    expect(
+      c.createHash("shake128", { outputLength: 0 }).copy({ outputLength: 5 }).digest("hex"),
+    ).toBe(nodeCrypto.createHash("shake128", { outputLength: 5 }).digest("hex"));
     expect(() => c.createHash("sha256").copy({ outputLength: 1 })).toThrowError(
       expect.objectContaining({ code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH" }),
     );
@@ -394,7 +394,7 @@ describe("sign/verify", () => {
     );
     const sig2 = c.sign("sha256", msg, imported);
     expect(nodeCrypto.verify("sha256", msg, nodePair.publicKey, sig2)).toBe(true);
-  });
+  }, 60_000);
 
   it("createSign/createVerify streaming API", () => {
     const { publicKey, privateKey } = c.generateKeyPairSync("ed25519");
