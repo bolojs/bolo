@@ -370,7 +370,10 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
         len = 0;
       }
     }
-    return origFrom.call(BufferClass, new Uint8Array(obj, offset, len));
+    // Buffer.from(arrayBuffer, ...) must return a view sharing the
+    // ArrayBuffer's memory (Node semantics) — routing through a Uint8Array
+    // would copy and break view consumers like memfs.
+    return origFrom.call(BufferClass, obj, offset, len);
   };
 
   const toLength = (value: unknown): number => {
