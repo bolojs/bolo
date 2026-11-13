@@ -31,8 +31,7 @@ interface BrowserContainersLike {
 // that realm, so reading only `globalThis.process` would leave
 // `process.domain` permanently unsynced.
 const getProcess = (): ProcessLike | undefined => {
-  const bc = (globalThis as { __browserContainers?: BrowserContainersLike })
-    .__browserContainers;
+  const bc = (globalThis as { __browserContainers?: BrowserContainersLike }).__browserContainers;
   return bc?.shims?.process ?? bc?.process ?? (globalThis as { process?: ProcessLike }).process;
 };
 
