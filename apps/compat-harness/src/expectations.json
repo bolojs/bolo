@@ -143,24 +143,6 @@
     "location": "packages/node-web-shims/src/async_hooks.ts",
     "remediation": "implement async context propagation in the async_hooks/timers shim"
   },
-  "test/parallel/test-timers-immediate-promisified.js": {
-    "lane": "A",
-    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
-    "location": "packages/node-web-shims/src/timers_promises.ts",
-    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
-  },
-  "test/parallel/test-timers-immediate-queue-throw.js": {
-    "lane": "A",
-    "reason": "needs the deprecated node:domain module bound onto immediate-queue throw paths",
-    "location": "packages/node-web-shims/src/domain.ts",
-    "remediation": "fix the domain shim's immediate-queue throw binding (minimal domain shim is feasible)"
-  },
-  "test/parallel/test-timers-interval-promisified.js": {
-    "lane": "A",
-    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
-    "location": "packages/node-web-shims/src/timers_promises.ts",
-    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
-  },
   "test/parallel/test-timers-max-duration-warning.js": {
     "lane": "A",
     "reason": "expects 6 TimeoutOverflowWarning emissions via libuv-level timer lists; shim emits 3",
@@ -179,23 +161,11 @@
     "location": "packages/node-runtime-shims/src/live.ts",
     "remediation": "register the real timers/promises shim in the live registry instead of the interop artifact"
   },
-  "test/parallel/test-timers-reset-process-domain-on-throw.js": {
-    "lane": "A",
-    "reason": "needs the deprecated node:domain module bound onto process.domain reset-on-throw",
-    "location": "packages/node-web-shims/src/domain.ts",
-    "remediation": "fix the domain shim's process.domain reset binding (minimal domain shim is feasible)"
-  },
   "test/parallel/test-timers-socket-timeout-removes-other-socket-unref-timer.js": {
     "lane": "B",
     "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
     "location": "packages/node-runtime-shims/src/net-shim.ts",
     "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-  },
-  "test/parallel/test-timers-timeout-promisified.js": {
-    "lane": "A",
-    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
-    "location": "packages/node-web-shims/src/timers_promises.ts",
-    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
   },
   "test/parallel/test-timers-unrefed-in-callback.js": {
     "lane": "B",
