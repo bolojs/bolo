@@ -58,7 +58,7 @@ describe("node-web-shims: util", () => {
     expect(format("%s", [1, 2])).toBe("[ 1, 2 ]");
     const circular: { self?: unknown } = {};
     circular.self = circular;
-    expect(format("%j", circular)).toBe("[Circular: ~]");
+    expect(format("%j", circular)).toBe("[Circular]");
   });
 
   it("format() tolerates non-string first arguments", () => {

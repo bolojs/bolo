@@ -224,10 +224,7 @@ const runInNewContextInternal = (
   options?: RunInContextOptions,
 ): unknown => {
   if (options?.timeout !== undefined && options.timeout > 0 && !quickJSModule) {
-    throw unsupportedError(
-      "VM_BACKEND",
-      "vm timeout requires initialized QuickJS module",
-    );
+    throw unsupportedError("VM_BACKEND", "vm timeout requires initialized QuickJS module");
   }
   if (quickJSModule) {
     const ctx = createContextInternal(context);

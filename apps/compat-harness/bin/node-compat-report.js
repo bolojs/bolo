@@ -32,9 +32,7 @@ const basename = (file) => file.split("/").pop() ?? file;
 // and excluded from `fail`. Lane A (shim bug) and lane B (unbuilt seam work)
 // still count as failures so the score reflects fixable gaps.
 const ledgerEntry = (result) =>
-  result.expectedFail && typeof result.expectedFail === "object"
-    ? result.expectedFail
-    : undefined;
+  result.expectedFail && typeof result.expectedFail === "object" ? result.expectedFail : undefined;
 
 const isPlatformBoundFail = (result) =>
   result.status === "fail" && ledgerEntry(result)?.lane === "C";
