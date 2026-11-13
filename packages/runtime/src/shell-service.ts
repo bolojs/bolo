@@ -1,9 +1,16 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { PackageManager } from "@bolojs/pm";
 import type { SWSandbox } from "@bolojs/sandbox";
-import { bundleEntry, resetBundler } from "@bolojs/registry";
+import {
+  bundleEntry,
+  resetBundler,
+  bundleHasNativeAddon,
+  createWasmNativeAddonLoader,
+  warmWasmAddons,
+  wasmAddonSpecifiers,
+} from "@bolojs/registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
-import type { SpawnedProcess } from "@bolojs/node-runtime-shims";
+import type { NativeAddonLoader, SpawnedProcess, WasmRegistry } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
 import { git } from "./commands/git.js";
 import { nc } from "./commands/nc.js";
@@ -54,6 +61,12 @@ export interface ShellServiceDeps {
    * exists), node apps run in a dedicated worker process instead of on the
    * main thread. */
   syncServer?: SyncServer;
+  /**
+   * WASM tool registry for `child_process` dispatch and direct shell
+   * commands (esbuild/swc curated tools). When absent, wasm dispatch is
+   * skipped and commands fall through to just-bash.
+   */
+  wasmRegistry?: WasmRegistry;
 }
 
 export interface ShellResult {
@@ -128,11 +141,37 @@ export class ShellService {
   private bash: Bash;
   private viteWatcher?: ReturnType<VfsBus["watch"]>;
   private processes = new Map<unknown, NodeProcess>();
+  /**
+   * Warmed `.node` → WASM-variant exports, populated lazily by
+   * `ensureWasmAddons()` the first time a bundle contains a `.node` require.
+   * The map is mutated in place so the synchronous `nativeAddonLoader`
+   * closure created in the constructor sees late arrivals.
+   */
+  private readonly wasmAddons: Record<string, unknown> = {};
+  private wasmAddonsWarm: Promise<void> | undefined;
+  private readonly nativeAddonLoader: NativeAddonLoader;
 
   constructor(deps: ShellServiceDeps) {
     this.deps = deps;
     this.cwd = deps.workdir ?? "/";
     this.bash = new Bash({ fs: new VfsBashFileSystem(deps.vfs), cwd: this.cwd });
+    this.nativeAddonLoader = createWasmNativeAddonLoader({
+      vfs: deps.vfs,
+      addons: this.wasmAddons,
+    });
+  }
+
+  /**
+   * Imports the curated `.node` variant packages (argon2-wasm,
+   * lightningcss-wasm, bcryptjs) into `this.wasmAddons`. Idempotent; only
+   * runs when a bundled app actually contains a `.node` require so ordinary
+   * spawns never pay the CDN cost.
+   */
+  private ensureWasmAddons(): Promise<void> {
+    this.wasmAddonsWarm ??= warmWasmAddons(wasmAddonSpecifiers()).then((warmed) => {
+      Object.assign(this.wasmAddons, warmed);
+    });
+    return this.wasmAddonsWarm;
   }
 
   async execute(
@@ -233,6 +272,22 @@ export class ShellService {
         return this.routeRepl(output);
       }
       return this.runNodeApp(filePath, output);
+    }
+
+    // WASM tool dispatch (esbuild/swc and friends) sits between the builtin
+    // commands and just-bash, mirroring the "WASM tool not found" fallthrough
+    // contract child-process-shim/remote-ops use: an unregistered command
+    // falls through to the shell untouched. Compound commands (pipes,
+    // redirects, lists, substitutions) always stay on the shell — the wasm
+    // tools take argv, not shell syntax.
+    if (this.deps.wasmRegistry && !/[|><&;`$]/.test(command)) {
+      const result = await this.deps.wasmRegistry.dispatch(cmd, rest);
+      const fellThrough = result.exitCode !== 0 && result.stderr.includes("WASM tool not found");
+      if (!fellThrough) {
+        if (result.stdout) output.stdout(result.stdout);
+        if (result.stderr) output.stderr(result.stderr);
+        return result.exitCode;
+      }
     }
 
     // just-bash restores cwd to its pre-call value after each exec(), so the
@@ -366,6 +421,7 @@ export class ShellService {
       sandbox: this.deps.swSandbox,
       syncServer: this.deps.syncServer!,
       xhrUrl: `${scope}__bolo_sync/${pid}`,
+      wasmRegistry: this.deps.wasmRegistry,
       shellService: {
         exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
       },
@@ -426,6 +482,7 @@ export class ShellService {
       sandbox: this.deps.swSandbox,
       syncServer: this.deps.syncServer!,
       xhrUrl: `${scope}__bolo_sync/${pid}`,
+      wasmRegistry: this.deps.wasmRegistry,
       shellService: {
         exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
       },
@@ -548,6 +605,10 @@ export class ShellService {
           this.deps.syncServer && typeof Worker === "function"
             ? this.spawnProcessForShim
             : undefined,
+        // `.node` requires inside bundled deps resolve through the curated
+        // WASM-variant table; variants warm lazily on first use (see
+        // ensureWasmAddons, triggered after bundleEntry below).
+        nativeAddonLoader: this.nativeAddonLoader,
       });
       globalThis.__browserContainers = {
         vfs: this.deps.vfs,
@@ -580,10 +641,27 @@ export class ShellService {
       for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
 
       if (this.deps.syncServer && typeof Worker === "function") {
+        // Process workers are separate realms — they warm their own addon
+        // variants inside node-process-worker.ts; nothing to do here.
         const proc = this.runNodeAppInWorker(entry, code, output, onPortEvent);
         const exitCode = await proc.exit;
         terminated = true;
         return exitCode;
+      }
+
+      // Main-realm execution: a bundle containing `.node` requires needs the
+      // variant packages warm before the code runs — the loader is
+      // synchronous. Quoted-specifier probe; bundles without native addons
+      // skip the CDN fetch entirely. A warm failure is not fatal: the
+      // synchronous loader throws a catalogued error if a `.node` require
+      // actually executes, and false-positive probes (a ".node" string in
+      // user code) must not kill an otherwise runnable bundle.
+      if (bundleHasNativeAddon(code)) {
+        await this.ensureWasmAddons().catch((err: unknown) => {
+          output.stderr(
+            `[wasm-addons] variant warm-up failed: ${err instanceof Error ? err.message : String(err)}\n`,
+          );
+        });
       }
 
       const result = await superviseRun({

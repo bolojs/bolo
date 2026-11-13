@@ -112,6 +112,30 @@ describe("createModuleShim", () => {
     expect(() => require("./native.node")).toThrow(/Pass nativeAddonLoader/);
   });
 
+  it("passes the resolved absolute path and the live vfs to nativeAddonLoader", () => {
+    // The default resolver (@bolojs/registry's createWasmNativeAddonLoader)
+    // relies on this contract: an absolute VFS path it can walk up to the
+    // owning package.json, plus the same VfsBus the shim was built with.
+    const vfs = new VfsBus();
+    const seen: Array<{ path: string; sameVfs: boolean }> = [];
+    const moduleShim = createModuleShim({
+      vfs,
+      getShim: () => undefined,
+      nativeAddonLoader: (path, loaderVfs) => {
+        seen.push({ path, sameVfs: loaderVfs === vfs });
+        return { ok: true };
+      },
+    });
+    const require = moduleShim.createRequire("/pkg/sub/entry.ts");
+
+    expect(require("../native.node")).toEqual({ ok: true });
+    expect(require("/abs/native.node")).toEqual({ ok: true });
+    expect(seen).toEqual([
+      { path: "/pkg/native.node", sameVfs: true },
+      { path: "/abs/native.node", sameVfs: true },
+    ]);
+  });
+
   it("reads JSON files synchronously off the vfs, resolved relative to the requiring file", () => {
     const vfs = new VfsBus();
     (vfs.hot as unknown as { mkdirSync: (p: string, o?: unknown) => void }).mkdirSync("/pkg", {

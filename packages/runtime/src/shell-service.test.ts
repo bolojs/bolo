@@ -246,6 +246,41 @@ server.listen(3000);`,
     expect(result.stderr).toContain("Usage");
   });
 
+  it("wasmRegistry dispatch handles registered tools before just-bash", async () => {
+    const dispatch = vi.fn().mockResolvedValue({
+      stdout: "0.20.2\n",
+      stderr: "",
+      exitCode: 0,
+    });
+    deps.wasmRegistry = { dispatch };
+    shell = new ShellService(deps);
+
+    const result = await shell.execute("esbuild --version");
+    expect(dispatch).toHaveBeenCalledWith("esbuild", ["--version"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("0.20.2\n");
+  });
+
+  it("wasmRegistry 'WASM tool not found' falls through to just-bash", async () => {
+    const dispatch = vi.fn().mockResolvedValue({
+      stdout: "",
+      stderr: "WASM tool not found: frobnicate",
+      exitCode: 1,
+    });
+    deps.wasmRegistry = { dispatch };
+    shell = new ShellService(deps);
+
+    const result = await shell.execute("frobnicate arg");
+    expect(dispatch).toHaveBeenCalledWith("frobnicate", ["arg"]);
+    // Falls through to just-bash, which reports the missing command.
+    expect(result.exitCode).toBe(127);
+  });
+
+  it("commands route to just-bash untouched when no wasmRegistry is configured", async () => {
+    const result = await shell.execute("frobnicate arg");
+    expect(result.exitCode).toBe(127);
+  });
+
   it("unknown command → exit code 127", async () => {
     const result = await shell.execute("foo bar");
     expect(result.exitCode).toBe(127);

@@ -64,6 +64,7 @@ export type {
   StreamBackend,
   StreamSocket,
   NetConnectOptions,
+  NativeAddonLoader,
 } from "./live.js";
 export { createDnsShim } from "./dns-shim.js";
 export type { DnsShimOptions } from "./dns-shim.js";
