@@ -74,14 +74,29 @@ export interface SyncRunResult {
   signal: string | null;
   stdout: string;
   stderr: string;
-  error?: { code: string; message: string };
+  error?: {
+    code: string;
+    message: string;
+    errno?: number;
+    syscall?: string;
+    path?: string;
+    spawnargs?: readonly string[];
+  };
 }
 
 export interface RemoteDeps {
   vfs: VfsBus;
   sandbox: SWSandbox | undefined;
   wasmRegistry: { dispatch: (command: string, args: string[]) => Promise<unknown> } | undefined;
-  shellService: { exec: (command: string, args: string[]) => Promise<unknown> } | undefined;
+  shellService:
+    | {
+        exec: (
+          command: string,
+          args: string[],
+          cwd?: string,
+        ) => Promise<{ stdout: string; stderr: string; exitCode: number }>;
+      }
+    | undefined;
   /** Blocking worker→main child run (`child.runSync` op over the sync channel). */
   spawnSync: (req: SyncRunRequest) => SyncRunResult;
   /** Number of fetch handlers registered via sandbox.onFetch — a listening
@@ -355,8 +370,8 @@ export const createRemoteDeps = (opts: RemoteDepsOptions): RemoteDeps => {
       : undefined,
     shellService: opts.hasShellService
       ? {
-          exec: (command: string, args: string[]) =>
-            rpc.call("shell.exec", command, args) as Promise<never>,
+          exec: (command: string, args: string[], cwd?: string) =>
+            rpc.call("shell.exec", command, args, cwd) as Promise<never>,
         }
       : undefined,
   };

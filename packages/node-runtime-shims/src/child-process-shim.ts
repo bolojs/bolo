@@ -1,4 +1,5 @@
 import { createEventsShim, createStreamShim, createBufferShim } from "@bolojs/node-web-shims";
+import { UV_ENOBUFS } from "./errno.js";
 
 const { EventEmitter } = createEventsShim();
 const { Readable, Writable } = createStreamShim();
@@ -18,7 +19,11 @@ export interface WasmRegistry {
 }
 
 export interface ShellService {
-  exec(cmd: string, args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }>;
+  exec(
+    cmd: string,
+    args: string[],
+    cwd?: string,
+  ): Promise<{ stdout: string; stderr: string; exitCode: number }>;
 }
 
 export interface WorkerLike {
@@ -62,7 +67,14 @@ export interface SyncRunResult {
   signal: string | null;
   stdout: string;
   stderr: string;
-  error?: { code: string; message: string };
+  error?: {
+    code: string;
+    message: string;
+    errno?: number;
+    syscall?: string;
+    path?: string;
+    spawnargs?: readonly string[];
+  };
 }
 
 export type SyncRunner = (req: SyncRunRequest) => SyncRunResult;
@@ -301,6 +313,14 @@ const FORK_NOT_SUPPORTED =
 const isNodeCommand = (command: string): boolean =>
   command === "node" || command.endsWith("/node") || command.endsWith("\\node");
 
+/**
+ * Node coerces every spawn arg through ToString before exec —
+ * `spawnSync(node, [file, 0, true, undefined])` delivers '0'/'true'/
+ * 'undefined' to the child (test-process-exit-code-validation relies on it).
+ */
+const toArgv = (args: readonly unknown[] | undefined): string[] =>
+  (args ?? []).map((arg) => String(arg));
+
 export const createChildProcessShim = (
   registry?: WasmRegistry,
   shell?: ShellService,
@@ -331,7 +351,7 @@ export const createChildProcessShim = (
     args?: string[],
     options?: Record<string, unknown>,
   ): ChildProcess => {
-    const argv = args ?? [];
+    const argv = toArgv(args);
     const workerChild = trySpawnWorker(command, argv, options);
     if (workerChild) return workerChild;
     return runChild(command, argv, registry, shell);
@@ -343,7 +363,7 @@ export const createChildProcessShim = (
     options?: Record<string, unknown>,
   ): ChildProcess => {
     if (!createWorker) throw new Error(FORK_NOT_SUPPORTED);
-    const argv = Array.isArray(args) ? args : [];
+    const argv = toArgv(Array.isArray(args) ? args : []);
     const forkOptions = args && !Array.isArray(args) ? args : options;
     const worker = createWorker(modulePath, argv, envFrom(forkOptions), cwdFrom(forkOptions));
     if (!worker) throw new Error(`createWorker returned no worker for ${modulePath}`);
@@ -540,11 +560,42 @@ export const createChildProcessShim = (
     return runSync(req);
   };
 
-  const enobufsError = (command: string): Error & { code: string } => {
-    const err = new Error(`spawnSync ${command} ENOBUFS`) as Error & { code: string };
+  /**
+   * Node's maxBuffer failure: `error.code === 'ENOBUFS'`, `error.errno` is the
+   * libuv code (-105), and `error.stdout`/`error.stderr` carry the captured
+   * output (encoded per `options.encoding`) — the child is killed but the
+   * bytes already read are not discarded.
+   */
+  const enobufsError = (
+    command: string,
+    stdout: unknown,
+    stderr: unknown,
+  ): Error & { code: string; errno: number } => {
+    const err = new Error(`spawnSync ${command} ENOBUFS`) as Error & {
+      code: string;
+      errno: number;
+      stdout?: unknown;
+      stderr?: unknown;
+    };
     err.code = "ENOBUFS";
+    err.errno = UV_ENOBUFS;
+    err.stdout = stdout;
+    err.stderr = stderr;
     return err;
   };
+
+  /** Spawn-failure error from the transport (`res.error`), Node-shaped. */
+  const spawnError = (res: SyncRunResult, fallbackCommand: string): Error & { code?: string } =>
+    Object.assign(new Error(res.error?.message ?? `spawnSync ${fallbackCommand} ENOENT`), {
+      code: res.error?.code ?? "ENOENT",
+      ...(res.error?.errno !== undefined ? { errno: res.error.errno } : {}),
+      ...(res.error?.syscall !== undefined ? { syscall: res.error.syscall } : {}),
+      ...(res.error?.path !== undefined ? { path: res.error.path } : {}),
+      ...(res.error?.spawnargs !== undefined ? { spawnargs: res.error.spawnargs } : {}),
+    });
+
+  /** UTF-8 byte length of captured output — maxBuffer is a byte budget. */
+  const byteLength = (text: string): number => Buffer.byteLength(text, "utf8");
 
   /** `spawnSync(command[, args][, options])` — blocks on the host's
    * sync runner (sync channel → main thread) and returns Node's result
@@ -557,7 +608,7 @@ export const createChildProcessShim = (
     options?: Record<string, unknown>,
   ): Record<string, unknown> => {
     const opts = options ?? {};
-    const argv = args ?? [];
+    const argv = toArgv(args);
     const req = runSpecFor(command, argv);
     req.env = envFrom(opts);
     req.cwd = cwdFrom(opts);
@@ -570,24 +621,22 @@ export const createChildProcessShim = (
         : Buffer.from(text).toString(encoding as BufferEncoding);
 
     const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
-    let stdout = res.stdout ?? "";
-    let stderr = res.stderr ?? "";
+    const stdout = res.stdout ?? "";
+    const stderr = res.stderr ?? "";
     let status = res.status ?? null;
     let error: (Error & { code?: string }) | undefined;
-    if (res.error) {
-      error = Object.assign(new Error(res.error.message), { code: res.error.code });
-    } else if (stdout.length > maxBuffer || stderr.length > maxBuffer) {
-      // Node kills the child on overflow; the transport already ran it to
-      // completion, so the closest faithful shape is the ENOBUFS error plus
-      // the truncated output.
-      error = enobufsError(command);
-      status = null;
-      stdout = stdout.slice(0, maxBuffer);
-      stderr = stderr.slice(0, maxBuffer);
-    }
-
     const out = toStdio(stdout);
     const err = toStdio(stderr);
+    if (res.error) {
+      error = spawnError(res, command);
+    } else if (byteLength(stdout) > maxBuffer || byteLength(stderr) > maxBuffer) {
+      // Node kills the child on overflow; the transport already ran it to
+      // completion, so the closest faithful shape is the ENOBUFS error plus
+      // the full captured output (Node keeps the bytes it already read).
+      error = enobufsError(command, out, err);
+      status = null;
+    }
+
     return {
       pid: nextPid++,
       output: [null, out, err],
@@ -599,12 +648,63 @@ export const createChildProcessShim = (
     };
   };
 
+  /**
+   * Minimal POSIX-shell word splitter for `execSync` command lines: splits on
+   * unquoted whitespace, honours 'single' and "double" quotes (contents kept
+   * verbatim, quotes removed) and backslash escapes outside quotes. Node runs
+   * execSync through /bin/sh -c; we only need the token stream to recognise a
+   * leading `node`/quoted-node invocation — anything else stays a shell line.
+   */
+  const tokenizeCommandLine = (line: string): string[] => {
+    const tokens: string[] = [];
+    let cur = "";
+    let has = false;
+    let quote: '"' | "'" | null = null;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]!;
+      if (quote === "'") {
+        if (ch === "'") quote = null;
+        else cur += ch;
+        continue;
+      }
+      if (quote === '"') {
+        if (ch === '"') quote = null;
+        else if (ch === "\\" && i + 1 < line.length && '"\\$`'.includes(line[i + 1]!)) {
+          cur += line[++i];
+        } else cur += ch;
+        continue;
+      }
+      if (ch === "'" || ch === '"') {
+        quote = ch;
+        has = true;
+        continue;
+      }
+      if (ch === "\\" && i + 1 < line.length) {
+        cur += line[++i];
+        has = true;
+        continue;
+      }
+      if (/\s/.test(ch)) {
+        if (has || cur.length > 0) {
+          tokens.push(cur);
+          cur = "";
+          has = false;
+        }
+        continue;
+      }
+      cur += ch;
+      has = true;
+    }
+    if (has || cur.length > 0) tokens.push(cur);
+    return tokens;
+  };
+
   const execSync = (command: string, options?: Record<string, unknown>): Buffer | string => {
     const opts = options ?? {};
     const str = String(command);
-    const parts = str.trim().split(/\s+/);
+    const parts = tokenizeCommandLine(str.trim());
     const req =
-      parts.length > 0 && isNodeCommand(parts[0])
+      parts.length > 0 && isNodeCommand(parts[0]!)
         ? nodeRunSpec(parts.slice(1))
         : runSpecFor(str, [], true);
     req.env = envFrom(opts);
@@ -614,18 +714,17 @@ export const createChildProcessShim = (
     const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
     const stdout = res.stdout ?? "";
     const stderr = res.stderr ?? "";
-    if (stdout.length > maxBuffer || stderr.length > maxBuffer) throw enobufsError(str);
 
     const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
     const encodeOut = (text: string) =>
       encoding === "buffer"
         ? Buffer.from(text)
         : Buffer.from(text).toString(encoding as BufferEncoding);
+    if (byteLength(stdout) > maxBuffer || byteLength(stderr) > maxBuffer) {
+      throw enobufsError(str, encodeOut(stdout), encodeOut(stderr));
+    }
     if (res.error) {
-      throw Object.assign(new Error(res.error.message), {
-        code: res.error.code,
-        status: res.status,
-      });
+      throw spawnError(res, str);
     }
     if (res.status !== 0 && res.status !== null) {
       throw Object.assign(new Error(`Command failed: ${str}`), {
@@ -643,7 +742,7 @@ export const createChildProcessShim = (
     args?: readonly string[] | Record<string, unknown>,
     options?: Record<string, unknown>,
   ): Buffer | string => {
-    const argv = Array.isArray(args) ? args : [];
+    const argv = toArgv(Array.isArray(args) ? args : []);
     const opts = ((Array.isArray(args) ? options : args) ?? {}) as Record<string, unknown>;
     const req = runSpecFor(file, argv);
     req.env = envFrom(opts);
@@ -653,18 +752,17 @@ export const createChildProcessShim = (
     const maxBuffer = Number(opts.maxBuffer ?? DEFAULT_MAX_BUFFER);
     const stdout = res.stdout ?? "";
     const stderr = res.stderr ?? "";
-    if (stdout.length > maxBuffer || stderr.length > maxBuffer) throw enobufsError(file);
 
     const encoding = typeof opts.encoding === "string" ? opts.encoding : "buffer";
     const encodeOut = (text: string) =>
       encoding === "buffer"
         ? Buffer.from(text)
         : Buffer.from(text).toString(encoding as BufferEncoding);
+    if (byteLength(stdout) > maxBuffer || byteLength(stderr) > maxBuffer) {
+      throw enobufsError(file, encodeOut(stdout), encodeOut(stderr));
+    }
     if (res.error) {
-      throw Object.assign(new Error(res.error.message), {
-        code: res.error.code,
-        status: res.status,
-      });
+      throw spawnError(res, file);
     }
     if (res.status !== 0 && res.status !== null) {
       throw Object.assign(new Error(`Command failed: ${file} ${argv.join(" ")}`), {

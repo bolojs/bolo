@@ -20,6 +20,7 @@ import {
 } from "./worker-threads-shim.js";
 import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
+import { getSystemErrorName } from "./errno.js";
 
 interface WriteSink {
   write: (data: string) => unknown;
@@ -219,7 +220,10 @@ export const createLiveShimRegistry = (
     os: nodeWebShims.os,
     events: nodeWebShims.events,
     stream: nodeWebShims.stream,
-    util: nodeWebShims.util,
+    // node-web-shims' util leaves getSystemErrorName unimplemented; the
+    // errno table lives here so child_process/fs error metadata can name
+    // libuv codes the same way Node does.
+    util: { ...nodeWebShims.util, getSystemErrorName },
     async_hooks: nodeWebShims.async_hooks,
     querystring: nodeWebShims.querystring,
     worker_threads: createWorkerThreadsBackend({

@@ -114,10 +114,47 @@ export const STATUS_CODES: Record<number | string, string> = {
 
 export const maxHeaderSize = 16384;
 
-export const validateHeaderName = (name: string): void => {
+/**
+ * Loop-liveness for in-flight requests and listening servers. Node keeps the
+ * process alive while a socket is open; inside a process worker
+ * `__browserContainers.timers` is the loop-backed timers API, so a
+ * far-future timer stands in for the socket handle (same trick as
+ * net-shim's NetHandleTracker). Outside a worker there is no loop to feed,
+ * so this is a no-op.
+ */
+interface LoopTimersLike {
+  setTimeout?: (fn: () => void, ms: number) => unknown;
+  clearTimeout?: (handle: unknown) => void;
+}
+
+const loopTimers = (): LoopTimersLike | undefined =>
+  (globalThis as { __browserContainers?: { timers?: LoopTimersLike } }).__browserContainers?.timers;
+
+const acquireLoopLiveness = (): (() => void) => {
+  const timers = loopTimers();
+  const timer = timers?.setTimeout?.(() => {}, 0x7fffffff);
+  return () => {
+    if (timer !== undefined) timers?.clearTimeout?.(timer);
+  };
+};
+
+export const validateHeaderName = (name: unknown): void => {
   if (typeof name !== "string" || !/^[\w!#$%&'*+\-.^`|~]+$/.test(name)) {
-    const err = new TypeError(`Header name must be a valid HTTP token [${name}]`);
+    // Node: ERR_INVALID_HTTP_TOKEN 'Header name must be a valid HTTP token
+    // ["<value>"]' — the value is interpolated for any type (3840 → "3840").
+    const err = new TypeError(`Header name must be a valid HTTP token ["${String(name)}"]`);
     (err as unknown as { code: string }).code = "ERR_INVALID_HTTP_TOKEN";
+    throw err;
+  }
+};
+
+const INVALID_HEADER_VALUE_CHAR = /[^\t\x20-\x7e\x80-\xff]/;
+
+const checkHeaderValueChars = (name: string, value: string): void => {
+  const match = INVALID_HEADER_VALUE_CHAR.exec(value);
+  if (match) {
+    const err = new TypeError(`Invalid character in header content ["${match[0]}"]`);
+    (err as unknown as { code: string }).code = "ERR_INVALID_CHAR";
     throw err;
   }
 };
@@ -129,6 +166,39 @@ export const validateHeaderValue = (name: string, value: unknown): void => {
     throw err;
   }
 };
+
+/** Node's setHeader/appendHeader value contract: string | number | string[]. */
+const normalizeHeaderValue = (name: string, value: unknown): string => {
+  validateHeaderName(name);
+  validateHeaderValue(name, value);
+  const parts = Array.isArray(value) ? value : [value];
+  for (const part of parts) {
+    if (typeof part !== "string" && typeof part !== "number") {
+      throw invalidArgTypeForHeader(name, part);
+    }
+    checkHeaderValueChars(name, String(part));
+  }
+  return parts.map(String).join(", ");
+};
+
+const invalidArgTypeForHeader = (name: string, value: unknown): TypeError => {
+  const err = new TypeError(
+    `The "value" argument must be of type string or an instance of Array or number. Received ${
+      value === null
+        ? "null"
+        : typeof value === "object"
+          ? "an instance of Object"
+          : `type ${typeof value}`
+    } for header "${name}"`,
+  ) as TypeError & { code: string };
+  err.code = "ERR_INVALID_ARG_TYPE";
+  return err;
+};
+
+const headersSentError = (): Error & { code: string } =>
+  Object.assign(new Error("Cannot set headers after they are sent to the client"), {
+    code: "ERR_HTTP_HEADERS_SENT",
+  });
 
 export const setMaxIdleHTTPParsers = (_max: number): void => {};
 
@@ -180,16 +250,38 @@ const buildRequestUrl = (
 ): URL => {
   if (typeof urlOrOpts === "string") urlOrOpts = new URL(urlOrOpts);
   if (urlOrOpts instanceof URL) {
+    // Node merges option fields over a URL argument (https.get(url, opts)).
     const url = new URL(urlOrOpts.href);
-    if (options?.path) url.pathname = options.path;
+    if (options) applyRequestUrlOptions(url, options);
     return url;
   }
   const opts = urlOrOpts;
-  const protocol = `${(opts.protocol ?? "http:").replace(/:$/, "")}:`;
-  const hostname = opts.hostname ?? opts.host ?? "localhost";
-  const port = opts.port ? `:${opts.port}` : "";
-  const path = opts.path ?? "/";
-  return new URL(`${protocol}//${hostname}${port}${path}`);
+  const url = new URL("http://localhost/");
+  applyRequestUrlOptions(url, opts);
+  if (options) applyRequestUrlOptions(url, options);
+  return url;
+};
+
+/**
+ * Apply Node's options-object URL fields onto a URL. `path` may carry a
+ * query string (`/x?y=1`), which `URL.pathname` alone would drop.
+ */
+const applyRequestUrlOptions = (url: URL, opts: RequestOptions): void => {
+  if (opts.protocol) url.protocol = `${opts.protocol.replace(/:$/, "")}:`;
+  const hostField = opts.hostname ?? opts.host;
+  if (hostField) {
+    // `host` may include a port (`example.com:8080`).
+    const colon = hostField.lastIndexOf(":");
+    const hasPort = colon > 0 && /^\d+$/.test(hostField.slice(colon + 1));
+    url.hostname = hasPort ? hostField.slice(0, colon) : hostField;
+    if (hasPort && opts.port === undefined) url.port = hostField.slice(colon + 1);
+  }
+  if (opts.port !== undefined && opts.port !== "") url.port = String(opts.port);
+  if (opts.path !== undefined) {
+    const q = opts.path.indexOf("?");
+    url.pathname = q === -1 ? opts.path : opts.path.slice(0, q);
+    url.search = q === -1 ? "" : opts.path.slice(q);
+  }
 };
 
 const normalizeRequestOptions = (
@@ -239,13 +331,14 @@ class IncomingMessageImpl extends Readable {
     body?: Uint8Array;
     statusCode?: number;
     statusMessage?: string;
+    rawHeaders?: string[];
     autoEmit?: boolean;
   }) {
     super();
     this.url = init.url;
     this.method = init.method;
     this.headers = init.headers;
-    this.rawHeaders = Object.entries(init.headers).flatMap(([k, v]) => [k, v]);
+    this.rawHeaders = init.rawHeaders ?? Object.entries(init.headers).flatMap(([k, v]) => [k, v]);
     this.statusCode = init.statusCode;
     this.statusMessage = init.statusMessage;
     this.body = init.body;
@@ -296,6 +389,8 @@ export class OutgoingMessageImpl extends Writable {
   readonly socket: unknown;
   readonly connection: unknown;
   protected responseHeaders: Record<string, string> = { "content-type": "text/plain" };
+  /** Original-case header names for `rawHeaders` (Node keeps send-order pairs). */
+  protected readonly headerDisplayNames = new Map<string, string>();
   protected chunks: Uint8Array[] = [];
 
   constructor() {
@@ -313,10 +408,11 @@ export class OutgoingMessageImpl extends Writable {
     this.connection = dummySocket;
   }
 
-  setHeader(key: string, value: string | number | readonly string[]): this {
-    this.responseHeaders[key.toLowerCase()] = Array.isArray(value)
-      ? value.join(", ")
-      : String(value);
+  setHeader(name: string, value: string | number | readonly string[]): this {
+    if (this.headersSent) throw headersSentError();
+    const key = String(name).toLowerCase();
+    this.responseHeaders[key] = normalizeHeaderValue(String(name), value);
+    this.headerDisplayNames.set(key, String(name));
     return this;
   }
 
@@ -329,7 +425,9 @@ export class OutgoingMessageImpl extends Writable {
   }
 
   removeHeader(key: string): void {
-    delete this.responseHeaders[key.toLowerCase()];
+    const lower = String(key).toLowerCase();
+    delete this.responseHeaders[lower];
+    this.headerDisplayNames.delete(lower);
   }
 
   getHeaderNames(): string[] {
@@ -340,11 +438,21 @@ export class OutgoingMessageImpl extends Writable {
     return { ...this.responseHeaders };
   }
 
+  /** `[name, value, name, value, …]` pairs preserving original header casing. */
+  rawHeaderPairs(): string[] {
+    return Object.entries(this.responseHeaders).flatMap(([key, value]) => [
+      this.headerDisplayNames.get(key) ?? key,
+      value,
+    ]);
+  }
+
   appendHeader(name: string, value: string | readonly string[]): this {
-    const key = name.toLowerCase();
+    if (this.headersSent) throw headersSentError();
+    const key = String(name).toLowerCase();
+    const valStr = normalizeHeaderValue(name, value);
     const existing = this.responseHeaders[key];
-    const valStr = Array.isArray(value) ? value.join(", ") : String(value);
     this.responseHeaders[key] = existing ? `${existing}, ${valStr}` : valStr;
+    if (!existing) this.headerDisplayNames.set(key, String(name));
     return this;
   }
 
@@ -359,8 +467,12 @@ export class OutgoingMessageImpl extends Writable {
     _encoding: string,
     callback?: (error?: Error | null) => void,
   ): void {
-    this.headersSent = true;
     this.chunks.push(toBytes(chunk));
+    this.headersSent = true;
+    // Local dispatch treats the first body chunk like Node's header flush:
+    // a handler that streams (`write` without `end`) still reaches the
+    // client instead of hanging the request forever.
+    this.emit("firstChunk");
     callback?.();
   }
 }
@@ -372,23 +484,71 @@ export class OutgoingMessageImpl extends Writable {
  * needed to build the final `Response` are added here.
  */
 class ServerResponseImpl extends OutgoingMessageImpl {
+  /**
+   * `writeHead(status[, reason][, headers])`. Node semantics:
+   * - headers may be a flat `[name, value, …]` array or an object;
+   * - a string second arg is the reason phrase;
+   * - calling it after headers were sent throws ERR_HTTP_HEADERS_SENT;
+   * - an out-of-range status throws ERR_HTTP_INVALID_STATUS_CODE.
+   */
   writeHead(
-    status: number,
-    reasonOrHeaders?: string | Record<string, string>,
-    headers?: Record<string, string>,
+    statusCode: number,
+    reasonOrHeaders?: string | Record<string, string | string[]> | (string | number)[],
+    headers?: Record<string, string | string[]> | (string | number)[],
   ): this {
-    this.statusCode = status;
+    if (this.headersSent) throw headersSentError();
+    if (
+      typeof statusCode !== "number" ||
+      !Number.isInteger(statusCode) ||
+      statusCode < 100 ||
+      statusCode > 999
+    ) {
+      const err = new TypeError(`Invalid status code: ${statusCode}`) as TypeError & {
+        code: string;
+      };
+      err.code = "ERR_HTTP_INVALID_STATUS_CODE";
+      throw err;
+    }
+    this.statusCode = statusCode;
+    let headerSource: Record<string, string | string[]> | (string | number)[] | undefined;
     if (typeof reasonOrHeaders === "string") {
       this.statusMessage = reasonOrHeaders;
-      if (headers) Object.assign(this.responseHeaders, lowerCaseHeaders(headers));
-    } else if (reasonOrHeaders && typeof reasonOrHeaders === "object") {
-      Object.assign(this.responseHeaders, lowerCaseHeaders(reasonOrHeaders));
+      headerSource = headers;
+    } else {
+      headerSource = reasonOrHeaders ?? headers;
     }
+    if (headerSource) this.applyWriteHeadHeaders(headerSource);
     this.headersSent = true;
     return this;
   }
 
-  toResponse(): Response {
+  /**
+   * Merge writeHead-supplied headers into the pending set. Flat arrays are
+   * `[name, value, name, value, …]`; objects go through the same
+   * validation/casing path as `setHeader`.
+   */
+  private applyWriteHeadHeaders(
+    source: Record<string, string | string[]> | (string | number)[],
+  ): void {
+    if (Array.isArray(source)) {
+      for (let i = 0; i + 1 < source.length; i += 2) {
+        const name = source[i];
+        const value = source[i + 1];
+        const key = String(name).toLowerCase();
+        this.responseHeaders[key] = normalizeHeaderValue(String(name), value);
+        this.headerDisplayNames.set(key, String(name));
+      }
+      return;
+    }
+    for (const [name, value] of Object.entries(source)) {
+      const key = name.toLowerCase();
+      this.responseHeaders[key] = normalizeHeaderValue(String(name), value);
+      this.headerDisplayNames.set(key, name);
+    }
+  }
+
+  /** Concatenated response body chunks (local-dispatch path). */
+  bodyBytes(): Uint8Array {
     const length = this.chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
     const body = new Uint8Array(length);
     let offset = 0;
@@ -396,9 +556,112 @@ class ServerResponseImpl extends OutgoingMessageImpl {
       body.set(chunk, offset);
       offset += chunk.byteLength;
     }
-    return new Response(body, { status: this.statusCode, headers: this.responseHeaders });
+    return body;
+  }
+
+  toResponse(): Response {
+    const statusText = this.statusMessage ?? STATUS_CODES[this.statusCode] ?? "";
+    const init = { status: this.statusCode, headers: this.responseHeaders };
+    try {
+      return new Response(this.bodyBytes() as unknown as BodyInit, { ...init, statusText });
+    } catch {
+      // `Response` rejects reason phrases with bytes outside the HTTP token
+      // range and 1xx/6xx+ statuses — the sandbox path degrades gracefully.
+      try {
+        return new Response(this.bodyBytes() as unknown as BodyInit, {
+          ...init,
+          status: 200,
+          statusText: "",
+        });
+      } catch {
+        return new Response(this.bodyBytes() as unknown as BodyInit);
+      }
+    }
   }
 }
+
+/**
+ * In-realm http servers keyed by listen port. `http.get`/`request` aimed at
+ * a loopback port served by a `ServerImpl` in this same realm dispatch
+ * directly — matching Node semantics where client and server share a
+ * process — instead of round-tripping through the service-worker fetch
+ * proxy (which only exists for cross-realm/sandboxed traffic).
+ */
+const localHttpServers = new Map<number, ServerImpl>();
+
+/** Ephemeral listen() ports, matching the net shim's loopback range. */
+let nextEphemeralHttpPort = 49153;
+
+const isLoopbackHost = (hostname: string): boolean =>
+  hostname === "localhost" ||
+  hostname === "127.0.0.1" ||
+  hostname === "::1" ||
+  hostname === "[::1]" ||
+  hostname === "";
+
+interface LocalDispatchResult {
+  statusCode: number;
+  statusMessage?: string;
+  headers: Record<string, string>;
+  rawHeaders: string[];
+  body: Uint8Array;
+}
+
+/** Run one request through a ServerImpl's 'request' listeners, in-realm. */
+const dispatchLocalRequest = async (
+  server: ServerImpl,
+  url: URL,
+  method: string,
+  headers: Record<string, string>,
+  body: Uint8Array | undefined,
+): Promise<LocalDispatchResult> => {
+  let pathname = url.pathname;
+  const virtualMatch = pathname.match(/^\/__virtual__\/\d+(\/.*)?$/);
+  if (virtualMatch) pathname = virtualMatch[1] || "/";
+  const request = new IncomingMessageImpl({
+    url: pathname + url.search,
+    method,
+    headers: lowerCaseHeaders(headers),
+    body,
+  });
+  const response = new ServerResponseImpl();
+  const snapshot = (): LocalDispatchResult => {
+    const rawHeaders = response.rawHeaderPairs();
+    const responseHeaders: Record<string, string> = {};
+    for (let i = 0; i + 1 < rawHeaders.length; i += 2) {
+      responseHeaders[rawHeaders[i].toLowerCase()] = rawHeaders[i + 1];
+    }
+    return {
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      headers: responseHeaders,
+      rawHeaders,
+      body: response.bodyBytes(),
+    };
+  };
+  let settled = false;
+  let finished = false;
+  const result = new Promise<LocalDispatchResult>((resolve) => {
+    const settle = () => {
+      if (settled) return;
+      settled = true;
+      resolve(snapshot());
+    };
+    response.once("finish", () => {
+      finished = true;
+      settle();
+    });
+    // `res.write` without `end` still delivers its first chunk — resolve on
+    // a macrotask so a same-tick `end()` wins and buffered bodies stay whole.
+    response.once("firstChunk", () => {
+      setTimeout(() => {
+        if (!finished) settle();
+      }, 0);
+    });
+  });
+  server.emit("request", request, response);
+  return result;
+};
 
 class ClientRequestImpl extends EventEmitter {
   readonly url: URL;
@@ -479,8 +742,39 @@ class ClientRequestImpl extends EventEmitter {
     this.detachAgent?.();
   }
 
+  /** Loopback port served by an in-realm ServerImpl, if any. */
+  private localTarget(): ServerImpl | undefined {
+    if (!isLoopbackHost(this.url.hostname)) return undefined;
+    const port = this.url.port ? Number(this.url.port) : this.url.protocol === "https:" ? 443 : 80;
+    const server = localHttpServers.get(port);
+    return server && server.listening ? server : undefined;
+  }
+
+  private _emitClientResponse(parts: {
+    statusCode: number;
+    statusMessage?: string;
+    headers: Record<string, string>;
+    rawHeaders?: string[];
+    body: Uint8Array;
+  }): void {
+    this.response = new IncomingMessageImpl({
+      headers: parts.headers,
+      rawHeaders: parts.rawHeaders,
+      body: parts.body,
+      statusCode: parts.statusCode,
+      statusMessage: parts.statusMessage,
+      autoEmit: false,
+    });
+    this.emit("response", this.response);
+    this.response.emitBody();
+    this.emit("finish");
+  }
+
   private async _send(): Promise<void> {
     if (this.aborted) return;
+    // An in-flight request is a live handle in Node — without it the worker
+    // could hit beforeExit while a slow/streaming response is pending.
+    const releaseLiveness = acquireLoopLiveness();
     const length = this.chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
     const body = length > 0 ? new Uint8Array(length) : undefined;
     if (body) {
@@ -491,35 +785,43 @@ class ClientRequestImpl extends EventEmitter {
       }
     }
 
-    const init: RequestInit = {
-      method: this.method,
-      headers: this.headers,
-      signal: this.abortController.signal,
-    };
-    if (body) init.body = body;
-
     try {
-      const res = await globalThis.fetch(this.url, init);
+      const local = this.localTarget();
+      if (local) {
+        const dispatched = await dispatchLocalRequest(
+          local,
+          this.url,
+          this.method,
+          this.headers,
+          body,
+        );
+        this._emitClientResponse(dispatched);
+      } else {
+        const init: RequestInit = {
+          method: this.method,
+          headers: this.headers,
+          signal: this.abortController.signal,
+        };
+        if (body) init.body = body;
+        const res = await globalThis.fetch(this.url, init);
+        const responseHeaders: Record<string, string> = {};
+        res.headers.forEach((value, key) => {
+          responseHeaders[key] = value;
+        });
+        const responseBody = new Uint8Array(await res.arrayBuffer());
+        this._emitClientResponse({
+          headers: responseHeaders,
+          body: responseBody,
+          statusCode: res.status,
+          statusMessage: res.statusText,
+        });
+      }
       if (this.timeoutId) clearTimeout(this.timeoutId);
-      const responseHeaders: Record<string, string> = {};
-      res.headers.forEach((value, key) => {
-        responseHeaders[key] = value;
-      });
-      const responseBody = new Uint8Array(await res.arrayBuffer());
-      this.response = new IncomingMessageImpl({
-        headers: responseHeaders,
-        body: responseBody,
-        statusCode: res.status,
-        statusMessage: res.statusText,
-        autoEmit: false,
-      });
-      this.emit("response", this.response);
-      this.response.emitBody();
-      this.emit("finish");
     } catch (err) {
       if (this.timeoutId) clearTimeout(this.timeoutId);
       if (!this.aborted) this.emit("error", err);
     } finally {
+      releaseLiveness();
       this.detach();
     }
   }
@@ -690,6 +992,7 @@ export class ServerImpl extends EventEmitter implements HttpServer {
   private serverPort = 0;
   private sandbox?: SWSandbox;
   private onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
+  private releaseLiveness?: () => void;
 
   constructor(
     sandbox?: SWSandbox,
@@ -713,7 +1016,8 @@ export class ServerImpl extends EventEmitter implements HttpServer {
     let actualPort = 3000;
     let cb: (() => void) | undefined;
     if (typeof port === "number") {
-      actualPort = port || 3000;
+      // Node assigns an ephemeral port for listen(0).
+      actualPort = port === 0 ? nextEphemeralHttpPort++ : port || 3000;
       if (typeof host === "function") {
         cb = host as () => void;
       } else if (typeof callback === "function") {
@@ -722,13 +1026,18 @@ export class ServerImpl extends EventEmitter implements HttpServer {
     } else if (typeof port === "function") {
       cb = port as () => void;
     } else if (typeof port === "object" && port !== null) {
-      actualPort = (port as { port?: number }).port ?? 3000;
+      const optPort = (port as { port?: number }).port;
+      actualPort = optPort === 0 ? nextEphemeralHttpPort++ : (optPort ?? 3000);
       cb = (typeof host === "function" ? host : callback) as (() => void) | undefined;
     }
     const url = `/__virtual__/${actualPort}`;
 
     this.listening = true;
     this.serverPort = actualPort;
+    localHttpServers.set(actualPort, this);
+    // A listening server keeps the process alive in Node — the loop handle
+    // stands in for the accept socket.
+    this.releaseLiveness ??= acquireLoopLiveness();
 
     this.onPortEvent?.("server-ready", { port: actualPort, url });
     this.onPortEvent?.("port-open", { port: actualPort, url });
@@ -779,9 +1088,14 @@ export class ServerImpl extends EventEmitter implements HttpServer {
   }
 
   close(callback?: (err?: Error) => void): this {
+    this.releaseLiveness?.();
+    this.releaseLiveness = undefined;
     if (this.listening) {
       this.onPortEvent?.("port-close", { port: this.serverPort });
       this.listening = false;
+      if (localHttpServers.get(this.serverPort) === this) {
+        localHttpServers.delete(this.serverPort);
+      }
     }
     queueMicrotask(() => {
       this.emit("close");

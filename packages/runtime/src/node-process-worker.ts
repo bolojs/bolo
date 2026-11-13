@@ -343,10 +343,13 @@ const runProcess = async (msg: ProcRunMessage) => {
     } catch (err) {
       if (!(err instanceof ProcessExit)) throw err;
       finish(err.code);
+      for (;;) {
+        /* host terminates the worker on EXIT */
+      }
     }
-    for (;;) {
-      /* host terminates the worker on EXIT */
-    }
+    // shimExit returned without throwing: the script overrode
+    // process.reallyExit with a non-terminating function — Node lets the
+    // script run on to natural completion (test-process-really-exit).
   }) as typeof processShim.exit;
   globalThis.__browserContainers = {
     vfs: remote.vfs,
@@ -466,10 +469,13 @@ const runProcess = async (msg: ProcRunMessage) => {
       await sleep(10);
       continue;
     }
-    // A listening server keeps the process alive indefinitely — the worker
-    // must not emit exit (main would terminate it and kill the server).
+    // A listening server keeps the process alive — the worker must not emit
+    // exit while one is registered (main would terminate it and kill the
+    // server). Poll rather than park: server.close() inside a handler must
+    // still let the process reach beforeExit/exit.
     if (serving()) {
-      await new Promise<void>(() => {});
+      await sleep(50);
+      continue;
     }
     try {
       processShim.emit("beforeExit", processShim.exitCode ?? 0);
@@ -478,8 +484,22 @@ const runProcess = async (msg: ProcRunMessage) => {
       else crash(err);
       return;
     }
+    // Node drains the nextTick queue and promise jobs scheduled by beforeExit
+    // handlers before deciding the loop is done — a setImmediate queued from
+    // a nextTick still keeps the process alive, and beforeExit fires again on
+    // the next drain. Yield a real task so microtasks and the browser's
+    // unhandledrejection delivery run first.
+    processShim.drainTicks();
+    // Work scheduled by beforeExit (a pending listen, a ref'd timer) means
+    // the loop runs another iteration — Node re-emits beforeExit after that
+    // drain, which is what lets a listen→close cycle inside a beforeExit
+    // handler still reach the next beforeExit (test-process-beforeexit).
+    if (hasRefedTimers() || liveThreads.size > 0 || serving()) continue;
+    await loop.yieldTask();
+    processShim.drainTicks();
+    if (exited) return;
     // beforeExit scheduled new work — drain again before exiting.
-    if (hasRefedTimers()) continue;
+    if (hasRefedTimers() || liveThreads.size > 0 || serving()) continue;
     break;
   }
 

@@ -266,7 +266,8 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
       wasmRegistry.dispatch(command, args);
   }
   if (shellService) {
-    ops["shell.exec"] = (command: string, args: string[]) => shellService.exec(command, args);
+    ops["shell.exec"] = (command: string, args: string[], cwd?: string) =>
+      shellService.exec(command, args, cwd);
   }
 
   // Synchronous child-process requests (`spawnSync`/`execSync`/`execFileSync`).
@@ -327,11 +328,34 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
 
     const command = req.command ?? "";
     const cmdArgs = [...(req.args ?? [])];
+    // POSIX shells report a missing executable as exit 127 + "not found" on
+    // stderr; Node's spawnSync surfaces that as an ENOENT error object with
+    // libuv errno metadata instead of a plain status.
+    const enoent = (stdout: string, stderr: string) => ({
+      status: null,
+      stdout,
+      stderr,
+      signal: null,
+      error: {
+        code: "ENOENT",
+        errno: -2,
+        syscall: `spawnSync ${command}`,
+        path: command,
+        spawnargs: cmdArgs,
+        message: `spawnSync ${command} ENOENT`,
+      },
+    });
+    const looksMissing = (exitCode: number, stderr: string) =>
+      exitCode === 127 && /not found/i.test(stderr);
+
     if (wasmRegistry && !req.shellString) {
       const result = await wasmRegistry.dispatch(command, cmdArgs);
       const fellThrough =
         result.exitCode !== 0 && result.stderr.includes("WASM tool not found") && shellService;
       if (!fellThrough) {
+        if (looksMissing(result.exitCode, result.stderr)) {
+          return enoent(result.stdout, result.stderr);
+        }
         return {
           status: result.exitCode,
           stdout: result.stdout,
@@ -341,7 +365,10 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
       }
     }
     if (shellService) {
-      const result = await shellService.exec(command, cmdArgs);
+      const result = await shellService.exec(command, cmdArgs, req.cwd);
+      if (looksMissing(result.exitCode, result.stderr)) {
+        return enoent(result.stdout, result.stderr);
+      }
       return {
         status: result.exitCode,
         stdout: result.stdout,
@@ -349,13 +376,7 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
         signal: null,
       };
     }
-    return {
-      status: null,
-      stdout: "",
-      stderr: "",
-      signal: null,
-      error: { code: "ENOENT", message: `spawnSync ${command} ENOENT` },
-    };
+    return enoent("", "");
   };
 
   if (deps.threads) {

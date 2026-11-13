@@ -154,24 +154,18 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
             { code: "ERR_INVALID_ARG_TYPE" },
           );
         }
+        // Node: `new ERR_OUT_OF_RANGE('time', 2, time.length)` —
+        // 'The value of "time" is out of range. It must be 2. Received N'.
         if (prev.length !== 2) {
           throw Object.assign(
             new RangeError(
-              `The "time" argument must contain exactly 2 elements. Received ${prev.length} elements`,
+              `The value of "time" is out of range. It must be 2. Received ${prev.length}`,
             ),
             { code: "ERR_OUT_OF_RANGE" },
           );
         }
-        for (const i of [0, 1] as const) {
-          if (typeof prev[i] !== "number" || !Number.isFinite(prev[i])) {
-            throw Object.assign(
-              new TypeError(
-                `The "time[${i}]" argument must be of type number.${describeReceived(prev[i])}`,
-              ),
-              { code: "ERR_INVALID_ARG_TYPE" },
-            );
-          }
-        }
+        // Node does not validate the tuple's element types — non-numbers
+        // just produce NaN diffs.
       }
       const elapsedMs = performance.now() - startedAt;
       const sec = Math.floor(elapsedMs / 1000);
@@ -321,7 +315,10 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
       } catch (err) {
         if (!(err instanceof ProcessExit)) throw err;
       }
-      throw new ProcessExit(process.exitCode ?? 0);
+      // Node ends exit() in reallyExit() — a user override that returns
+      // (test-process-really-exit) lets the script continue to natural
+      // completion instead of unwinding.
+      return process.reallyExit(process.exitCode ?? 0);
     },
     // process.reallyExit: exit NOW — no 'exit' handlers, no stdio flush wait.
     // The worker catches ProcessExit and finishes without emitting 'exit'.
