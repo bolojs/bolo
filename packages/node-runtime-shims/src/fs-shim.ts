@@ -756,6 +756,9 @@ export const createFsShim = (vfs: VfsBus) => {
   const hotPromises = vfs.hot.promises as unknown as
     | Record<string, ((...args: any[]) => any) | undefined>
     | undefined;
+  // Node guarantees fs.constants === fs.promises.constants by reference;
+  // read once so a facade that deserializes per access cannot split them.
+  const fsConstants = vfs.hot.constants;
 
   const unsupported = (name: string): Error =>
     new Error(`fs.${name} is not supported by this VFS backend`);
@@ -1133,7 +1136,7 @@ export const createFsShim = (vfs: VfsBus) => {
     utimes: promiseHot("utimes"),
     watch: promiseHot("watch"),
     glob: promiseHot("glob"),
-    constants: vfs.hot.constants,
+    constants: fsConstants,
     FileHandle: FileHandleShim,
   };
 
@@ -1287,7 +1290,7 @@ export const createFsShim = (vfs: VfsBus) => {
     // ships the same table as real fs.constants; the worker facade fetches
     // it over the wire. Optional-chained so construction still survives a
     // VFS backend without it.
-    constants: vfs.hot.constants,
+    constants: fsConstants,
     F_OK: (vfs.hot as unknown as { constants?: { F_OK?: number } }).constants?.F_OK,
     R_OK: (vfs.hot as unknown as { constants?: { R_OK?: number } }).constants?.R_OK,
     W_OK: (vfs.hot as unknown as { constants?: { W_OK?: number } }).constants?.W_OK,

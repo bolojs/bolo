@@ -71,6 +71,12 @@
     "location": "packages/node-runtime-shims/src/module-shim.ts",
     "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
   },
+  "test/parallel/test-net-connect-buffer.js": {
+    "lane": "B",
+    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend); in-process loopback connect times out in-container",
+    "location": "packages/node-runtime-shims/src/net-shim.ts",
+    "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
+  },
   "test/parallel/test-next-tick-domain.js": {
     "lane": "A",
     "reason": "needs the deprecated node:domain module bound correctly onto process.nextTick/domain interaction",
