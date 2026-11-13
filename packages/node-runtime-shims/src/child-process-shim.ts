@@ -372,10 +372,7 @@ export const createChildProcessShim = (
     const forkOptions = args && !Array.isArray(args) ? args : options;
     const worker = createWorker(modulePath, argv, envFrom(forkOptions), cwdFrom(forkOptions));
     if (!worker) {
-      throw unsupportedError(
-        "SPAWN_PROCESS",
-        `createWorker returned no worker for ${modulePath}`,
-      );
+      throw unsupportedError("SPAWN_PROCESS", `createWorker returned no worker for ${modulePath}`);
     }
     const child = new WorkerChildProcessImpl(worker);
     child.spawnfile = "node";
