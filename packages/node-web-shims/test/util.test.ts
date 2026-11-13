@@ -100,9 +100,9 @@ describe("node-web-shims: util", () => {
     expect(inspect(Infinity, { numericSeparator: true })).toBe("Infinity");
     // Default stays unseparated.
     expect(inspect(1234567)).toBe("1234567");
-    expect(
-      formatWithOptions({ numericSeparator: true }, "%d", 118059162071741140000),
-    ).toBe("118_059_162_071_741_140_000");
+    expect(formatWithOptions({ numericSeparator: true }, "%d", 118059162071741140000)).toBe(
+      "118_059_162_071_741_140_000",
+    );
     expect(formatWithOptions({ numericSeparator: true }, "%i", 1234567)).toBe("1_234_567");
     expect(formatWithOptions({ numericSeparator: true }, "%f", 1234.5)).toBe("1_234.5");
     expect(format("%d", 1234567)).toBe("1234567");

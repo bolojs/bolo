@@ -68,8 +68,7 @@ describe("node-web-shims: tls", () => {
     expect(warnings.length).toBeGreaterThanOrEqual(1);
     expect(warnings[0]).toMatchObject({
       name: "DeprecationWarning",
-      message:
-        "tls.parseCertString() is deprecated. Please use querystring.parse() instead.",
+      message: "tls.parseCertString() is deprecated. Please use querystring.parse() instead.",
       code: "DEP0123",
     });
     expect(parsed).toEqual({ CN: "example.com", O: "Example" });
@@ -87,8 +86,18 @@ describe("node-web-shims: tls", () => {
     const out: { ALPNProtocols?: Uint8Array } = {};
     tls.convertALPNProtocols(["h2", "http/1.1"], out);
     expect(Array.from(out.ALPNProtocols ?? [])).toEqual([
-      2, 0x68, 0x32, // \x02h2
-      8, 0x68, 0x74, 0x74, 0x70, 0x2f, 0x31, 0x2e, 0x31, // \x08http/1.1
+      2,
+      0x68,
+      0x32, // \x02h2
+      8,
+      0x68,
+      0x74,
+      0x74,
+      0x70,
+      0x2f,
+      0x31,
+      0x2e,
+      0x31, // \x08http/1.1
     ]);
   });
 
@@ -100,7 +109,9 @@ describe("node-web-shims: tls", () => {
     const err = tls.checkServerIdentity("evil.test", cert);
     expect(err).toMatchObject({ code: "ERR_TLS_CERT_ALTNAME_INVALID" });
     expect(err?.host).toBe("evil.test");
-    expect(tls.checkServerIdentity("example.com", { subject: { CN: "example.com" } })).toBeUndefined();
+    expect(
+      tls.checkServerIdentity("example.com", { subject: { CN: "example.com" } }),
+    ).toBeUndefined();
   });
 
   it("connect() validates arguments then throws ERR_BOL_UNSUPPORTED_TLS_BACKEND", () => {

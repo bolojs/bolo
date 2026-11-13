@@ -26,9 +26,9 @@ describe("node-web-shims: perf_hooks", () => {
     const obs = new PerformanceObserver(() => {});
     expect(() => obs.observe({} as never)).toThrowError(/entryTypes.*type|type.*entryTypes/);
     expect(() => obs.observe({ entryTypes: [] } as never)).toThrowError();
-    expect(() =>
-      obs.observe({ entryTypes: ["not-a-real-entry-type"] } as never),
-    ).toThrowError(/invalid/i);
+    expect(() => obs.observe({ entryTypes: ["not-a-real-entry-type"] } as never)).toThrowError(
+      /invalid/i,
+    );
   });
 
   it("disconnect() and takeRecords() are safe no-ops before observe()", () => {

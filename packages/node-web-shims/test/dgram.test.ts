@@ -79,7 +79,10 @@ describe("node-web-shims: dgram", () => {
     socket.close();
     await closed;
     expect(() => socket.close()).toThrowError(
-      expect.objectContaining({ code: "ERR_SOCKET_DGRAM_NOT_RUNNING", message: "Not running" }) as Error,
+      expect.objectContaining({
+        code: "ERR_SOCKET_DGRAM_NOT_RUNNING",
+        message: "Not running",
+      }) as Error,
     );
   });
 

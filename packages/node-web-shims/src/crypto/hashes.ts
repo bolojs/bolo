@@ -103,27 +103,22 @@ export interface HashOptions {
 /** Node's `options.outputLength` contract for createHash/Hash/copy. */
 const MAX_OUTPUT_LENGTH = 0x7fffffff;
 
-const validateOutputLength = (
-  entry: HashEntry,
-  outputLength: unknown,
-): number | undefined => {
+const validateOutputLength = (entry: HashEntry, outputLength: unknown): number | undefined => {
   if (outputLength === undefined) return undefined;
   if (typeof outputLength !== "number") {
     throw argTypeError("options.outputLength", "number", outputLength);
   }
   if (!Number.isInteger(outputLength) || outputLength < 0 || outputLength > MAX_OUTPUT_LENGTH) {
-    throw Object.assign(
-      new RangeError(`The value of "options.outputLength" is out of range`),
-      { code: "ERR_OUT_OF_RANGE" },
-    );
+    throw Object.assign(new RangeError(`The value of "options.outputLength" is out of range`), {
+      code: "ERR_OUT_OF_RANGE",
+    });
   }
   // Non-XOF algorithms only accept their own digest length; XOFs (SHAKE)
   // accept any length including 0.
   if (!entry.xof && entry.hash && outputLength !== entry.size) {
-    throw Object.assign(
-      new Error(`Digest method not supported for the given output length`),
-      { code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH" },
-    );
+    throw Object.assign(new Error(`Digest method not supported for the given output length`), {
+      code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH",
+    });
   }
   return outputLength;
 };
@@ -294,8 +289,7 @@ export const emitDeprecationWarning = (message: string, code: string): void => {
   // `crypto.Hmac()` twice but expects exactly one DEP0181).
   if (emittedDeprecations.has(code)) return;
   emittedDeprecations.add(code);
-  const proc = (globalThis as { process?: { emitWarning?: (...args: unknown[]) => void } })
-    .process;
+  const proc = (globalThis as { process?: { emitWarning?: (...args: unknown[]) => void } }).process;
   // Node delivers 'warning' asynchronously — callers routinely register
   // their listener after triggering the deprecated API (as
   // test-crypto-hash/-hmac do), so defer to a microtask like Node does.

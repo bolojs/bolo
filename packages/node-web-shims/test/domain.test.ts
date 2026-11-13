@@ -1,12 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import {
-  create,
-  createDomain,
-  createDomainShim,
-  Domain,
-  active,
-  _stack,
-} from "../src/domain.ts";
+import { create, createDomain, createDomainShim, Domain, active, _stack } from "../src/domain.ts";
 import { EventEmitter } from "../src/events.ts";
 
 const proc = globalThis.process as { domain?: unknown; nextTick?: unknown };
@@ -21,7 +14,8 @@ afterEach(() => {
 describe("node-web-shims: domain", () => {
   it("should match node:domain type shape", () => {
     const shim = createDomainShim();
-    const _nodeDomain: typeof import("node:domain") = shim as unknown as typeof import("node:domain");
+    const _nodeDomain: typeof import("node:domain") =
+      shim as unknown as typeof import("node:domain");
     expect(_nodeDomain).toBeDefined();
   });
 
@@ -45,11 +39,15 @@ describe("node-web-shims: domain", () => {
     const d = create();
     let inside: unknown;
     let thisArg: unknown;
-    const ret = d.run(function (this: unknown, a: number, b: number) {
-      inside = active;
-      thisArg = this;
-      return a + b;
-    }, 1, 2);
+    const ret = d.run(
+      function (this: unknown, a: number, b: number) {
+        inside = active;
+        thisArg = this;
+        return a + b;
+      },
+      1,
+      2,
+    );
 
     expect(ret).toBe(3);
     expect(inside).toBe(d);
@@ -117,12 +115,15 @@ describe("node-web-shims: domain", () => {
     expect((ee as { domain?: unknown }).domain).toBe(d);
 
     const seen: { err?: unknown; emitter?: unknown; thrown?: boolean; procDomain?: unknown } = {};
-    d.on("error", (er: Error & { domain?: unknown; domainEmitter?: unknown; domainThrown?: boolean }) => {
-      seen.err = er.domain;
-      seen.emitter = er.domainEmitter;
-      seen.thrown = er.domainThrown;
-      seen.procDomain = proc.domain;
-    });
+    d.on(
+      "error",
+      (er: Error & { domain?: unknown; domainEmitter?: unknown; domainThrown?: boolean }) => {
+        seen.err = er.domain;
+        seen.emitter = er.domainEmitter;
+        seen.thrown = er.domainThrown;
+        seen.procDomain = proc.domain;
+      },
+    );
 
     const ret = ee.emit("error", new Error("boom"));
     expect(ret).toBe(false);
@@ -188,11 +189,14 @@ describe("node-web-shims: domain", () => {
   it("should intercept Error first arguments with intercept()", () => {
     const d = create();
     const seen: { domain?: unknown; bound?: unknown; thrown?: boolean } = {};
-    d.on("error", (er: Error & { domain?: unknown; domainBound?: unknown; domainThrown?: boolean }) => {
-      seen.domain = er.domain;
-      seen.bound = er.domainBound;
-      seen.thrown = er.domainThrown;
-    });
+    d.on(
+      "error",
+      (er: Error & { domain?: unknown; domainBound?: unknown; domainThrown?: boolean }) => {
+        seen.domain = er.domain;
+        seen.bound = er.domainBound;
+        seen.thrown = er.domainThrown;
+      },
+    );
 
     const cb = (_data: string) => {
       throw new Error("should not run");

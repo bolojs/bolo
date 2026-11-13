@@ -275,11 +275,7 @@ interface FsWriteFileFn {
 interface FsMkdirFn {
   (path: string, opts?: { recursive?: boolean }): Promise<string | undefined>;
   (path: string, cb: (err: unknown, path?: string) => void): void;
-  (
-    path: string,
-    opts: { recursive?: boolean },
-    cb: (err: unknown, path?: string) => void,
-  ): void;
+  (path: string, opts: { recursive?: boolean }, cb: (err: unknown, path?: string) => void): void;
 }
 
 export const createFsShim = (vfs: VfsBus) => {
@@ -1131,8 +1127,7 @@ export const createFsShim = (vfs: VfsBus) => {
     realpath: promiseHot("realpath"),
     rename: promiseHot("rename"),
     rmdir: promiseHot("rmdir"),
-    statfs: (async (...args: any[]) =>
-      capStatfsBavail(await promiseHot("statfs")(...args))) as never,
+    statfs: async (...args: any[]) => capStatfsBavail(await promiseHot("statfs")(...args)),
     truncate: promiseHot("truncate"),
     unlink: promiseHot("unlink"),
     utimes: promiseHot("utimes"),
@@ -1243,9 +1238,7 @@ export const createFsShim = (vfs: VfsBus) => {
         };
         return dualHot("statfs")(...args);
       }
-      return (dualHot("statfs")(...args) as Promise<unknown>).then((s) =>
-        capStatfsBavail(s),
-      );
+      return (dualHot("statfs")(...args) as Promise<unknown>).then((s) => capStatfsBavail(s));
     }) as never,
     statfsSync: (path: string, opts?: unknown) =>
       capStatfsBavail(syncVol("statfsSync")(path, opts)),

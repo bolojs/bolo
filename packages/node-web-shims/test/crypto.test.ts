@@ -74,9 +74,7 @@ describe("hashes", () => {
 
   it("validates options.outputLength like Node", () => {
     // XOF defaults and explicit lengths.
-    expect(c.createHash("shake128").digest("hex")).toBe(
-      "7f9c2ba4e88f827d616045507605853e",
-    );
+    expect(c.createHash("shake128").digest("hex")).toBe("7f9c2ba4e88f827d616045507605853e");
     expect(c.createHash("shake128", { outputLength: 5 }).digest("hex")).toBe("7f9c2ba4e8");
     expect(c.createHash("shake128", { outputLength: 0 }).digest("hex")).toBe("");
     expect(c.createHash("shake256", { outputLength: 16 }).digest("hex")).toBe(
@@ -105,7 +103,9 @@ describe("hashes", () => {
     const a = c.createHash("shake128", { outputLength: 5 }).update("abc");
     const b = a.copy();
     const d = b.copy({ outputLength: 0 });
-    expect(a.digest("hex")).toBe(nodeCrypto.createHash("shake128", { outputLength: 5 }).update("abc").digest("hex"));
+    expect(a.digest("hex")).toBe(
+      nodeCrypto.createHash("shake128", { outputLength: 5 }).update("abc").digest("hex"),
+    );
     expect(d.digest("hex")).toBe("");
     expect(() => c.createHash("sha256").copy({ outputLength: 1 })).toThrowError(
       expect.objectContaining({ code: "ERR_OSSL_EVP_NOT_XOF_OR_INVALID_LENGTH" }),
@@ -277,7 +277,11 @@ describe("node fidelity", () => {
     expect(() => c.createHmac("sha1", null as never)).toThrowError(
       expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
     );
-    expect(() => c.createHmac("sha7", "key")).toThrowError(/Digest method not supported/);
+    // Node: createHmac reports ERR_CRYPTO_INVALID_DIGEST; createHash reports
+    // a plain "Digest method not supported" — the surfaces differ.
+    expect(() => c.createHmac("sha7", "key")).toThrowError(
+      expect.objectContaining({ code: "ERR_CRYPTO_INVALID_DIGEST" }),
+    );
   });
 
   it("randomUUID validates its options argument", () => {
