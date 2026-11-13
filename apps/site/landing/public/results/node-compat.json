@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-12T18:06:56.533Z",
+  "generatedAt": "2026-11-13T09:01:08.147Z",
   "validated": true,
   "total": 167,
-  "pass": 119,
-  "fail": 47,
+  "pass": 122,
+  "fail": 44,
   "skip": 1,
   "modules": [
     {
@@ -348,7 +348,7 @@
         {
           "file": "test-timers-immediate-promisified.js",
           "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "error": "Uncaught [object Object]"
         },
         {
           "file": "test-timers-immediate-queue-throw.js",
@@ -678,18 +678,16 @@
     },
     {
       "name": "cluster",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "tests": [
         {
           "file": "test-cluster-basic.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-cluster-call-and-destroy.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-cluster-invalid-message.js",
@@ -906,7 +904,7 @@
     },
     {
       "name": "process-exit",
-      "passed": 6,
+      "passed": 7,
       "total": 9,
       "tests": [
         {
@@ -920,8 +918,7 @@
         },
         {
           "file": "test-process-exit-code-validation.js",
-          "status": "fail",
-          "error": "exit code 1"
+          "status": "pass"
         },
         {
           "file": "test-process-exit-code.js",
