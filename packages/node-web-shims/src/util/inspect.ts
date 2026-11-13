@@ -106,38 +106,30 @@ const COLORS: Record<string, [number, number]> = {
   bgCyanBright: [106, 49],
   bgWhiteBright: [107, 49],
 };
-COLORS.grey = COLORS.gray;
-COLORS.blackBright = COLORS.gray;
-COLORS.bgGrey = COLORS.bgGray;
-COLORS.bgBlackBright = COLORS.bgGray;
-COLORS.faint = COLORS.dim;
-COLORS.crossedout = COLORS.strikethrough;
-COLORS.strikeThrough = COLORS.strikethrough;
-COLORS.crossedOut = COLORS.strikethrough;
-COLORS.conceal = COLORS.hidden;
-COLORS.swapColors = COLORS.inverse;
-COLORS.swapcolors = COLORS.inverse;
-COLORS.doubleUnderline = COLORS.doubleunderline;
-// Node exposes the aliases as non-enumerable properties: `Object.keys` lists
-// only the canonical colour names, `getOwnPropertyNames` lists both.
-for (const alias of [
-  "grey",
-  "blackBright",
-  "bgGrey",
-  "bgBlackBright",
-  "faint",
-  "crossedout",
-  "strikeThrough",
-  "crossedOut",
-  "conceal",
-  "swapColors",
-  "swapcolors",
-  "doubleUnderline",
-]) {
+// Node exposes the colour aliases as non-enumerable accessor properties:
+// reading one returns the canonical colour, and writing either one updates
+// the other so the two stay reference-equal.
+const COLOR_ALIASES: Record<string, string> = {
+  grey: "gray",
+  blackBright: "gray",
+  bgGrey: "bgGray",
+  bgBlackBright: "bgGray",
+  faint: "dim",
+  crossedout: "strikethrough",
+  strikeThrough: "strikethrough",
+  crossedOut: "strikethrough",
+  conceal: "hidden",
+  swapColors: "inverse",
+  swapcolors: "inverse",
+  doubleUnderline: "doubleunderline",
+};
+for (const [alias, canonical] of Object.entries(COLOR_ALIASES)) {
   Object.defineProperty(COLORS, alias, {
-    value: COLORS[alias as keyof typeof COLORS],
+    get: () => COLORS[canonical as keyof typeof COLORS],
+    set: (value: [number, number]) => {
+      COLORS[canonical as keyof typeof COLORS] = value;
+    },
     enumerable: false,
-    writable: true,
     configurable: true,
   });
 }
@@ -247,7 +239,11 @@ const formatPrimitive = (stylize: StylizeFn, value: unknown, ctx: Ctx): string =
     }
     // Long strings that contain line breaks are split across lines like Node
     // does (`'a\n' +\n  'b'`), each escaped chunk on its own line.
-    if (ctx.compact !== true && subject.length > K_MIN_LINE_LENGTH && subject.length > ctx.breakLength - ctx.indentationLvl - 4) {
+    if (
+      ctx.compact !== true &&
+      subject.length > K_MIN_LINE_LENGTH &&
+      subject.length > ctx.breakLength - ctx.indentationLvl - 4
+    ) {
       return (
         subject
           .split(/(?<=\n)/)
@@ -347,6 +343,13 @@ const isInstanceof = (object: unknown, proto: unknown): boolean => {
  * the prototype chain looking for a `constructor` own property whose `.name`
  * is non-empty and whose prototype `value` is an actual ancestor.
  */
+/**
+ * Forward declaration: `getConstructorName` renders a complex prototype by
+ * inspecting it, and `inspectFn` is defined further down the module.
+ */
+let inspectFn: (value: unknown, opts?: InspectOptions | boolean) => string = (() =>
+  undefined) as unknown as (value: unknown, opts?: InspectOptions | boolean) => string;
+
 const getConstructorName = (
   obj: object | null,
   ctx: Ctx,
@@ -354,7 +357,7 @@ const getConstructorName = (
   protoProps: string[] | undefined,
 ): string | null => {
   let firstProto: object | null | undefined;
-  const tmp = obj;
+  const tmp = obj as object;
   while (obj || UNDETECTABLE(obj)) {
     const descriptor = Object.getOwnPropertyDescriptor(obj!, "constructor");
     if (
@@ -387,9 +390,33 @@ const getConstructorName = (
     // the instance once the prototype is dropped, so use the generic tag.
     return null;
   }
-  // A prototype chain exists but no `constructor` matched — the object was
-  // created with a custom prototype whose `constructor` is not on the chain.
-  return null;
+  // A prototype chain exists but no `constructor` matched — a "complex
+  // prototype". Node renders `X <Y>` where X is the creation-map name and Y
+  // is the prototype chain inspected at depth -1 (or "Complex prototype"
+  // once the nesting exceeds the requested depth).
+  const res = nullPrototypeConstructorName(tmp) ?? "Object";
+  if (recurseTimes > (ctx.depth ?? Infinity) && ctx.depth !== null) {
+    return `${res} <Complex prototype>`;
+  }
+  const protoConstr = getConstructorName(firstProto ?? null, ctx, recurseTimes + 1, protoProps);
+  if (protoConstr === null) {
+    return `${res} <${inspectFn(firstProto, {
+      stylize: ctx.stylize,
+      showHidden: ctx.showHidden,
+      depth: -1,
+      colors: ctx.colors,
+      customInspect: false,
+      showProxy: ctx.showProxy,
+      maxArrayLength: ctx.maxArrayLength,
+      maxStringLength: ctx.maxStringLength,
+      breakLength: ctx.breakLength,
+      compact: ctx.compact,
+      sorted: ctx.sorted,
+      getters: ctx.getters,
+      numericSeparator: ctx.numericSeparator,
+    })}>`;
+  }
+  return `${res} <${protoConstr}>`;
 };
 
 const getPrefix = (
@@ -500,11 +527,7 @@ const hasArrayBufferSlot = (value: unknown): boolean => {
 };
 const isAnyArrayBuffer = (value: unknown): value is ArrayBuffer => {
   if (hasArrayBufferSlot(value)) return true;
-  if (
-    typeof SharedArrayBuffer !== "undefined" &&
-    value !== null &&
-    typeof value === "object"
-  ) {
+  if (typeof SharedArrayBuffer !== "undefined" && value !== null && typeof value === "object") {
     try {
       const getter = Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype, "byteLength")
         ?.get as (() => number) | undefined;
@@ -547,7 +570,7 @@ const isPromise = (value: unknown): value is Promise<unknown> => {
 const isWeakSet = (value: unknown): value is WeakSet<object> => {
   if (value === null || typeof value !== "object") return false;
   try {
-    WeakSet.prototype.has.call(value, undefined);
+    Function.prototype.call.call(WeakSet.prototype.has, value, undefined);
     return true;
   } catch {
     return false;
@@ -556,7 +579,7 @@ const isWeakSet = (value: unknown): value is WeakSet<object> => {
 const isWeakMap = (value: unknown): value is WeakMap<object, unknown> => {
   if (value === null || typeof value !== "object") return false;
   try {
-    WeakMap.prototype.has.call(value, undefined);
+    Function.prototype.call.call(WeakMap.prototype.has, value, undefined);
     return true;
   } catch {
     return false;
@@ -679,7 +702,7 @@ const getOwnNonIndexProperties = (value: object, showHidden: boolean): (string |
     : (k: symbol) => Object.prototype.propertyIsEnumerable.call(value, k);
   const symbolKeys = symbols.filter(symbolFilter);
   return [...all, ...symbolKeys].filter((k) =>
-    typeof k === "symbol" ? true : !(NUMBER_RE.test(k) && Number(k) < 2 ** 32 - 1)
+    typeof k === "symbol" ? true : !(NUMBER_RE.test(k) && Number(k) < 2 ** 32 - 1),
   );
 };
 
@@ -802,7 +825,12 @@ const formatTypedArray = (
     // `BYTES_PER_ELEMENT` are actually getters.
     ctx.indentationLvl += 2;
     for (const key of ["BYTES_PER_ELEMENT", "length", "byteLength", "byteOffset", "buffer"]) {
-      const str = formatValue(ctx, (value as unknown as Record<string, unknown>)[key], recurseTimes, true);
+      const str = formatValue(
+        ctx,
+        (value as unknown as Record<string, unknown>)[key],
+        recurseTimes,
+        true,
+      );
       output.push(`[${key}]: ${str}`);
     }
     ctx.indentationLvl -= 2;
@@ -880,8 +908,7 @@ const setBrandSafe = {
     const descriptor = Object.getOwnPropertyDescriptor(Set.prototype, "size");
     return (descriptor?.get as (() => number) | undefined)?.call(value) ?? 0;
   },
-  values: (value: Set<unknown>): Iterable<unknown> =>
-    Set.prototype.values.call(value),
+  values: (value: Set<unknown>): Iterable<unknown> => Set.prototype.values.call(value),
 };
 
 const mapBrandSafe = {
@@ -980,11 +1007,7 @@ const getIteratorBraces = (type: string, tag: string): [string, string] => {
 };
 
 /** Node's `formatSetIterInner`. */
-const formatSetIterInner = (
-  ctx: Ctx,
-  recurseTimes: number,
-  entries: unknown[],
-): string[] => {
+const formatSetIterInner = (ctx: Ctx, recurseTimes: number, entries: unknown[]): string[] => {
   const maxArrayLength = Math.max(ctx.maxArrayLength, 0);
   const maxLength = Math.min(maxArrayLength, entries.length);
   const output: string[] = [];
@@ -999,11 +1022,7 @@ const formatSetIterInner = (
 };
 
 /** Node's `formatMapIterInner`. */
-const formatMapIterInner = (
-  ctx: Ctx,
-  recurseTimes: number,
-  entries: unknown[],
-): string[] => {
+const formatMapIterInner = (ctx: Ctx, recurseTimes: number, entries: unknown[]): string[] => {
   const maxArrayLength = Math.max(ctx.maxArrayLength, 0);
   const len = entries.length / 2;
   const remaining = len - maxArrayLength;
@@ -1016,9 +1035,7 @@ const formatMapIterInner = (
       formatValue(ctx, entries[pos], recurseTimes),
       formatValue(ctx, entries[pos + 1], recurseTimes),
     ];
-    output.push(
-      reduceToSingleString(ctx, res, "", ["[", "]"], _K_ARRAY_EXTRAS_TYPE, recurseTimes),
-    );
+    output.push(reduceToSingleString(ctx, res, "", ["[", "]"], _K_ARRAY_EXTRAS_TYPE, recurseTimes));
   }
   ctx.indentationLvl -= 2;
   if (remaining > 0) output.push(REMAINING_TEXT(remaining));
@@ -1193,6 +1210,75 @@ const getStackFrames = (ctx: Ctx, err: Error, stack: string): string[] => {
 };
 
 /** Node's `formatError` — renders errors via their stack. */
+/** Node's `coreModuleRegExp` — a stack frame pointing at a core module. */
+const CORE_MODULE_REGEXP = /^ {4}at (?:[^/\\(]+ \(|)node:(.+):\d+:\d+\)?$/;
+/** Node's `nodeModulesRegExp` — a node_modules path segment. */
+const NODE_MODULES_REGEXP = /[/\\]node_modules[/\\](.+?)(?=[/\\])/g;
+
+/** Node's `safeGetCWD`. */
+const safeGetCWD = (): string | undefined => {
+  let workingDirectory: string | undefined;
+  try {
+    const proc =
+      (
+        globalThis as {
+          process?: { cwd?: () => string };
+          __browserContainers?: { shims?: { process?: { cwd?: () => string } } };
+        }
+      ).process ??
+      (globalThis as { __browserContainers?: { shims?: { process?: { cwd?: () => string } } } })
+        .__browserContainers?.shims?.process;
+    workingDirectory = proc?.cwd?.();
+  } catch {
+    return undefined;
+  }
+  return workingDirectory;
+};
+
+/** Node's `markNodeModules` — underlines the package name in node_modules. */
+const markNodeModules = (ctx: Ctx, line: string): string => {
+  let tempLine = "";
+  let nodeModule: RegExpExecArray | null;
+  let pos = 0;
+  NODE_MODULES_REGEXP.lastIndex = 0;
+  while ((nodeModule = NODE_MODULES_REGEXP.exec(line)) !== null) {
+    // '/node_modules/'.length === 14
+    tempLine += line.slice(pos, nodeModule.index + 14);
+    tempLine += ctx.stylize(nodeModule[1] ?? "", "module");
+    pos = nodeModule.index + nodeModule[0].length;
+  }
+  if (pos !== 0) {
+    line = tempLine + line.slice(pos);
+  }
+  return line;
+};
+
+/** Node's `markCwd` — styles the working-directory prefix of a frame. */
+const markCwd = (ctx: Ctx, line: string, workingDirectory: string): string => {
+  let cwdStartPos = line.indexOf(workingDirectory);
+  let tempLine = "";
+  let cwdLength = workingDirectory.length;
+  if (cwdStartPos !== -1) {
+    if (line.slice(cwdStartPos - 7, cwdStartPos) === "file://") {
+      cwdLength += 7;
+      cwdStartPos -= 7;
+    }
+    const start = line[cwdStartPos - 1] === "(" ? cwdStartPos - 1 : cwdStartPos;
+    const end = start !== cwdStartPos && line.endsWith(")") ? -1 : line.length;
+    const workingDirectoryEndPos = cwdStartPos + cwdLength + 1;
+    const cwdSlice = line.slice(start, workingDirectoryEndPos);
+    tempLine += line.slice(0, start);
+    tempLine += ctx.stylize(cwdSlice, "undefined");
+    tempLine += line.slice(workingDirectoryEndPos, end === -1 ? undefined : end);
+    if (end === -1) {
+      tempLine += ctx.stylize(")", "undefined");
+    }
+  } else {
+    tempLine += line;
+  }
+  return tempLine;
+};
+
 const formatError = (
   err: Error,
   constructor: string | null,
@@ -1218,7 +1304,30 @@ const formatError = (
     let newStack = stack.slice(0, stackStart);
     const stackFramePart = stack.slice(stackStart + 1);
     const lines = getStackFrames(ctx, err, stackFramePart);
-    newStack += `\n${lines.join("\n")}`;
+    if (ctx.colors) {
+      const workingDirectory = safeGetCWD();
+      let esmWorkingDirectory: string | undefined;
+      for (let line of lines) {
+        const core = CORE_MODULE_REGEXP.exec(line);
+        if (core !== null) {
+          newStack += `\n${ctx.stylize(line, "undefined")}`;
+        } else {
+          newStack += "\n";
+          line = markNodeModules(ctx, line);
+          if (workingDirectory !== undefined) {
+            let newLine = markCwd(ctx, line, workingDirectory);
+            if (newLine === line) {
+              esmWorkingDirectory ??= `file://${workingDirectory}`;
+              newLine = markCwd(ctx, line, esmWorkingDirectory);
+            }
+            line = newLine;
+          }
+          newStack += line;
+        }
+      }
+    } else {
+      newStack += `\n${lines.join("\n")}`;
+    }
     stack = newStack;
   }
   if (ctx.indentationLvl !== 0) {
@@ -1295,7 +1404,7 @@ const formatProperty = (
   if (desc.value !== undefined) {
     // With `compact: true` a value wider than the remaining break length
     // moves onto its own indented line (Node's `extra` newline).
-    const diff = (ctx.compact !== true || type !== K_OBJECT_TYPE) ? 2 : 3;
+    const diff = ctx.compact !== true || type !== K_OBJECT_TYPE ? 2 : 3;
     ctx.indentationLvl += diff;
     str = formatValue(ctx, desc.value, recurseTimes);
     if (diff === 3 && ctx.breakLength < removeColors(str).length) {
@@ -1365,6 +1474,55 @@ const isBelowBreakLength = (ctx: Ctx, output: string[], start: number, base: str
 const join = (arr: string[], sep: string): string => arr.join(sep);
 
 /**
+ * Node's `isFullWidthCodePoint` — East Asian Wide and Fullwidth characters
+ * occupy two terminal columns.
+ */
+const isFullWidthCodePoint = (code: number): boolean => {
+  return (
+    code >= 0x1100 &&
+    (code <= 0x115f || // Hangul Jamo
+      code === 0x2329 ||
+      code === 0x232a ||
+      (code >= 0x2e80 && code <= 0x3247 && code !== 0x303f) || // CJK
+      (code >= 0x3250 && code <= 0x4dbf) || // CJK
+      (code >= 0x4e00 && code <= 0xa4c6) || // CJK
+      (code >= 0xa960 && code <= 0xa97c) || // Hangul Jamo Extended-A
+      (code >= 0xac00 && code <= 0xd7a3) || // Hangul Syllables
+      (code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
+      (code >= 0xfe10 && code <= 0xfe19) || // Vertical Forms
+      (code >= 0xfe30 && code <= 0xfe6b) || // CJK Compatibility Forms
+      (code >= 0xff01 && code <= 0xff60) || // Fullwidth Forms
+      (code >= 0xffe0 && code <= 0xffe6) ||
+      (code >= 0x1b000 && code <= 0x1b001) ||
+      (code >= 0x1f200 && code <= 0x1f251) ||
+      (code >= 0x20000 && code <= 0x3fffd))
+  );
+};
+
+const isZeroWidthCodePoint = (code: number): boolean =>
+  code === 0x200b || // Zero Width Space
+  code === 0x200c || // Zero Width Non-Joiner
+  code === 0x200d || // Zero Width Joiner
+  code === 0xfeff; // Zero Width No-Break Space
+
+/**
+ * Node's `getStringWidth` — the number of terminal columns a string
+ * occupies. Fullwidth characters count as two, zero-width ones as zero.
+ */
+const getStringWidth = (str: string): number => {
+  let width = 0;
+  for (const char of str) {
+    const code = char.codePointAt(0) ?? 0;
+    if (isFullWidthCodePoint(code)) {
+      width += 2;
+    } else if (!isZeroWidthCodePoint(code)) {
+      width += 1;
+    }
+  }
+  return width;
+};
+
+/**
  * Node's `groupArrayElements` — packs short array entries into columns so a
  * long array of numbers does not take one line per element.
  */
@@ -1379,7 +1537,7 @@ const groupArrayElements = (ctx: Ctx, output: string[], value?: unknown): string
   const separatorSpace = 2; // Add 1 for the space and 1 for the separator.
   const dataLen = new Array<number>(outputLength);
   for (let i = 0; i < outputLength; i++) {
-    const len = removeColors(output[i]).length;
+    const len = getStringWidth(removeColors(output[i]));
     dataLen[i] = len;
     totalLength += len + separatorSpace;
     if (maxLength < len) maxLength = len;
@@ -1400,7 +1558,7 @@ const groupArrayElements = (ctx: Ctx, output: string[], value?: unknown): string
     const columns = Math.min(
       Math.round(Math.sqrt(approxCharHeights * biasedMax * outputLength) / biasedMax),
       Math.floor((ctx.breakLength - ctx.indentationLvl) / actualMax),
-      ctx.compact * 4,
+      (typeof ctx.compact === "number" ? ctx.compact : 3) * 4,
       15,
     );
     if (columns <= 1) return output;
@@ -1658,8 +1816,9 @@ const formatRaw = (
         // prototype chain, so a null-prototype regexp renders as
         // `/undefined/undefined`. Read the internal slots directly instead
         // (Node's `RegExpPrototypeToString` sees the slots, not the chain).
-        const sourceGetter = Object.getOwnPropertyDescriptor(RegExp.prototype, "source")
-          ?.get as (() => string) | undefined;
+        const sourceGetter = Object.getOwnPropertyDescriptor(RegExp.prototype, "source")?.get as
+          | (() => string)
+          | undefined;
         // `RegExp.prototype.flags` reads `this.global` etc. through the
         // prototype chain, which a null-prototype regexp no longer has. The
         // individual flag getters read V8's internal slots, so use those.
@@ -1898,57 +2057,55 @@ const getUserOptions = (ctx: Ctx): InspectOptions => ({
 /**
  * Node-compatible `util.inspect` (lib/internal/util/inspect.js port).
  */
-const inspectFn = function inspect(
+inspectFn = function inspect(
   value: unknown,
   opts?: InspectOptions | boolean,
   // Legacy signature: inspect(value, showHidden, depth, colors).
   legacyDepth?: number,
   legacyColors?: boolean,
 ): string {
-    const ctx: Ctx = {
-      budget: {},
-      indentationLvl: 0,
-      seen: [],
-      currentDepth: 0,
-      stylize: stylizeNoColor,
-      showHidden: inspectDefaultOptions.showHidden === true,
-      depth: inspectDefaultOptions.depth === null
-        ? null
-        : (inspectDefaultOptions.depth ?? 2),
-      colors: inspectDefaultOptions.colors === true,
-      customInspect: inspectDefaultOptions.customInspect !== false,
-      showProxy: inspectDefaultOptions.showProxy === true,
-      maxArrayLength: inspectDefaultOptions.maxArrayLength === null
-        ? null
+  const ctx: Ctx = {
+    budget: {},
+    indentationLvl: 0,
+    seen: [],
+    currentDepth: 0,
+    stylize: stylizeNoColor,
+    showHidden: inspectDefaultOptions.showHidden === true,
+    depth: inspectDefaultOptions.depth === null ? null : (inspectDefaultOptions.depth ?? 2),
+    colors: inspectDefaultOptions.colors === true,
+    customInspect: inspectDefaultOptions.customInspect !== false,
+    showProxy: inspectDefaultOptions.showProxy === true,
+    maxArrayLength:
+      inspectDefaultOptions.maxArrayLength === null
+        ? Infinity
         : (inspectDefaultOptions.maxArrayLength ?? 100),
-      maxStringLength: inspectDefaultOptions.maxStringLength === null
-        ? null
+    maxStringLength:
+      inspectDefaultOptions.maxStringLength === null
+        ? Infinity
         : (inspectDefaultOptions.maxStringLength ?? 10000),
-      breakLength: inspectDefaultOptions.breakLength ?? 80,
-      compact: inspectDefaultOptions.compact ?? 3,
-      sorted: inspectDefaultOptions.sorted === true,
-      getters: inspectDefaultOptions.getters ?? false,
-      numericSeparator: inspectDefaultOptions.numericSeparator === true,
-    };
-    if (legacyDepth !== undefined) ctx.depth = legacyDepth;
-    if (legacyColors !== undefined) ctx.colors = legacyColors;
-    if (typeof opts === "boolean") {
-      ctx.showHidden = opts;
-    } else if (opts) {
-      const optKeys = Object.keys(opts) as (keyof InspectOptions)[];
-      for (const key of optKeys) {
-        if (key in inspectDefaultOptions || key === "stylize") {
-          (ctx as unknown as Record<string, unknown>)[key] = opts[key];
-        } else if (ctx.userOptions === undefined) {
-          // This is required to pass through the actual user input.
-          ctx.userOptions = opts as Record<string, unknown>;
-        }
+    breakLength: inspectDefaultOptions.breakLength ?? 80,
+    compact: inspectDefaultOptions.compact ?? 3,
+    sorted: inspectDefaultOptions.sorted === true,
+    getters: inspectDefaultOptions.getters ?? false,
+    numericSeparator: inspectDefaultOptions.numericSeparator === true,
+  };
+  if (legacyDepth !== undefined) ctx.depth = legacyDepth;
+  if (legacyColors !== undefined) ctx.colors = legacyColors;
+  if (typeof opts === "boolean") {
+    ctx.showHidden = opts;
+  } else if (opts) {
+    const optKeys = Object.keys(opts) as (keyof InspectOptions)[];
+    for (const key of optKeys) {
+      if (key in inspectDefaultOptions || key === "stylize") {
+        (ctx as unknown as Record<string, unknown>)[key] = opts[key];
+      } else if (ctx.userOptions === undefined) {
+        // This is required to pass through the actual user input.
+        ctx.userOptions = opts as Record<string, unknown>;
       }
     }
-    if (ctx.colors) ctx.stylize = stylizeWithColor;
-    if (ctx.maxArrayLength === null) ctx.maxArrayLength = Infinity;
-    if (ctx.maxStringLength === null) ctx.maxStringLength = Infinity;
-    return formatValue(ctx, value, 0);
+  }
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, value, 0);
 };
 
 export const inspect = Object.assign(inspectFn, {
@@ -1963,7 +2120,6 @@ export const inspect = Object.assign(inspectFn, {
  * into the defaults rather than replacing them.
  */
 Object.defineProperty(inspect, "defaultOptions", {
-  __proto__: null,
   get: () => inspectDefaultOptions,
   set: (options: unknown) => {
     if (options === null || typeof options !== "object") {

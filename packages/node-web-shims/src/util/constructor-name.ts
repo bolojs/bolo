@@ -59,12 +59,11 @@ const install = (): void => {
     o: object | null,
     proto: object | null,
   ): object {
-    // Only the null-prototype transition loses the observable constructor, so
-    // the previous prototype has to be read *before* the swap.
-    const previous =
-      proto === null && o !== null && typeof o === "object"
-        ? Object.getPrototypeOf(o)
-        : undefined;
+    // The constructor name V8 records in the object's creation map is the
+    // one the object was *created* with, and it survives a prototype swap.
+    // The prototype chain before the swap is the closest JS-reachable
+    // approximation, so read it before the swap.
+    const previous = o !== null && typeof o === "object" ? Object.getPrototypeOf(o) : undefined;
     let classTag = "";
     let isError = false;
     if (previous !== undefined && previous !== null) {
