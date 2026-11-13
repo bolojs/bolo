@@ -6055,7 +6055,7 @@
     },
     {
       "date": "2026-11-13",
-      "status": "partial",
+      "status": "unsupported",
       "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
     }
   ],
@@ -6257,7 +6257,7 @@
     },
     {
       "date": "2026-11-13",
-      "status": "unknown",
+      "status": "unsupported",
       "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
     }
   ],
@@ -11509,7 +11509,7 @@
     },
     {
       "date": "2026-11-13",
-      "status": "unknown",
+      "status": "unsupported",
       "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
     }
   ],
@@ -11711,7 +11711,7 @@
     },
     {
       "date": "2026-11-13",
-      "status": "unknown",
+      "status": "unsupported",
       "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
     }
   ],
@@ -22417,7 +22417,7 @@
     },
     {
       "date": "2026-11-13",
-      "status": "partial",
+      "status": "unsupported",
       "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
     }
   ],
@@ -23427,7 +23427,7 @@
     },
     {
       "date": "2026-11-13",
-      "status": "partial",
+      "status": "pass",
       "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
     }
   ],
@@ -24033,7 +24033,7 @@
     },
     {
       "date": "2026-11-13",
-      "status": "fail",
+      "status": "pass",
       "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
     }
   ],
