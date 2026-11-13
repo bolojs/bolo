@@ -178,6 +178,19 @@ const inspectValue = (
   if (ArrayBuffer.isView(obj)) {
     const ctor = obj.constructor.name;
     if (obj instanceof DataView) return `DataView { byteLength: ${obj.byteLength} }`;
+    // Node renders Buffer via its custom inspect as '<Buffer 61 62 ...>'.
+    if (ctor === "Buffer") {
+      const u8 = obj as unknown as Uint8Array;
+      const max = 50;
+      const actualMax = Math.min(max, u8.length);
+      const hex = Array.from(u8.subarray(0, actualMax))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join(" ");
+      const remaining = u8.length - actualMax;
+      const suffix =
+        remaining > 0 ? ` ... ${remaining} more byte${remaining > 1 ? "s" : ""}` : "";
+      return `<Buffer ${hex}${suffix}>`;
+    }
     const arr = Array.from(obj as unknown as ArrayLike<number>).slice(
       0,
       opts.maxArrayLength ?? 100,
@@ -269,6 +282,10 @@ const formatImpl = (
   fmt: unknown,
   args: unknown[],
 ): string => {
+  // Node merges util.inspect.defaultOptions under the caller's options, so
+  // `util.inspect.defaultOptions.numericSeparator = true` affects format too.
+  const merged: InspectOptions = { ...(inspect as { defaultOptions?: InspectOptions }).defaultOptions, ...inspectOptions };
+  inspectOptions = merged;
   const numericSeparator = inspectOptions?.numericSeparator === true;
   if (fmt === undefined && args.length === 0) return "";
   if (typeof fmt !== "string") {
@@ -309,7 +326,8 @@ const formatImpl = (
         try {
           return `${JSON.stringify(arg)}`;
         } catch {
-          return "[Circular: ~]";
+          // Node's tryStringify only maps circular structures to '[Circular]'.
+          return "[Circular]";
         }
       case "o":
       case "O":

@@ -597,14 +597,19 @@ var __bc_Console = class {
   error(...args) { this._write('stderr', args); }
   trace(...args) { this._write('stderr', ['Trace:', ...args]); }
   assert(cond, ...args) { if (!cond) this._write('stderr', ['Assertion failed' + (args.length ? ':' : ''), ...args]); }
-  // Node's Console.prototype.clear writes the ANSI clear-screen sequence to
-  // stdout with no trailing newline (test-console-clear expects exactly
-  // '\x1b[1;1H\x1b[0J').
+  // Node's Console.prototype.clear only emits when the stdout stream is a
+  // TTY and TERM isn't 'dumb'; it writes cursorTo(0,0) then clearScreenDown
+  // as two separate stream.write calls (test-console-clear patches
+  // process.stdout.write/isTTY and expects exactly '\x1b[1;1H\x1b[0J').
   clear() {
-    var seq = '\\x1b[1;1H\\x1b[0J';
-    var sink = this._stdout;
-    if (sink && typeof sink.write === 'function') sink.write(seq);
-    else __bcGlobals()?.shims?.process?.stdout?.write(seq);
+    var proc = __bcGlobals()?.shims?.process;
+    var stdout = this._stdout ?? proc?.stdout;
+    if (stdout && stdout.isTTY && proc?.env?.TERM !== 'dumb') {
+      if (typeof stdout.write === 'function') {
+        stdout.write('\\x1b[1;1H');
+        stdout.write('\\x1b[0J');
+      }
+    }
   }
   count(label = 'default') {
     // Implicit string coercion throws TypeError for Symbol labels, matching
