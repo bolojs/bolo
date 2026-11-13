@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-11-10T21:47:51.418Z",
+    "generatedAt": "2026-11-13T15:32:20.157Z",
     "source": "apps/site/landing/public/results",
     "validated": true
   },
@@ -116,7 +116,7 @@
         "links": [
           "https://www.npmjs.com/package/fetch"
         ],
-        "raw": "{\n  \"name\": \"fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"duration\": 30.679999947547913\n}"
+        "raw": "{\n  \"name\": \"fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 406.5149999999994\n}"
       }
     },
     {
@@ -144,8 +144,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -156,13 +156,11 @@
         "features": [
           "Class: HTTP client"
         ],
-        "knownIssues": [
-          "[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0mEventEmitter\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m          ──────┬─────  \n \u001b[38;5;240m   │\u001b[0m                ╰─────── Missing export\n\u001b[38;5;246m────╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/axios"
         ],
-        "raw": "{\n  \"name\": \"axios\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 2035.7299998998642,\n  \"error\": \"[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m{\\u001b[0m\\u001b[38;5;249m \\u001b[0mEventEmitter\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m   │\\u001b[0m          ──────┬─────  \\n \\u001b[38;5;240m   │\\u001b[0m                ╰─────── Missing export\\n\\u001b[38;5;246m────╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"axios\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2747.1100000000006\n}"
       }
     },
     {
@@ -190,8 +188,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -202,13 +200,11 @@
         "features": [
           "Class: HTTP client"
         ],
-        "knownIssues": [
-          "m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                    ────────┬───────  \n \u001b[38;5;240m  │\u001b[0m                            ╰───────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/node-fetch"
         ],
-        "raw": "{\n  \"name\": \"node-fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 630.5199999809265,\n  \"error\": \"m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                    ────────┬───────  \\n \\u001b[38;5;240m  │\\u001b[0m                            ╰───────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"node-fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1351.5999999999913\n}"
       }
     },
     {
@@ -236,8 +232,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -248,13 +244,11 @@
         "features": [
           "Class: HTTP client"
         ],
-        "knownIssues": [
-          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: deep CJS interop + stream/http shim gaps."
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/undici"
         ],
-        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 476.1599999666214,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: deep CJS interop + stream/http shim gaps.\"\n}"
+        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"node:sqlite\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\\n[bundle warning] \\\"node:sqlite\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\\nPASS\\n\",\n  \"duration\": 1225.199999999997\n}"
       }
     },
     {
@@ -282,8 +276,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -294,13 +288,11 @@
         "features": [
           "Class: HTTP client"
         ],
-        "knownIssues": [
-          "\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                    ─────────┬─────────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/got"
         ],
-        "raw": "{\n  \"name\": \"got\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 3968.6999999284744,\n  \"error\": \"\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                    ─────────┬─────────  \\n \\u001b[38;5;240m  │\\u001b[0m                                             ╰─────────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"got\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2459.8800000000047\n}"
       }
     },
     {
@@ -344,7 +336,7 @@
         "links": [
           "https://www.npmjs.com/package/ky"
         ],
-        "raw": "{\n  \"name\": \"ky\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"duration\": 518.5999999046326\n}"
+        "raw": "{\n  \"name\": \"ky\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 577.0499999999884\n}"
       }
     },
     {
@@ -372,8 +364,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -384,13 +376,11 @@
         "features": [
           "Class: HTTP client"
         ],
-        "knownIssues": [
-          "38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m{\u001b[0m\u001b[38;5;249m \u001b[0monce\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m          ──┬─  \n \u001b[38;5;240m  │\u001b[0m            ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/http-proxy-agent"
         ],
-        "raw": "{\n  \"name\": \"http-proxy-agent\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 710.6399999856949,\n  \"error\": \"38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m{\\u001b[0m\\u001b[38;5;249m \\u001b[0monce\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m          ──┬─  \\n \\u001b[38;5;240m  │\\u001b[0m            ╰─── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"http-proxy-agent\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"kerberos\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/kerberos\\nPASS\\n\",\n  \"duration\": 795.9199999999837\n}"
       }
     },
     {
@@ -418,8 +408,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -430,13 +420,11 @@
         "features": [
           "Class: HTTP client"
         ],
-        "knownIssues": [
-          "form-data failed\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/form-data"
         ],
-        "raw": "{\n  \"name\": \"form-data\",\n  \"class\": \"HTTP client\",\n  \"status\": \"fail\",\n  \"duration\": 606.2299998998642,\n  \"error\": \"form-data failed\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"form-data\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 799.945000000007\n}"
       }
     },
     {
@@ -464,8 +452,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -476,13 +464,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: fs shim breadth (missing methods such as realpathSync used by outputFile/mkdirp chain)."
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/fs-extra"
         ],
-        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 626.5899999141693,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: fs shim breadth (missing methods such as realpathSync used by outputFile/mkdirp chain).\"\n}"
+        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 981.1949999999924\n}"
       }
     },
     {
@@ -510,8 +496,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -522,13 +508,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                       ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/globby"
         ],
-        "raw": "{\n  \"name\": \"globby\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 1614.1299999952316,\n  \"error\": \"49md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249m_\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                       ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                                             ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"globby\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2316.3099999999977\n}"
       }
     },
     {
@@ -556,8 +540,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -568,13 +552,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          "0mrealpathSync\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                            ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                                  ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/chokidar"
         ],
-        "raw": "{\n  \"name\": \"chokidar\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 353.6749999523163,\n  \"error\": \"0mrealpathSync\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                            ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                                  ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"chokidar\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 719.1549999999988\n}"
       }
     },
     {
@@ -602,8 +584,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -614,13 +596,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          "38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m                                           ────┬────  \n \u001b[38;5;240m   │\u001b[0m                                               ╰────── Missing export\n\u001b[38;5;246m────╯\u001b[0m\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/rimraf"
         ],
-        "raw": "{\n  \"name\": \"rimraf\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 909.7800000905991,\n  \"error\": \"38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249mj\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m   │\\u001b[0m                                           ────┬────  \\n \\u001b[38;5;240m   │\\u001b[0m                                               ╰────── Missing export\\n\\u001b[38;5;246m────╯\\u001b[0m\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"rimraf\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1389.2600000000093\n}"
       }
     },
     {
@@ -648,8 +628,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -660,13 +640,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          "  ──┬─  \n \u001b[38;5;240m  │\u001b[0m          ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"realpathSync\" is not exported by \"bolo-node-shim:fs\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51125..51137\n\n\u001b[31m[MISSING_EXPORT] \u001b[0m\"EventEmitter\" is not exported by \"bolo-node-shim:events\".\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51273..51285\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/glob"
         ],
-        "raw": "{\n  \"name\": \"glob\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 81.49500000476837,\n  \"error\": \"  ──┬─  \\n \\u001b[38;5;240m  │\\u001b[0m          ╰─── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n\\n\\u001b[31m[MISSING_EXPORT] \\u001b[0m\\\"realpathSync\\\" is not exported by \\\"bolo-node-shim:fs\\\".\\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51125..51137\\n\\n\\u001b[31m[MISSING_EXPORT] \\u001b[0m\\\"EventEmitter\\\" is not exported by \\\"bolo-node-shim:events\\\".\\n - Missing export in node_modules/.bolo/glob@14.0.4/node_modules/glob/dist/esm/index.min.js at 51273..51285\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"glob\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 583.234999999986\n}"
       }
     },
     {
@@ -694,8 +672,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -706,13 +684,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          ";5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mmkdirp\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mk\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ───┬──  \n \u001b[38;5;240m  │\u001b[0m           ╰──── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/mkdirp"
         ],
-        "raw": "{\n  \"name\": \"mkdirp\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 168.9800000190735,\n  \"error\": \";5;249mi\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0mmkdirp\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mk\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m        ───┬──  \\n \\u001b[38;5;240m  │\\u001b[0m           ╰──── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"mkdirp\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 539.585000000021\n}"
       }
     },
     {
@@ -740,8 +716,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -752,13 +728,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          "49md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m_\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                       ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                                             ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/del"
         ],
-        "raw": "{\n  \"name\": \"del\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"duration\": 1632.164999961853,\n  \"error\": \"49md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249m_\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                       ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                                             ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"del\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1917.414999999979\n}"
       }
     },
     {
@@ -786,8 +760,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unknown",
-          "note": "No data"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -799,12 +773,12 @@
           "Class: File system"
         ],
         "knownIssues": [
-          "Result carried over from an interrupted run (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)); needs a re-run."
+          "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/memfs"
         ],
-        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"skip\",\n  \"duration\": 2118.935000061989,\n  \"error\": \"Result carried over from an interrupted run (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)); needs a re-run.\"\n}"
+        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"output\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\",\n  \"duration\": 33500.95000000001,\n  \"error\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1084,7 +1058,7 @@
         "links": [
           "https://www.npmjs.com/package/postcss"
         ],
-        "raw": "{\n  \"name\": \"postcss\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"duration\": 365.99000000953674\n}"
+        "raw": "{\n  \"name\": \"postcss\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 666.0800000000163\n}"
       }
     },
     {
@@ -1112,8 +1086,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1124,13 +1098,11 @@
         "features": [
           "Class: Build tool"
         ],
-        "knownIssues": [
-          "Build failed with 6 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/babel"
         ],
-        "raw": "{\n  \"name\": \"babel\",\n  \"class\": \"Build tool\",\n  \"status\": \"fail\",\n  \"duration\": 4903.714999914169,\n  \"error\": \"Build failed with 6 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"babel\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 4997.369999999995\n}"
       }
     },
     {
@@ -1174,7 +1146,7 @@
         "links": [
           "https://www.npmjs.com/package/sucrase"
         ],
-        "raw": "{\n  \"name\": \"sucrase\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"duration\": 1318.6599999666214\n}"
+        "raw": "{\n  \"name\": \"sucrase\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1296.570000000007\n}"
       }
     },
     {
@@ -1218,7 +1190,7 @@
         "links": [
           "https://www.npmjs.com/package/acorn"
         ],
-        "raw": "{\n  \"name\": \"acorn\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"duration\": 200.3400000333786\n}"
+        "raw": "{\n  \"name\": \"acorn\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 525.4349999999977\n}"
       }
     },
     {
@@ -1264,7 +1236,7 @@
         "links": [
           "https://www.npmjs.com/package/rollup"
         ],
-        "raw": "{\n  \"name\": \"rollup\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 5293.40499997139,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[PARSE_ERROR] \\u001b[0mFile appears to be binary.\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"rollup\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"output\": \"Build failed with 1 error:\\n\\n\\u001b[31m[PARSE_ERROR] \\u001b[0mFile appears to be binary.\\n\",\n  \"duration\": 6986.710000000006,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[PARSE_ERROR] \\u001b[0mFile appears to be binary.\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1351,12 +1323,12 @@
           "Class: Bundler"
         ],
         "knownIssues": [
-          "[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249m.\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m      │\u001b[0m       ────┬────  \n \u001b[38;5;240m      │\u001b[0m           ╰────── It can not be redeclared here\n\u001b[38;5;246m───────╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
+          "[bundle warning] \"@vitejs/devtools/integration\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\n[bundle warning] \"yaml\" could not be resolved off the installed node_modules \n…\nb:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1261:2\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/vite"
         ],
-        "raw": "{\n  \"name\": \"vite\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 12226.265000104904,\n  \"error\": \"[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249m(\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ma\\u001b[0m\\u001b[38;5;249m.\\u001b[0m\\u001b[38;5;249mu\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249m)\\u001b[0m\\u001b[38;5;249m)\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m      │\\u001b[0m       ────┬────  \\n \\u001b[38;5;240m      │\\u001b[0m           ╰────── It can not be redeclared here\\n\\u001b[38;5;246m───────╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"vite\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"output\": \"[bundle warning] \\\"@vitejs/devtools/integration\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\\n[bundle warning] \\\"yaml\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/yaml\\n[bundle warning] \\\"esbuild\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/esbuild\\n[bundle warning] \\\"tsx/cjs/api\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tsx/cjs/api\\n[bundle warning] \\\"jiti\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/jiti\\n[bundle warning] \\\"@vitejs/devtools/config\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/config\\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1018:35\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:401:48\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1194:47\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1197:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1254:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1261:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n\\nNode.js v22.0.0\\n\",\n  \"duration\": 11974.320000000007,\n  \"error\": \"[bundle warning] \\\"@vitejs/devtools/integration\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\\n[bundle warning] \\\"yaml\\\" could not be resolved off the installed node_modules \\n…\\nb:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1261:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1431,8 +1403,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "partial",
-          "note": "Limited browser support"
+          "status": "unsupported",
+          "note": "Won't work in the browser"
         },
         "safari": {
           "status": "unknown",
@@ -1477,8 +1449,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "unsupported",
+          "note": "Won't work in the browser"
         },
         "safari": {
           "status": "unknown",
@@ -1489,13 +1461,11 @@
         "features": [
           "Class: Bundler"
         ],
-        "knownIssues": [
-          "install failed (exit 1): Failed to fetch\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/turbo"
         ],
-        "raw": "{\n  \"name\": \"turbo\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"duration\": 102.8400000333786,\n  \"error\": \"install failed (exit 1): Failed to fetch\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"turbo\",\n  \"class\": \"Bundler\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: turbo is a native Rust binary wrapper — no browser-compatible build exists\\n\",\n  \"duration\": 378.445000000007\n}"
       }
     },
     {
@@ -1523,8 +1493,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1535,13 +1505,11 @@
         "features": [
           "Class: Testing"
         ],
-        "knownIssues": [
-          "\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mc\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                            ─────────┬─────────  \n \u001b[38;5;240m  │\u001b[0m                                     ╰─────────── \n\u001b[38;5;246m───╯\u001b[0m\n\nprobe returned a falsy value\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/vitest"
         ],
-        "raw": "{\n  \"name\": \"vitest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"duration\": 1959.8799999952316,\n  \"error\": \"\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m=\\u001b[0m\\u001b[38;5;249m=\\u001b[0m\\u001b[38;5;249m=\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mu\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mc\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m)\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                            ─────────┬─────────  \\n \\u001b[38;5;240m  │\\u001b[0m                                     ╰─────────── \\n\\u001b[38;5;246m───╯\\u001b[0m\\n\\nprobe returned a falsy value\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"vitest\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"vite/module-runner\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\\n[bundle warning] \\\"vite/module-runner\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\\nPASS\\n\",\n  \"duration\": 2956.439999999973\n}"
       }
     },
     {
@@ -1582,12 +1550,12 @@
           "Class: Testing"
         ],
         "knownIssues": [
-          " already been declared here\n \u001b[38;5;240m   │\u001b[0m \n \u001b[38;5;246m19 │\u001b[0m \u001b[38;5;249ml\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0m__dirname\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m   │\u001b[0m     ────┬────  \n \u001b[38;5;240m   │\u001b[0m         ╰────── It can not be redeclared here\n\u001b[38;5;246m────╯\u001b[0m\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Build failed with 1 error:\n\nError: Cannot resolve module \"./build/Release/watcher.node\" from \"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\"\n    at napi_create_error (http://localhost:5173/@fs/\n…\n3]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/jest"
         ],
-        "raw": "{\n  \"name\": \"jest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"duration\": 22507.25,\n  \"error\": \" already been declared here\\n \\u001b[38;5;240m   │\\u001b[0m \\n \\u001b[38;5;246m19 │\\u001b[0m \\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0m__dirname\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m   │\\u001b[0m     ────┬────  \\n \\u001b[38;5;240m   │\\u001b[0m         ╰────── It can not be redeclared here\\n\\u001b[38;5;246m────╯\\u001b[0m\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"jest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"output\": \"Build failed with 1 error:\\n\\nError: Cannot resolve module \\\"./build/Release/watcher.node\\\" from \\\"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\\\"\\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=cb874ccd:6085:25)\\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\",\n  \"duration\": 27630.089999999997,\n  \"error\": \"Build failed with 1 error:\\n\\nError: Cannot resolve module \\\"./build/Release/watcher.node\\\" from \\\"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\\\"\\n    at napi_create_error (http://localhost:5173/@fs/\\n…\\n3]:0x6530fc\\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1631,7 +1599,7 @@
         "links": [
           "https://www.npmjs.com/package/chai"
         ],
-        "raw": "{\n  \"name\": \"chai\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 125.53999996185303\n}"
+        "raw": "{\n  \"name\": \"chai\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 514.484999999986\n}"
       }
     },
     {
@@ -1675,7 +1643,7 @@
         "links": [
           "https://www.npmjs.com/package/sinon"
         ],
-        "raw": "{\n  \"name\": \"sinon\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 1247.2949999570847\n}"
+        "raw": "{\n  \"name\": \"sinon\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1074.6199999999953\n}"
       }
     },
     {
@@ -1703,8 +1671,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pass",
-          "note": "Supported"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1715,11 +1683,13 @@
         "features": [
           "Class: Testing"
         ],
-        "knownIssues": [],
+        "knownIssues": [
+          "purify_default.sanitize is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
+        ],
         "links": [
           "https://www.npmjs.com/package/dompurify"
         ],
-        "raw": "{\n  \"name\": \"dompurify\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 670.5049999952316\n}"
+        "raw": "{\n  \"name\": \"dompurify\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"output\": \"purify_default.sanitize is not a function\\n\",\n  \"duration\": 732.6900000000023,\n  \"error\": \"purify_default.sanitize is not a function\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1763,7 +1733,7 @@
         "links": [
           "https://www.npmjs.com/package/linkedom"
         ],
-        "raw": "{\n  \"name\": \"linkedom\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"duration\": 3580.4349999427795\n}"
+        "raw": "{\n  \"name\": \"linkedom\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"canvas\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/canvas\\nPASS\\n\",\n  \"duration\": 2571.8549999999814\n}"
       }
     },
     {
@@ -1791,8 +1761,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1803,13 +1773,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/express"
         ],
-        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 3486.9950000047684,\n  \"error\": \"Build failed with 10 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 5679.239999999991\n}"
       }
     },
     {
@@ -1837,8 +1805,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1849,13 +1817,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/fastify"
         ],
-        "raw": "{\n  \"name\": \"fastify\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 3241.399999976158,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"fastify\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 5033.375\n}"
       }
     },
     {
@@ -1883,8 +1849,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -1895,13 +1861,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "obe/h3.mjs:2:8 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0mh3\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mh\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ─┬  \n \u001b[38;5;240m  │\u001b[0m         ╰── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/h3"
         ],
-        "raw": "{\n  \"name\": \"h3\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 448.7550001144409,\n  \"error\": \"obe/h3.mjs:2:8 \\u001b[38;5;246m]\\u001b[0m\\n   \\u001b[38;5;246m│\\u001b[0m\\n \\u001b[38;5;246m2 │\\u001b[0m \\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0mh3\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mh\\u001b[0m\\u001b[38;5;249m3\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m        ─┬  \\n \\u001b[38;5;240m  │\\u001b[0m         ╰── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"h3\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 900.8549999999814\n}"
       }
     },
     {
@@ -1945,7 +1909,7 @@
         "links": [
           "https://www.npmjs.com/package/polka"
         ],
-        "raw": "{\n  \"name\": \"polka\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 666.8649998903275\n}"
+        "raw": "{\n  \"name\": \"polka\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1103.5999999999767\n}"
       }
     },
     {
@@ -1989,7 +1953,7 @@
         "links": [
           "https://www.npmjs.com/package/hono"
         ],
-        "raw": "{\n  \"name\": \"hono\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 651.454999923706\n}"
+        "raw": "{\n  \"name\": \"hono\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 692.9949999999953\n}"
       }
     },
     {
@@ -2033,7 +1997,7 @@
         "links": [
           "https://www.npmjs.com/package/elysia"
         ],
-        "raw": "{\n  \"name\": \"elysia\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 6049.745000004768\n}"
+        "raw": "{\n  \"name\": \"elysia\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/system\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/system\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"file-type\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/file-type\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\nPASS\\n\",\n  \"duration\": 1875.3999999999942\n}"
       }
     },
     {
@@ -2061,8 +2025,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2073,13 +2037,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/itty-router"
         ],
-        "raw": "{\n  \"name\": \"itty-router\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 60003.27999997139,\n  \"error\": \"TIMEOUT after 60000ms\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"itty-router\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 530.890000000014\n}"
       }
     },
     {
@@ -2107,8 +2069,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2119,13 +2081,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Build failed with 4 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/koa"
         ],
-        "raw": "{\n  \"name\": \"koa\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 1589.530000090599,\n  \"error\": \"Build failed with 4 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"koa\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2102\n}"
       }
     },
     {
@@ -2169,7 +2129,7 @@
         "links": [
           "https://www.npmjs.com/package/cors"
         ],
-        "raw": "{\n  \"name\": \"cors\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 217.39999997615814\n}"
+        "raw": "{\n  \"name\": \"cors\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 529.054999999993\n}"
       }
     },
     {
@@ -2213,7 +2173,7 @@
         "links": [
           "https://www.npmjs.com/package/helmet"
         ],
-        "raw": "{\n  \"name\": \"helmet\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 177.6449999809265\n}"
+        "raw": "{\n  \"name\": \"helmet\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 543.5650000000023\n}"
       }
     },
     {
@@ -2257,7 +2217,7 @@
         "links": [
           "https://www.npmjs.com/package/morgan"
         ],
-        "raw": "{\n  \"name\": \"morgan\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 545.9850000143051\n}"
+        "raw": "{\n  \"name\": \"morgan\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 980.6500000000233\n}"
       }
     },
     {
@@ -2285,8 +2245,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2297,13 +2257,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/compression"
         ],
-        "raw": "{\n  \"name\": \"compression\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 519.4950000047684,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"compression\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 848.984999999986\n}"
       }
     },
     {
@@ -2331,8 +2289,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2343,13 +2301,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/serve-static"
         ],
-        "raw": "{\n  \"name\": \"serve-static\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 187.99500000476837,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"serve-static\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 496.54999999998836\n}"
       }
     },
     {
@@ -2393,7 +2349,7 @@
         "links": [
           "https://www.npmjs.com/package/cookie-parser"
         ],
-        "raw": "{\n  \"name\": \"cookie-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 182.7300000190735\n}"
+        "raw": "{\n  \"name\": \"cookie-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 597.7200000000303\n}"
       }
     },
     {
@@ -2421,8 +2377,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2433,13 +2389,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Build failed with 10 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/body-parser"
         ],
-        "raw": "{\n  \"name\": \"body-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 762.7800000905991,\n  \"error\": \"Build failed with 10 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n...\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"body-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 693.0299999999697\n}"
       }
     },
     {
@@ -2483,7 +2437,7 @@
         "links": [
           "https://www.npmjs.com/package/pino"
         ],
-        "raw": "{\n  \"name\": \"pino\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"duration\": 60.019999980926514\n}"
+        "raw": "{\n  \"name\": \"pino\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 571.5100000000093\n}"
       }
     },
     {
@@ -2524,12 +2478,12 @@
           "Class: HTTP server"
         ],
         "knownIssues": [
-          "Build failed with 1 error:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
+          "Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\n    at DerivedLogger.Readable (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4377:10)\n    at DerivedLogger.Duplex (blob:http://localhost:5\n…\np://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13053:16)\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13289:30\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:156:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/winston"
         ],
-        "raw": "{\n  \"name\": \"winston\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 4326.889999985695,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"winston\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"output\": \"Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\\n    at DerivedLogger.Readable (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4377:10)\\n    at DerivedLogger.Duplex (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4960:12)\\n    at new Transform (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:7024:10)\\n    at _callSuper (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:12514:102)\\n    at new Logger (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:12586:12)\\n    at _callSuper (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:12981:102)\\n    at new DerivedLogger (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13048:12)\\n    at module.exports [as createLogger] (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13053:16)\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13289:30\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:156:49\\n\\nNode.js v22.0.0\\n\",\n  \"duration\": 2865.0650000000023,\n  \"error\": \"Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\\n    at DerivedLogger.Readable (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4377:10)\\n    at DerivedLogger.Duplex (blob:http://localhost:5\\n…\\np://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13053:16)\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13289:30\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:156:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -2557,8 +2511,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "unknown",
+          "note": "No data"
         },
         "safari": {
           "status": "unknown",
@@ -2569,13 +2523,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "ws failed\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/ws"
         ],
-        "raw": "{\n  \"name\": \"ws\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"duration\": 339.6599999666214,\n  \"error\": \"ws failed\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"ws\",\n  \"class\": \"HTTP server\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: ws browser field ships a throwing stub by design — native WebSocket is the browser path\\n\",\n  \"duration\": 815.9500000000116\n}"
       }
     },
     {
@@ -2619,7 +2571,7 @@
         "links": [
           "https://www.npmjs.com/package/crypto-js"
         ],
-        "raw": "{\n  \"name\": \"crypto-js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 238.33500003814697\n}"
+        "raw": "{\n  \"name\": \"crypto-js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 584.640000000014\n}"
       }
     },
     {
@@ -2647,8 +2599,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "unsupported",
+          "note": "Won't work in the browser"
         },
         "safari": {
           "status": "unknown",
@@ -2659,13 +2611,11 @@
         "features": [
           "Class: Crypto"
         ],
-        "knownIssues": [
-          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-pre-gyp); pure-JS fallback path not reached. Needs nativeAddonLoader or a WASM build."
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/bcrypt"
         ],
-        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 559.2699999809265,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-pre-gyp); pure-JS fallback path not reached. Needs nativeAddonLoader or a WASM build.\"\n}"
+        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: bcrypt needs a native addon — no browser-compatible build exists\\n\",\n  \"duration\": 371.8549999999814\n}"
       }
     },
     {
@@ -2693,8 +2643,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "unsupported",
+          "note": "Won't work in the browser"
         },
         "safari": {
           "status": "unknown",
@@ -2705,13 +2655,11 @@
         "features": [
           "Class: Crypto"
         ],
-        "knownIssues": [
-          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-gyp); the npm package ships no WASM build (argon2-browser is a separate package). Needs nativeAddonLoader."
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/argon2"
         ],
-        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 756.1750000715256,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: native .node addon required (node-gyp); the npm package ships no WASM build (argon2-browser is a separate package). Needs nativeAddonLoader.\"\n}"
+        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: argon2 needs a native addon — no browser-compatible build exists\\n\",\n  \"duration\": 352.16499999997905\n}"
       }
     },
     {
@@ -2755,7 +2703,7 @@
         "links": [
           "https://www.npmjs.com/package/sha.js"
         ],
-        "raw": "{\n  \"name\": \"sha.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 2678.3650000095367\n}"
+        "raw": "{\n  \"name\": \"sha.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1958.7449999999953\n}"
       }
     },
     {
@@ -2783,8 +2731,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2795,13 +2743,11 @@
         "features": [
           "Class: Crypto"
         ],
-        "knownIssues": [
-          "import_hash.default.utils.sha256 is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/hash.js"
         ],
-        "raw": "{\n  \"name\": \"hash.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 489.1299999952316,\n  \"error\": \"import_hash.default.utils.sha256 is not a function\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"hash.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 719.789999999979\n}"
       }
     },
     {
@@ -2845,7 +2791,7 @@
         "links": [
           "https://www.npmjs.com/package/md5"
         ],
-        "raw": "{\n  \"name\": \"md5\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 736.4349999427795\n}"
+        "raw": "{\n  \"name\": \"md5\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 792.4799999999814\n}"
       }
     },
     {
@@ -2873,8 +2819,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2885,13 +2831,11 @@
         "features": [
           "Class: Crypto"
         ],
-        "knownIssues": [
-          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented sync node:crypto primitives."
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/create-hash"
         ],
-        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2977.2050000429153,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented sync node:crypto primitives.\"\n}"
+        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1616.1500000000233\n}"
       }
     },
     {
@@ -2935,7 +2879,7 @@
         "links": [
           "https://www.npmjs.com/package/jose"
         ],
-        "raw": "{\n  \"name\": \"jose\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"duration\": 507.875\n}"
+        "raw": "{\n  \"name\": \"jose\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 701.9699999999721\n}"
       }
     },
     {
@@ -2963,8 +2907,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2975,13 +2919,11 @@
         "features": [
           "Class: Crypto"
         ],
-        "knownIssues": [
-          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: node:crypto sign/HMAC stubs (unenv 'not implemented') used by jws."
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/jsonwebtoken"
         ],
-        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 2254.3300000429153,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: node:crypto sign/HMAC stubs (unenv 'not implemented') used by jws.\"\n}"
+        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1615.4949999999953\n}"
       }
     },
     {
@@ -3009,8 +2951,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3021,13 +2963,11 @@
         "features": [
           "Class: Crypto"
         ],
-        "knownIssues": [
-          "Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented node:crypto pbkdf2."
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/pbkdf2"
         ],
-        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"fail\",\n  \"duration\": 687.3949999809265,\n  \"error\": \"Uncaught exception during probe (error text truncated by a data: URL stack frame (harness reporting bug fixed in #93)). Root cause: browserify-crypto CJS interop + unimplemented node:crypto pbkdf2.\"\n}"
+        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1103.4199999999837\n}"
       }
     },
     {
@@ -3071,7 +3011,7 @@
         "links": [
           "https://www.npmjs.com/package/handlebars"
         ],
-        "raw": "{\n  \"name\": \"handlebars\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 983.2599999904633\n}"
+        "raw": "{\n  \"name\": \"handlebars\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1388.8999999999942\n}"
       }
     },
     {
@@ -3115,7 +3055,7 @@
         "links": [
           "https://www.npmjs.com/package/ejs"
         ],
-        "raw": "{\n  \"name\": \"ejs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 184.3050000667572\n}"
+        "raw": "{\n  \"name\": \"ejs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 646.2300000000105\n}"
       }
     },
     {
@@ -3143,8 +3083,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3155,13 +3095,11 @@
         "features": [
           "Class: Template"
         ],
-        "knownIssues": [
-          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/pug"
         ],
-        "raw": "{\n  \"name\": \"pug\",\n  \"class\": \"Template\",\n  \"status\": \"fail\",\n  \"duration\": 2686.429999947548,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"pug\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3673.5599999999977\n}"
       }
     },
     {
@@ -3205,7 +3143,7 @@
         "links": [
           "https://www.npmjs.com/package/marked"
         ],
-        "raw": "{\n  \"name\": \"marked\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 346.79499995708466\n}"
+        "raw": "{\n  \"name\": \"marked\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 479.21000000002095\n}"
       }
     },
     {
@@ -3249,7 +3187,7 @@
         "links": [
           "https://www.npmjs.com/package/markdown-it"
         ],
-        "raw": "{\n  \"name\": \"markdown-it\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 1648.9700000286102\n}"
+        "raw": "{\n  \"name\": \"markdown-it\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1219.25\n}"
       }
     },
     {
@@ -3293,7 +3231,7 @@
         "links": [
           "https://www.npmjs.com/package/micromark"
         ],
-        "raw": "{\n  \"name\": \"micromark\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 4342.400000095367\n}"
+        "raw": "{\n  \"name\": \"micromark\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3075.5650000000023\n}"
       }
     },
     {
@@ -3337,7 +3275,7 @@
         "links": [
           "https://www.npmjs.com/package/nunjucks"
         ],
-        "raw": "{\n  \"name\": \"nunjucks\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 981.2200000286102\n}"
+        "raw": "{\n  \"name\": \"nunjucks\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 812.7949999999837\n}"
       }
     },
     {
@@ -3365,8 +3303,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3377,13 +3315,11 @@
         "features": [
           "Class: Template"
         ],
-        "knownIssues": [
-          "38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                                                                                ────┬───  \n \u001b[38;5;240m  │\u001b[0m                                                                                                    ╰───── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/liquidjs"
         ],
-        "raw": "{\n  \"name\": \"liquidjs\",\n  \"class\": \"Template\",\n  \"status\": \"fail\",\n  \"duration\": 811.8200000524521,\n  \"error\": \"38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m                                                                                                ────┬───  \\n \\u001b[38;5;240m  │\\u001b[0m                                                                                                    ╰───── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"liquidjs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 693.1749999999884\n}"
       }
     },
     {
@@ -3427,7 +3363,7 @@
         "links": [
           "https://www.npmjs.com/package/mustache"
         ],
-        "raw": "{\n  \"name\": \"mustache\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 293.5\n}"
+        "raw": "{\n  \"name\": \"mustache\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 567.6599999999744\n}"
       }
     },
     {
@@ -3471,7 +3407,7 @@
         "links": [
           "https://www.npmjs.com/package/twig"
         ],
-        "raw": "{\n  \"name\": \"twig\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"duration\": 2021.5750000476837\n}"
+        "raw": "{\n  \"name\": \"twig\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1478.7449999999953\n}"
       }
     },
     {
@@ -3515,7 +3451,7 @@
         "links": [
           "https://www.npmjs.com/package/zod"
         ],
-        "raw": "{\n  \"name\": \"zod\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 1445.170000076294\n}"
+        "raw": "{\n  \"name\": \"zod\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 930.0149999999849\n}"
       }
     },
     {
@@ -3543,8 +3479,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3555,13 +3491,11 @@
         "features": [
           "Class: Validation"
         ],
-        "knownIssues": [
-          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/ajv"
         ],
-        "raw": "{\n  \"name\": \"ajv\",\n  \"class\": \"Validation\",\n  \"status\": \"fail\",\n  \"duration\": 83.43999993801117,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"ajv\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 560.859999999986\n}"
       }
     },
     {
@@ -3605,7 +3539,7 @@
         "links": [
           "https://www.npmjs.com/package/joi"
         ],
-        "raw": "{\n  \"name\": \"joi\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 828.5449999570847\n}"
+        "raw": "{\n  \"name\": \"joi\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1268.954999999958\n}"
       }
     },
     {
@@ -3649,7 +3583,7 @@
         "links": [
           "https://www.npmjs.com/package/valibot"
         ],
-        "raw": "{\n  \"name\": \"valibot\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 275.32999992370605\n}"
+        "raw": "{\n  \"name\": \"valibot\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 549.9100000000326\n}"
       }
     },
     {
@@ -3693,7 +3627,7 @@
         "links": [
           "https://www.npmjs.com/package/yup"
         ],
-        "raw": "{\n  \"name\": \"yup\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 503.8249999284744\n}"
+        "raw": "{\n  \"name\": \"yup\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1040.3249999999534\n}"
       }
     },
     {
@@ -3721,8 +3655,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -3733,13 +3667,11 @@
         "features": [
           "Class: Validation"
         ],
-        "knownIssues": [
-          "Build failed with 2 errors:\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n\n\u001b[31m[JSON_PARSE] \u001b[0mexpected value at line 1 column 1\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/fast-json-stringify"
         ],
-        "raw": "{\n  \"name\": \"fast-json-stringify\",\n  \"class\": \"Validation\",\n  \"status\": \"fail\",\n  \"duration\": 135.0349999666214,\n  \"error\": \"Build failed with 2 errors:\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n\\n\\u001b[31m[JSON_PARSE] \\u001b[0mexpected value at line 1 column 1\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"fast-json-stringify\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 695.2649999999558\n}"
       }
     },
     {
@@ -3783,7 +3715,7 @@
         "links": [
           "https://www.npmjs.com/package/superstruct"
         ],
-        "raw": "{\n  \"name\": \"superstruct\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 189.25499999523163\n}"
+        "raw": "{\n  \"name\": \"superstruct\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 535.109999999986\n}"
       }
     },
     {
@@ -3827,7 +3759,7 @@
         "links": [
           "https://www.npmjs.com/package/io-ts"
         ],
-        "raw": "{\n  \"name\": \"io-ts\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"duration\": 294.57999992370605\n}"
+        "raw": "{\n  \"name\": \"io-ts\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"fp-ts/es6/Either\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/fp-ts/es6/Either\\nPASS\\n\",\n  \"duration\": 936.179999999993\n}"
       }
     },
     {
@@ -3871,7 +3803,7 @@
         "links": [
           "https://www.npmjs.com/package/uuid"
         ],
-        "raw": "{\n  \"name\": \"uuid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 202\n}"
+        "raw": "{\n  \"name\": \"uuid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 533.109999999986\n}"
       }
     },
     {
@@ -3915,7 +3847,7 @@
         "links": [
           "https://www.npmjs.com/package/lodash"
         ],
-        "raw": "{\n  \"name\": \"lodash\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 455.80999994277954\n}"
+        "raw": "{\n  \"name\": \"lodash\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 652.085000000021\n}"
       }
     },
     {
@@ -3959,7 +3891,7 @@
         "links": [
           "https://www.npmjs.com/package/chalk"
         ],
-        "raw": "{\n  \"name\": \"chalk\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 65.55999994277954\n}"
+        "raw": "{\n  \"name\": \"chalk\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 441.00500000000466\n}"
       }
     },
     {
@@ -4003,7 +3935,7 @@
         "links": [
           "https://www.npmjs.com/package/nanoid"
         ],
-        "raw": "{\n  \"name\": \"nanoid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 129.06500005722046\n}"
+        "raw": "{\n  \"name\": \"nanoid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 506.5899999999674\n}"
       }
     },
     {
@@ -4031,8 +3963,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4043,13 +3975,11 @@
         "features": [
           "Class: Utility"
         ],
-        "knownIssues": [
-          ".0.9/node_modules/dotenv/dist/index.cjs:2:2 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m2 │\u001b[0m \u001b[38;5;249m#\u001b[0m!\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mu\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249mb\u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249m/\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\n \u001b[38;5;240m  │\u001b[0m  ┬  \n \u001b[38;5;240m  │\u001b[0m  ╰── \n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/dotenv"
         ],
-        "raw": "{\n  \"name\": \"dotenv\",\n  \"class\": \"Utility\",\n  \"status\": \"fail\",\n  \"duration\": 115.07500004768372,\n  \"error\": \".0.9/node_modules/dotenv/dist/index.cjs:2:2 \\u001b[38;5;246m]\\u001b[0m\\n   \\u001b[38;5;246m│\\u001b[0m\\n \\u001b[38;5;246m2 │\\u001b[0m \\u001b[38;5;249m#\\u001b[0m!\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249mu\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249mb\\u001b[0m\\u001b[38;5;249mi\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249m/\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m  ┬  \\n \\u001b[38;5;240m  │\\u001b[0m  ╰── \\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"dotenv\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 453.4349999999977\n}"
       }
     },
     {
@@ -4077,8 +4007,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4089,13 +4019,11 @@
         "features": [
           "Class: Utility"
         ],
-        "knownIssues": [
-          "0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m \u001b[0myaml\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mj\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m-\u001b[0m\u001b[38;5;249my\u001b[0m\u001b[38;5;249ma\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249ml\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m        ──┬─  \n \u001b[38;5;240m  │\u001b[0m          ╰─── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/js-yaml"
         ],
-        "raw": "{\n  \"name\": \"js-yaml\",\n  \"class\": \"Utility\",\n  \"status\": \"fail\",\n  \"duration\": 321.77499997615814,\n  \"error\": \"0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249mp\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249m \\u001b[0myaml\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mj\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m-\\u001b[0m\\u001b[38;5;249my\\u001b[0m\\u001b[38;5;249ma\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249ml\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m        ──┬─  \\n \\u001b[38;5;240m  │\\u001b[0m          ╰─── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"js-yaml\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 648.5499999999884\n}"
       }
     },
     {
@@ -4139,7 +4067,7 @@
         "links": [
           "https://www.npmjs.com/package/json5"
         ],
-        "raw": "{\n  \"name\": \"json5\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 33.12000000476837\n}"
+        "raw": "{\n  \"name\": \"json5\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 442.45000000001164\n}"
       }
     },
     {
@@ -4183,7 +4111,7 @@
         "links": [
           "https://www.npmjs.com/package/semver"
         ],
-        "raw": "{\n  \"name\": \"semver\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 50.77499997615814\n}"
+        "raw": "{\n  \"name\": \"semver\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 406.6049999999814\n}"
       }
     },
     {
@@ -4227,7 +4155,7 @@
         "links": [
           "https://www.npmjs.com/package/ms"
         ],
-        "raw": "{\n  \"name\": \"ms\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 21.72000002861023\n}"
+        "raw": "{\n  \"name\": \"ms\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 422.3099999999977\n}"
       }
     },
     {
@@ -4271,7 +4199,7 @@
         "links": [
           "https://www.npmjs.com/package/debug"
         ],
-        "raw": "{\n  \"name\": \"debug\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 30.37999999523163\n}"
+        "raw": "{\n  \"name\": \"debug\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 425.2850000000326\n}"
       }
     },
     {
@@ -4315,7 +4243,7 @@
         "links": [
           "https://www.npmjs.com/package/deepmerge"
         ],
-        "raw": "{\n  \"name\": \"deepmerge\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 54.764999985694885\n}"
+        "raw": "{\n  \"name\": \"deepmerge\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 488.7850000000326\n}"
       }
     },
     {
@@ -4359,7 +4287,7 @@
         "links": [
           "https://www.npmjs.com/package/query-string"
         ],
-        "raw": "{\n  \"name\": \"query-string\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 308.17000007629395\n}"
+        "raw": "{\n  \"name\": \"query-string\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 759.1399999999558\n}"
       }
     },
     {
@@ -4403,7 +4331,7 @@
         "links": [
           "https://www.npmjs.com/package/fast-deep-equal"
         ],
-        "raw": "{\n  \"name\": \"fast-deep-equal\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 21.585000038146973\n}"
+        "raw": "{\n  \"name\": \"fast-deep-equal\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 381.1500000000233\n}"
       }
     },
     {
@@ -4447,7 +4375,7 @@
         "links": [
           "https://www.npmjs.com/package/change-case"
         ],
-        "raw": "{\n  \"name\": \"change-case\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 164.1600000858307\n}"
+        "raw": "{\n  \"name\": \"change-case\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 516.7099999999627\n}"
       }
     },
     {
@@ -4491,7 +4419,7 @@
         "links": [
           "https://www.npmjs.com/package/p-limit"
         ],
-        "raw": "{\n  \"name\": \"p-limit\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 91.375\n}"
+        "raw": "{\n  \"name\": \"p-limit\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 629.304999999993\n}"
       }
     },
     {
@@ -4535,7 +4463,7 @@
         "links": [
           "https://www.npmjs.com/package/lru-cache"
         ],
-        "raw": "{\n  \"name\": \"lru-cache\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 47.37000000476837\n}"
+        "raw": "{\n  \"name\": \"lru-cache\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 413.4349999999977\n}"
       }
     },
     {
@@ -4563,8 +4491,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4575,13 +4503,11 @@
         "features": [
           "Class: Utility"
         ],
-        "knownIssues": [
-          "TIMEOUT after 60000ms\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/date-fns"
         ],
-        "raw": "{\n  \"name\": \"date-fns\",\n  \"class\": \"Utility\",\n  \"status\": \"fail\",\n  \"duration\": 60002.9050000906,\n  \"error\": \"TIMEOUT after 60000ms\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"date-fns\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1087.484999999986\n}"
       }
     },
     {
@@ -4625,7 +4551,7 @@
         "links": [
           "https://www.npmjs.com/package/dayjs"
         ],
-        "raw": "{\n  \"name\": \"dayjs\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 328.5349999666214\n}"
+        "raw": "{\n  \"name\": \"dayjs\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 585.2199999999721\n}"
       }
     },
     {
@@ -4669,7 +4595,7 @@
         "links": [
           "https://www.npmjs.com/package/luxon"
         ],
-        "raw": "{\n  \"name\": \"luxon\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 469.710000038147\n}"
+        "raw": "{\n  \"name\": \"luxon\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 610.2950000000419\n}"
       }
     },
     {
@@ -4713,7 +4639,7 @@
         "links": [
           "https://www.npmjs.com/package/throttle-debounce"
         ],
-        "raw": "{\n  \"name\": \"throttle-debounce\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"duration\": 172.67000007629395\n}"
+        "raw": "{\n  \"name\": \"throttle-debounce\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 818.8449999999721\n}"
       }
     },
     {
@@ -4741,8 +4667,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4753,13 +4679,11 @@
         "features": [
           "Class: Node core API"
         ],
-        "knownIssues": [
-          "0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mv\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249mn\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249ms\u001b[0m\u001b[38;5;249m'\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m          ──────┬─────  \n \u001b[38;5;240m  │\u001b[0m                ╰─────── Missing export\n\u001b[38;5;246m───╯\u001b[0m\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/events"
         ],
-        "raw": "{\n  \"name\": \"events\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 33.75999999046326,\n  \"error\": \"0m\\u001b[38;5;249m}\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249mf\\u001b[0m\\u001b[38;5;249mr\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249mm\\u001b[0m\\u001b[38;5;249m \\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mo\\u001b[0m\\u001b[38;5;249md\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249m:\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mv\\u001b[0m\\u001b[38;5;249me\\u001b[0m\\u001b[38;5;249mn\\u001b[0m\\u001b[38;5;249mt\\u001b[0m\\u001b[38;5;249ms\\u001b[0m\\u001b[38;5;249m'\\u001b[0m\\u001b[38;5;249m;\\u001b[0m\\n \\u001b[38;5;240m  │\\u001b[0m          ──────┬─────  \\n \\u001b[38;5;240m  │\\u001b[0m                ╰─────── Missing export\\n\\u001b[38;5;246m───╯\\u001b[0m\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"events\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 414.5\n}"
       }
     },
     {
@@ -4803,7 +4727,7 @@
         "links": [
           "https://www.npmjs.com/package/stream"
         ],
-        "raw": "{\n  \"name\": \"stream\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 16.28500008583069\n}"
+        "raw": "{\n  \"name\": \"stream\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 336.875\n}"
       }
     },
     {
@@ -4831,8 +4755,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4843,13 +4767,11 @@
         "features": [
           "Class: Node core API"
         ],
-        "knownIssues": [
-          "   at superviseRun (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/supervise-run.js:90:19)\n    at ShellService.runNodeApp (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:221:34)\n    at async ShellService.execute (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:35:30)\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/buffer"
         ],
-        "raw": "{\n  \"name\": \"buffer\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 2900.710000038147,\n  \"error\": \"   at superviseRun (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/supervise-run.js:90:19)\\n    at ShellService.runNodeApp (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:221:34)\\n    at async ShellService.execute (http://localhost:5341/@fs/Users/josocjoq/.worktrees/bolo-r0/pkg-matrix-2/packages/runtime/dist/shell-service.js:35:30)\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"buffer\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3518.9650000000256\n}"
       }
     },
     {
@@ -4877,8 +4799,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -4889,13 +4811,11 @@
         "features": [
           "Class: Node core API"
         ],
-        "knownIssues": [
-          "[unenv] crypto.createHash is not implemented yet!\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/crypto"
         ],
-        "raw": "{\n  \"name\": \"crypto\",\n  \"class\": \"Node core API\",\n  \"status\": \"fail\",\n  \"duration\": 30.68499994277954,\n  \"error\": \"[unenv] crypto.createHash is not implemented yet!\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"crypto\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 389.7150000000256\n}"
       }
     },
     {
@@ -4939,7 +4859,7 @@
         "links": [
           "https://www.npmjs.com/package/path"
         ],
-        "raw": "{\n  \"name\": \"path\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 18.125\n}"
+        "raw": "{\n  \"name\": \"path\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 346.8150000000023\n}"
       }
     },
     {
@@ -4983,7 +4903,7 @@
         "links": [
           "https://www.npmjs.com/package/url"
         ],
-        "raw": "{\n  \"name\": \"url\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 15.545000076293945\n}"
+        "raw": "{\n  \"name\": \"url\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 343.5350000000326\n}"
       }
     },
     {
@@ -5027,7 +4947,7 @@
         "links": [
           "https://www.npmjs.com/package/querystring"
         ],
-        "raw": "{\n  \"name\": \"querystring\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"duration\": 17.575000047683716\n}"
+        "raw": "{\n  \"name\": \"querystring\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 386.14000000001397\n}"
       }
     },
     {
@@ -5055,8 +4975,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "unsupported",
+          "note": "Won't work in the browser"
         },
         "safari": {
           "status": "unknown",
@@ -5065,15 +4985,13 @@
       },
       "details": {
         "features": [
-          "0/3 tests passed"
+          "2/3 tests passed"
         ],
         "knownIssues": [
-          "test-os-eol.js: Uncaught TypeError: Cannot redefine property: EOL",
-          "test-os-checked-function.js: [bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding",
-          "test-os-homedir-no-envvar.js: Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead."
+          "test-os-checked-function.js: Uncaught Error: No such binding: os"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-os-eol.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot redefine property: EOL\"\n  },\n  {\n    \"file\": \"test-os-checked-function.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"internal/test/binding\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding\"\n  },\n  {\n    \"file\": \"test-os-homedir-no-envvar.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: Synchronous child_process calls are not supported: command dispatch in this environment is always asynchronous (bash interpreter / wasm tool / bundler), and the browser main thread cannot block on a Promise. Use the async spawn()/exec() APIs instead.\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-os-eol.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-os-checked-function.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: No such binding: os\"\n  },\n  {\n    \"file\": \"test-os-homedir-no-envvar.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5114,12 +5032,12 @@
           "0/3 tests passed"
         ],
         "knownIssues": [
-          "test-util-format.js: Uncaught TypeError: Cannot read properties of undefined (reading 'replace')",
-          "test-util-inspect.js: [bundle warning] \"vm\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm",
-          "test-util-types.js: [bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "test-util-format.js: Uncaught AssertionError: '118059162071741140000 118059162071741140000 123123123' strictEqual '118_059_162_071_741_140_000 118_059_162_071_741_140_000 123_123_123'",
+          "test-util-inspect.js: Uncaught Error: No such binding: util",
+          "test-util-types.js: Uncaught AssertionError: Want undefined to match isExternal"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot read properties of undefined (reading 'replace')\"\n  },\n  {\n    \"file\": \"test-util-inspect.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"vm\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"internal/test/binding\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: '118059162071741140000 118059162071741140000 123123123' strictEqual '118_059_162_071_741_140_000 118_059_162_071_741_140_000 123_123_123'\"\n  },\n  {\n    \"file\": \"test-util-inspect.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: No such binding: util\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: Want undefined to match isExternal\"\n  }\n]"
       }
     },
     {
@@ -5160,11 +5078,11 @@
           "1/3 tests passed"
         ],
         "knownIssues": [
-          "test-assert.js: [bundle warning] \"vm\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm",
-          "test-assert-async.js: Uncaught AssertionError: {} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\"}"
+          "test-assert.js: Uncaught AssertionError: {\"message\":\"2 notStrictEqual 2\",\"name\":\"AssertionError\"} deepStrictEqual {\"message\":\"Expected \\\"actual\\\" to be strictly unequal to: 2\",\"name\":\"AssertionError\"}",
+          "test-assert-async.js: Uncaught AssertionError: {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got Map(0) {  }.\",\"code\":\"ERR_INVALID_RETURN_VALUE\",\"name\":\"TypeError\"} deepStrictEqual {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got..."
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-assert.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"vm\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vm\"\n  },\n  {\n    \"file\": \"test-assert-fail.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-async.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: {} deepStrictEqual {\\\"code\\\":\\\"ERR_INVALID_ARG_TYPE\\\"}\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-assert.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: {\\\"message\\\":\\\"2 notStrictEqual 2\\\",\\\"name\\\":\\\"AssertionError\\\"} deepStrictEqual {\\\"message\\\":\\\"Expected \\\\\\\"actual\\\\\\\" to be strictly unequal to: 2\\\",\\\"name\\\":\\\"AssertionError\\\"}\"\n  },\n  {\n    \"file\": \"test-assert-fail.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-async.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: {\\\"message\\\":\\\"Expected instance of Promise to be returned from the \\\\\\\"promiseFn\\\\\\\" function but got Map(0) {  }.\\\",\\\"code\\\":\\\"ERR_INVALID_RETURN_VALUE\\\",\\\"name\\\":\\\"TypeError\\\"} deepStrictEqual {\\\"message\\\":\\\"Expected instance of Promise to be returned from the \\\\\\\"promiseFn\\\\\\\" function but got...\"\n  }\n]"
       }
     },
     {
@@ -5205,12 +5123,12 @@
           "0/3 tests passed"
         ],
         "knownIssues": [
-          "test-fs-mkdir.js: Build failed with 1 error:",
-          "test-fs-write-file.js: Build failed with 1 error:",
-          "test-fs-readfile.js: Build failed with 1 error:"
+          "test-fs-mkdir.js: Uncaught AssertionError: Missing expected exception (TypeError).",
+          "test-fs-write-file.js: Uncaught AssertionError: The input did not match the regular expression {}. Input:",
+          "test-fs-readfile.js: Validating readFile on file /home/harness/test/.tmp.0/.removeme-fs-readfile-1-1K.txt of length 1024"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-fs-mkdir.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-fs-write-file.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-fs-mkdir.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: Missing expected exception (TypeError).\"\n  },\n  {\n    \"file\": \"test-fs-write-file.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: The input did not match the regular expression {}. Input:\"\n  },\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"fail\",\n    \"error\": \"Validating readFile on file /home/harness/test/.tmp.0/.removeme-fs-readfile-1-1K.txt of length 1024\"\n  }\n]"
       }
     },
     {
@@ -5238,8 +5156,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "partial",
+          "note": "Partial support"
         },
         "safari": {
           "status": "unknown",
@@ -5248,15 +5166,14 @@
       },
       "details": {
         "features": [
-          "0/3 tests passed"
+          "1/3 tests passed"
         ],
         "knownIssues": [
-          "test-http-status-code.js: Build failed with 1 error:",
-          "test-http-methods.js: Uncaught AssertionError: undefined deepStrictEqual [\"ACL\",\"BIND\",\"CHECKOUT\",\"CONNECT\",\"COPY\",\"DELETE\",\"GET\",\"HEAD\",\"LINK\",\"LOCK\",\"M-SEARCH\",\"MERGE\",\"MKACTIVITY\",\"MKCALENDAR\",\"MKCOL\",\"MOVE\",\"NOTIFY\",\"OPTIONS\",\"PATCH\",\"POST\",\"PROPFIND\",\"PROPPATCH\",\"PURGE\",\"PUT\",\"QUERY\",\"REBIND\",\"REPORT\",\"SEARCH\",\"SOUR...",
-          "test-http-write-head.js: Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "test-http-status-code.js: TIMEOUT after 30000ms",
+          "test-http-write-head.js: Uncaught TypeError: Cannot read properties of undefined (reading 'address')"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-http-status-code.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-http-methods.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: undefined deepStrictEqual [\\\"ACL\\\",\\\"BIND\\\",\\\"CHECKOUT\\\",\\\"CONNECT\\\",\\\"COPY\\\",\\\"DELETE\\\",\\\"GET\\\",\\\"HEAD\\\",\\\"LINK\\\",\\\"LOCK\\\",\\\"M-SEARCH\\\",\\\"MERGE\\\",\\\"MKACTIVITY\\\",\\\"MKCALENDAR\\\",\\\"MKCOL\\\",\\\"MOVE\\\",\\\"NOTIFY\\\",\\\"OPTIONS\\\",\\\"PATCH\\\",\\\"POST\\\",\\\"PROPFIND\\\",\\\"PROPPATCH\\\",\\\"PURGE\\\",\\\"PUT\\\",\\\"QUERY\\\",\\\"REBIND\\\",\\\"REPORT\\\",\\\"SEARCH\\\",\\\"SOUR...\"\n  },\n  {\n    \"file\": \"test-http-write-head.js\",\n    \"status\": \"fail\",\n    \"error\": \"Mismatched <anonymous> function calls. Expected 1, actual 0.\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-http-status-code.js\",\n    \"status\": \"fail\",\n    \"error\": \"TIMEOUT after 30000ms\"\n  },\n  {\n    \"file\": \"test-http-methods.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-http-write-head.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot read properties of undefined (reading 'address')\"\n  }\n]"
       }
     },
     {
@@ -5284,8 +5201,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5294,15 +5211,13 @@
       },
       "details": {
         "features": [
-          "0/3 tests passed"
+          "3/3 tests passed"
         ],
         "knownIssues": [
-          "test-process-env.js: Uncaught AssertionError: 42 strictEqual '42'",
-          "test-process-next-tick.js: Uncaught Error",
-          "test-process-hrtime.js: Uncaught TypeError: assert is not a function"
+          "No known issues"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-process-env.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: 42 strictEqual '42'\"\n  },\n  {\n    \"file\": \"test-process-next-tick.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error\"\n  },\n  {\n    \"file\": \"test-process-hrtime.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: assert is not a function\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-process-env.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-process-next-tick.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-process-hrtime.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5340,13 +5255,18 @@
       },
       "details": {
         "features": [
-          "1/2 tests passed"
+          "48/54 tests passed"
         ],
         "knownIssues": [
-          "test-timers-immediate.js: Uncaught AssertionError: function should not have been called"
+          "test-timers-reset-process-domain-on-throw.js: process.domain should be null in this timer callback, but is: undefined",
+          "test-timers-immediate-promisified.js: Uncaught [object Object]",
+          "test-timers-immediate-queue-throw.js: Uncaught AssertionError: 0 strictEqual 1",
+          "test-timers-interval-promisified.js: Uncaught [object Object]",
+          "test-timers-socket-timeout-removes-other-socket-unref-timer.js: TIMEOUT after 30000ms",
+          "test-timers-timeout-promisified.js: Uncaught [object Object]"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-timers-args.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: function should not have been called\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-timers-reset-process-domain-on-throw.js\",\n    \"status\": \"fail\",\n    \"error\": \"process.domain should be null in this timer callback, but is: undefined\"\n  },\n  {\n    \"file\": \"test-timers-active.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-api-refs.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-args.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-null-does-not-throw-error.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-object-does-not-throw-error.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-timeout-interval-equivalent.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clearImmediate-als.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clearImmediate.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-destroyed.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-dispose.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-enroll-invalid-msecs.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-enroll-second-time.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-promisified.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught [object Object]\"\n  },\n  {\n    \"file\": \"test-timers-immediate-queue-throw.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: 0 strictEqual 1\"\n  },\n  {\n    \"file\": \"test-timers-immediate-queue.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref-nested-once.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref-simple.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-interval-promisified.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught [object Object]\"\n  },\n  {\n    \"file\": \"test-timers-interval-throw.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-linked-list.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-max-duration-warning.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-nested.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-next-tick.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-non-integer-delay.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-now.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-ordering.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-promises-scheduler.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-promises.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-refresh-in-callback.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-refresh.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-same-timeout-wrong-list-deleted.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-setimmediate-infinite-loop.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-socket-timeout-removes-other-socket-unref-timer.js\",\n    \"status\": \"fail\",\n    \"error\": \"TIMEOUT after 30000ms\"\n  },\n  {\n    \"file\": \"test-timers-this.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-throw-when-cb-not-function.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-timeout-promisified.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught [object Object]\"\n  },\n  {\n    \"file\": \"test-timers-timeout-to-interval.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-timeout-with-non-integer.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-to-primitive.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-uncaught-exception.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unenroll-unref-interval.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-active.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-remove-other-unref-timers-only-one-fires.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-remove-other-unref-timers.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-throw-then-ref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefd-interval-still-fires.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefed-in-beforeexit.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefed-in-callback.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-user-call.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-zero-timeout.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5374,8 +5294,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "partial",
+          "note": "Partial support"
         },
         "safari": {
           "status": "unknown",
@@ -5384,15 +5304,13 @@
       },
       "details": {
         "features": [
-          "0/3 tests passed"
+          "2/3 tests passed"
         ],
         "knownIssues": [
-          "test-console-clear.js: Uncaught TypeError: console.clear is not a function",
-          "test-console-count.js: Uncaught TypeError: console.count is not a function",
-          "test-console-methods.js: Uncaught TypeError: Console is not a constructor"
+          "test-console-clear.js: Uncaught AssertionError: '\u001b[1;1H\u001b[0J' strictEqual ''"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-console-clear.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: console.clear is not a function\"\n  },\n  {\n    \"file\": \"test-console-count.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: console.count is not a function\"\n  },\n  {\n    \"file\": \"test-console-methods.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Console is not a constructor\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-console-clear.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: '\\u001b[1;1H\\u001b[0J' strictEqual ''\"\n  },\n  {\n    \"file\": \"test-console-count.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-console-methods.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5420,8 +5338,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5430,14 +5348,13 @@
       },
       "details": {
         "features": [
-          "0/2 tests passed"
+          "2/2 tests passed"
         ],
         "knownIssues": [
-          "test-child-process-spawnsync.js: Build failed with 1 error:",
-          "test-child-process-execsync-maxbuf.js: Uncaught AssertionError: undefined strictEqual 'ENOBUFS'"
+          "No known issues"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-child-process-spawnsync.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  },\n  {\n    \"file\": \"test-child-process-execsync-maxbuf.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: undefined strictEqual 'ENOBUFS'\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-child-process-spawnsync.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-child-process-execsync-maxbuf.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5465,8 +5382,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5475,15 +5392,13 @@
       },
       "details": {
         "features": [
-          "0/3 tests passed"
+          "3/3 tests passed"
         ],
         "knownIssues": [
-          "test-worker-message-port-constructor.js: Uncaught TypeError: MessageChannel is not a constructor",
-          "test-worker-exit-event-error.js: Mismatched noop function calls. Expected 1, actual 0.",
-          "test-worker-load-file-with-extension-other-than-js.js: Build failed with 1 error:"
+          "No known issues"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-worker-message-port-constructor.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: MessageChannel is not a constructor\"\n  },\n  {\n    \"file\": \"test-worker-exit-event-error.js\",\n    \"status\": \"fail\",\n    \"error\": \"Mismatched noop function calls. Expected 1, actual 0.\"\n  },\n  {\n    \"file\": \"test-worker-load-file-with-extension-other-than-js.js\",\n    \"status\": \"fail\",\n    \"error\": \"Build failed with 1 error:\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-worker-message-port-constructor.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-worker-exit-event-error.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-worker-load-file-with-extension-other-than-js.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5524,10 +5439,10 @@
           "0/1 tests passed"
         ],
         "knownIssues": [
-          "test-performanceobserver.js: [bundle warning] \"internal/test/binding\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding"
+          "test-performanceobserver.js: Uncaught TypeError: Cannot read properties of undefined (reading '0')"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-performanceobserver.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"internal/test/binding\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/internal/test/binding\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-performanceobserver.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot read properties of undefined (reading '0')\"\n  }\n]"
       }
     },
     {
@@ -5568,10 +5483,10 @@
           "0/1 tests passed"
         ],
         "knownIssues": [
-          "test-net-connect-buffer.js: Uncaught TypeError: Class constructor Server cannot be invoked without 'new'"
+          "test-net-connect-buffer.js: TIMEOUT after 30000ms"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-net-connect-buffer.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Class constructor Server cannot be invoked without 'new'\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-net-connect-buffer.js\",\n    \"status\": \"fail\",\n    \"error\": \"TIMEOUT after 30000ms\"\n  }\n]"
       }
     },
     {
@@ -5612,11 +5527,11 @@
           "0/2 tests passed"
         ],
         "knownIssues": [
-          "test-dns-set-default-order.js: [bundle warning] \"dns\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns",
-          "test-dns-setlocaladdress.js: [bundle warning] \"dns\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns"
+          "test-dns-set-default-order.js: Uncaught Error: No such binding: cares_wrap",
+          "test-dns-setlocaladdress.js: Uncaught TypeError: resolver.setLocalAddress is not a function"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-dns-set-default-order.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"dns\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns\"\n  },\n  {\n    \"file\": \"test-dns-setlocaladdress.js\",\n    \"status\": \"fail\",\n    \"error\": \"[bundle warning] \\\"dns\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/dns\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-dns-set-default-order.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: No such binding: cares_wrap\"\n  },\n  {\n    \"file\": \"test-dns-setlocaladdress.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: resolver.setLocalAddress is not a function\"\n  }\n]"
       }
     }
   ]

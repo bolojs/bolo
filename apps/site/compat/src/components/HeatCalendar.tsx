@@ -1,5 +1,7 @@
 import React from "react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
+import { StatusHoverCard } from "./StatusHoverCard";
+import { StatusPopup } from "./StatusPopup";
+import { STATUS_COLOR, statusLabel } from "../lib/status";
 
 interface LatestInfo {
   status: string;
@@ -16,6 +18,7 @@ interface Row {
   id: string;
   name: string;
   category: string;
+  categoryLabel?: string;
 }
 
 interface HeatCalendarProps {
@@ -23,22 +26,6 @@ interface HeatCalendarProps {
   rows: Row[];
   latest: Record<string, LatestInfo>;
 }
-
-const STATUS_COLOR: Record<string, string> = {
-  pass: "#10b981",
-  partial: "#f59e0b",
-  fail: "#ef4444",
-  pending: "#94a3b8",
-  unknown: "#e5e7eb",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pass: "pass",
-  partial: "partial",
-  fail: "fail",
-  pending: "pending",
-  unknown: "unknown",
-};
 
 const STUB_LINK = "https://github.com/bolojs/bolo/actions/workflows/compat-harness.yml";
 
@@ -81,46 +68,33 @@ function renderCells(
     const status = info?.status ?? "unknown";
     const date = info?.date ?? "no run yet";
     const link = info?.link ?? STUB_LINK;
-    const categoryLabel = labelByKey.get(pkg.category) ?? pkg.category;
-    const tooltip = `${categoryLabel} — ${pkg.name} — ${date}: ${status}`;
+    const categoryLabel = pkg.categoryLabel ?? labelByKey.get(pkg.category) ?? pkg.category;
+    const tooltip = `${categoryLabel} — ${pkg.name} — ${date}: ${statusLabel(status)}`;
 
     return (
-      <HoverCard key={pkg.id} openDelay={200} closeDelay={100}>
-        <HoverCardTrigger asChild>
-          <div
-            className="heat-calendar-package"
-            data-name={pkg.name}
-            data-category={pkg.category}
-            role="button"
-            tabIndex={0}
-            aria-label={tooltip}
-          >
-            <span
-              className="heat-calendar-cell"
-              style={{
-                backgroundColor: STATUS_COLOR[status] ?? STATUS_COLOR.unknown,
-              }}
-            />
-          </div>
-        </HoverCardTrigger>
-        <HoverCardContent>
-          <div className="hover-card-header">
-            <span className="hover-card-name">{pkg.name}</span>
-            <span className={`hover-card-badge status-${status}`}>{STATUS_LABEL[status]}</span>
-          </div>
-          <div className="hover-card-category">{categoryLabel}</div>
-          <div className="hover-card-date">{date}</div>
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener"
-            className="hover-card-link"
-            onClick={(e) => e.stopPropagation()}
-          >
-            View CI run →
-          </a>
-        </HoverCardContent>
-      </HoverCard>
+      <StatusHoverCard
+        key={pkg.id}
+        className="heat-calendar-package"
+        ariaLabel={tooltip}
+        dataName={pkg.name}
+        dataCategory={pkg.category}
+        popup={
+          <StatusPopup
+            name={pkg.name}
+            status={status}
+            categoryLabel={categoryLabel}
+            date={date}
+            link={link}
+          />
+        }
+      >
+        <span
+          className="heat-calendar-cell"
+          style={{
+            backgroundColor: STATUS_COLOR[status] ?? STATUS_COLOR.unknown,
+          }}
+        />
+      </StatusHoverCard>
     );
   });
 }

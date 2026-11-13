@@ -145,12 +145,12 @@
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
   "rspack": {
-    "status": "partial",
+    "status": "unsupported",
     "date": "2026-11-13",
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
   "turbo": {
-    "status": "unknown",
+    "status": "unsupported",
     "date": "2026-11-13",
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
@@ -280,12 +280,12 @@
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
   "bcrypt": {
-    "status": "unknown",
+    "status": "unsupported",
     "date": "2026-11-13",
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
   "argon2": {
-    "status": "unknown",
+    "status": "unsupported",
     "date": "2026-11-13",
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
@@ -550,7 +550,7 @@
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
   "os": {
-    "status": "partial",
+    "status": "unsupported",
     "date": "2026-11-13",
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
@@ -575,7 +575,7 @@
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
   "process": {
-    "status": "partial",
+    "status": "pass",
     "date": "2026-11-13",
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
@@ -590,7 +590,7 @@
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
   "child-process": {
-    "status": "fail",
+    "status": "pass",
     "date": "2026-11-13",
     "link": "https://github.com/bolojs/bolo/actions/runs/43396504387"
   },
