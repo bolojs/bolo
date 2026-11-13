@@ -385,11 +385,17 @@ describe('wasm-registry: bundleEntry', () => {
     expect(warnings.some((w) => w.includes('binary content'))).toBe(true);
   });
 
-  it('fails honestly on an unknown node: builtin instead of an esm.sh URL', async () => {
+  it('defers an unknown node: builtin to a require-time MODULE_NOT_FOUND instead of an esm.sh URL', async () => {
     const vfs = new VfsBus();
     seed(vfs, '/src/entry.ts', "import x from 'node:sqlite'; void x;");
 
-    await expect(bundleEntry('/src/entry.ts', { vfs })).rejects.toThrow();
+    const { code } = await bundleEntry('/src/entry.ts', { vfs });
+
+    // Packages probe optional builtins behind try/catch — a lazy
+    // MODULE_NOT_FOUND preserves that path, an esm.sh URL would not.
+    expect(code).toContain('node:sqlite');
+    expect(code).toContain('MODULE_NOT_FOUND');
+    expect(code).not.toMatch(/esm\.sh/);
   });
 
   it('rewrites a jsr: unscoped specifier to the installed @jsr mirror package', async () => {

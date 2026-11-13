@@ -572,12 +572,12 @@ var __bc_clearImmediate = __bcTimers?.clearImmediate ?? ((imm) => { if (imm) imm
 // Class-call compat: unenv ships real ES classes for several builtins
 // (EventEmitter, EventEmitterAsyncResource, ...), but Node's originals are
 // *functions*, and legacy packages (readable-stream, winston, express) still
-// subclass them via `Emitter.call(this)` — a bare class export throws
+// subclass them via \`Emitter.call(this)\` — a bare class export throws
 // "Class constructor cannot be invoked without 'new'" at that call site.
-// The wrapper keeps the class fully constructable (`new`, `extends`,
+// The wrapper keeps the class fully constructable (\`new\`, \`extends\`,
 // instanceof all preserved: F.prototype === C.prototype and constructed
 // instances carry the class prototype) while letting a bare call stamp the
-// constructor's own properties onto a foreign `this`, exactly like Node's
+// constructor's own properties onto a foreign \`this\`, exactly like Node's
 // function-based constructors do.
 var __bc_isClass = (v) => {
   if (typeof v !== 'function') return false;
@@ -607,8 +607,8 @@ var __bc_callCompat = (C) => {
     if (k2 === 'prototype' || k2 === 'length' || k2 === 'name' || k2 === 'arguments' || k2 === 'caller') continue;
     var desc = Object.getOwnPropertyDescriptor(C, k2);
     if (desc && 'value' in desc) {
-      // `events.EventEmitter === events`: self-references point at the
-      // wrapper so `require('events').EventEmitter` stays call-compatible.
+      // \`events.EventEmitter === events\`: self-references point at the
+      // wrapper so \`require('events').EventEmitter\` stays call-compatible.
       if (desc.value === C) desc = { ...desc, value: F };
       else if (__bc_isClass(desc.value)) desc = { ...desc, value: __bc_callCompat(desc.value) };
     }
@@ -620,13 +620,13 @@ var __bc_callCompat = (C) => {
   return F;
 };
 
-// Free `require` survives bundling in three places: UMD feature guards that
-// take a Node branch (`typeof require !== 'undefined' ? require('url') : ...
+// Free \`require\` survives bundling in three places: UMD feature guards that
+// take a Node branch (\`typeof require !== 'undefined' ? require('url') : ...
 // — sass.dart.js), try/catch optional-dependency probes (native bindings),
-// and rolldown's emitted `__require` helper for `require(expr)` it could not
+// and rolldown's emitted \`__require\` helper for \`require(expr)\` it could not
 // resolve statically. Binding on globalThis answers all three — a scoped
-// `var require` would be a parse-time redeclare against any bundled module
-// that declares its own top-level `const require = createRequire(...)`.
+// \`var require\` would be a parse-time redeclare against any bundled module
+// that declares its own top-level \`const require = createRequire(...)\`.
 // Builtin names resolve to the live shim registry; everything else throws
 // Node's MODULE_NOT_FOUND so the caller's fallback path runs.
 var __bc_selfAliases = ${JSON.stringify(SUBPATH_SELF_ALIASES)};
