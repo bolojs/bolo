@@ -165,7 +165,10 @@ interface EsbuildTransformOptions {
 interface EsbuildModule {
   readonly version: string;
   initialize(options?: { wasmURL?: string }): Promise<void>;
-  transform(input: string, options?: EsbuildTransformOptions): Promise<{
+  transform(
+    input: string,
+    options?: EsbuildTransformOptions,
+  ): Promise<{
     code: string;
     map?: string;
   }>;
@@ -264,7 +267,9 @@ const createEsbuildTool = (options: CuratedToolsOptions): WasmToolLoader => {
       // through the shared OPFS-backed loadBinary cache as a blob URL so the
       // "install once, stay local" path covers the glue's wasm too.
       const bytes = await loadWasm("esbuild-wasm", version, "esbuild.wasm");
-      const wasmURL = URL.createObjectURL(new Blob([bytes], { type: "application/wasm" }));
+      const wasmURL = URL.createObjectURL(
+        new Blob([new Uint8Array(bytes)], { type: "application/wasm" }),
+      );
       try {
         await mod.initialize({ wasmURL });
       } catch {
@@ -473,16 +478,14 @@ const createSwcTool = (options: CuratedToolsOptions): WasmToolLoader => {
       // @swc/wasm-web's default export initializes the wasm instance; named
       // exports (transform, transformSync, ...) live on the namespace. esm.sh
       // interop can put either shape under `default`, so probe both.
-      const init =
-        typeof raw.default === "function" && !raw.transform ? raw.default : undefined;
-      const unwrapped: unknown =
-        raw.default && typeof raw.default === "object" ? raw.default : raw;
+      const init = typeof raw.default === "function" && !raw.transform ? raw.default : undefined;
+      const unwrapped: unknown = raw.default && typeof raw.default === "object" ? raw.default : raw;
       const ns = (init ? raw : unwrapped) as Record<string, unknown>;
       if (init) {
         const bytes = await loadWasm("@swc/wasm-web", version, "wasm_bg.wasm");
         await (init as (input?: unknown) => Promise<unknown>)(bytes);
       }
-      return ns as SwcModule;
+      return ns as unknown as SwcModule;
     })();
     return modulePromise;
   };
@@ -542,7 +545,8 @@ const createSwcTool = (options: CuratedToolsOptions): WasmToolLoader => {
             parser: syntax,
             target: "es2022",
           },
-          sourceMaps: hasFlag(flags, "source-maps") || flagString(flags, "source-file-name") !== undefined,
+          sourceMaps:
+            hasFlag(flags, "source-maps") || flagString(flags, "source-file-name") !== undefined,
         });
       } catch (err) {
         return fail(`swc: ${err instanceof Error ? err.message : String(err)}\n`);

@@ -37,6 +37,7 @@ export {
   createWasmNativeAddonLoader,
   warmWasmAddons,
   wasmAddonSpecifiers,
+  bundleHasNativeAddon,
   esmShAddonModuleLoader,
 } from "./native-addon-resolver.js";
 export type {

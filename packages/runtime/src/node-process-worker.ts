@@ -14,6 +14,7 @@ import {
   createWasmNativeAddonLoader,
   warmWasmAddons,
   wasmAddonSpecifiers,
+  bundleHasNativeAddon,
 } from "@bolojs/registry";
 import { createSyncCaller } from "./sync-channel.js";
 import { createNodeTimers } from "./node-timers.js";
@@ -457,10 +458,15 @@ const runProcess = async (msg: ProcRunMessage) => {
   try {
     // `.node` requires inside the bundle resolve through nativeAddonLoader,
     // which is synchronous — the variant packages must be warm before the
-    // module executes. Cheap string probe; bundles without native addons
-    // skip the CDN fetch entirely.
-    if (msg.code.includes(".node")) {
-      Object.assign(wasmAddons, await warmWasmAddons(wasmAddonSpecifiers()));
+    // module executes. Quoted-specifier probe; a warm failure is not fatal
+    // (the loader throws a catalogued error if a `.node` require actually
+    // runs, and false-positive probes must not kill the process).
+    if (bundleHasNativeAddon(msg.code)) {
+      try {
+        Object.assign(wasmAddons, await warmWasmAddons(wasmAddonSpecifiers()));
+      } catch {
+        // Variant CDN unreachable — defer to the loader's catalogued error.
+      }
     }
     const blob = new Blob([msg.code], { type: "text/javascript" });
     const url = URL.createObjectURL(blob);

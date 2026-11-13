@@ -124,9 +124,10 @@ describe("curated wasm tools", () => {
     const vfs = new VfsBus();
     const esbuild = fakeEsbuild();
     esbuild.transform.mockRejectedValue(new Error("bad syntax"));
-    const registry = createCuratedWasmRegistry(makeOptions(vfs, esbuild, fakeSwc()));
+    createCuratedWasmRegistry(makeOptions(vfs, esbuild, fakeSwc()));
 
-    const result = await registry.dispatch("esbuild", ["--loader=ts"], "const = ;");
+    const tool = await resolveWasmTool("esbuild");
+    const result = await tool!.run(["--loader=ts"], "const = ;");
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("bad syntax");
   });

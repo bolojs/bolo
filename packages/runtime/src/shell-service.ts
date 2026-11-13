@@ -4,16 +4,13 @@ import type { SWSandbox } from "@bolojs/sandbox";
 import {
   bundleEntry,
   resetBundler,
+  bundleHasNativeAddon,
   createWasmNativeAddonLoader,
   warmWasmAddons,
   wasmAddonSpecifiers,
 } from "@bolojs/registry";
 import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
-import type {
-  NativeAddonLoader,
-  SpawnedProcess,
-  WasmRegistry,
-} from "@bolojs/node-runtime-shims";
+import type { NativeAddonLoader, SpawnedProcess, WasmRegistry } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
 import { git } from "./commands/git.js";
 import { nc } from "./commands/nc.js";
@@ -285,8 +282,7 @@ export class ShellService {
     // tools take argv, not shell syntax.
     if (this.deps.wasmRegistry && !/[|><&;`$]/.test(command)) {
       const result = await this.deps.wasmRegistry.dispatch(cmd, rest);
-      const fellThrough =
-        result.exitCode !== 0 && result.stderr.includes("WASM tool not found");
+      const fellThrough = result.exitCode !== 0 && result.stderr.includes("WASM tool not found");
       if (!fellThrough) {
         if (result.stdout) output.stdout(result.stdout);
         if (result.stderr) output.stderr(result.stderr);
@@ -655,10 +651,17 @@ export class ShellService {
 
       // Main-realm execution: a bundle containing `.node` requires needs the
       // variant packages warm before the code runs — the loader is
-      // synchronous. Cheap string probe; bundles without native addons skip
-      // the CDN fetch entirely.
-      if (code.includes(".node")) {
-        await this.ensureWasmAddons();
+      // synchronous. Quoted-specifier probe; bundles without native addons
+      // skip the CDN fetch entirely. A warm failure is not fatal: the
+      // synchronous loader throws a catalogued error if a `.node` require
+      // actually executes, and false-positive probes (a ".node" string in
+      // user code) must not kill an otherwise runnable bundle.
+      if (bundleHasNativeAddon(code)) {
+        await this.ensureWasmAddons().catch((err: unknown) => {
+          output.stderr(
+            `[wasm-addons] variant warm-up failed: ${err instanceof Error ? err.message : String(err)}\n`,
+          );
+        });
       }
 
       const result = await superviseRun({

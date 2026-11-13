@@ -130,10 +130,7 @@ const findOwningPackage = (
  * Returns the replacement specifier, `false` for an explicit stub, or
  * `undefined` when unmapped.
  */
-const browserFieldRemap = (
-  pkg: OwningPackage,
-  modulePath: string,
-): string | false | undefined => {
+const browserFieldRemap = (pkg: OwningPackage, modulePath: string): string | false | undefined => {
   const browser = pkg.browser;
   if (!browser) return undefined;
   if (typeof browser === "string") return browser;
@@ -258,3 +255,13 @@ export const warmWasmAddons = async (
 
 /** Specifiers of every curated variant — the set `warmWasmAddons` needs. */
 export const wasmAddonSpecifiers = (): string[] => Object.values(NATIVE_ADDON_WASM_VARIANTS);
+
+/**
+ * Cheap probe for "does this bundle contain a `.node` specifier". Matches a
+ * quoted string ending in `.node` — `require("./foo.node")`,
+ * `import x from "./foo.node"`, `import("./foo.node")`. A bare
+ * `code.includes(".node")` false-positives on shim-source comments and
+ * string literals, warming the variant CDN packages for every bundle.
+ */
+export const bundleHasNativeAddon = (code: string): boolean =>
+  /["'`][^"'`\n]*\.node["'`]/.test(code);

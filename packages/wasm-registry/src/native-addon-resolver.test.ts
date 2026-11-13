@@ -65,7 +65,10 @@ describe("createWasmNativeAddonLoader", () => {
     });
 
     expect(
-      loader("/app/node_modules/lightningcss/node_modules/@parcel/watcher-linux-x64/watcher.node", vfs),
+      loader(
+        "/app/node_modules/lightningcss/node_modules/@parcel/watcher-linux-x64/watcher.node",
+        vfs,
+      ),
     ).toBe(exports);
   });
 
@@ -174,8 +177,6 @@ describe("warmWasmAddons", () => {
 
 describe("wasmAddonSpecifiers", () => {
   it("returns every curated variant specifier", () => {
-    expect(wasmAddonSpecifiers().sort()).toEqual(
-      Object.values(NATIVE_ADDON_WASM_VARIANTS).sort(),
-    );
+    expect(wasmAddonSpecifiers().sort()).toEqual(Object.values(NATIVE_ADDON_WASM_VARIANTS).sort());
   });
 });
