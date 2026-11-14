@@ -1,7 +1,7 @@
 import type { VfsBus } from "@bolojs/fs";
 import { enrichMessage } from "@bolojs/log/error-hints";
 import { buildRouteManifest, matchRoute, type RouteManifest } from "./route-manifest.js";
-import { compileModule } from "./compile.js";
+import { compileModule, rewriteBareImports, type ImportMap } from "./compile.js";
 import { assembleDocument } from "./document.js";
 import { runApiRoute } from "./api.js";
 import { runGetStaticProps } from "./data.js";
@@ -71,6 +71,7 @@ export class NextDevServer {
   private readonly loader: ModuleLoader;
   private readonly hmr: NextHmr;
   private manifestCache: { manifest: RouteManifest; at: number } | null = null;
+  private importMapCache: { map: ImportMap | null; at: number } | null = null;
 
   constructor(options: NextDevServerOptions) {
     this.vfs = options.vfs;
@@ -152,6 +153,32 @@ export class NextDevServer {
     return manifest;
   }
 
+  private async importMap(): Promise<ImportMap | null> {
+    const now = Date.now();
+    if (this.importMapCache && now - this.importMapCache.at < 1000) {
+      return this.importMapCache.map;
+    }
+    let map: ImportMap | null = null;
+    try {
+      const importMapPath = `${this.root}/importmap.json`;
+      if (await this.vfs.exists(importMapPath)) {
+        map = JSON.parse((await this.vfs.readFile(importMapPath)) as string) as ImportMap;
+      }
+    } catch {
+      map = null;
+    }
+    this.importMapCache = { map, at: now };
+    return map;
+  }
+
+  /** Code prepared for server-side execution (getStaticProps, API routes):
+   * bare imports resolved through the project importmap, since the executing
+   * page context has no importmap of its own. */
+  private async executableCode(code: string): Promise<string> {
+    const importMap = await this.importMap();
+    return importMap ? rewriteBareImports(code, importMap) : code;
+  }
+
   private async serveCompiledPage(rel: string): Promise<Response> {
     const relNoExt = rel.replace(/\.js$/, "");
     for (const ext of PAGE_RESOLVE_EXTENSIONS) {
@@ -205,7 +232,10 @@ export class NextDevServer {
     request: Request,
   ): Promise<Response> {
     const code = await this.compilePage(filePath);
-    const mod = await this.loader.load(`${this.base}/_pages${this.pagesRel(filePath)}.js`, code);
+    const mod = await this.loader.load(
+      `${this.base}/_pages${this.pagesRel(filePath)}.js`,
+      await this.executableCode(code),
+    );
     const result = await runApiRoute({
       request,
       pathname,
@@ -234,7 +264,7 @@ export class NextDevServer {
       if (GET_STATIC_PROPS_RE.test(raw as string)) {
         const mod = await this.loader.load(
           `${this.base}/_pages${this.pagesRel(filePath)}.js`,
-          code,
+          await this.executableCode(code),
         );
         if (typeof mod.getStaticProps === "function") {
           const result = await runGetStaticProps(mod, { params });

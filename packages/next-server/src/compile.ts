@@ -28,6 +28,36 @@ export const rewriteNextImports = (code: string, shimBase: string): string => {
   );
 };
 
+export interface ImportMap {
+  readonly imports?: Record<string, string>;
+}
+
+/** Rewrite bare specifiers (e.g. `react/jsx-runtime`) through an importmap
+ * for server-side module execution in the host page, which has no importmap
+ * of its own. Relative, absolute, URL, and data: specifiers pass through.
+ * Only the copy executed for getStaticProps/API routes is rewritten; the
+ * served browser modules keep bare imports resolved by the document importmap. */
+export const rewriteBareImports = (code: string, importMap: ImportMap): string => {
+  const imports = importMap.imports ?? {};
+  const resolve = (specifier: string): string => {
+    if (specifier in imports) return imports[specifier];
+    for (const [key, target] of Object.entries(imports)) {
+      if (key.endsWith("/") && specifier.startsWith(key)) {
+        return target + specifier.slice(key.length);
+      }
+    }
+    return specifier;
+  };
+  return code.replace(
+    /(from\s*|import\s*\(\s*|import\s*)(["'])([^"']+)\2/g,
+    (match, prefix: string, quote: string, specifier: string) => {
+      if (/^(\.|\/|https?:|data:|node:)/.test(specifier)) return match;
+      const resolved = resolve(specifier);
+      return resolved === specifier ? match : `${prefix}${quote}${resolved}${quote}`;
+    },
+  );
+};
+
 /** Transform a page/module source file to browser-ready ESM via
  * oxc-transform (TS + automatic-runtime JSX). */
 export const compileModule = async (
