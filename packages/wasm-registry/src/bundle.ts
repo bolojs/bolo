@@ -552,8 +552,7 @@ var __bcGlobals = () => globalThis.__browserContainers;
 var __bc_process = __bcGlobals()?.shims?.process;
 var __bc_Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
 var __bc_global = globalThis;
-// Process workers inject handle-tracked timers so only the *program's*
-// timers keep the process alive — infrastructure (logging, rpc) uses real
+// Process workers inject handle-tracked timers so only the *program's* — infrastructure (logging, rpc) uses real
 // globals and is invisible to liveness. Main-thread path: real globals.
 var __bcTimers = __bcGlobals()?.timers;
 var __bc_setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
@@ -1344,7 +1343,73 @@ export const bundleEntry = async (
   const chunk = result.output.find((o) => o.type === "chunk");
   if (!chunk) throw new Error(`rolldown produced no output for entry "${entry}"`);
 
-  return { code: chunk.code, warnings };
+  return { code: routeCjsThroughWrapper(chunk.code, options.cwd ?? "/"), warnings };
+};
+
+/**
+ * Rolldown emits every bundled module inside a `//#region <path>` block, and
+ * a CommonJS module's body is wrapped in rolldown's `__commonJSMin` helper.
+ * Node compiles CJS files with `Module.wrapper` at require time, and a program
+ * may customize that wrapper before the require — the wrapper then has to
+ * apply, which an inlined body cannot honor.
+ *
+ * This rewrites each CJS region's helper call to `__bc_cjsModule(path, body)`,
+ * which checks the live `Module.wrapper` at require time and falls back to a
+ * runtime compile of the file when the program changed it. The rewrite is a
+ * no-op when the output has no region markers (the bundler's format may
+ * change), so the bundle keeps working.
+ *
+ * The helper is emitted here rather than in `GLOBALS_BANNER`: the banner is
+ * prepended before rolldown's render pass, so its top-level declarations go
+ * through the same dead-code elimination as the bundled modules and a helper
+ * only referenced from a rewritten region can be dropped.
+ */
+const CJS_MODULE_HELPER = `
+// CommonJS modules compiled by Node run through \`Module.wrapper\`, which a
+// program may customize before requiring them (test-module-wrap prepends a
+// statement to \`Module.wrapper[0]\` and expects the required file to run it).
+// Rolldown inlines a CJS module's body, so the customized wrapper would never
+// apply — this helper re-checks the live wrapper at require time and, when
+// the program changed it, compiles the module from the VFS with that wrapper
+// (the module shim's \`__compileCjs\`), exactly like Node does.
+var __bc_cjsModule = (path, cb) => {
+  var mod;
+  return () => {
+    if (mod) return mod.exports;
+    var shim = __bcGlobals()?.shims?.module;
+    if (shim && typeof shim.__compileCjs === 'function' && shim.__isDefaultWrapper?.() === false) {
+      mod = { exports: shim.__compileCjs(path) };
+      return mod.exports;
+    }
+    mod = { exports: {} };
+    cb(mod.exports, mod);
+    return mod.exports;
+  };
+};
+`;
+
+const routeCjsThroughWrapper = (code: string, cwd: string): string => {
+  if (!code.includes("//#region ") || !code.includes("__commonJSMin(")) return code;
+  const regionPattern = /\/\/#region ([^\n]*)\n([\s\S]*?)\n\/\/#endregion/g;
+  let routed = false;
+  const rewritten = code.replace(regionPattern, (match, path: string, body: string) => {
+    if (!body.includes("__commonJSMin(")) return match;
+    // Virtual ids (\0rolldown/runtime.js, bolo-node-shim:*, missing-module
+    // stubs) have no VFS file for the runtime compile to read; leave those on
+    // the plain helper. Only real bundle-relative file paths are routed.
+    if (path.startsWith("\0") || path.includes(":")) return match;
+    routed = true;
+    // The region marker carries the module id relative to the bundle's cwd
+    // (rolldown prints it that way); the runtime loader needs the absolute
+    // VFS path.
+    const absolute = path.startsWith("/") ? path : joinPath(cwd, path);
+    const next = body.replace(
+      "__commonJSMin(",
+      `__bc_cjsModule(${JSON.stringify(absolute)}, `,
+    );
+    return `//#region ${path}\n${next}\n//#endregion`;
+  });
+  return routed ? CJS_MODULE_HELPER + rewritten : rewritten;
 };
 
 export interface TransformScriptOptions {

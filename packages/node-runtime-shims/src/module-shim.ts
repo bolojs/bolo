@@ -86,6 +86,20 @@ export interface ModuleShimOptions {
 }
 
 /**
+ * Node's default CJS wrapper. `Module.wrapper` starts as this exact pair and
+ * stays mutable: code may prepend to `wrapper[0]` or replace the array
+ * wholesale, and every module compiled afterwards must pick the change up
+ * (Node compiles each CJS file with `Module.wrap(source)` at require time).
+ */
+const DEFAULT_WRAPPER: readonly string[] = [
+  "(function (exports, require, module, __filename, __dirname) {",
+  "\n})",
+];
+
+/** Extensions a relative require can resolve to a CommonJS source file. */
+const CJS_EXTENSIONS = [".js", ".cjs"];
+
+/**
  * `node:module`'s `createRequire` is normally used for two things in
  * real-world node apps: pulling in `.json` files, and (rarely) a handful of
  * node builtins outside static `import`. Neither needs esbuild's bundle-time
@@ -96,6 +110,73 @@ export interface ModuleShimOptions {
  */
 export const createModuleShim = (options: ModuleShimOptions) => {
   const { vfs, getShim, nativeAddonLoader } = options;
+
+  /**
+   * Node's `require.cache` is per-`Module` graph, but the browser runtime has
+   * one module registry per container; keying by absolute path gives Node's
+   * "same file required twice is the same module" semantics.
+   */
+  const moduleCache = new Map<string, { exports: unknown }>();
+
+  /**
+   * Resolves a relative/absolute specifier to a CommonJS source file in the
+   * VFS. Node's resolution tries the exact path first, then the extension
+   * list (`.js`, `.json`, `.node`), then `<dir>/index.js`.
+   */
+  const resolveCjsFile = (base: string): string | undefined => {
+    const candidates = [base, ...CJS_EXTENSIONS.map((ext) => base + ext)];
+    for (const candidate of candidates) {
+      if (candidate.endsWith(".json")) continue;
+      if (vfs.hot.existsSync(candidate)) return candidate;
+    }
+    for (const candidate of candidates) {
+      if (!candidate.endsWith("/") && vfs.hot.existsSync(candidate)) return candidate;
+    }
+    for (const ext of CJS_EXTENSIONS) {
+      const index = joinPath(base, `index${ext}`);
+      if (vfs.hot.existsSync(index)) return index;
+    }
+    return undefined;
+  };
+
+  /**
+   * Compiles a CommonJS file the way Node does: the source is wrapped with
+   * the *live* `Module.wrapper` (so a program that mutated it before the
+   * require sees its own prefix — `test-module-wrap`), the wrapper expression
+   * is evaluated to the module function and invoked with this file's
+   * `require`/`module`/`__filename`/`__dirname`, and the exports are cached
+   * by path so a second require returns the same object.
+   */
+  const compileCjsModule = (path: string): unknown => {
+    const cached = moduleCache.get(path);
+    if (cached) return cached.exports;
+    const source = vfs.hot.readFileSync(path, "utf8") as string;
+    const module = { id: path, filename: path, exports: {} as unknown, loaded: false };
+    moduleCache.set(path, module);
+    const require = createRequire(path);
+    const wrapperSource = Module.wrapper[0] + source + Module.wrapper[1];
+    let fn: (
+      exports: unknown,
+      require: (specifier: string) => unknown,
+      module: { exports: unknown },
+      filename: string,
+      dirname: string,
+    ) => void;
+    try {
+      // Node evaluates `Module.wrap(source)` as an *expression* whose value is
+      // the wrapper function (vm.runInThisContext). `new Function` takes a
+      // statement body, so the function expression must be returned, not
+      // declared — otherwise the body never runs and the wrapper prefix is
+      // silently skipped.
+      fn = new Function(`return ${wrapperSource}`)() as typeof fn;
+    } catch (err) {
+      moduleCache.delete(path);
+      throw err;
+    }
+    fn.call(module.exports, module.exports, require, module, path, dirname(path));
+    module.loaded = true;
+    return module.exports;
+  };
 
   const createRequire = (filename: string) => {
     const require = (specifier: string): unknown => {
@@ -156,6 +237,16 @@ export const createModuleShim = (options: ModuleShimOptions) => {
         return JSON.parse(vfs.hot.readFileSync(resolved, "utf8") as string);
       }
 
+      if (specifier.startsWith(".") || specifier.startsWith("/")) {
+        const resolved = resolveCjsFile(
+          specifier.startsWith("/") ? specifier : joinPath(dirname(filename), specifier),
+        );
+        if (resolved !== undefined) return compileCjsModule(resolved);
+        throw new Error(
+          `Cannot find module "${specifier}" (resolved from "${filename}")`,
+        );
+      }
+
       throw unsupportedError(
         "DYNAMIC_REQUIRE",
         `require("${specifier}") is not supported: dynamic require() of npm packages is not available in ` +
@@ -177,7 +268,11 @@ export const createModuleShim = (options: ModuleShimOptions) => {
       },
       { paths: (_request: string): string[] | null => null },
     );
-    require.cache = Object.create(null) as Record<string, unknown>;
+    // Node's `require.cache` is keyed by resolved filename; the runtime CJS
+    // loader shares one registry per container, so a `delete
+    // require.cache[require.resolve(...)]` drops the entry and the next
+    // require re-executes the file (test-module-wrapper).
+    require.cache = moduleCache as unknown as Record<string, unknown>;
     require.main = undefined;
     require.extensions = {} as Record<string, unknown>;
 
@@ -270,7 +365,7 @@ export const createModuleShim = (options: ModuleShimOptions) => {
   Module._pathCache = Object.create(null);
   Module._extensions = Object.create(null);
   Module._preloadModules = [];
-  Module.wrapper = ["(function (exports, require, module, __filename, __dirname) {", "\n})"];
+  Module.wrapper = [...DEFAULT_WRAPPER];
   Module.globalPaths = [];
   Module.builtinModules = BUILTIN_MODULE_NAMES;
   Module.createRequire = createRequire;
@@ -304,13 +399,44 @@ export const createModuleShim = (options: ModuleShimOptions) => {
   Module.stripTypeScriptTypes = (code: string): string => code;
   Module.constants = Object.create(null);
 
-  return {
+  const shim = {
     createRequire,
     builtinModules: BUILTIN_MODULE_NAMES,
     isBuiltin,
     findPackageJSON,
     Module,
+    /**
+     * Compiles a CommonJS file from the VFS with the live `Module.wrapper`.
+     * The bundler calls this when a program customized the wrapper before
+     * requiring the file (Node compiles every CJS module with
+     * `Module.wrap(source)` at require time).
+     */
+    __compileCjs: compileCjsModule,
+    /**
+     * True while `Module.wrapper` still is Node's default pair — the
+     * bundler uses it to decide between the statically bundled module body
+     * and a runtime compile with the program's own wrapper.
+     */
+    __isDefaultWrapper: (): boolean =>
+      Module.wrapper.length === DEFAULT_WRAPPER.length &&
+      Module.wrapper.every((part, i) => part === DEFAULT_WRAPPER[i]),
   };
+
+  // Node's `require('module')` IS the Module constructor, so `m.wrapper` and
+  // `Module.wrapper` are the same property: mutating the array in place and
+  // replacing it wholesale both change what every later require compiles
+  // with. The accessor keeps that aliasing without handing out the whole
+  // constructor as the module namespace.
+  Object.defineProperty(shim, "wrapper", {
+    get: () => Module.wrapper,
+    set: (value: string[]) => {
+      Module.wrapper = value;
+    },
+    enumerable: true,
+    configurable: true,
+  });
+
+  return shim;
 };
 
 export type ModuleShim = ReturnType<typeof createModuleShim>;

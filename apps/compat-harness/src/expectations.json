@@ -29,18 +29,6 @@
     "location": "packages/node-web-shims/src/inspector.ts",
     "remediation": "none browser-faithful: no V8 debug port can listen in a browser"
   },
-  "test/parallel/test-module-wrap.js": {
-    "lane": "B",
-    "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
-    "location": "packages/node-runtime-shims/src/module-shim.ts",
-    "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
-  },
-  "test/parallel/test-module-wrapper.js": {
-    "lane": "B",
-    "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
-    "location": "packages/node-runtime-shims/src/module-shim.ts",
-    "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
-  },
   "test/parallel/test-os-checked-function.js": {
     "lane": "C",
     "reason": "unenv os.homedir is a pure JS stub that never consults internalBinding('os'), so the test's getHomeDirectory monkey-patch is never invoked (no faithful os binding to expose)",
