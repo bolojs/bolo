@@ -29,7 +29,7 @@ describe("expected-fail ledger", () => {
     expect(laneOf("test-dgram-send-callback-buffer-empty-address.js")).toBe("B");
     expect(laneOf("test-inspector-stops-no-file.js")).toBe("C");
     expect(laneOf("test-dns-set-default-order.js")).toBe("C");
-    expect(laneOf("test-timers-timeout-promisified.js")).toBe("A");
+    expect(laneOf("test-timers-interval-promisified.js")).toBe("A");
   });
 });
 
