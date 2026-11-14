@@ -1,7 +1,7 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { SWSandbox } from "@bolojs/sandbox";
 import * as nodeWebShims from "@bolojs/node-web-shims";
-import { installUnhandledRejectionHandler } from "@bolojs/node-web-shims";
+import { installUnhandledRejectionHandler, createDgramShim } from "@bolojs/node-web-shims";
 import { createFsShim } from "./fs-shim.js";
 import { createHttpShim } from "./http-shim.js";
 import { createNetShim } from "./net-shim.js";
@@ -22,6 +22,8 @@ import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
 import { getSystemErrorName } from "./errno.js";
 import { resolveBackend, registration } from "./backend-registry.js";
+import { createLoopbackDgramBackend } from "./dgram-backend.js";
+import type { DgramSocketBackend } from "@bolojs/node-web-shims";
 
 interface WriteSink {
   write: (data: string) => unknown;
@@ -159,12 +161,18 @@ export interface StreamBackend {
   isIP(input: string): number;
 }
 
-export type DgramBackend = (deps: BackendDeps) => {
+/**
+ * The dgram capability seam. A host registers a factory; each
+ * `dgram.createSocket()` call gets a fresh backend socket handle.
+ */
+export type DgramBackend = (deps: BackendDeps) => DgramBackendFactory;
+
+export interface DgramBackendFactory {
   createSocket(
     type: "udp4" | "udp6",
     callback?: (msg: Uint8Array, rinfo: { address: string; port: number }) => void,
-  ): unknown;
-};
+  ): DgramSocketBackend;
+}
 export type WorkerThreadsBackend = (deps: BackendDeps) => unknown;
 export type NativeAddonLoader = (modulePath: string, vfs: VfsBus) => unknown;
 
@@ -323,11 +331,23 @@ export const createLiveShimRegistry = (
   // Seam resolution is declarative: an ordered candidate list, first present
   // candidate wins (see backend-registry.ts). The explicit host-provided
   // backend always outranks the built-in skeleton.
+  // Dgram precedence: host backend, then the in-realm loopback backend
+  // (the node:dgram equivalent of net's LoopbackTransport). Without any
+  // backend the honest skeleton stays (send reports
+  // ERR_BOL_UNSUPPORTED_DGRAM_BACKEND through the callback).
   const dgramResolved = resolveBackend(
-    [options.dgramBackend ? registration("host-dgram", options.dgramBackend) : undefined],
+    [
+      options.dgramBackend ? registration("host-dgram", options.dgramBackend) : undefined,
+      registration("dgram-loopback", () => createLoopbackDgramBackend()),
+    ],
     backendDeps,
   );
-  if (dgramResolved) registry.dgram = dgramResolved.backend;
+  if (dgramResolved) {
+    const factory = dgramResolved.backend;
+    registry.dgram = createDgramShim({
+      createBackend: (type) => factory.createSocket(type),
+    });
+  }
 
   const tlsResolved = resolveBackend(
     [options.tlsBackend ? registration("host-tls", options.tlsBackend) : undefined],

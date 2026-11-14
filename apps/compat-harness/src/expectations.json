@@ -1,10 +1,4 @@
 {
-  "test/parallel/test-dgram-send-callback-buffer-empty-address.js": {
-    "lane": "B",
-    "reason": "UDP send callback semantics need a real socket backend; the skeleton can only report unsupported",
-    "location": "packages/node-web-shims/src/dgram.ts",
-    "remediation": "register a dgramBackend via createLiveShimRegistry (UDP has no Web API equivalent; needs a relay)"
-  },
   "test/parallel/test-dns-set-default-order.js": {
     "lane": "C",
     "reason": "dns shim resolves via DoH, not internalBinding('cares_wrap'), so the test's getaddrinfo monkey-patch is never invoked; setDefaultResultOrder also performs no argument validation",

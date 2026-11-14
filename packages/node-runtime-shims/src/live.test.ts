@@ -139,7 +139,15 @@ describe("createLiveShimRegistry", () => {
       connect: () => ({ write: () => true, end: () => ({}) }) as unknown as StreamSocket,
       isIP: () => 4,
     };
-    const dgramShim = { createSocket: () => {} };
+    const dgramShim = {
+      createSocket: () => ({
+        bind: () => {},
+        send: () => {},
+        close: () => {},
+        address: () => ({ address: "0.0.0.0", family: "IPv4" as const, port: 0 }),
+        onMessage: () => {},
+      }),
+    };
     const tlsShim: StreamBackend = {
       connect: () => ({ write: () => true, end: () => ({}) }) as unknown as StreamSocket,
       isIP: () => 6,
@@ -155,7 +163,10 @@ describe("createLiveShimRegistry", () => {
 
     expect(registry.https).toBe(registry.http);
     expect(registry.net).toEqual(netShim);
-    expect(registry.dgram).toBe(dgramShim);
+    // dgram is wrapped: the shim keeps Node's event/argument surface while
+    // the host factory supplies the socket backend.
+    const dgram = registry.dgram as { createSocket: (type: "udp4") => unknown };
+    expect(dgram.createSocket("udp4")).toBeDefined();
     expect(registry.tls).toEqual(tlsShim);
     expect(registry.worker_threads).toBe(workerThreadsShim);
   });

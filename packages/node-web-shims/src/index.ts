@@ -50,6 +50,13 @@ export { createHttp2Shim, default as http2 } from "./http2.js";
 export { createDomainShim, default as domain } from "./domain.js";
 export { createTlsShim, default as tls } from "./tls.js";
 export { createDgramShim, default as dgram } from "./dgram.js";
+export type {
+  DgramSocketBackend,
+  DgramShimOptions,
+  RemoteInfo,
+  AddressInfo,
+  SocketType,
+} from "./dgram.js";
 export { createClusterShim, default as cluster } from "./cluster.js";
 export { createReplShim, default as repl } from "./repl.js";
 export { createInspectorShim, default as inspector } from "./inspector.js";
