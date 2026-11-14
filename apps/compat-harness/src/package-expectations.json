@@ -1,23 +1,23 @@
 {
   "esbuild": {
-    "lane": "B",
+    "lane": "A",
     "reason": "drives a native platform binary through child_process and an ESM binary loader; the npm package has no in-browser build",
-    "remediation": "esbuild-wasm is registered as a curated WASM tool (#149): single-file transform via the JS API, stdin/file input, --version; bundling flags remain unsupported"
+    "remediation": "esbuild-wasm is registered as a curated WASM tool: the CLI (esbuild --version, stdin/file transform) is dispatched by the container's command routing; the JS API of the 'esbuild' npm package itself still fails with 'Unsupported platform'"
   },
   "argon2": {
-    "lane": "B",
+    "lane": "A",
     "reason": "native .node addon built with node-gyp; argon2 itself ships no browser or WASM build",
-    "remediation": "the default nativeAddonLoader maps argon2's .node require to argon2-wasm@0.9.0 (#149); packages should prefer argon2-wasm directly for full API coverage"
+    "remediation": "the bundle-time native-addon variant alias (packages/wasm-registry/src/bundle.ts) maps 'argon2' to argon2-wasm@0.9.0 before node-gyp-build can run; note the WASM API differs (hash() -> { hash, hashHex, encoded }, no verify())"
   },
   "bcrypt": {
-    "lane": "B",
+    "lane": "A",
     "reason": "native .node addon via node-pre-gyp; bcrypt ships no WASM or browser build",
-    "remediation": "the default nativeAddonLoader maps bcrypt's .node require to bcryptjs (pure JS, API-compatible) (#149); packages should prefer bcryptjs directly"
+    "remediation": "the bundle-time native-addon variant alias maps 'bcrypt' to bcryptjs@3.0.2 (pure JS, API-compatible) before node-pre-gyp can run"
   },
   "lightningcss": {
-    "lane": "B",
+    "lane": "A",
     "reason": "loads a native .node binding through per-platform optional dependencies; no WASM fallback ships in this package",
-    "remediation": "the default nativeAddonLoader maps lightningcss's .node require to lightningcss-wasm (napi-wasm) (#149); packages should prefer lightningcss-wasm directly for full API coverage"
+    "remediation": "the bundle-time native-addon variant alias maps 'lightningcss' to lightningcss-wasm@1.33.0 (napi-wasm); its init() needs an explicit wasm URL because new URL(..., import.meta.url) cannot resolve inside the bundled module scope"
   },
   "rspack": {
     "lane": "C",
