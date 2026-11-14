@@ -1,0 +1,45 @@
+{
+  "name": "@bolojs/next-server",
+  "version": "0.1.0",
+  "description": "NextDevServer — a Next.js Pages Router dev server that runs on the main thread inside a bolo container.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "oxlint src",
+    "format": "oxfmt --check src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bolojs/fs": "workspace:*",
+    "@bolojs/log": "workspace:*",
+    "@bolojs/registry": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "license": "Apache-2.0",
+  "author": "Joaquin Terrasa <josocjoq+dev@pm.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bolojs/bolo.git",
+    "directory": "packages/next-server"
+  },
+  "homepage": "https://bolojs.dev/docs/api/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test.*.map"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

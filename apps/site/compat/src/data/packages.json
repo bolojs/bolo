@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-11-13T15:32:20.157Z",
+    "generatedAt": "2026-11-14T19:25:27.160Z",
     "source": "apps/site/landing/public/results",
     "validated": true
   },
@@ -116,7 +116,7 @@
         "links": [
           "https://www.npmjs.com/package/fetch"
         ],
-        "raw": "{\n  \"name\": \"fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 406.5149999999994\n}"
+        "raw": "{\n  \"name\": \"fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 395.1000000000058\n}"
       }
     },
     {
@@ -160,7 +160,7 @@
         "links": [
           "https://www.npmjs.com/package/axios"
         ],
-        "raw": "{\n  \"name\": \"axios\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2747.1100000000006\n}"
+        "raw": "{\n  \"name\": \"axios\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3044.7850000000035\n}"
       }
     },
     {
@@ -204,7 +204,7 @@
         "links": [
           "https://www.npmjs.com/package/node-fetch"
         ],
-        "raw": "{\n  \"name\": \"node-fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1351.5999999999913\n}"
+        "raw": "{\n  \"name\": \"node-fetch\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1319.625\n}"
       }
     },
     {
@@ -248,7 +248,7 @@
         "links": [
           "https://www.npmjs.com/package/undici"
         ],
-        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"node:sqlite\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\\n[bundle warning] \\\"node:sqlite\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/node:sqlite\\nPASS\\n\",\n  \"duration\": 1225.199999999997\n}"
+        "raw": "{\n  \"name\": \"undici\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"node:sqlite\\\" required by \\\"/home/harness/node_modules/.bolo/undici@8.12.4/node_modules/undici/lib/cache/sqlite-cache-store.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"node:sqlite\\\" required by \\\"/home/harness/node_modules/.bolo/undici@8.12.4/node_modules/undici/lib/util/runtime-features.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\nPASS\\n\",\n  \"duration\": 831.4750000000058\n}"
       }
     },
     {
@@ -292,7 +292,7 @@
         "links": [
           "https://www.npmjs.com/package/got"
         ],
-        "raw": "{\n  \"name\": \"got\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2459.8800000000047\n}"
+        "raw": "{\n  \"name\": \"got\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2427.9650000000256\n}"
       }
     },
     {
@@ -336,7 +336,7 @@
         "links": [
           "https://www.npmjs.com/package/ky"
         ],
-        "raw": "{\n  \"name\": \"ky\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 577.0499999999884\n}"
+        "raw": "{\n  \"name\": \"ky\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 512.6049999999814\n}"
       }
     },
     {
@@ -380,7 +380,7 @@
         "links": [
           "https://www.npmjs.com/package/http-proxy-agent"
         ],
-        "raw": "{\n  \"name\": \"http-proxy-agent\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"kerberos\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/kerberos\\nPASS\\n\",\n  \"duration\": 795.9199999999837\n}"
+        "raw": "{\n  \"name\": \"http-proxy-agent\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"kerberos\\\" required by \\\"/home/harness/node_modules/.bolo/proxy-agent-negotiate@1.1.0/node_modules/proxy-agent-negotiate/dist/index.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\nPASS\\n\",\n  \"duration\": 775.4050000000279\n}"
       }
     },
     {
@@ -424,7 +424,7 @@
         "links": [
           "https://www.npmjs.com/package/form-data"
         ],
-        "raw": "{\n  \"name\": \"form-data\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 799.945000000007\n}"
+        "raw": "{\n  \"name\": \"form-data\",\n  \"class\": \"HTTP client\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 639.484999999986\n}"
       }
     },
     {
@@ -468,7 +468,7 @@
         "links": [
           "https://www.npmjs.com/package/fs-extra"
         ],
-        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 981.1949999999924\n}"
+        "raw": "{\n  \"name\": \"fs-extra\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 842.3099999999977\n}"
       }
     },
     {
@@ -512,7 +512,7 @@
         "links": [
           "https://www.npmjs.com/package/globby"
         ],
-        "raw": "{\n  \"name\": \"globby\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2316.3099999999977\n}"
+        "raw": "{\n  \"name\": \"globby\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3028.804999999993\n}"
       }
     },
     {
@@ -556,7 +556,7 @@
         "links": [
           "https://www.npmjs.com/package/chokidar"
         ],
-        "raw": "{\n  \"name\": \"chokidar\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 719.1549999999988\n}"
+        "raw": "{\n  \"name\": \"chokidar\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 684.4499999999825\n}"
       }
     },
     {
@@ -600,7 +600,7 @@
         "links": [
           "https://www.npmjs.com/package/rimraf"
         ],
-        "raw": "{\n  \"name\": \"rimraf\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1389.2600000000093\n}"
+        "raw": "{\n  \"name\": \"rimraf\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1174.5950000000303\n}"
       }
     },
     {
@@ -644,7 +644,7 @@
         "links": [
           "https://www.npmjs.com/package/glob"
         ],
-        "raw": "{\n  \"name\": \"glob\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 583.234999999986\n}"
+        "raw": "{\n  \"name\": \"glob\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 520.140000000014\n}"
       }
     },
     {
@@ -688,7 +688,7 @@
         "links": [
           "https://www.npmjs.com/package/mkdirp"
         ],
-        "raw": "{\n  \"name\": \"mkdirp\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 539.585000000021\n}"
+        "raw": "{\n  \"name\": \"mkdirp\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 526.359999999986\n}"
       }
     },
     {
@@ -732,7 +732,7 @@
         "links": [
           "https://www.npmjs.com/package/del"
         ],
-        "raw": "{\n  \"name\": \"del\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1917.414999999979\n}"
+        "raw": "{\n  \"name\": \"del\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1731.8699999999953\n}"
       }
     },
     {
@@ -760,8 +760,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -772,13 +772,11 @@
         "features": [
           "Class: File system"
         ],
-        "knownIssues": [
-          "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/memfs"
         ],
-        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"fail\",\n  \"output\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\",\n  \"duration\": 33500.95000000001,\n  \"error\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"memfs\",\n  \"class\": \"File system\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2993.9099999999744\n}"
       }
     },
     {
@@ -1058,7 +1056,7 @@
         "links": [
           "https://www.npmjs.com/package/postcss"
         ],
-        "raw": "{\n  \"name\": \"postcss\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 666.0800000000163\n}"
+        "raw": "{\n  \"name\": \"postcss\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 754.5599999999977\n}"
       }
     },
     {
@@ -1102,7 +1100,7 @@
         "links": [
           "https://www.npmjs.com/package/babel"
         ],
-        "raw": "{\n  \"name\": \"babel\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 4997.369999999995\n}"
+        "raw": "{\n  \"name\": \"babel\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3382.2850000000326\n}"
       }
     },
     {
@@ -1146,7 +1144,7 @@
         "links": [
           "https://www.npmjs.com/package/sucrase"
         ],
-        "raw": "{\n  \"name\": \"sucrase\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1296.570000000007\n}"
+        "raw": "{\n  \"name\": \"sucrase\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1197.7849999999744\n}"
       }
     },
     {
@@ -1190,7 +1188,7 @@
         "links": [
           "https://www.npmjs.com/package/acorn"
         ],
-        "raw": "{\n  \"name\": \"acorn\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 525.4349999999977\n}"
+        "raw": "{\n  \"name\": \"acorn\",\n  \"class\": \"Build tool\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 503.6149999999907\n}"
       }
     },
     {
@@ -1231,12 +1229,12 @@
           "Class: Bundler"
         ],
         "knownIssues": [
-          "Build failed with 1 error:\n\n\u001b[31m[PARSE_ERROR] \u001b[0mFile appears to be binary.\n(bolo diagnostics: .logs/latest.jsonl)"
+          "[bundle warning] \"/home/harness/node_modules/.bolo/fsevents@2.3.3/node_modules/fsevents/fsevents.node\" is a native addon — stubbed as an empty module (no browser build)\nUncaught Error: Your current platform \"browser\" and architecture \"x64\" \n…\n:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:266:23\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:9266:2\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:266:23\n\nNode.js v22.12.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/rollup"
         ],
-        "raw": "{\n  \"name\": \"rollup\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"output\": \"Build failed with 1 error:\\n\\n\\u001b[31m[PARSE_ERROR] \\u001b[0mFile appears to be binary.\\n\",\n  \"duration\": 6986.710000000006,\n  \"error\": \"Build failed with 1 error:\\n\\n\\u001b[31m[PARSE_ERROR] \\u001b[0mFile appears to be binary.\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"rollup\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"output\": \"[bundle warning] \\\"/home/harness/node_modules/.bolo/fsevents@2.3.3/node_modules/fsevents/fsevents.node\\\" is a native addon — stubbed as an empty module (no browser build)\\nUncaught Error: Your current platform \\\"browser\\\" and architecture \\\"x64\\\" combination is not yet supported by the native Rollup build. Please use the WASM build \\\"@rollup/wasm-node\\\" instead.\\n\\nThe following platform-architecture combinations are supported:\\nandroid-arm\\nandroid-arm64\\nandroid-x64\\ndarwin-arm64\\ndarwin-x64\\nfreebsd-arm64\\nfreebsd-x64\\nlinux-arm\\nlinux-arm (musl)\\nlinux-arm64\\nlinux-arm64 (musl)\\nlinux-loong64\\nlinux-loong64 (musl)\\nlinux-ppc64\\nlinux-ppc64 (musl)\\nlinux-riscv64\\nlinux-riscv64 (musl)\\nlinux-s390x\\nlinux-x64\\nlinux-x64 (musl)\\nopenbsd-x64\\nopenharmony-arm64\\nwin32-arm64\\nwin32-ia32\\nwin32-x64\\n\\nIf this is important to you, please consider supporting Rollup to make a native build for your platform and architecture available.\\n    at throwUnsupportedError (blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:821:9)\\n    at getPackageBase (blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:816:18)\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:798:22\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:271:49\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:1769:20\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:266:23\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:2946:2\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:266:23\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:9266:2\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:266:23\\n\\nNode.js v22.12.0\\n\",\n  \"duration\": 4705.100000000006,\n  \"error\": \"[bundle warning] \\\"/home/harness/node_modules/.bolo/fsevents@2.3.3/node_modules/fsevents/fsevents.node\\\" is a native addon — stubbed as an empty module (no browser build)\\nUncaught Error: Your current platform \\\"browser\\\" and architecture \\\"x64\\\" \\n…\\n:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:266:23\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:9266:2\\n    at blob:http://localhost:5173/b173b4b0-74b8-4f96-81cc-7ea53eef9e62:266:23\\n\\nNode.js v22.12.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1323,12 +1321,12 @@
           "Class: Bundler"
         ],
         "knownIssues": [
-          "[bundle warning] \"@vitejs/devtools/integration\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\n[bundle warning] \"yaml\" could not be resolved off the installed node_modules \n…\nb:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1261:2\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
+          "[bundle warning] \"@vitejs/devtools/integration\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"yaml\" req\n…\n:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:1402:2\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\n\nNode.js v22.12.0\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/vite"
         ],
-        "raw": "{\n  \"name\": \"vite\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"output\": \"[bundle warning] \\\"@vitejs/devtools/integration\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\\n[bundle warning] \\\"yaml\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/yaml\\n[bundle warning] \\\"esbuild\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/esbuild\\n[bundle warning] \\\"tsx/cjs/api\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/tsx/cjs/api\\n[bundle warning] \\\"jiti\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/jiti\\n[bundle warning] \\\"@vitejs/devtools/config\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/config\\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1018:35\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:401:48\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1194:47\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1197:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1254:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1261:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n\\nNode.js v22.0.0\\n\",\n  \"duration\": 11974.320000000007,\n  \"error\": \"[bundle warning] \\\"@vitejs/devtools/integration\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@vitejs/devtools/integration\\n[bundle warning] \\\"yaml\\\" could not be resolved off the installed node_modules \\n…\\nb:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:1261:2\\n    at blob:http://localhost:5173/16c79e89-906d-4c41-a3ef-b8f8c7ed10d3:151:23\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"vite\",\n  \"class\": \"Bundler\",\n  \"status\": \"fail\",\n  \"output\": \"[bundle warning] \\\"@vitejs/devtools/integration\\\" required by \\\"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"yaml\\\" required by \\\"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"esbuild\\\" required by \\\"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"tsx/cjs/api\\\" required by \\\"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"jiti\\\" required by \\\"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"@vitejs/devtools/config\\\" required by \\\"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:1159:35\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:542:48\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:1335:47\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:1338:2\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:1395:2\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:1402:2\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\\n\\nNode.js v22.12.0\\n\",\n  \"duration\": 11997.404999999999,\n  \"error\": \"[bundle warning] \\\"@vitejs/devtools/integration\\\" required by \\\"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"yaml\\\" req\\n…\\n:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:1402:2\\n    at blob:http://localhost:5173/b83d951b-62db-4298-8e0b-a2d664aee16f:292:23\\n\\nNode.js v22.12.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1465,7 +1463,7 @@
         "links": [
           "https://www.npmjs.com/package/turbo"
         ],
-        "raw": "{\n  \"name\": \"turbo\",\n  \"class\": \"Bundler\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: turbo is a native Rust binary wrapper — no browser-compatible build exists\\n\",\n  \"duration\": 378.445000000007\n}"
+        "raw": "{\n  \"name\": \"turbo\",\n  \"class\": \"Bundler\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: turbo is a native Rust binary wrapper — no browser-compatible build exists\\n\",\n  \"duration\": 433.6700000000419,\n  \"expectation\": {\n    \"lane\": \"C\",\n    \"reason\": \"turbo is a wrapper around a native Rust binary; there is no browser-compatible build\",\n    \"remediation\": \"none; keep turbo on Node, no WASM or browser story exists\"\n  }\n}"
       }
     },
     {
@@ -1509,7 +1507,7 @@
         "links": [
           "https://www.npmjs.com/package/vitest"
         ],
-        "raw": "{\n  \"name\": \"vitest\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"vite/module-runner\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\\n[bundle warning] \\\"vite/module-runner\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\\nPASS\\n\",\n  \"duration\": 2956.439999999973\n}"
+        "raw": "{\n  \"name\": \"vitest\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"vite/module-runner\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\\n[bundle warning] \\\"vite/module-runner\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\\nPASS\\n\",\n  \"duration\": 2473.220000000001\n}"
       }
     },
     {
@@ -1550,12 +1548,12 @@
           "Class: Testing"
         ],
         "knownIssues": [
-          "Build failed with 1 error:\n\nError: Cannot resolve module \"./build/Release/watcher.node\" from \"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\"\n    at napi_create_error (http://localhost:5173/@fs/\n…\n3]:0x6530fc\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\n(bolo diagnostics: .logs/latest.jsonl)"
+          "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/jest"
         ],
-        "raw": "{\n  \"name\": \"jest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"output\": \"Build failed with 1 error:\\n\\nError: Cannot resolve module \\\"./build/Release/watcher.node\\\" from \\\"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\\\"\\n    at napi_create_error (http://localhost:5173/@fs/home/runner/work/bolo/bolo/node_modules/.pnpm/@emnapi+core@1.11.1/node_modules/@emnapi/core/dist/emnapi-core.esm-bundler.js?v=cb874ccd:6085:25)\\n    at wasm://wasm/027a93fa:wasm-function[6382]:0x5cfc1f\\n    at wasm://wasm/027a93fa:wasm-function[17997]:0x7f772a\\n    at wasm://wasm/027a93fa:wasm-function[23824]:0x86c0b0\\n    at wasm://wasm/027a93fa:wasm-function[4471]:0x5108da\\n    at wasm://wasm/027a93fa:wasm-function[8143]:0x6530fc\\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\",\n  \"duration\": 27630.089999999997,\n  \"error\": \"Build failed with 1 error:\\n\\nError: Cannot resolve module \\\"./build/Release/watcher.node\\\" from \\\"/home/harness/node_modules/.bolo/@parcel/watcher@2.6.0/node_modules/@parcel/watcher/index.js\\\"\\n    at napi_create_error (http://localhost:5173/@fs/\\n…\\n3]:0x6530fc\\n    at wasm://wasm/027a93fa:wasm-function[4858]:0x53c9b0\\n    at wasm://wasm/027a93fa:wasm-function[6999]:0x601926\\n    at wasm://wasm/027a93fa:wasm-function[25305]:0x87ee06\\n    at wasm://wasm/027a93fa:wasm-function[1847]:0x36ec47\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"jest\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"output\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\",\n  \"duration\": 59672.15999999999,\n  \"error\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1599,7 +1597,7 @@
         "links": [
           "https://www.npmjs.com/package/chai"
         ],
-        "raw": "{\n  \"name\": \"chai\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 514.484999999986\n}"
+        "raw": "{\n  \"name\": \"chai\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 399.1900000000023\n}"
       }
     },
     {
@@ -1643,7 +1641,7 @@
         "links": [
           "https://www.npmjs.com/package/sinon"
         ],
-        "raw": "{\n  \"name\": \"sinon\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1074.6199999999953\n}"
+        "raw": "{\n  \"name\": \"sinon\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1059.8099999999977\n}"
       }
     },
     {
@@ -1684,12 +1682,12 @@
           "Class: Testing"
         ],
         "knownIssues": [
-          "purify_default.sanitize is not a function\n(bolo diagnostics: .logs/latest.jsonl)"
+          "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
         ],
         "links": [
           "https://www.npmjs.com/package/dompurify"
         ],
-        "raw": "{\n  \"name\": \"dompurify\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"output\": \"purify_default.sanitize is not a function\\n\",\n  \"duration\": 732.6900000000023,\n  \"error\": \"purify_default.sanitize is not a function\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"dompurify\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"output\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\",\n  \"duration\": 31631.284999999974,\n  \"error\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1717,8 +1715,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "pass",
-          "note": "Supported"
+          "status": "fail",
+          "note": "Not supported"
         },
         "safari": {
           "status": "unknown",
@@ -1729,11 +1727,13 @@
         "features": [
           "Class: Testing"
         ],
-        "knownIssues": [],
+        "knownIssues": [
+          "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+        ],
         "links": [
           "https://www.npmjs.com/package/linkedom"
         ],
-        "raw": "{\n  \"name\": \"linkedom\",\n  \"class\": \"Testing\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"canvas\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/canvas\\nPASS\\n\",\n  \"duration\": 2571.8549999999814\n}"
+        "raw": "{\n  \"name\": \"linkedom\",\n  \"class\": \"Testing\",\n  \"status\": \"fail\",\n  \"output\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\",\n  \"duration\": 31879.95000000001,\n  \"error\": \"bundleEntry timed out after 30000ms — bundler wedged, module cache reset\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
       }
     },
     {
@@ -1777,7 +1777,7 @@
         "links": [
           "https://www.npmjs.com/package/express"
         ],
-        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 5679.239999999991\n}"
+        "raw": "{\n  \"name\": \"express\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 5544.789999999979\n}"
       }
     },
     {
@@ -1821,7 +1821,7 @@
         "links": [
           "https://www.npmjs.com/package/fastify"
         ],
-        "raw": "{\n  \"name\": \"fastify\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 5033.375\n}"
+        "raw": "{\n  \"name\": \"fastify\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 4692.650000000023\n}"
       }
     },
     {
@@ -1865,7 +1865,7 @@
         "links": [
           "https://www.npmjs.com/package/h3"
         ],
-        "raw": "{\n  \"name\": \"h3\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 900.8549999999814\n}"
+        "raw": "{\n  \"name\": \"h3\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 795.0900000000256\n}"
       }
     },
     {
@@ -1909,7 +1909,7 @@
         "links": [
           "https://www.npmjs.com/package/polka"
         ],
-        "raw": "{\n  \"name\": \"polka\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1103.5999999999767\n}"
+        "raw": "{\n  \"name\": \"polka\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1135.570000000007\n}"
       }
     },
     {
@@ -1953,7 +1953,7 @@
         "links": [
           "https://www.npmjs.com/package/hono"
         ],
-        "raw": "{\n  \"name\": \"hono\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 692.9949999999953\n}"
+        "raw": "{\n  \"name\": \"hono\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 621.0500000000466\n}"
       }
     },
     {
@@ -1997,7 +1997,7 @@
         "links": [
           "https://www.npmjs.com/package/elysia"
         ],
-        "raw": "{\n  \"name\": \"elysia\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/system\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/system\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"file-type\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/file-type\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\nPASS\\n\",\n  \"duration\": 1875.3999999999942\n}"
+        "raw": "{\n  \"name\": \"elysia\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/system\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\\n[bundle warning] \\\"file-type\\\" required by \\\"/home/harness/node_modules/.bolo/elysia@1.4.32/node_modules/elysia/dist/type-system/utils.mjs\\\" is not installed — deferring to a require-time MODULE_NOT_FOUND\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/system\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\n[bundle warning] \\\"@sinclair/typebox/value\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox/compiler\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\\n[bundle warning] \\\"@sinclair/typebox\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\\nPASS\\n\",\n  \"duration\": 1669.515000000014\n}"
       }
     },
     {
@@ -2041,7 +2041,7 @@
         "links": [
           "https://www.npmjs.com/package/itty-router"
         ],
-        "raw": "{\n  \"name\": \"itty-router\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 530.890000000014\n}"
+        "raw": "{\n  \"name\": \"itty-router\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 521.0050000000047\n}"
       }
     },
     {
@@ -2085,7 +2085,7 @@
         "links": [
           "https://www.npmjs.com/package/koa"
         ],
-        "raw": "{\n  \"name\": \"koa\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2102\n}"
+        "raw": "{\n  \"name\": \"koa\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2001.100000000035\n}"
       }
     },
     {
@@ -2129,7 +2129,7 @@
         "links": [
           "https://www.npmjs.com/package/cors"
         ],
-        "raw": "{\n  \"name\": \"cors\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 529.054999999993\n}"
+        "raw": "{\n  \"name\": \"cors\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 594.8500000000349\n}"
       }
     },
     {
@@ -2173,7 +2173,7 @@
         "links": [
           "https://www.npmjs.com/package/helmet"
         ],
-        "raw": "{\n  \"name\": \"helmet\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 543.5650000000023\n}"
+        "raw": "{\n  \"name\": \"helmet\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 647.2250000000349\n}"
       }
     },
     {
@@ -2217,7 +2217,7 @@
         "links": [
           "https://www.npmjs.com/package/morgan"
         ],
-        "raw": "{\n  \"name\": \"morgan\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 980.6500000000233\n}"
+        "raw": "{\n  \"name\": \"morgan\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 979.3699999999953\n}"
       }
     },
     {
@@ -2261,7 +2261,7 @@
         "links": [
           "https://www.npmjs.com/package/compression"
         ],
-        "raw": "{\n  \"name\": \"compression\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 848.984999999986\n}"
+        "raw": "{\n  \"name\": \"compression\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 838.835000000021\n}"
       }
     },
     {
@@ -2305,7 +2305,7 @@
         "links": [
           "https://www.npmjs.com/package/serve-static"
         ],
-        "raw": "{\n  \"name\": \"serve-static\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 496.54999999998836\n}"
+        "raw": "{\n  \"name\": \"serve-static\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 490.4750000000349\n}"
       }
     },
     {
@@ -2349,7 +2349,7 @@
         "links": [
           "https://www.npmjs.com/package/cookie-parser"
         ],
-        "raw": "{\n  \"name\": \"cookie-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 597.7200000000303\n}"
+        "raw": "{\n  \"name\": \"cookie-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 549.5050000000047\n}"
       }
     },
     {
@@ -2393,7 +2393,7 @@
         "links": [
           "https://www.npmjs.com/package/body-parser"
         ],
-        "raw": "{\n  \"name\": \"body-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 693.0299999999697\n}"
+        "raw": "{\n  \"name\": \"body-parser\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 659.5449999999837\n}"
       }
     },
     {
@@ -2437,7 +2437,7 @@
         "links": [
           "https://www.npmjs.com/package/pino"
         ],
-        "raw": "{\n  \"name\": \"pino\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 571.5100000000093\n}"
+        "raw": "{\n  \"name\": \"pino\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 406.08500000002095\n}"
       }
     },
     {
@@ -2465,8 +2465,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -2477,13 +2477,11 @@
         "features": [
           "Class: HTTP server"
         ],
-        "knownIssues": [
-          "Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\n    at DerivedLogger.Readable (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4377:10)\n    at DerivedLogger.Duplex (blob:http://localhost:5\n…\np://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13053:16)\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13289:30\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:156:49\n\nNode.js v22.0.0\n(bolo diagnostics: .logs/latest.jsonl)"
-        ],
+        "knownIssues": [],
         "links": [
           "https://www.npmjs.com/package/winston"
         ],
-        "raw": "{\n  \"name\": \"winston\",\n  \"class\": \"HTTP server\",\n  \"status\": \"fail\",\n  \"output\": \"Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\\n    at DerivedLogger.Readable (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4377:10)\\n    at DerivedLogger.Duplex (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4960:12)\\n    at new Transform (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:7024:10)\\n    at _callSuper (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:12514:102)\\n    at new Logger (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:12586:12)\\n    at _callSuper (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:12981:102)\\n    at new DerivedLogger (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13048:12)\\n    at module.exports [as createLogger] (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13053:16)\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13289:30\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:156:49\\n\\nNode.js v22.0.0\\n\",\n  \"duration\": 2865.0650000000023,\n  \"error\": \"Uncaught TypeError: Class constructor _EventEmitter cannot be invoked without 'new'\\n    at DerivedLogger.Readable (blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:4377:10)\\n    at DerivedLogger.Duplex (blob:http://localhost:5\\n…\\np://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13053:16)\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:13289:30\\n    at blob:http://localhost:5173/a9321172-3ba6-4d03-99b6-f667fa9aacd1:156:49\\n\\nNode.js v22.0.0\\n(bolo diagnostics: .logs/latest.jsonl)\"\n}"
+        "raw": "{\n  \"name\": \"winston\",\n  \"class\": \"HTTP server\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2787.7850000000326\n}"
       }
     },
     {
@@ -2527,7 +2525,7 @@
         "links": [
           "https://www.npmjs.com/package/ws"
         ],
-        "raw": "{\n  \"name\": \"ws\",\n  \"class\": \"HTTP server\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: ws browser field ships a throwing stub by design — native WebSocket is the browser path\\n\",\n  \"duration\": 815.9500000000116\n}"
+        "raw": "{\n  \"name\": \"ws\",\n  \"class\": \"HTTP server\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: ws browser field ships a throwing stub by design — native WebSocket is the browser path\\n\",\n  \"duration\": 494.2249999999767\n}"
       }
     },
     {
@@ -2571,7 +2569,7 @@
         "links": [
           "https://www.npmjs.com/package/crypto-js"
         ],
-        "raw": "{\n  \"name\": \"crypto-js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 584.640000000014\n}"
+        "raw": "{\n  \"name\": \"crypto-js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 533.6749999999884\n}"
       }
     },
     {
@@ -2599,8 +2597,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unsupported",
-          "note": "Won't work in the browser"
+          "status": "unknown",
+          "note": "No data"
         },
         "safari": {
           "status": "unknown",
@@ -2615,7 +2613,7 @@
         "links": [
           "https://www.npmjs.com/package/bcrypt"
         ],
-        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: bcrypt needs a native addon — no browser-compatible build exists\\n\",\n  \"duration\": 371.8549999999814\n}"
+        "raw": "{\n  \"name\": \"bcrypt\",\n  \"class\": \"Crypto\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: bcrypt needs a native addon — use bcryptjs (pure JS, API-compatible)\\n\",\n  \"duration\": 313.125,\n  \"expectation\": {\n    \"lane\": \"B\",\n    \"reason\": \"native .node addon via node-pre-gyp; bcrypt ships no WASM or browser build\",\n    \"remediation\": \"the default nativeAddonLoader maps bcrypt's .node require to bcryptjs (pure JS, API-compatible) (#149); packages should prefer bcryptjs directly\"\n  }\n}"
       }
     },
     {
@@ -2643,8 +2641,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "unsupported",
-          "note": "Won't work in the browser"
+          "status": "unknown",
+          "note": "No data"
         },
         "safari": {
           "status": "unknown",
@@ -2659,7 +2657,7 @@
         "links": [
           "https://www.npmjs.com/package/argon2"
         ],
-        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: argon2 needs a native addon — no browser-compatible build exists\\n\",\n  \"duration\": 352.16499999997905\n}"
+        "raw": "{\n  \"name\": \"argon2\",\n  \"class\": \"Crypto\",\n  \"status\": \"skip\",\n  \"output\": \"SKIP: argon2 needs a native addon — use @node-rs/argon2-wasm (lane B)\\n\",\n  \"duration\": 345.9400000000023,\n  \"expectation\": {\n    \"lane\": \"B\",\n    \"reason\": \"native .node addon built with node-gyp; argon2 itself ships no browser or WASM build\",\n    \"remediation\": \"the default nativeAddonLoader maps argon2's .node require to argon2-wasm@0.9.0 (#149); packages should prefer argon2-wasm directly for full API coverage\"\n  }\n}"
       }
     },
     {
@@ -2703,7 +2701,7 @@
         "links": [
           "https://www.npmjs.com/package/sha.js"
         ],
-        "raw": "{\n  \"name\": \"sha.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1958.7449999999953\n}"
+        "raw": "{\n  \"name\": \"sha.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2172.2150000000256\n}"
       }
     },
     {
@@ -2747,7 +2745,7 @@
         "links": [
           "https://www.npmjs.com/package/hash.js"
         ],
-        "raw": "{\n  \"name\": \"hash.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 719.789999999979\n}"
+        "raw": "{\n  \"name\": \"hash.js\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 686.7850000000326\n}"
       }
     },
     {
@@ -2791,7 +2789,7 @@
         "links": [
           "https://www.npmjs.com/package/md5"
         ],
-        "raw": "{\n  \"name\": \"md5\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 792.4799999999814\n}"
+        "raw": "{\n  \"name\": \"md5\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 807.5449999999837\n}"
       }
     },
     {
@@ -2835,7 +2833,7 @@
         "links": [
           "https://www.npmjs.com/package/create-hash"
         ],
-        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1616.1500000000233\n}"
+        "raw": "{\n  \"name\": \"create-hash\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1825.204999999958\n}"
       }
     },
     {
@@ -2879,7 +2877,7 @@
         "links": [
           "https://www.npmjs.com/package/jose"
         ],
-        "raw": "{\n  \"name\": \"jose\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 701.9699999999721\n}"
+        "raw": "{\n  \"name\": \"jose\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 578.3299999999581\n}"
       }
     },
     {
@@ -2923,7 +2921,7 @@
         "links": [
           "https://www.npmjs.com/package/jsonwebtoken"
         ],
-        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1615.4949999999953\n}"
+        "raw": "{\n  \"name\": \"jsonwebtoken\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1674.594999999972\n}"
       }
     },
     {
@@ -2967,7 +2965,7 @@
         "links": [
           "https://www.npmjs.com/package/pbkdf2"
         ],
-        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1103.4199999999837\n}"
+        "raw": "{\n  \"name\": \"pbkdf2\",\n  \"class\": \"Crypto\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 857.6300000000047\n}"
       }
     },
     {
@@ -3011,7 +3009,7 @@
         "links": [
           "https://www.npmjs.com/package/handlebars"
         ],
-        "raw": "{\n  \"name\": \"handlebars\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1388.8999999999942\n}"
+        "raw": "{\n  \"name\": \"handlebars\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1259.7149999999674\n}"
       }
     },
     {
@@ -3055,7 +3053,7 @@
         "links": [
           "https://www.npmjs.com/package/ejs"
         ],
-        "raw": "{\n  \"name\": \"ejs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 646.2300000000105\n}"
+        "raw": "{\n  \"name\": \"ejs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 602.1049999999814\n}"
       }
     },
     {
@@ -3099,7 +3097,7 @@
         "links": [
           "https://www.npmjs.com/package/pug"
         ],
-        "raw": "{\n  \"name\": \"pug\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3673.5599999999977\n}"
+        "raw": "{\n  \"name\": \"pug\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3797.3300000000163\n}"
       }
     },
     {
@@ -3143,7 +3141,7 @@
         "links": [
           "https://www.npmjs.com/package/marked"
         ],
-        "raw": "{\n  \"name\": \"marked\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 479.21000000002095\n}"
+        "raw": "{\n  \"name\": \"marked\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 487.4099999999744\n}"
       }
     },
     {
@@ -3187,7 +3185,7 @@
         "links": [
           "https://www.npmjs.com/package/markdown-it"
         ],
-        "raw": "{\n  \"name\": \"markdown-it\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1219.25\n}"
+        "raw": "{\n  \"name\": \"markdown-it\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1049.0250000000233\n}"
       }
     },
     {
@@ -3231,7 +3229,7 @@
         "links": [
           "https://www.npmjs.com/package/micromark"
         ],
-        "raw": "{\n  \"name\": \"micromark\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3075.5650000000023\n}"
+        "raw": "{\n  \"name\": \"micromark\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 2950.234999999986\n}"
       }
     },
     {
@@ -3275,7 +3273,7 @@
         "links": [
           "https://www.npmjs.com/package/nunjucks"
         ],
-        "raw": "{\n  \"name\": \"nunjucks\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 812.7949999999837\n}"
+        "raw": "{\n  \"name\": \"nunjucks\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 789.1699999999837\n}"
       }
     },
     {
@@ -3319,7 +3317,7 @@
         "links": [
           "https://www.npmjs.com/package/liquidjs"
         ],
-        "raw": "{\n  \"name\": \"liquidjs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 693.1749999999884\n}"
+        "raw": "{\n  \"name\": \"liquidjs\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 691.6100000000442\n}"
       }
     },
     {
@@ -3363,7 +3361,7 @@
         "links": [
           "https://www.npmjs.com/package/mustache"
         ],
-        "raw": "{\n  \"name\": \"mustache\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 567.6599999999744\n}"
+        "raw": "{\n  \"name\": \"mustache\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 549.7000000000116\n}"
       }
     },
     {
@@ -3407,7 +3405,7 @@
         "links": [
           "https://www.npmjs.com/package/twig"
         ],
-        "raw": "{\n  \"name\": \"twig\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1478.7449999999953\n}"
+        "raw": "{\n  \"name\": \"twig\",\n  \"class\": \"Template\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1409.8850000000093\n}"
       }
     },
     {
@@ -3451,7 +3449,7 @@
         "links": [
           "https://www.npmjs.com/package/zod"
         ],
-        "raw": "{\n  \"name\": \"zod\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 930.0149999999849\n}"
+        "raw": "{\n  \"name\": \"zod\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 780.609999999986\n}"
       }
     },
     {
@@ -3495,7 +3493,7 @@
         "links": [
           "https://www.npmjs.com/package/ajv"
         ],
-        "raw": "{\n  \"name\": \"ajv\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 560.859999999986\n}"
+        "raw": "{\n  \"name\": \"ajv\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 481.23499999998603\n}"
       }
     },
     {
@@ -3539,7 +3537,7 @@
         "links": [
           "https://www.npmjs.com/package/joi"
         ],
-        "raw": "{\n  \"name\": \"joi\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1268.954999999958\n}"
+        "raw": "{\n  \"name\": \"joi\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1192.469999999972\n}"
       }
     },
     {
@@ -3583,7 +3581,7 @@
         "links": [
           "https://www.npmjs.com/package/valibot"
         ],
-        "raw": "{\n  \"name\": \"valibot\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 549.9100000000326\n}"
+        "raw": "{\n  \"name\": \"valibot\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 632.3850000000093\n}"
       }
     },
     {
@@ -3627,7 +3625,7 @@
         "links": [
           "https://www.npmjs.com/package/yup"
         ],
-        "raw": "{\n  \"name\": \"yup\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1040.3249999999534\n}"
+        "raw": "{\n  \"name\": \"yup\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1028.8349999999627\n}"
       }
     },
     {
@@ -3671,7 +3669,7 @@
         "links": [
           "https://www.npmjs.com/package/fast-json-stringify"
         ],
-        "raw": "{\n  \"name\": \"fast-json-stringify\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 695.2649999999558\n}"
+        "raw": "{\n  \"name\": \"fast-json-stringify\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 536.6699999999837\n}"
       }
     },
     {
@@ -3715,7 +3713,7 @@
         "links": [
           "https://www.npmjs.com/package/superstruct"
         ],
-        "raw": "{\n  \"name\": \"superstruct\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 535.109999999986\n}"
+        "raw": "{\n  \"name\": \"superstruct\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 595.7750000000233\n}"
       }
     },
     {
@@ -3759,7 +3757,7 @@
         "links": [
           "https://www.npmjs.com/package/io-ts"
         ],
-        "raw": "{\n  \"name\": \"io-ts\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"fp-ts/es6/Either\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/fp-ts/es6/Either\\nPASS\\n\",\n  \"duration\": 936.179999999993\n}"
+        "raw": "{\n  \"name\": \"io-ts\",\n  \"class\": \"Validation\",\n  \"status\": \"pass\",\n  \"output\": \"[bundle warning] \\\"fp-ts/es6/Either\\\" could not be resolved off the installed node_modules — falling back to https://esm.sh/fp-ts/es6/Either\\nPASS\\n\",\n  \"duration\": 816.7950000000419\n}"
       }
     },
     {
@@ -3803,7 +3801,7 @@
         "links": [
           "https://www.npmjs.com/package/uuid"
         ],
-        "raw": "{\n  \"name\": \"uuid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 533.109999999986\n}"
+        "raw": "{\n  \"name\": \"uuid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 508.15499999996973\n}"
       }
     },
     {
@@ -3847,7 +3845,7 @@
         "links": [
           "https://www.npmjs.com/package/lodash"
         ],
-        "raw": "{\n  \"name\": \"lodash\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 652.085000000021\n}"
+        "raw": "{\n  \"name\": \"lodash\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 700.2999999999884\n}"
       }
     },
     {
@@ -3891,7 +3889,7 @@
         "links": [
           "https://www.npmjs.com/package/chalk"
         ],
-        "raw": "{\n  \"name\": \"chalk\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 441.00500000000466\n}"
+        "raw": "{\n  \"name\": \"chalk\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 411.3500000000349\n}"
       }
     },
     {
@@ -3935,7 +3933,7 @@
         "links": [
           "https://www.npmjs.com/package/nanoid"
         ],
-        "raw": "{\n  \"name\": \"nanoid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 506.5899999999674\n}"
+        "raw": "{\n  \"name\": \"nanoid\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 477.91499999997905\n}"
       }
     },
     {
@@ -3979,7 +3977,7 @@
         "links": [
           "https://www.npmjs.com/package/dotenv"
         ],
-        "raw": "{\n  \"name\": \"dotenv\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 453.4349999999977\n}"
+        "raw": "{\n  \"name\": \"dotenv\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 422.13000000000466\n}"
       }
     },
     {
@@ -4023,7 +4021,7 @@
         "links": [
           "https://www.npmjs.com/package/js-yaml"
         ],
-        "raw": "{\n  \"name\": \"js-yaml\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 648.5499999999884\n}"
+        "raw": "{\n  \"name\": \"js-yaml\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 600.1549999999697\n}"
       }
     },
     {
@@ -4067,7 +4065,7 @@
         "links": [
           "https://www.npmjs.com/package/json5"
         ],
-        "raw": "{\n  \"name\": \"json5\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 442.45000000001164\n}"
+        "raw": "{\n  \"name\": \"json5\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 390.945000000007\n}"
       }
     },
     {
@@ -4111,7 +4109,7 @@
         "links": [
           "https://www.npmjs.com/package/semver"
         ],
-        "raw": "{\n  \"name\": \"semver\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 406.6049999999814\n}"
+        "raw": "{\n  \"name\": \"semver\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 369.2150000000256\n}"
       }
     },
     {
@@ -4155,7 +4153,7 @@
         "links": [
           "https://www.npmjs.com/package/ms"
         ],
-        "raw": "{\n  \"name\": \"ms\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 422.3099999999977\n}"
+        "raw": "{\n  \"name\": \"ms\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 403.8499999999767\n}"
       }
     },
     {
@@ -4199,7 +4197,7 @@
         "links": [
           "https://www.npmjs.com/package/debug"
         ],
-        "raw": "{\n  \"name\": \"debug\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 425.2850000000326\n}"
+        "raw": "{\n  \"name\": \"debug\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 346.8649999999907\n}"
       }
     },
     {
@@ -4243,7 +4241,7 @@
         "links": [
           "https://www.npmjs.com/package/deepmerge"
         ],
-        "raw": "{\n  \"name\": \"deepmerge\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 488.7850000000326\n}"
+        "raw": "{\n  \"name\": \"deepmerge\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 385.9749999999767\n}"
       }
     },
     {
@@ -4287,7 +4285,7 @@
         "links": [
           "https://www.npmjs.com/package/query-string"
         ],
-        "raw": "{\n  \"name\": \"query-string\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 759.1399999999558\n}"
+        "raw": "{\n  \"name\": \"query-string\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 738.1100000000442\n}"
       }
     },
     {
@@ -4331,7 +4329,7 @@
         "links": [
           "https://www.npmjs.com/package/fast-deep-equal"
         ],
-        "raw": "{\n  \"name\": \"fast-deep-equal\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 381.1500000000233\n}"
+        "raw": "{\n  \"name\": \"fast-deep-equal\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 344.92499999998836\n}"
       }
     },
     {
@@ -4375,7 +4373,7 @@
         "links": [
           "https://www.npmjs.com/package/change-case"
         ],
-        "raw": "{\n  \"name\": \"change-case\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 516.7099999999627\n}"
+        "raw": "{\n  \"name\": \"change-case\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 493.6900000000023\n}"
       }
     },
     {
@@ -4419,7 +4417,7 @@
         "links": [
           "https://www.npmjs.com/package/p-limit"
         ],
-        "raw": "{\n  \"name\": \"p-limit\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 629.304999999993\n}"
+        "raw": "{\n  \"name\": \"p-limit\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 516.9800000000396\n}"
       }
     },
     {
@@ -4463,7 +4461,7 @@
         "links": [
           "https://www.npmjs.com/package/lru-cache"
         ],
-        "raw": "{\n  \"name\": \"lru-cache\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 413.4349999999977\n}"
+        "raw": "{\n  \"name\": \"lru-cache\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 462.07500000001164\n}"
       }
     },
     {
@@ -4507,7 +4505,7 @@
         "links": [
           "https://www.npmjs.com/package/date-fns"
         ],
-        "raw": "{\n  \"name\": \"date-fns\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 1087.484999999986\n}"
+        "raw": "{\n  \"name\": \"date-fns\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 835.804999999993\n}"
       }
     },
     {
@@ -4551,7 +4549,7 @@
         "links": [
           "https://www.npmjs.com/package/dayjs"
         ],
-        "raw": "{\n  \"name\": \"dayjs\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 585.2199999999721\n}"
+        "raw": "{\n  \"name\": \"dayjs\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 519.539999999979\n}"
       }
     },
     {
@@ -4595,7 +4593,7 @@
         "links": [
           "https://www.npmjs.com/package/luxon"
         ],
-        "raw": "{\n  \"name\": \"luxon\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 610.2950000000419\n}"
+        "raw": "{\n  \"name\": \"luxon\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 621.9199999999837\n}"
       }
     },
     {
@@ -4639,7 +4637,7 @@
         "links": [
           "https://www.npmjs.com/package/throttle-debounce"
         ],
-        "raw": "{\n  \"name\": \"throttle-debounce\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 818.8449999999721\n}"
+        "raw": "{\n  \"name\": \"throttle-debounce\",\n  \"class\": \"Utility\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 513.8500000000349\n}"
       }
     },
     {
@@ -4683,7 +4681,7 @@
         "links": [
           "https://www.npmjs.com/package/events"
         ],
-        "raw": "{\n  \"name\": \"events\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 414.5\n}"
+        "raw": "{\n  \"name\": \"events\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 319.4400000000023\n}"
       }
     },
     {
@@ -4727,7 +4725,7 @@
         "links": [
           "https://www.npmjs.com/package/stream"
         ],
-        "raw": "{\n  \"name\": \"stream\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 336.875\n}"
+        "raw": "{\n  \"name\": \"stream\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 388.17500000004657\n}"
       }
     },
     {
@@ -4771,7 +4769,7 @@
         "links": [
           "https://www.npmjs.com/package/buffer"
         ],
-        "raw": "{\n  \"name\": \"buffer\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3518.9650000000256\n}"
+        "raw": "{\n  \"name\": \"buffer\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 3381.4599999999627\n}"
       }
     },
     {
@@ -4815,7 +4813,7 @@
         "links": [
           "https://www.npmjs.com/package/crypto"
         ],
-        "raw": "{\n  \"name\": \"crypto\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 389.7150000000256\n}"
+        "raw": "{\n  \"name\": \"crypto\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 353.8150000000023\n}"
       }
     },
     {
@@ -4859,7 +4857,7 @@
         "links": [
           "https://www.npmjs.com/package/path"
         ],
-        "raw": "{\n  \"name\": \"path\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 346.8150000000023\n}"
+        "raw": "{\n  \"name\": \"path\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 388.3649999999907\n}"
       }
     },
     {
@@ -4903,7 +4901,7 @@
         "links": [
           "https://www.npmjs.com/package/url"
         ],
-        "raw": "{\n  \"name\": \"url\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 343.5350000000326\n}"
+        "raw": "{\n  \"name\": \"url\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 342.8499999999767\n}"
       }
     },
     {
@@ -4947,7 +4945,7 @@
         "links": [
           "https://www.npmjs.com/package/querystring"
         ],
-        "raw": "{\n  \"name\": \"querystring\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 386.14000000001397\n}"
+        "raw": "{\n  \"name\": \"querystring\",\n  \"class\": \"Node core API\",\n  \"status\": \"pass\",\n  \"output\": \"PASS\\n\",\n  \"duration\": 340.6949999999488\n}"
       }
     },
     {
@@ -4985,13 +4983,14 @@
       },
       "details": {
         "features": [
-          "2/3 tests passed"
+          "2/3 tests passed",
+          "1 platform-bound expected failures (lane C, no browser-faithful mapping)"
         ],
         "knownIssues": [
-          "test-os-checked-function.js: Uncaught Error: No such binding: os"
+          "[lane C] test-os-checked-function.js: Uncaught Error: No such binding: os"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-os-eol.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-os-checked-function.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: No such binding: os\"\n  },\n  {\n    \"file\": \"test-os-homedir-no-envvar.js\",\n    \"status\": \"pass\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-os-eol.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-os-checked-function.js\",\n    \"status\": \"fail\",\n    \"expectedFail\": {\n      \"lane\": \"C\",\n      \"reason\": \"unenv os.homedir is a pure JS stub that never consults internalBinding('os'), so the test's getHomeDirectory monkey-patch is never invoked (no faithful os binding to expose)\",\n      \"location\": \"packages/node-web-shims/src/os.ts\",\n      \"remediation\": \"none browser-faithful: the test asserts on the os binding's monkey-patch surface\"\n    },\n    \"error\": \"Uncaught Error: No such binding: os\"\n  },\n  {\n    \"file\": \"test-os-homedir-no-envvar.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5019,8 +5018,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "unsupported",
+          "note": "Won't work in the browser"
         },
         "safari": {
           "status": "unknown",
@@ -5029,15 +5028,15 @@
       },
       "details": {
         "features": [
-          "0/3 tests passed"
+          "1/3 tests passed",
+          "2 platform-bound expected failures (lane C, no browser-faithful mapping)"
         ],
         "knownIssues": [
-          "test-util-format.js: Uncaught AssertionError: '118059162071741140000 118059162071741140000 123123123' strictEqual '118_059_162_071_741_140_000 118_059_162_071_741_140_000 123_123_123'",
-          "test-util-inspect.js: Uncaught Error: No such binding: util",
-          "test-util-types.js: Uncaught AssertionError: Want undefined to match isExternal"
+          "[lane C] test-util-inspect.js: Uncaught Error: No such binding: util",
+          "[lane C] test-util-types.js: Uncaught AssertionError: Want undefined to match isExternal"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: '118059162071741140000 118059162071741140000 123123123' strictEqual '118_059_162_071_741_140_000 118_059_162_071_741_140_000 123_123_123'\"\n  },\n  {\n    \"file\": \"test-util-inspect.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: No such binding: util\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: Want undefined to match isExternal\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-util-format.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-util-inspect.js\",\n    \"status\": \"fail\",\n    \"expectedFail\": {\n      \"lane\": \"C\",\n      \"reason\": \"requires internal/test/binding and node:trace_events (--expose-internals native binding)\",\n      \"location\": \"packages/node-web-shims/src/util.ts\",\n      \"remediation\": \"none browser-faithful: --expose-internals bindings cannot exist\"\n    },\n    \"error\": \"Uncaught Error: No such binding: util\"\n  },\n  {\n    \"file\": \"test-util-types.js\",\n    \"status\": \"fail\",\n    \"expectedFail\": {\n      \"lane\": \"C\",\n      \"reason\": \"needs a js_stream JSStream with a native _externalStream (util.types.isExternal is hard-coded false) plus vm.runInNewContext/vm.SourceTextModule semantics; none are faithfully shimable from the harness\",\n      \"location\": \"packages/node-web-shims/src/util.ts\",\n      \"remediation\": \"none browser-faithful: native stream/external markers cannot be forged\"\n    },\n    \"error\": \"Uncaught AssertionError: Want undefined to match isExternal\"\n  }\n]"
       }
     },
     {
@@ -5075,14 +5074,13 @@
       },
       "details": {
         "features": [
-          "1/3 tests passed"
+          "2/3 tests passed"
         ],
         "knownIssues": [
-          "test-assert.js: Uncaught AssertionError: {\"message\":\"2 notStrictEqual 2\",\"name\":\"AssertionError\"} deepStrictEqual {\"message\":\"Expected \\\"actual\\\" to be strictly unequal to: 2\",\"name\":\"AssertionError\"}",
-          "test-assert-async.js: Uncaught AssertionError: {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got Map(0) {  }.\",\"code\":\"ERR_INVALID_RETURN_VALUE\",\"name\":\"TypeError\"} deepStrictEqual {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got..."
+          "test-assert.js: ok 1 some basics"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-assert.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: {\\\"message\\\":\\\"2 notStrictEqual 2\\\",\\\"name\\\":\\\"AssertionError\\\"} deepStrictEqual {\\\"message\\\":\\\"Expected \\\\\\\"actual\\\\\\\" to be strictly unequal to: 2\\\",\\\"name\\\":\\\"AssertionError\\\"}\"\n  },\n  {\n    \"file\": \"test-assert-fail.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-async.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: {\\\"message\\\":\\\"Expected instance of Promise to be returned from the \\\\\\\"promiseFn\\\\\\\" function but got Map(0) {  }.\\\",\\\"code\\\":\\\"ERR_INVALID_RETURN_VALUE\\\",\\\"name\\\":\\\"TypeError\\\"} deepStrictEqual {\\\"message\\\":\\\"Expected instance of Promise to be returned from the \\\\\\\"promiseFn\\\\\\\" function but got...\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-assert.js\",\n    \"status\": \"fail\",\n    \"error\": \"ok 1 some basics\"\n  },\n  {\n    \"file\": \"test-assert-fail.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-assert-async.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5110,8 +5108,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5120,15 +5118,13 @@
       },
       "details": {
         "features": [
-          "0/3 tests passed"
+          "3/3 tests passed"
         ],
         "knownIssues": [
-          "test-fs-mkdir.js: Uncaught AssertionError: Missing expected exception (TypeError).",
-          "test-fs-write-file.js: Uncaught AssertionError: The input did not match the regular expression {}. Input:",
-          "test-fs-readfile.js: Validating readFile on file /home/harness/test/.tmp.0/.removeme-fs-readfile-1-1K.txt of length 1024"
+          "No known issues"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-fs-mkdir.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: Missing expected exception (TypeError).\"\n  },\n  {\n    \"file\": \"test-fs-write-file.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: The input did not match the regular expression {}. Input:\"\n  },\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"fail\",\n    \"error\": \"Validating readFile on file /home/harness/test/.tmp.0/.removeme-fs-readfile-1-1K.txt of length 1024\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-fs-mkdir.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-fs-write-file.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-fs-readfile.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5170,10 +5166,10 @@
         ],
         "knownIssues": [
           "test-http-status-code.js: TIMEOUT after 30000ms",
-          "test-http-write-head.js: Uncaught TypeError: Cannot read properties of undefined (reading 'address')"
+          "test-http-write-head.js: Uncaught AssertionError: Missing expected exception."
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-http-status-code.js\",\n    \"status\": \"fail\",\n    \"error\": \"TIMEOUT after 30000ms\"\n  },\n  {\n    \"file\": \"test-http-methods.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-http-write-head.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot read properties of undefined (reading 'address')\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-http-status-code.js\",\n    \"status\": \"fail\",\n    \"error\": \"TIMEOUT after 30000ms\"\n  },\n  {\n    \"file\": \"test-http-methods.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-http-write-head.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: Missing expected exception.\"\n  }\n]"
       }
     },
     {
@@ -5255,67 +5251,21 @@
       },
       "details": {
         "features": [
-          "48/54 tests passed"
+          "50/54 tests passed"
         ],
         "knownIssues": [
-          "test-timers-reset-process-domain-on-throw.js: process.domain should be null in this timer callback, but is: undefined",
-          "test-timers-immediate-promisified.js: Uncaught [object Object]",
-          "test-timers-immediate-queue-throw.js: Uncaught AssertionError: 0 strictEqual 1",
-          "test-timers-interval-promisified.js: Uncaught [object Object]",
-          "test-timers-socket-timeout-removes-other-socket-unref-timer.js: TIMEOUT after 30000ms",
-          "test-timers-timeout-promisified.js: Uncaught [object Object]"
+          "[lane A] test-timers-interval-promisified.js: Uncaught AssertionError: iterations was 2 < 3",
+          "test-timers-promises-scheduler.js: Uncaught AssertionError: Missing expected exception.",
+          "[lane B] test-timers-socket-timeout-removes-other-socket-unref-timer.js: TIMEOUT after 30000ms",
+          "test-timers-timeout-promisified.js: Uncaught AssertionError: Missing expected rejection."
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-timers-reset-process-domain-on-throw.js\",\n    \"status\": \"fail\",\n    \"error\": \"process.domain should be null in this timer callback, but is: undefined\"\n  },\n  {\n    \"file\": \"test-timers-active.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-api-refs.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-args.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-null-does-not-throw-error.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-object-does-not-throw-error.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-timeout-interval-equivalent.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clearImmediate-als.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clearImmediate.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-destroyed.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-dispose.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-enroll-invalid-msecs.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-enroll-second-time.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-promisified.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught [object Object]\"\n  },\n  {\n    \"file\": \"test-timers-immediate-queue-throw.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: 0 strictEqual 1\"\n  },\n  {\n    \"file\": \"test-timers-immediate-queue.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref-nested-once.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref-simple.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-interval-promisified.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught [object Object]\"\n  },\n  {\n    \"file\": \"test-timers-interval-throw.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-linked-list.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-max-duration-warning.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-nested.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-next-tick.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-non-integer-delay.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-now.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-ordering.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-promises-scheduler.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-promises.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-refresh-in-callback.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-refresh.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-same-timeout-wrong-list-deleted.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-setimmediate-infinite-loop.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-socket-timeout-removes-other-socket-unref-timer.js\",\n    \"status\": \"fail\",\n    \"error\": \"TIMEOUT after 30000ms\"\n  },\n  {\n    \"file\": \"test-timers-this.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-throw-when-cb-not-function.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-timeout-promisified.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught [object Object]\"\n  },\n  {\n    \"file\": \"test-timers-timeout-to-interval.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-timeout-with-non-integer.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-to-primitive.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-uncaught-exception.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unenroll-unref-interval.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-active.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-remove-other-unref-timers-only-one-fires.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-remove-other-unref-timers.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-throw-then-ref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefd-interval-still-fires.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefed-in-beforeexit.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefed-in-callback.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-user-call.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-zero-timeout.js\",\n    \"status\": \"pass\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-timers-reset-process-domain-on-throw.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-active.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-api-refs.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-args.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-null-does-not-throw-error.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-object-does-not-throw-error.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clear-timeout-interval-equivalent.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clearImmediate-als.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-clearImmediate.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-destroyed.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-dispose.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-enroll-invalid-msecs.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-enroll-second-time.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-promisified.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-queue-throw.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-queue.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref-nested-once.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref-simple.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate-unref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-immediate.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-interval-promisified.js\",\n    \"status\": \"fail\",\n    \"expectedFail\": {\n      \"lane\": \"A\",\n      \"reason\": \"timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)\",\n      \"location\": \"packages/node-web-shims/src/timers_promises.ts\",\n      \"remediation\": \"wire timers/promises onto the worker event loop scheduler with signal support\"\n    },\n    \"error\": \"Uncaught AssertionError: iterations was 2 < 3\"\n  },\n  {\n    \"file\": \"test-timers-interval-throw.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-linked-list.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-max-duration-warning.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-nested.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-next-tick.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-non-integer-delay.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-now.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-ordering.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-promises-scheduler.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: Missing expected exception.\"\n  },\n  {\n    \"file\": \"test-timers-promises.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-refresh-in-callback.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-refresh.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-same-timeout-wrong-list-deleted.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-setimmediate-infinite-loop.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-socket-timeout-removes-other-socket-unref-timer.js\",\n    \"status\": \"fail\",\n    \"expectedFail\": {\n      \"lane\": \"B\",\n      \"reason\": \"needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)\",\n      \"location\": \"packages/node-runtime-shims/src/net-shim.ts\",\n      \"remediation\": \"configure tcpRelay or register a netBackend via createLiveShimRegistry\"\n    },\n    \"error\": \"TIMEOUT after 30000ms\"\n  },\n  {\n    \"file\": \"test-timers-this.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-throw-when-cb-not-function.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-timeout-promisified.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: Missing expected rejection.\"\n  },\n  {\n    \"file\": \"test-timers-timeout-to-interval.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-timeout-with-non-integer.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-to-primitive.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-uncaught-exception.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unenroll-unref-interval.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-active.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-remove-other-unref-timers-only-one-fires.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-remove-other-unref-timers.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref-throw-then-ref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unref.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefd-interval-still-fires.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefed-in-beforeexit.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-unrefed-in-callback.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-user-call.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-timers-zero-timeout.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
       "id": "console",
       "name": "console",
-      "category": "node-core",
-      "categoryLabel": "Node core APIs",
-      "description": "",
-      "wasmOnly": false,
-      "cells": {
-        "node24": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "node22": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "deno": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "bun": {
-          "status": "unknown",
-          "note": "Not measured"
-        },
-        "browser": {
-          "status": "partial",
-          "note": "Partial support"
-        },
-        "safari": {
-          "status": "unknown",
-          "note": "Not measured"
-        }
-      },
-      "details": {
-        "features": [
-          "2/3 tests passed"
-        ],
-        "knownIssues": [
-          "test-console-clear.js: Uncaught AssertionError: '\u001b[1;1H\u001b[0J' strictEqual ''"
-        ],
-        "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-console-clear.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught AssertionError: '\\u001b[1;1H\\u001b[0J' strictEqual ''\"\n  },\n  {\n    \"file\": \"test-console-count.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-console-methods.js\",\n    \"status\": \"pass\"\n  }\n]"
-      }
-    },
-    {
-      "id": "child-process",
-      "name": "child_process",
       "category": "node-core",
       "categoryLabel": "Node core APIs",
       "description": "",
@@ -5348,13 +5298,57 @@
       },
       "details": {
         "features": [
-          "2/2 tests passed"
+          "3/3 tests passed"
         ],
         "knownIssues": [
           "No known issues"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-child-process-spawnsync.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-child-process-execsync-maxbuf.js\",\n    \"status\": \"pass\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-console-clear.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-console-count.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-console-methods.js\",\n    \"status\": \"pass\"\n  }\n]"
+      }
+    },
+    {
+      "id": "child-process",
+      "name": "child_process",
+      "category": "node-core",
+      "categoryLabel": "Node core APIs",
+      "description": "",
+      "wasmOnly": false,
+      "cells": {
+        "node24": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "node22": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "deno": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "bun": {
+          "status": "unknown",
+          "note": "Not measured"
+        },
+        "browser": {
+          "status": "partial",
+          "note": "Partial support"
+        },
+        "safari": {
+          "status": "unknown",
+          "note": "Not measured"
+        }
+      },
+      "details": {
+        "features": [
+          "1/2 tests passed"
+        ],
+        "knownIssues": [
+          "test-child-process-execsync-maxbuf.js: Uncaught TypeError: escapePOSIXShell is not a function or its return value is not iterable"
+        ],
+        "links": [],
+        "raw": "[\n  {\n    \"file\": \"test-child-process-spawnsync.js\",\n    \"status\": \"pass\"\n  },\n  {\n    \"file\": \"test-child-process-execsync-maxbuf.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: escapePOSIXShell is not a function or its return value is not iterable\"\n  }\n]"
       }
     },
     {
@@ -5426,8 +5420,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "pass",
+          "note": "Supported"
         },
         "safari": {
           "status": "unknown",
@@ -5436,13 +5430,13 @@
       },
       "details": {
         "features": [
-          "0/1 tests passed"
+          "1/1 tests passed"
         ],
         "knownIssues": [
-          "test-performanceobserver.js: Uncaught TypeError: Cannot read properties of undefined (reading '0')"
+          "No known issues"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-performanceobserver.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: Cannot read properties of undefined (reading '0')\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-performanceobserver.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     },
     {
@@ -5483,10 +5477,10 @@
           "0/1 tests passed"
         ],
         "knownIssues": [
-          "test-net-connect-buffer.js: TIMEOUT after 30000ms"
+          "[lane B] test-net-connect-buffer.js: TIMEOUT after 30000ms"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-net-connect-buffer.js\",\n    \"status\": \"fail\",\n    \"error\": \"TIMEOUT after 30000ms\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-net-connect-buffer.js\",\n    \"status\": \"fail\",\n    \"expectedFail\": {\n      \"lane\": \"B\",\n      \"reason\": \"needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend); in-process loopback connect times out in-container\",\n      \"location\": \"packages/node-runtime-shims/src/net-shim.ts\",\n      \"remediation\": \"configure tcpRelay or register a netBackend via createLiveShimRegistry\"\n    },\n    \"error\": \"TIMEOUT after 30000ms\"\n  }\n]"
       }
     },
     {
@@ -5514,8 +5508,8 @@
           "note": "Not measured"
         },
         "browser": {
-          "status": "fail",
-          "note": "Not supported"
+          "status": "unsupported",
+          "note": "Won't work in the browser"
         },
         "safari": {
           "status": "unknown",
@@ -5524,14 +5518,14 @@
       },
       "details": {
         "features": [
-          "0/2 tests passed"
+          "1/2 tests passed",
+          "1 platform-bound expected failures (lane C, no browser-faithful mapping)"
         ],
         "knownIssues": [
-          "test-dns-set-default-order.js: Uncaught Error: No such binding: cares_wrap",
-          "test-dns-setlocaladdress.js: Uncaught TypeError: resolver.setLocalAddress is not a function"
+          "[lane C] test-dns-set-default-order.js: Uncaught Error: No such binding: cares_wrap"
         ],
         "links": [],
-        "raw": "[\n  {\n    \"file\": \"test-dns-set-default-order.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught Error: No such binding: cares_wrap\"\n  },\n  {\n    \"file\": \"test-dns-setlocaladdress.js\",\n    \"status\": \"fail\",\n    \"error\": \"Uncaught TypeError: resolver.setLocalAddress is not a function\"\n  }\n]"
+        "raw": "[\n  {\n    \"file\": \"test-dns-set-default-order.js\",\n    \"status\": \"fail\",\n    \"expectedFail\": {\n      \"lane\": \"C\",\n      \"reason\": \"dns shim resolves via DoH, not internalBinding('cares_wrap'), so the test's getaddrinfo monkey-patch is never invoked; setDefaultResultOrder also performs no argument validation\",\n      \"location\": \"packages/node-runtime-shims/src/dns-shim.ts\",\n      \"remediation\": \"none browser-faithful: the test asserts on cares_wrap binding internals that cannot exist\"\n    },\n    \"error\": \"Uncaught Error: No such binding: cares_wrap\"\n  },\n  {\n    \"file\": \"test-dns-setlocaladdress.js\",\n    \"status\": \"pass\"\n  }\n]"
       }
     }
   ]

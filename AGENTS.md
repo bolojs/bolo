@@ -21,6 +21,7 @@ packages/
   npm/               Browser-native package installer (registry resolve + tarball extract)
   log/               @bolojs/log - internal diagnostics (logtape wrapper), Node + browser entrypoints
   vite-server/       BrowserViteServer — Vite dev server on main thread
+  next-server/       NextDevServer — Next.js Pages Router dev server on main thread (mounted at /__next/)
 apps/
   site/              bolojs.dev, one static Pages deploy (build outputs merged, no router)
     landing/         @bolojs/site-landing    Astro/React marketing site, served at "/"
@@ -55,6 +56,7 @@ tests/
 | QuickJS agent sandbox | [bolojs/quickjs-sandbox](https://github.com/bolojs/quickjs-sandbox) | Separate repo; optional SandboxBackend + policy library |
 | Package install | `packages/npm` | Browser-native installer + esm.sh fallback |
 | Vite dev server | `packages/vite-server` | Main thread, HMR via BroadcastChannel |
+| Next.js dev server | `packages/next-server` | Pages Router emulation, mounted at `/__next/` by the runtime |
 
 ## CONVENTIONS
 

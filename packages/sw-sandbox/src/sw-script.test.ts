@@ -169,4 +169,27 @@ describe("SW script behavior", () => {
 
     expect(respondWith).not.toHaveBeenCalled();
   });
+
+  it("intercepts /__next/ fetches like /__preview/", () => {
+    const respondWith = vi.fn();
+    let fetchHandler:
+      | ((event: { request: Request; respondWith: typeof respondWith }) => void)
+      | undefined;
+    const swGlobal = {
+      addEventListener: vi.fn((type: string, handler: (...args: unknown[]) => void) => {
+        if (type === "fetch") fetchHandler = handler as typeof fetchHandler;
+      }),
+      skipWaiting: vi.fn(),
+      clients: mockClients,
+    } as unknown as ServiceWorkerGlobalScope;
+
+    initSW(swGlobal);
+
+    fetchHandler?.({
+      request: new Request("http://localhost:4173/__next/_pages/index.js"),
+      respondWith,
+    });
+
+    expect(respondWith).toHaveBeenCalledTimes(1);
+  });
 });

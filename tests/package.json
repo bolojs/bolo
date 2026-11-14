@@ -10,6 +10,7 @@
   "dependencies": {
     "@bolojs/fs": "workspace:*",
     "@bolojs/log": "workspace:*",
+    "@bolojs/next-server": "workspace:*",
     "@bolojs/node-runtime-shims": "workspace:*",
     "@bolojs/node-web-shims": "workspace:*",
     "@bolojs/runtime": "workspace:*"
