@@ -59,6 +59,20 @@ jobs:
             sleep 2
           done
 
+      # Cold Vite dep-optimization returns 504s on first hit; warm every page
+      # (and give the optimizer time to settle) before gauge starts.
+      - name: Warm up dev server
+        run: |
+          for p in /e2e/ /sandbox/ /app/ /ide/ /vibe/ /catalog/ /; do
+            for i in {1..10}; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:4321$p" || true)
+              echo "$p -> $code"
+              [ "$code" = "200" ] && break
+              sleep 3
+            done
+          done
+          sleep 10
+
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
         working-directory: tests/e2e

@@ -160,7 +160,10 @@ self.onmessage = (ev: MessageEvent<RuntimeMessage>) => {
       try {
         result = (0, eval)(`(${fullCode})`);
       } catch {
-        result = (0, eval)(fullCode);
+        // Indirect eval scopes top-level let/const to the eval itself, so a
+        // later REPL line could not see them. Hoist to var so declarations
+        // persist across lines like in the node REPL.
+        result = (0, eval)(fullCode.replace(/^(\s*)(?:const|let)\s+/, "$1var "));
       }
     } catch (e) {
       error = String(e);
