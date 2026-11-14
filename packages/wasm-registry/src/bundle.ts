@@ -1403,10 +1403,7 @@ const routeCjsThroughWrapper = (code: string, cwd: string): string => {
     // (rolldown prints it that way); the runtime loader needs the absolute
     // VFS path.
     const absolute = path.startsWith("/") ? path : joinPath(cwd, path);
-    const next = body.replace(
-      "__commonJSMin(",
-      `__bc_cjsModule(${JSON.stringify(absolute)}, `,
-    );
+    const next = body.replace("__commonJSMin(", `__bc_cjsModule(${JSON.stringify(absolute)}, `);
     return `//#region ${path}\n${next}\n//#endregion`;
   });
   return routed ? CJS_MODULE_HELPER + rewritten : rewritten;

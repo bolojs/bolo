@@ -242,9 +242,7 @@ export const createModuleShim = (options: ModuleShimOptions) => {
           specifier.startsWith("/") ? specifier : joinPath(dirname(filename), specifier),
         );
         if (resolved !== undefined) return compileCjsModule(resolved);
-        throw new Error(
-          `Cannot find module "${specifier}" (resolved from "${filename}")`,
-        );
+        throw new Error(`Cannot find module "${specifier}" (resolved from "${filename}")`);
       }
 
       throw unsupportedError(
