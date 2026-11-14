@@ -1,0 +1,12 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+const vfs = new VfsBus();
+const cwd = "/home/web/app";
+vfs.hot.mkdirSync(cwd, { recursive: true });
+vfs.hot.writeFileSync(`${cwd}/package.json`, JSON.stringify({ name: "probe", version: "1.0.0" }));
+const pm = new PackageManager({ vfs, cwd, stdout:()=>{}, stderr:()=>{} });
+await pm.install(["typescript"]);
+const nm = `${cwd}/node_modules/typescript`;
+console.log("lib/version.cjs:", vfs.hot.readFileSync(`${nm}/lib/version.cjs`,"utf8").slice(0,300));
+console.log("--- files at root:", vfs.hot.readdirSync(nm).slice(0,40));
+console.log("--- lib:", vfs.hot.readdirSync(`${nm}/lib`).slice(0,40));
