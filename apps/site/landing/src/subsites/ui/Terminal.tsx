@@ -181,7 +181,7 @@ export default function Terminal(props: Props) {
   });
 
   return (
-    <section class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+    <section data-panel="terminal" class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
       <div class="min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2">
         {/* Padding must live on this wrapper, not the ref target — FitAddon measures the ref's own clientHeight. */}
         <div ref={container} aria-label="Terminal" class="h-full w-full overflow-hidden" />
