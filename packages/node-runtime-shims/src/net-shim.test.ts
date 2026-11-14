@@ -133,6 +133,37 @@ describe("net-shim", () => {
     );
   });
 
+  it("emits 'close' on the client socket when the peer ends, even unread", async () => {
+    // Node's socket reads eagerly (lib/net.js calls `read(0)` right after
+    // connect), so the FIN is observed and the socket destroys even when the
+    // app never consumes the readable side. Without that the client socket
+    // keeps its handle forever and 'close' never fires
+    // (test-net-connect-buffer waits on it).
+    const netShim = createNetShim(undefined);
+    const server = netShim.createServer();
+    await new Promise<void>((resolve) => server.listen({ port: 0 }, resolve));
+    const port = (server.address() as { port: number }).port;
+
+    const serverSocket = await new Promise<{ end: () => void }>((resolve) => {
+      server.on("connection", (s) => resolve(s));
+      const client = netShim.connect({ port });
+      client.on("error", () => {});
+      client.end();
+    });
+
+    const closed = new Promise<void>((resolve) => {
+      const client = netShim.connect({ port });
+      client.on("error", () => {});
+      client.on("close", () => resolve());
+      client.on("connect", () => client.end());
+    });
+
+    // The peer must close for the client's FIN to be observed.
+    serverSocket.end();
+    await expect(closed).resolves.toBeUndefined();
+    server.close();
+  });
+
   it("NoopTransport errors carry the ERR_BOL_UNSUPPORTED_NET_BACKEND seam code", () => {
     const connectErr = (() => {
       try {

@@ -1194,6 +1194,18 @@ Socket.prototype._pump = function _pump(this: SocketInternal): void {
           if (!self.allowHalfOpen && !self.writableEnded) {
             self.end();
           }
+          // Node's socket reads eagerly (lib/net.js calls `read(0)` right
+          // after connect), so the EOF is observed even when the app never
+          // consumes the stream. Without this the readable side never emits
+          // 'end' — the port only ends a paused readable once something reads
+          // it — and the socket never destroys, so 'close' never fires and
+          // the process keeps a live handle forever (test-net-connect-buffer
+          // waits on the client socket's 'close').
+          //
+          // `read(0)` consumes nothing; it only lets the port notice the EOF
+          // and emit 'end' when the buffer is empty. With data still buffered
+          // the port (like Node) keeps 'end' pending until it is read.
+          self.read(0);
           break;
         }
         self._bytesRead += value.byteLength;

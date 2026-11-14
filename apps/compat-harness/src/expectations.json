@@ -41,12 +41,6 @@
     "location": "packages/node-runtime-shims/src/module-shim.ts",
     "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
   },
-  "test/parallel/test-net-connect-buffer.js": {
-    "lane": "B",
-    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend); in-process loopback connect times out in-container",
-    "location": "packages/node-runtime-shims/src/net-shim.ts",
-    "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-  },
   "test/parallel/test-os-checked-function.js": {
     "lane": "C",
     "reason": "unenv os.homedir is a pure JS stub that never consults internalBinding('os'), so the test's getHomeDirectory monkey-patch is never invoked (no faithful os binding to expose)",
