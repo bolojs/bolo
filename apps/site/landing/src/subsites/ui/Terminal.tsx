@@ -80,18 +80,30 @@ export default function Terminal(props: Props) {
       for (let i = 0; i < n; i++) xterm?.write("\b \b");
     };
 
-    const submitLine = async () => {
+    // Submissions run strictly in order. The line buffer is consumed
+    // synchronously so keystrokes typed while a previous line is still being
+    // evaluated start a fresh line instead of being appended to (and then
+    // wiped with) the in-flight one.
+    let pending: Promise<void> = Promise.resolve();
+    const submitLine = () => {
       const line = lineBuffer.trim();
-      xterm?.write("\r\n");
-      let continuation = false;
-      if (line) {
-        const result = await props.onSubmit(line);
-        continuation = result?.continuation ?? false;
-        history.push(line);
-        historyIndex = null;
-      }
       lineBuffer = "";
-      xterm?.write(continuation ? "\r\n... " : "\r\n> ");
+      xterm?.write("\r\n");
+      pending = pending.then(async () => {
+        let continuation = false;
+        if (line) {
+          try {
+            const result = await props.onSubmit(line);
+            continuation = result?.continuation ?? false;
+          } catch {
+            // surfaced by the caller; keep the prompt usable
+          }
+          history.push(line);
+          historyIndex = null;
+        }
+        xterm?.write(continuation ? "\r\n... " : "\r\n> ");
+      });
+      return pending;
     };
 
     xterm.onData((data) => {
