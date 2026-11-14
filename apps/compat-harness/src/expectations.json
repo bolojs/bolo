@@ -59,12 +59,6 @@
     "location": "packages/node-web-shims/src/repl.ts",
     "remediation": "none browser-faithful"
   },
-  "test/parallel/test-timers-immediate-promisified.js": {
-    "lane": "A",
-    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
-    "location": "packages/node-web-shims/src/timers_promises.ts",
-    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
-  },
   "test/parallel/test-timers-interval-promisified.js": {
     "lane": "A",
     "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
@@ -76,12 +70,6 @@
     "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
     "location": "packages/node-runtime-shims/src/net-shim.ts",
     "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-  },
-  "test/parallel/test-timers-timeout-promisified.js": {
-    "lane": "A",
-    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
-    "location": "packages/node-web-shims/src/timers_promises.ts",
-    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
   },
   "test/parallel/test-tls-legacy-deprecated.js": {
     "lane": "B",
