@@ -621,6 +621,9 @@ importers:
       '@bolojs/log':
         specifier: workspace:*
         version: link:../log
+      '@bolojs/next-server':
+        specifier: workspace:*
+        version: link:../next-server
       '@bolojs/node-runtime-shims':
         specifier: workspace:*
         version: link:../node-runtime-shims

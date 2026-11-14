@@ -1,7 +1,7 @@
 {
   "name": "@bolojs/runtime",
   "version": "0.3.0",
-  "description": "Core container API for bolo — boot a browser-native Node.js runtime with a pluggable sandbox backend.",
+  "description": "Core container API for bolo \u2014 boot a browser-native Node.js runtime with a pluggable sandbox backend.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,14 +13,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@bolojs/log": "workspace:*",
     "@bolojs/fs": "workspace:*",
-    "@bolojs/sandbox": "workspace:*",
-    "@bolojs/pm": "workspace:*",
-    "@bolojs/vite-server": "workspace:*",
-    "@bolojs/node-web-shims": "workspace:*",
+    "@bolojs/log": "workspace:*",
+    "@bolojs/next-server": "workspace:*",
     "@bolojs/node-runtime-shims": "workspace:*",
+    "@bolojs/node-web-shims": "workspace:*",
+    "@bolojs/pm": "workspace:*",
     "@bolojs/registry": "workspace:*",
+    "@bolojs/sandbox": "workspace:*",
+    "@bolojs/vite-server": "workspace:*",
     "isomorphic-git": "^1.38.7",
     "just-bash": "^3.1.0"
   },

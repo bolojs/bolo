@@ -16,6 +16,7 @@ import { createMount } from "./mount.js";
 import { createExport } from "./export.js";
 import { installNavigatorUserAgent } from "@bolojs/node-web-shims";
 import { BrowserViteServer } from "@bolojs/vite-server";
+import { NextDevServer } from "@bolojs/next-server";
 import { createSyncServer } from "./sync-channel.js";
 import { createCuratedWasmRegistry } from "@bolojs/registry/curated-tools";
 
@@ -72,6 +73,14 @@ export class RuntimeBuilder {
       vfs,
       root: this.options.workdirName ?? "/home/web",
       base: "/__preview/",
+    });
+  }
+
+  protected createNextServer(vfs: VfsBus): NextDevServer | undefined {
+    return new NextDevServer({
+      vfs,
+      root: this.options.workdirName ?? "/home/web",
+      base: "/__next",
     });
   }
 
@@ -199,11 +208,11 @@ export class RuntimeBuilder {
       installNavigatorUserAgent();
 
       const previewBase = "/__preview/";
+      const previewChannel = new BroadcastChannel("bolo-preview");
       const previewServer = this.createViteServer(vfs);
       if (previewServer) {
         await previewServer.start();
         let reloadTimer: ReturnType<typeof setTimeout> | null = null;
-        const previewChannel = new BroadcastChannel("bolo-preview");
         vfs.watch("**", (path) => {
           if (
             path.includes("node_modules") ||
@@ -238,6 +247,52 @@ export class RuntimeBuilder {
           });
         });
         events.emit("server-ready", 3000, previewBase);
+      }
+
+      const nextBase = "/__next/";
+      const nextServer = this.createNextServer(vfs);
+      if (nextServer) {
+        await nextServer.start();
+        let nextReloadTimer: ReturnType<typeof setTimeout> | null = null;
+        vfs.watch("**", (path) => {
+          if (
+            path.includes("node_modules") ||
+            path.includes("/.bolo/") ||
+            path.includes("/.npm-cache/")
+          ) {
+            return;
+          }
+          nextServer.broadcastHmr({ type: "full-reload", path });
+          if (nextReloadTimer) clearTimeout(nextReloadTimer);
+          nextReloadTimer = setTimeout(() => {
+            previewChannel.postMessage({ type: "reload" });
+          }, 250);
+        });
+        sandbox.onFetch(async (req) => {
+          const url = new URL(req.url);
+          if (!url.pathname.startsWith(nextBase)) {
+            throw new Error("not handled");
+          }
+          const serverUrl = new URL(req.url);
+          serverUrl.pathname = url.pathname.slice(nextBase.length - 1) || "/";
+          const response = await nextServer.onFetch(serverUrl.toString(), req);
+          if (!response) {
+            throw new Error("not handled");
+          }
+          const headers = new Headers(response.headers);
+          headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+          headers.set("Cross-Origin-Opener-Policy", "same-origin");
+          headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+          // The container host page dynamic-imports compiled page/API modules
+          // from the virtual origin to run getStaticProps and API handlers.
+          headers.set("Access-Control-Allow-Origin", "*");
+          return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+          });
+        });
+        events.emit("server-ready", 3001, nextBase);
       }
 
       const originalTeardown = container.teardown.bind(container);

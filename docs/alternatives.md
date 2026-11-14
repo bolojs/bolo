@@ -73,7 +73,11 @@ It is not published to npm and has no `node:*` compatibility layer yet.
 - **No real POSIX `fork()` / `cluster`**: `child_process.fork()` is emulated via
   Worker + IPC; `cluster` is unsupported
 - **No native npm packages (NAPI)**: only pure-JS and WASM packages work
-- **Webpack / Next.js**: explicitly out of scope
+- **Webpack**: still out of scope
+- **Next.js**: partially supported. `@bolojs/next-server` emulates the Pages
+  Router dev server client-side (filesystem routes, `_app`/`_document`, API
+  routes, `getStaticProps`, full-reload HMR); pages are client-rendered, there
+  is no SSR, App Router, or Turbopack, and the stock `next` CLI does not run
 - **ServiceWorker required for preview**: HTTPS or localhost only
 
 The full scope and non-goals are documented in the project.
