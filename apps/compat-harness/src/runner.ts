@@ -88,18 +88,25 @@ export class NodeTestRunner {
     assertCanariesFail(await runCanaries(this.harness));
   }
 
-  async runAll(filter?: RegExp): Promise<{ module: string; results: TestResult[] }[]> {
-    await this.verifyCanaries();
+  async runAll(
+    filter?: RegExp,
+    moduleName?: string,
+  ): Promise<{ module: string; results: TestResult[] }[]> {
+    // Per-module runs skip the canary gate: the CLI verifies canaries once on
+    // the page up front, and re-running them per module would multiply boot
+    // cost by the module count.
+    if (moduleName === undefined) await this.verifyCanaries();
 
     const moduleResults: { module: string; results: TestResult[] }[] = [];
 
-    for (const [moduleName, { files }] of Object.entries(this.manifest.modules)) {
+    for (const [name, { files }] of Object.entries(this.manifest.modules)) {
+      if (moduleName !== undefined && name !== moduleName) continue;
       const results: TestResult[] = [];
       for (const file of files) {
         if (filter && !filter.test(file)) continue;
-        results.push(await this.runOne(moduleName, file));
+        results.push(await this.runOne(name, file));
       }
-      if (results.length > 0) moduleResults.push({ module: moduleName, results });
+      if (results.length > 0) moduleResults.push({ module: name, results });
     }
 
     return moduleResults;
@@ -209,10 +216,19 @@ export class NodeTestRunner {
     }
 
     const url = `https://raw.githubusercontent.com/nodejs/node/v${version}/${file}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.status}`);
+    // Non-vendored files are fetched live from GitHub; a transient network
+    // failure must not sink the whole module run.
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const response = await fetch(url);
+        if (response.ok) return response.text();
+        lastError = new Error(`Failed to fetch ${url}: ${response.status}`);
+      } catch (err) {
+        lastError = err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
     }
-    return response.text();
+    throw lastError;
   }
 }

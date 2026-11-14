@@ -133,15 +133,13 @@ const parsePackages = (raw) => {
     .filter(Boolean);
 };
 
-const readNodeVersion = async () => {
-  const manifest = JSON.parse(
+const readManifest = async () =>
+  JSON.parse(
     await readFile(
       join(dirname(fileURLToPath(import.meta.url)), "..", "src", "manifest.json"),
       "utf8",
     ),
   );
-  return manifest.nodeVersion;
-};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -396,7 +394,9 @@ const main = async () => {
     executablePath: process.env.CHROME || undefined,
   });
   const context = await browser.newContext();
-  const page = await context.newPage();
+  // `let`: a renderer crash or top-level navigation destroys the page's
+  // execution context — node-tests recovery swaps in a fresh page.
+  let page = await context.newPage();
   attachPageHooks(page);
 
   const matrix = JSON.parse(await readFile(sourcePath, "utf8"));
@@ -460,7 +460,137 @@ const main = async () => {
 
     let output;
     if (options.mode === "node-tests") {
-      const modules = await page.evaluate((f) => window.__runNodeTests(f), options.tests);
+      // Run module-by-module instead of one suite-wide evaluate: a single
+      // test that navigates the page or crashes the renderer destroys the
+      // execution context and used to lose the entire run. Per-module calls
+      // bound the blast radius to one module, and the page is rebooted (or
+      // recreated after a crash) before retrying.
+      const manifest = await readManifest();
+      const filterRe = options.tests ? new RegExp(options.tests) : null;
+      const wanted = Object.entries(manifest.modules).filter(([, { files }]) =>
+        filterRe ? files.some((f) => filterRe.test(f)) : true,
+      );
+
+      let nodePageCrashed = false;
+      const watchNodePage = (p) => {
+        p.on("crash", () => {
+          nodePageCrashed = true;
+        });
+      };
+      watchNodePage(page);
+
+      const rebootNodePage = async () => {
+        if (nodePageCrashed || page.isClosed()) {
+          nodePageCrashed = false;
+          const dead = page;
+          page = await context.newPage();
+          attachPageHooks(page);
+          watchNodePage(page);
+          await dead.close().catch(() => {});
+          logger.info("recreated harness page after renderer crash");
+        }
+        // Boot-only recovery: startMatrixRun also wires the package-matrix
+        // channel and clicks #pkgBtn, neither of which applies here.
+        await page.goto(options.url, { timeout: LOAD_TIMEOUT });
+        await page.waitForFunction(() => typeof window.__compatHarness !== "undefined", undefined, {
+          timeout: LOAD_TIMEOUT,
+        });
+        await page.click("#bootBtn");
+        await page.waitForFunction(
+          () => document.getElementById("status")?.textContent === "ready",
+          undefined,
+          { timeout: LOAD_TIMEOUT },
+        );
+      };
+
+      const crashResults = (moduleName, files, err) => [
+        {
+          module: moduleName,
+          results: files
+            .filter((f) => !filterRe || filterRe.test(f))
+            .map((file) => ({
+              file,
+              module: moduleName,
+              status: "fail",
+              exitCode: -1,
+              output: `HARNESS CRASH: ${String(err).slice(0, 200)}`,
+            })),
+        },
+      ];
+
+      const modules = [];
+      let consecutiveRebootFailures = 0;
+      for (let wi = 0; wi < wanted.length; wi++) {
+        const [moduleName, { files }] = wanted[wi];
+        const evaluateModule = (fileFilter) =>
+          page.evaluate(
+            ([f, m]) => window.__runNodeTests(f, m),
+            [fileFilter ?? options.tests, moduleName],
+          );
+        let moduleResults;
+        try {
+          moduleResults = await evaluateModule();
+          consecutiveRebootFailures = 0;
+        } catch (err) {
+          logger.error("node-tests module evaluate failed — rebooting page", {
+            module: moduleName,
+            error: String(err),
+          });
+          try {
+            await rebootNodePage();
+            moduleResults = await evaluateModule();
+            consecutiveRebootFailures = 0;
+          } catch (retryErr) {
+            consecutiveRebootFailures += 1;
+            logger.error("node-tests module failed after reboot — isolating per file", {
+              module: moduleName,
+              error: String(retryErr),
+            });
+            // A module that kills the page twice likely has one poisonous
+            // test; run its files individually so siblings still score.
+            const perFile = [];
+            for (const file of files) {
+              if (filterRe && !filterRe.test(file)) continue;
+              const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+              try {
+                const res = await evaluateModule(`^${escaped}$`);
+                perFile.push(...res.flatMap((m) => m.results));
+              } catch (fileErr) {
+                perFile.push(...crashResults(moduleName, [file], fileErr)[0].results);
+                try {
+                  await rebootNodePage();
+                } catch {
+                  // Page unrecoverable — remaining files get crash results.
+                  for (const rest of files.slice(files.indexOf(file) + 1)) {
+                    if (filterRe && !filterRe.test(rest)) continue;
+                    perFile.push({
+                      file: rest,
+                      module: moduleName,
+                      status: "fail",
+                      exitCode: -1,
+                      output: "HARNESS CRASH: page unrecoverable",
+                    });
+                  }
+                  break;
+                }
+              }
+            }
+            moduleResults = perFile.length
+              ? [{ module: moduleName, results: perFile }]
+              : crashResults(moduleName, files, retryErr);
+          }
+        }
+        modules.push(...moduleResults);
+        if (consecutiveRebootFailures >= 3) {
+          logger.error("node-tests page unrecoverable — fast-failing remaining modules", {
+            remaining: wanted.length - wi - 1,
+          });
+          for (const [restName, restEntry] of wanted.slice(wi + 1)) {
+            modules.push(...crashResults(restName, restEntry.files, "page unrecoverable"));
+          }
+          break;
+        }
+      }
       // A ledger entry that now passes is stale: the fix landed (or the entry
       // was wrong). Loud on stderr so nobody debugs a ghost expectation.
       const stale = modules.flatMap((m) =>
@@ -474,7 +604,7 @@ const main = async () => {
         );
         for (const s of stale) console.error(`  ${s}`);
       }
-      output = toNodeCompatReport(modules, { nodeVersion: await readNodeVersion() });
+      output = toNodeCompatReport(modules, { nodeVersion: manifest.nodeVersion });
       if (options.rawOutput) {
         await writeFile(options.rawOutput, JSON.stringify(modules, null, 2) + "\n");
       }
