@@ -26,10 +26,16 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const isSync = url.pathname.includes('/__bolo_sync/');
-  // Intercept the vite preview prefix, the virtual sandbox hostname
-  // (cross-origin user servers like Hono/Express) and the sync channel
-  // prefix used by process workers for synchronous syscalls.
-  if (!isSync && !url.pathname.startsWith('/__preview/') && url.hostname !== 'sandbox.local') {
+  // Intercept the vite preview prefix, the Next.js dev server prefix, the
+  // virtual sandbox hostname (cross-origin user servers like Hono/Express)
+  // and the sync channel prefix used by process workers for synchronous
+  // syscalls.
+  if (
+    !isSync &&
+    !url.pathname.startsWith('/__preview/') &&
+    !url.pathname.startsWith('/__next/') &&
+    url.hostname !== 'sandbox.local'
+  ) {
     return;
   }
   if (!isReady || !mainPort) {

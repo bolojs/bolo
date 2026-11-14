@@ -273,9 +273,8 @@ export class RuntimeBuilder {
           if (!url.pathname.startsWith(nextBase)) {
             throw new Error("not handled");
           }
-          const serverUrl = new URL(req.url);
-          serverUrl.pathname = url.pathname.slice(nextBase.length - 1) || "/";
-          const response = await nextServer.onFetch(serverUrl.toString(), req);
+          // NextDevServer strips its own base; pass the URL through.
+          const response = await nextServer.onFetch(req.url, req);
           if (!response) {
             throw new Error("not handled");
           }
