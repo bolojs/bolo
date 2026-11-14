@@ -118,18 +118,273 @@ const inspectValue = (val: unknown): string =>
     getters: true,
   });
 
-const createErrDiff = (actual: unknown, expected: unknown, operator: string): string => {
-  let other = "";
-  let res = "";
-  let end = "";
+/**
+ * Node's `myersDiff` (lib/internal/assert/myers_diff.js).
+ *
+ * The diff is computed over *lines* (or characters for the simple string
+ * variant) and rendered with the `+`/`-`/` ` prefixes the compat suite
+ * asserts on. The shim previously approximated this with a hand-rolled
+ * line-matching loop, which diverged from Node on the trailing newline, on
+ * grouped nop lines and on comma-disparity handling — so port the upstream
+ * algorithm verbatim.
+ */
+const kNopLinesToCollapse = 5;
+
+type DiffOp = { type: "nop" | "insert" | "delete"; value: string };
+
+const areLinesEqual = (actual: string, expected: string, checkCommaDisparity: boolean): boolean => {
+  if (actual === expected) return true;
+  if (checkCommaDisparity) {
+    return `${actual},` === expected || actual === `${expected},`;
+  }
+  return false;
+};
+
+const myersDiff = (actual: string[], expected: string[], checkCommaDisparity = false): DiffOp[] => {
+  const actualLength = actual.length;
+  const expectedLength = expected.length;
+  const max = actualLength + expectedLength;
+  // V8 array-fill semantics required: the trace slices `v` per diff level.
+  const v: number[] = Array.from({ length: 2 * max + 1 }, () => 0);
+
+  const trace: number[][] = [];
+
+  for (let diffLevel = 0; diffLevel <= max; diffLevel++) {
+    trace.push(v.slice());
+
+    for (let diagonalIndex = -diffLevel; diagonalIndex <= diffLevel; diagonalIndex += 2) {
+      let x: number;
+      if (
+        diagonalIndex === -diffLevel ||
+        (diagonalIndex !== diffLevel && v[diagonalIndex - 1 + max] < v[diagonalIndex + 1 + max])
+      ) {
+        x = v[diagonalIndex + 1 + max];
+      } else {
+        x = v[diagonalIndex - 1 + max] + 1;
+      }
+
+      let y = x - diagonalIndex;
+
+      while (
+        x < actualLength &&
+        y < expectedLength &&
+        areLinesEqual(actual[x], expected[y], checkCommaDisparity)
+      ) {
+        x++;
+        y++;
+      }
+
+      v[diagonalIndex + max] = x;
+
+      if (x >= actualLength && y >= expectedLength) {
+        return backtrack(trace, actual, expected, checkCommaDisparity);
+      }
+    }
+  }
+
+  return [];
+};
+
+const backtrack = (
+  trace: number[][],
+  actual: string[],
+  expected: string[],
+  checkCommaDisparity: boolean,
+): DiffOp[] => {
+  const actualLength = actual.length;
+  const expectedLength = expected.length;
+  const max = actualLength + expectedLength;
+
+  let x = actualLength;
+  let y = expectedLength;
+  const result: DiffOp[] = [];
+
+  for (let diffLevel = trace.length - 1; diffLevel >= 0; diffLevel--) {
+    const v = trace[diffLevel];
+    const diagonalIndex = x - y;
+    let prevDiagonalIndex: number;
+
+    if (
+      diagonalIndex === -diffLevel ||
+      (diagonalIndex !== diffLevel && v[diagonalIndex - 1 + max] < v[diagonalIndex + 1 + max])
+    ) {
+      prevDiagonalIndex = diagonalIndex + 1;
+    } else {
+      prevDiagonalIndex = diagonalIndex - 1;
+    }
+
+    const prevX = v[prevDiagonalIndex + max];
+    const prevY = prevX - prevDiagonalIndex;
+
+    while (x > prevX && y > prevY) {
+      const value =
+        !checkCommaDisparity || actual[x - 1].endsWith(",") ? actual[x - 1] : expected[y - 1];
+      result.push({ type: "nop", value });
+      x--;
+      y--;
+    }
+
+    if (diffLevel > 0) {
+      if (x > prevX) {
+        result.push({ type: "insert", value: actual[x - 1] });
+        x--;
+      } else {
+        result.push({ type: "delete", value: expected[y - 1] });
+        y--;
+      }
+    }
+  }
+
+  return result;
+};
+
+const printSimpleMyersDiff = (diff: DiffOp[]): string => {
+  let message = "";
+
+  for (let diffIdx = diff.length - 1; diffIdx >= 0; diffIdx--) {
+    const { type, value } = diff[diffIdx];
+    if (type === "insert") {
+      message += `${colors.green}${value}${colors.white}`;
+    } else if (type === "delete") {
+      message += `${colors.red}${value}${colors.white}`;
+    } else {
+      message += `${colors.white}${value}${colors.white}`;
+    }
+  }
+
+  return `\n${message}`;
+};
+
+const printMyersDiff = (diff: DiffOp[]): { message: string; skipped: boolean } => {
+  let message = "";
   let skipped = false;
-  const actualInspected = inspectValue(actual);
-  const actualLines = actualInspected.split("\n");
-  const expectedLines = inspectValue(expected).split("\n");
+  let nopCount = 0;
 
-  let i = 0;
-  let indicator = "";
+  for (let diffIdx = diff.length - 1; diffIdx >= 0; diffIdx--) {
+    const { type, value } = diff[diffIdx];
+    const previousType = diffIdx < diff.length - 1 ? diff[diffIdx + 1].type : null;
+    const typeChanged = previousType && type !== previousType;
 
+    if (typeChanged && previousType === "nop") {
+      // Avoid grouping if only one line would have been grouped otherwise
+      if (nopCount === kNopLinesToCollapse + 1) {
+        message += `${colors.white}  ${diff[diffIdx + 1].value}\n`;
+      } else if (nopCount === kNopLinesToCollapse + 2) {
+        message += `${colors.white}  ${diff[diffIdx + 2].value}\n`;
+        message += `${colors.white}  ${diff[diffIdx + 1].value}\n`;
+      }
+      if (nopCount >= kNopLinesToCollapse + 3) {
+        message += `${colors.blue}...${colors.white}\n`;
+        message += `${colors.white}  ${diff[diffIdx + 1].value}\n`;
+        skipped = true;
+      }
+      nopCount = 0;
+    }
+
+    if (type === "insert") {
+      message += `${colors.green}+${colors.white} ${value}\n`;
+    } else if (type === "delete") {
+      message += `${colors.red}-${colors.white} ${value}\n`;
+    } else if (type === "nop") {
+      if (nopCount < kNopLinesToCollapse) {
+        message += `${colors.white}  ${value}\n`;
+      }
+      nopCount++;
+    }
+  }
+
+  message = message.trimEnd();
+
+  return { message: `\n${message}`, skipped };
+};
+
+/** Node's `isSimpleDiff` (lib/internal/assert/assertion_error.js). */
+const isSimpleDiff = (
+  actual: unknown,
+  inspectedActual: string[],
+  expected: unknown,
+  inspectedExpected: string[],
+): boolean => {
+  if (inspectedActual.length > 1 || inspectedExpected.length > 1) {
+    return false;
+  }
+
+  return (
+    typeof actual !== "object" ||
+    actual === null ||
+    typeof expected !== "object" ||
+    expected === null
+  );
+};
+
+/** Node's `getStackedDiff` (lib/internal/assert/assertion_error.js). */
+const getStackedDiff = (
+  originalActual: unknown,
+  actual: string,
+  originalExpected: unknown,
+  expected: string,
+): { message: string; header: string; skipped: boolean } => {
+  const isStringComparison =
+    typeof originalActual === "string" && typeof originalExpected === "string";
+
+  let message = `\n${colors.green}+${colors.white} ${actual}\n${colors.red}- ${colors.white}${expected}`;
+  const stringsLen = actual.length + expected.length;
+  const maxTerminalLength = 80;
+  const showIndicator = isStringComparison && stringsLen <= maxTerminalLength;
+
+  if (showIndicator) {
+    let indicatorIdx = -1;
+
+    for (let i = 0; i < actual.length; i++) {
+      if (actual[i] !== expected[i]) {
+        // Skip the indicator for the first 2 characters because the diff is
+        // immediately apparent (it is 3 instead of 2 to account for the quotes).
+        if (i >= 3) {
+          indicatorIdx = i;
+        }
+        break;
+      }
+    }
+
+    if (indicatorIdx !== -1) {
+      message += `\n${" ".repeat(indicatorIdx + 2)}^`;
+    }
+  }
+
+  return { message, header: "", skipped: false };
+};
+
+/** Node's `getSimpleDiff` (lib/internal/assert/assertion_error.js). */
+const getSimpleDiff = (
+  originalActual: unknown,
+  actual: string,
+  originalExpected: unknown,
+  expected: string,
+): { message: string; header: string; skipped: boolean } => {
+  let stringsLen = actual.length + expected.length;
+  // Accounting for the quotes wrapping strings
+  if (typeof originalActual === "string") {
+    stringsLen -= 2;
+  }
+  if (typeof originalExpected === "string") {
+    stringsLen -= 2;
+  }
+  if (stringsLen <= kMaxShortLength && (originalActual !== 0 || originalExpected !== 0)) {
+    return { message: `${actual} !== ${expected}`, header: "", skipped: false };
+  }
+
+  const isStringComparison =
+    typeof originalActual === "string" && typeof originalExpected === "string";
+  if (isStringComparison && colors.hasColors()) {
+    const diff = myersDiff(actual.split(""), expected.split(""));
+    return { message: printSimpleMyersDiff(diff), header: "", skipped: false };
+  }
+
+  return getStackedDiff(originalActual, actual, originalExpected, expected);
+};
+
+/** Node's `checkOperator` (lib/internal/assert/assertion_error.js). */
+const checkOperator = (actual: unknown, expected: unknown, operator: string): string => {
   if (
     operator === "strictEqual" &&
     ((typeof actual === "object" &&
@@ -138,169 +393,70 @@ const createErrDiff = (actual: unknown, expected: unknown, operator: string): st
       expected !== null) ||
       (typeof actual === "function" && typeof expected === "function"))
   ) {
-    operator = "strictEqualObject";
+    return "strictEqualObject";
   }
 
-  if (
-    actualLines.length === 1 &&
-    expectedLines.length === 1 &&
-    actualLines[0] !== expectedLines[0]
-  ) {
-    const actualRaw = actualLines[0];
-    const expectedRaw = expectedLines[0];
-    const inputLength = actualRaw.length + expectedRaw.length;
-    if (inputLength <= kMaxShortLength) {
-      if (
-        (typeof actual !== "object" || actual === null) &&
-        (typeof expected !== "object" || expected === null) &&
-        (actual !== 0 || expected !== 0)
-      ) {
-        return `${kReadableOperator[operator]}\n\n${actualLines[0]} !== ${expectedLines[0]}\n`;
-      }
-    } else if (operator !== "strictEqualObject") {
-      const maxLength = 80;
-      if (inputLength < maxLength) {
-        while (actualRaw[i] === expectedRaw[i]) {
-          i += 1;
-        }
-        if (i > 2) {
-          indicator = `\n  ${" ".repeat(i)}^`;
-          i = 0;
-        }
-      }
+  return operator;
+};
+
+const createErrDiff = (actual: unknown, expected: unknown, operator: string): string => {
+  operator = checkOperator(actual, expected, operator);
+
+  let skipped = false;
+  let message = "";
+  const inspectedActual = inspectValue(actual);
+  const inspectedExpected = inspectValue(expected);
+  const inspectedSplitActual = inspectedActual.split("\n");
+  const inspectedSplitExpected = inspectedExpected.split("\n");
+  const showSimpleDiff = isSimpleDiff(
+    actual,
+    inspectedSplitActual,
+    expected,
+    inspectedSplitExpected,
+  );
+  let header = `${colors.green}+ actual${colors.white} ${colors.red}- expected${colors.white}`;
+
+  if (showSimpleDiff) {
+    const simpleDiff = getSimpleDiff(
+      actual,
+      inspectedSplitActual[0],
+      expected,
+      inspectedSplitExpected[0],
+    );
+    message = simpleDiff.message;
+    if (typeof simpleDiff.header !== "undefined") {
+      header = simpleDiff.header;
     }
-  }
-
-  let a = actualLines[actualLines.length - 1];
-  let b = expectedLines[expectedLines.length - 1];
-  while (a === b) {
-    if (i++ < 3) {
-      end = `\n  ${a}${end}`;
+    if (simpleDiff.skipped) {
+      skipped = true;
+    }
+  } else if (inspectedActual === inspectedExpected) {
+    // Handles the case where the objects are structurally the same but
+    // different references.
+    operator = "notIdentical";
+    if (inspectedSplitActual.length > 50) {
+      message = `${inspectedSplitActual.slice(0, 50).join("\n")}\n...}`;
+      skipped = true;
     } else {
-      other = a;
+      message = inspectedSplitActual.join("\n");
     }
-    actualLines.pop();
-    expectedLines.pop();
-    if (actualLines.length === 0 || expectedLines.length === 0) break;
-    a = actualLines[actualLines.length - 1];
-    b = expectedLines[expectedLines.length - 1];
-  }
+    header = "";
+  } else {
+    const checkCommaDisparity = actual != null && typeof actual === "object";
+    const diff = myersDiff(inspectedSplitActual, inspectedSplitExpected, checkCommaDisparity);
 
-  const maxLines = Math.max(actualLines.length, expectedLines.length);
-  if (maxLines === 0) {
-    const allLines = actualInspected.split("\n");
-    if (allLines.length > 50) {
-      allLines[46] = `${colors.blue}...${colors.white}`;
-      while (allLines.length > 47) {
-        allLines.pop();
-      }
-    }
-    return `${kReadableOperator.notIdentical}\n\n${allLines.join("\n")}\n`;
-  }
+    const myersDiffMessage = printMyersDiff(diff);
+    message = myersDiffMessage.message;
 
-  if (i >= 5) {
-    end = `\n${colors.blue}...${colors.white}${end}`;
-    skipped = true;
-  }
-  if (other !== "") {
-    end = `\n  ${other}${end}`;
-    other = "";
-  }
-
-  let printedLines = 0;
-  let identical = 0;
-  const msg =
-    kReadableOperator[operator] +
-    `\n${colors.green}+ actual${colors.white} ${colors.red}- expected${colors.white}`;
-  const skippedMsg = ` ${colors.blue}...${colors.white} Lines skipped`;
-
-  let lines = actualLines;
-  let plusMinus = `${colors.green}+${colors.white}`;
-  let maxLength = expectedLines.length;
-  if (actualLines.length < maxLines) {
-    lines = expectedLines;
-    plusMinus = `${colors.red}-${colors.white}`;
-    maxLength = actualLines.length;
-  }
-
-  for (i = 0; i < maxLines; i += 1) {
-    if (maxLength < i + 1) {
-      if (identical > 2) {
-        if (identical > 3) {
-          if (identical > 4) {
-            if (identical === 5) {
-              res += `\n  ${lines[i - 3]}`;
-              printedLines += 1;
-            } else {
-              res += `\n${colors.blue}...${colors.white}`;
-              skipped = true;
-            }
-          }
-          res += `\n  ${lines[i - 2]}`;
-          printedLines += 1;
-        }
-        res += `\n  ${lines[i - 1]}`;
-        printedLines += 1;
-      }
-      identical = 0;
-      if (lines === actualLines) {
-        res += `\n${plusMinus} ${lines[i]}`;
-      } else {
-        other += `\n${plusMinus} ${lines[i]}`;
-      }
-      printedLines += 1;
-    } else {
-      const expectedLine = expectedLines[i];
-      let actualLine = actualLines[i];
-      let divergingLines =
-        actualLine !== expectedLine &&
-        (!actualLine.endsWith(",") || actualLine.slice(0, -1) !== expectedLine);
-      if (
-        divergingLines &&
-        expectedLine.endsWith(",") &&
-        expectedLine.slice(0, -1) === actualLine
-      ) {
-        divergingLines = false;
-        actualLine += ",";
-      }
-      if (divergingLines) {
-        if (identical > 2) {
-          if (identical > 3) {
-            if (identical > 4) {
-              if (identical === 5) {
-                res += `\n  ${actualLines[i - 3]}`;
-                printedLines += 1;
-              } else {
-                res += `\n${colors.blue}...${colors.white}`;
-                skipped = true;
-              }
-            }
-            res += `\n  ${actualLines[i - 2]}`;
-            printedLines += 1;
-          }
-          res += `\n  ${actualLines[i - 1]}`;
-          printedLines += 1;
-        }
-        identical = 0;
-        res += `\n${colors.green}+${colors.white} ${actualLine}`;
-        other += `\n${colors.red}-${colors.white} ${expectedLine}`;
-        printedLines += 2;
-      } else {
-        res += other;
-        other = "";
-        identical += 1;
-        if (identical <= 2) {
-          res += `\n  ${actualLine}`;
-          printedLines += 1;
-        }
-      }
-    }
-    if (printedLines > 50 && i < maxLines - 2) {
-      return `${msg}${skippedMsg}\n${res}\n${colors.blue}...${colors.white}${other}\n${colors.blue}...${colors.white}`;
+    if (myersDiffMessage.skipped) {
+      skipped = true;
     }
   }
 
-  return `${msg}${skipped ? skippedMsg : ""}\n${res}${other}${end}${indicator}`;
+  const headerMessage = `${kReadableOperator[operator]}\n${header}`;
+  const skippedMessage = skipped ? "\n... Skipped lines" : "";
+
+  return `${headerMessage}${skippedMessage}\n${message}\n`;
 };
 
 const addEllipsis = (string: string): string => {

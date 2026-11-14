@@ -717,8 +717,15 @@ if (BufferClass && !BufferClass.__bolo_node22_patched) {
     return origCopy.call(this, tgt, tStart, sStart, sEnd) as number;
   };
 
-  // unenv's constants.MAX_LENGTH mirrors its own (smaller) kMaxLength.
-  const constants = (buffer as unknown as { constants?: { MAX_LENGTH?: number } }).constants;
+  // unenv ships feross's kMaxLength (2^31-1) on both the module namespace and
+  // the default-export object the registry re-exports; Node 22 exposes
+  // `v8::Uint8Array::kMaxLength` (2^53-1). Patch the default-export object —
+  // test-buffer-alloc requires `buffer.kMaxLength` and asserts the V8
+  // `Invalid typed array length: kMaxLength + 1` RangeError, which the browser
+  // engine itself throws at that length.
+  const asObj = buffer as unknown as Record<string, unknown>;
+  asObj.kMaxLength = K_MAX_LENGTH;
+  const constants = asObj.constants as { MAX_LENGTH?: number } | undefined;
   if (constants) constants.MAX_LENGTH = K_MAX_LENGTH;
 
   // --- Node-faithful read*/write* bounds -----------------------------------
