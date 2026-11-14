@@ -2,6 +2,7 @@ import { configureBrowserLogging, getLogger } from "@bolojs/log/browser";
 import type { VfsBus } from "@bolojs/fs";
 import type { SWSandbox } from "@bolojs/sandbox";
 import {
+  BOLO_NODE_VERSION,
   createLiveShimRegistry,
   createParentPortBridge,
   ProcessExit,
@@ -112,7 +113,10 @@ let processShim: ProcessShim | null = null;
 let exited = false;
 /** Fatal uncaught error: Node prints it, runs 'exit' handlers with code 1, then exits 1. */
 const crash = (err: unknown) => {
-  post({ type: "STDERR", data: formatUncaught(err, "v22.0.0") });
+  post({
+    type: "STDERR",
+    data: formatUncaught(err, processShim?.version ?? BOLO_NODE_VERSION),
+  });
   if (processShim) {
     processShim.exitCode = 1;
     try {
@@ -581,7 +585,10 @@ self.onmessage = (ev: MessageEvent) => {
   if (msg?.type === "PROC_RUN") {
     void runProcess(msg as ProcRunMessage).catch((err) => {
       logger.error("process worker failed", { error: String(err) });
-      post({ type: "STDERR", data: formatUncaught(err, "v22.0.0") });
+      post({
+        type: "STDERR",
+        data: formatUncaught(err, processShim?.version ?? BOLO_NODE_VERSION),
+      });
       finish(1);
     });
   }

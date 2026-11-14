@@ -9,7 +9,7 @@ import {
   warmWasmAddons,
   wasmAddonSpecifiers,
 } from "@bolojs/registry";
-import { createLiveShimRegistry } from "@bolojs/node-runtime-shims";
+import { BOLO_NODE_VERSION, createLiveShimRegistry } from "@bolojs/node-runtime-shims";
 import type { NativeAddonLoader, SpawnedProcess, WasmRegistry } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
 import { git } from "./commands/git.js";
@@ -270,6 +270,12 @@ export class ShellService {
       const filePath = rest[0];
       if (!filePath) {
         return this.routeRepl(output);
+      }
+      // `node --version`/`-v` prints the compat target and exits — there is
+      // no real binary, so the shimmed process.version is the answer.
+      if (filePath === "--version" || filePath === "-v") {
+        output.stdout(`${BOLO_NODE_VERSION}\n`);
+        return 0;
       }
       return this.runNodeApp(filePath, output);
     }

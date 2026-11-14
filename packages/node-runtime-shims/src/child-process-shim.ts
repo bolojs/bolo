@@ -550,6 +550,11 @@ export const createChildProcessShim = (
   const nodeRunSpec = (argv: readonly string[]): SyncRunRequest => {
     const rest = [...argv];
     let print = false;
+    // `node --version`/`-v` prints the compat target and exits.
+    const versionSpec = (): SyncRunRequest => ({
+      code: "console.log(process.version)",
+      args: rest,
+    });
     const takeEval = (inline: string | undefined): SyncRunRequest => {
       const src = inline !== undefined && inline !== "" ? inline : (rest.shift() ?? "");
       // Direct eval (not `(0, eval)`): the worker eval prelude's `require`,
@@ -575,6 +580,7 @@ export const createChildProcessShim = (
           print = true;
           return takeEval(inline);
         }
+        if (name === "--version") return versionSpec();
         // Other long flags (--inspect, --no-warnings, ...) have no script
         // semantics we model; skip them.
         continue;
@@ -587,6 +593,7 @@ export const createChildProcessShim = (
       for (let i = 1; i < flag.length; i++) {
         const c = flag[i];
         if (c === "e") return takeEval(flag.slice(i + 1) || undefined);
+        if (c === "v") return versionSpec();
         if (c === "p") {
           print = true;
           wantsEval = true;

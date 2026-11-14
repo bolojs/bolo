@@ -30,7 +30,7 @@ describe("superviseRun (canaries: each must NOT exit 0)", () => {
       throw new Error("sync boom");
     });
     expect(r.exitCode).toBe(1);
-    expect(h.stderr.join("")).toMatch(/Uncaught .*sync boom[\s\S]*Node\.js v22/);
+    expect(h.stderr.join("")).toMatch(/Uncaught .*sync boom[\s\S]*Node\.js v22\.12\.0/);
   });
 
   it("throw inside a timeout -> 1", async () => {

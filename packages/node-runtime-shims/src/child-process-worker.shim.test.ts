@@ -187,6 +187,29 @@ describe("child_process Worker spawn", () => {
     });
   });
 
+  it("spawn node --version/-v evals a version print", () => {
+    const createWorker = vi.fn(() => new FakeWorker());
+    const shim = createChildProcessShim(undefined, undefined, { createWorker });
+
+    shim.spawn("node", ["--version"]);
+    expect(createWorker).toHaveBeenLastCalledWith({
+      filename: undefined,
+      code: "console.log(process.version)",
+      args: [],
+      env: undefined,
+      cwd: undefined,
+    });
+
+    shim.spawn("node", ["-v"]);
+    expect(createWorker).toHaveBeenLastCalledWith({
+      filename: undefined,
+      code: "console.log(process.version)",
+      args: [],
+      env: undefined,
+      cwd: undefined,
+    });
+  });
+
   it("fork throws clear error without Worker factory", () => {
     const shim = createChildProcessShim();
     expect(() => shim.fork("./script.js")).toThrow(/POSIX fork/);
