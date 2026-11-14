@@ -1,0 +1,20 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+import { bundleEntry } from "@bolojs/registry/bundle";
+import * as nws from "@bolojs/node-web-shims";
+const vfs = new VfsBus();
+const cwd = "/home/web/app";
+vfs.hot.mkdirSync(cwd, { recursive: true });
+vfs.hot.writeFileSync(`${cwd}/package.json`, JSON.stringify({ name: "probe", version: "1.0.0" }));
+const pm = new PackageManager({ vfs, cwd, stdout:()=>{}, stderr:()=>{} });
+await pm.install(["typescript@5.9.3"]);
+const source = `import tsDefault, * as tsNs from 'typescript';\nconst ts = tsNs.transpile ? tsNs : tsDefault?.transpile ? tsDefault : tsNs.default?.transpile ? tsNs.default : tsNs.default?.default;\nconst out = ts.transpile('let x: number = 1;');\nif (typeof out !== 'string') throw new Error('transpile failed');\nglobalThis.__RESULT='PASS';`;
+vfs.hot.mkdirSync(`${cwd}/probe`, { recursive: true });
+vfs.hot.writeFileSync(`${cwd}/probe/entry.mjs`, source);
+const shims = { ...nws, "stream/web": nws.streamWeb, "stream/promises": nws.streamPromises, "stream/consumers": nws.streamConsumers,
+  process: { platform:'linux', arch:'x64', env:{}, argv:['node','p'], cwd:()=>cwd, exit:(c)=>{throw new Error('exit '+c)}, on:()=>{}, off:()=>{}, listenerCount:()=>0, stdout:{write:()=>{}}, stderr:{write:()=>{}} } };
+const { code, warnings } = await bundleEntry(`${cwd}/probe/entry.mjs`, { vfs, cwd, getShim:(b)=>shims[b] });
+console.log("WARNINGS:", warnings);
+globalThis.__browserContainers = { shims };
+const fn = new Function("console","process","globalThis", code + "\nreturn globalThis.__RESULT;");
+console.log("RESULT:", fn(console, { exit:(c)=>{throw new Error('exit '+c)}, argv:[], env:{} }, globalThis));

@@ -1,0 +1,10 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+const vfs=new VfsBus(); const cwd="/home/web/app";
+vfs.hot.mkdirSync(cwd,{recursive:true});
+vfs.hot.writeFileSync(`${cwd}/package.json`,JSON.stringify({name:"p",version:"1.0.0"}));
+const pm=new PackageManager({vfs,cwd,stdout:()=>{},stderr:()=>{}});
+await pm.install(["parcel"]);
+const base=`${cwd}/node_modules/.bolo/parcel@2.16.4/node_modules/parcel`;
+console.log("lib:", vfs.hot.readdirSync(`${base}/lib`));
+console.log("cli.js head:", vfs.hot.readFileSync(`${base}/lib/cli.js`,"utf8").slice(0,500));

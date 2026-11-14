@@ -1,0 +1,12 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+const vfs = new VfsBus();
+const cwd = "/home/web/app";
+vfs.hot.mkdirSync(cwd, { recursive: true });
+vfs.hot.writeFileSync(`${cwd}/package.json`, JSON.stringify({ name: "probe", version: "1.0.0" }));
+const pm = new PackageManager({ vfs, cwd, stdout:()=>{}, stderr:()=>{} });
+await pm.install(["typescript@5.9.3"]);
+const nm = `${cwd}/node_modules/typescript`;
+const pj = JSON.parse(vfs.hot.readFileSync(`${nm}/package.json`,"utf8"));
+console.log("version:", pj.version, "main:", pj.main, "types:", pj.types);
+console.log("lib has typescript.js:", vfs.hot.existsSync(`${nm}/lib/typescript.js`));
