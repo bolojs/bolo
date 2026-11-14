@@ -1,0 +1,13 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+const vfs=new VfsBus(); const cwd="/home/web/app";
+vfs.hot.mkdirSync(cwd,{recursive:true});
+vfs.hot.writeFileSync(`${cwd}/package.json`,JSON.stringify({name:"p",version:"1.0.0"}));
+const pm=new PackageManager({vfs,cwd,stdout:()=>{},stderr:()=>{}});
+await pm.install(["@rollup/wasm-node"]);
+const base=`${cwd}/node_modules/@rollup/wasm-node`;
+console.log("dist:", vfs.hot.readdirSync(`${base}/dist`));
+const pj=JSON.parse(vfs.hot.readFileSync(`${base}/package.json`,"utf8"));
+console.log("exports:", JSON.stringify(pj.exports,null,1));
+const es = vfs.hot.readFileSync(`${base}/dist/es/rollup.js`,"utf8");
+console.log("es head:", es.slice(0,600));
