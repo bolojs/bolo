@@ -503,43 +503,93 @@ const main = async () => {
         );
       };
 
+      const crashResults = (moduleName, files, err) => [
+        {
+          module: moduleName,
+          results: files
+            .filter((f) => !filterRe || filterRe.test(f))
+            .map((file) => ({
+              file,
+              module: moduleName,
+              status: "fail",
+              exitCode: -1,
+              output: `HARNESS CRASH: ${String(err).slice(0, 200)}`,
+            })),
+        },
+      ];
+
       const modules = [];
-      for (const [moduleName, { files }] of wanted) {
-        const evaluateModule = () =>
-          page.evaluate(([f, m]) => window.__runNodeTests(f, m), [options.tests, moduleName]);
+      let consecutiveRebootFailures = 0;
+      for (let wi = 0; wi < wanted.length; wi++) {
+        const [moduleName, { files }] = wanted[wi];
+        const evaluateModule = (fileFilter) =>
+          page.evaluate(
+            ([f, m]) => window.__runNodeTests(f, m),
+            [fileFilter ?? options.tests, moduleName],
+          );
         let moduleResults;
         try {
           moduleResults = await evaluateModule();
+          consecutiveRebootFailures = 0;
         } catch (err) {
           logger.error("node-tests module evaluate failed — rebooting page", {
             module: moduleName,
             error: String(err),
           });
-          await rebootNodePage();
           try {
+            await rebootNodePage();
             moduleResults = await evaluateModule();
+            consecutiveRebootFailures = 0;
           } catch (retryErr) {
-            logger.error("node-tests module failed after reboot — recording crash", {
+            consecutiveRebootFailures += 1;
+            logger.error("node-tests module failed after reboot — isolating per file", {
               module: moduleName,
               error: String(retryErr),
             });
-            moduleResults = [
-              {
-                module: moduleName,
-                results: files
-                  .filter((f) => !filterRe || filterRe.test(f))
-                  .map((file) => ({
-                    file,
-                    module: moduleName,
-                    status: "fail",
-                    exitCode: -1,
-                    output: `HARNESS CRASH: ${String(retryErr).slice(0, 200)}`,
-                  })),
-              },
-            ];
+            // A module that kills the page twice likely has one poisonous
+            // test; run its files individually so siblings still score.
+            const perFile = [];
+            for (const file of files) {
+              if (filterRe && !filterRe.test(file)) continue;
+              const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+              try {
+                const res = await evaluateModule(`^${escaped}$`);
+                perFile.push(...res.flatMap((m) => m.results));
+              } catch (fileErr) {
+                perFile.push(...crashResults(moduleName, [file], fileErr)[0].results);
+                try {
+                  await rebootNodePage();
+                } catch {
+                  // Page unrecoverable — remaining files get crash results.
+                  for (const rest of files.slice(files.indexOf(file) + 1)) {
+                    if (filterRe && !filterRe.test(rest)) continue;
+                    perFile.push({
+                      file: rest,
+                      module: moduleName,
+                      status: "fail",
+                      exitCode: -1,
+                      output: "HARNESS CRASH: page unrecoverable",
+                    });
+                  }
+                  break;
+                }
+              }
+            }
+            moduleResults = perFile.length
+              ? [{ module: moduleName, results: perFile }]
+              : crashResults(moduleName, files, retryErr);
           }
         }
         modules.push(...moduleResults);
+        if (consecutiveRebootFailures >= 3) {
+          logger.error("node-tests page unrecoverable — fast-failing remaining modules", {
+            remaining: wanted.length - wi - 1,
+          });
+          for (const [restName, restEntry] of wanted.slice(wi + 1)) {
+            modules.push(...crashResults(restName, restEntry.files, "page unrecoverable"));
+          }
+          break;
+        }
       }
       // A ledger entry that now passes is stale: the fix landed (or the entry
       // was wrong). Loud on stderr so nobody debugs a ghost expectation.

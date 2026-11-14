@@ -216,10 +216,19 @@ export class NodeTestRunner {
     }
 
     const url = `https://raw.githubusercontent.com/nodejs/node/v${version}/${file}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.status}`);
+    // Non-vendored files are fetched live from GitHub; a transient network
+    // failure must not sink the whole module run.
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const response = await fetch(url);
+        if (response.ok) return response.text();
+        lastError = new Error(`Failed to fetch ${url}: ${response.status}`);
+      } catch (err) {
+        lastError = err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
     }
-    return response.text();
+    throw lastError;
   }
 }
