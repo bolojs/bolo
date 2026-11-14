@@ -1907,7 +1907,6 @@ const addChunk = (
     state.length += state.objectMode ? 1 : (chunk as { length: number }).length;
     if (addToFront) state.buffer.unshift(chunk);
     else state.buffer.push(chunk);
-    console.log("DBG addChunk len=", state.length, "needReadable=", state.needReadable, "emittedReadable=", state.emittedReadable);
     if (state.needReadable) emitReadable(stream);
   }
   maybeReadMore(stream, state);
@@ -1948,7 +1947,6 @@ const emitReadable = (stream: Readable): void => {
 
 const emitReadableNow = (stream: Readable): void => {
   const state = stream._readableState;
-  console.log("DBG emitReadableNow len=", state.length, "ended=", state.ended, "destroyed=", state.destroyed, "errored=", state.errored, "emittedReadable=", state.emittedReadable);
   if (!state.destroyed && !state.errored && (state.length > 0 || state.ended)) {
     stream.emit("readable");
     state.emittedReadable = false;
