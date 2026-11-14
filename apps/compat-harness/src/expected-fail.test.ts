@@ -26,7 +26,7 @@ describe("expected-fail ledger", () => {
     const laneOf = (suffix: string) =>
       Object.entries(entries).find(([file]) => file.endsWith(suffix))?.[1].lane;
     expect(laneOf("test-tls-legacy-deprecated.js")).toBe("B");
-    expect(laneOf("test-dgram-send-callback-buffer-empty-address.js")).toBe("B");
+    expect(laneOf("test-tls-ticket-12.js")).toBe("B");
     expect(laneOf("test-inspector-stops-no-file.js")).toBe("C");
     expect(laneOf("test-dns-set-default-order.js")).toBe("C");
     expect(laneOf("test-timers-interval-promisified.js")).toBe("A");
@@ -35,11 +35,9 @@ describe("expected-fail ledger", () => {
 
 describe("expectedFailEntry", () => {
   it("returns the entry for a listed file and undefined otherwise", () => {
-    const entry = expectedFailEntry(
-      "test/parallel/test-dgram-send-callback-buffer-empty-address.js",
-    );
+    const entry = expectedFailEntry("test/parallel/test-tls-ticket-12.js");
     expect(entry?.lane).toBe("B");
-    expect(entry?.location).toContain("dgram.ts");
+    expect(entry?.location).toContain("tls");
     expect(expectedFailEntry("test/parallel/test-path-join.js")).toBeUndefined();
   });
 });
