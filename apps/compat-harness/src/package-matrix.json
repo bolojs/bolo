@@ -34,7 +34,7 @@
     {
       "name": "globby",
       "class": "File system",
-      "source": "import { globbySync } from 'globby';\ntry {\n  // globby's async API hangs in the container: setTimeout never fires there\n  // (process-worker timer machinery), and fast-glob's async path depends on it.\n  // Probe the sync API instead \u2014 same package, same fs coverage.\n  if (!Array.isArray(globbySync('*.missing'))) throw new Error('globby failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+      "source": "import { globbySync } from 'globby';\ntry {\n  // globby's async API hangs in the container: setTimeout never fires there\n  // (process-worker timer machinery), and fast-glob's async path depends on it.\n  // Probe the sync API instead — same package, same fs coverage.\n  if (!Array.isArray(globbySync('*.missing'))) throw new Error('globby failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
     },
     {
       "name": "chokidar",
@@ -45,7 +45,7 @@
     {
       "name": "esbuild",
       "class": "Build tool",
-      "source": "// The 'esbuild' npm package drives a native platform binary (child process + ESM binary loader);\n// the browser build is a separate package (esbuild-wasm).\nconsole.log('SKIP: esbuild requires its native platform binary \u2014 esbuild-wasm is the browser package');\nprocess.exit(0);"
+      "source": "import { execFile } from 'node:child_process';\ntry {\n  // The esbuild npm package drives a native platform binary and cannot run in\n  // a browser. The curated WASM tool (esbuild-wasm) answers the same CLI\n  // through the container's command dispatch, so the CLI is what we probe.\n  const stdout = await new Promise((resolve, reject) => {\n    execFile('esbuild', ['--version'], (err, out) => (err ? reject(err) : resolve(out)));\n  });\n  if (!/\\d+\\.\\d+/.test(String(stdout))) throw new Error('bad version: ' + stdout);\n  console.log('PASS');\n} catch (e) {\n  console.error(e instanceof Error ? (e.stack || e.message) : String(e));\n  process.exit(1);\n}"
     },
     {
       "name": "swc",
@@ -89,7 +89,7 @@
     {
       "name": "vitest",
       "class": "Testing",
-      "source": "import * as vitest from 'vitest';\ntry {\n  // defineConfig lives in 'vitest/config', not the root module \u2014 probe the\n  // root test API instead.\n  if (typeof vitest.expect !== 'function' || typeof vitest.describe !== 'function' || typeof vitest.it !== 'function') throw new Error('vitest failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+      "source": "import * as vitest from 'vitest';\ntry {\n  // defineConfig lives in 'vitest/config', not the root module — probe the\n  // root test API instead.\n  if (typeof vitest.expect !== 'function' || typeof vitest.describe !== 'function' || typeof vitest.it !== 'function') throw new Error('vitest failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
     },
     {
       "name": "jest",
@@ -130,12 +130,12 @@
     {
       "name": "bcrypt",
       "class": "Crypto",
-      "source": "// bcrypt requires a native .node addon (node-pre-gyp); there is no pure-JS or WASM build to run in a browser; the API-compatible alternative is bcryptjs.\nconsole.log('SKIP: bcrypt needs a native addon \u2014 use bcryptjs (pure JS, API-compatible)');\nprocess.exit(0);"
+      "source": "import bcrypt from 'bcrypt';\ntry {\n  // The native bcrypt package is aliased to bcryptjs (pure JS, same API) at\n  // bundle time (nativeAddonVariantPlugin), so no .node addon is needed.\n  const hash = await bcrypt.hash('password', 10);\n  if (typeof hash !== 'string' || hash.length === 0) throw new Error('no hash');\n  if (!(await bcrypt.compare('password', hash))) throw new Error('compare failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e instanceof Error ? (e.stack || e.message) : String(e));\n  process.exit(1);\n}"
     },
     {
       "name": "argon2",
       "class": "Crypto",
-      "source": "// argon2 requires a native .node addon (node-gyp); the official WASM build is the separate @node-rs/argon2-wasm package (needs the WASM loader from #149).\nconsole.log('SKIP: argon2 needs a native addon \u2014 use @node-rs/argon2-wasm (lane B)');\nprocess.exit(0);"
+      "source": "import argon2 from 'argon2';\ntry {\n  // The native argon2 package is aliased to argon2-wasm at bundle time\n  // (packages/wasm-registry/src/bundle.ts, nativeAddonVariantPlugin), so\n  // this import never reaches node-gyp-build. argon2-wasm's API differs from\n  // node-argon2: hash() resolves to { hash, hashHex, encoded } and there is\n  // no verify().\n  const res = await argon2.hash({ pass: 'password', salt: 'somesalt', time: 1, mem: 1024, hashLen: 24, parallelism: 1 });\n  if (typeof res.hashHex !== 'string' || res.hashHex.length === 0) throw new Error('no hashHex');\n  if (typeof res.encoded !== 'string' || !res.encoded.startsWith('$argon2')) throw new Error('bad encoded: ' + res.encoded);\n  console.log('PASS');\n} catch (e) {\n  console.error(e instanceof Error ? (e.stack || e.message) : String(e));\n  process.exit(1);\n}"
     },
     {
       "name": "handlebars",
@@ -545,7 +545,7 @@
     {
       "name": "lightningcss",
       "class": "Build tool",
-      "source": "// The 'lightningcss' npm package loads a native .node binding (per-platform optional deps);\n// there is no WASM fallback in this package.\nconsole.log('SKIP: lightningcss requires a native .node binding \u2014 no browser-compatible build exists');\nprocess.exit(0);"
+      "source": "import init, { transform } from 'lightningcss';\ntry {\n  // The native lightningcss package is aliased to lightningcss-wasm (napi-wasm)\n  // at bundle time (nativeAddonVariantPlugin). Its init() needs the wasm\n  // binary URL explicitly: the default new URL('...', import.meta.url) cannot\n  // resolve inside the bundled data:/blob: module scope.\n  await init('https://cdn.jsdelivr.net/npm/lightningcss-wasm@1.33.0/lightningcss_node.wasm');\n  const res = transform({ filename: 'a.css', code: Buffer.from('a { color: red; }'), minify: true });\n  const code = typeof res.code === 'string' ? res.code : new TextDecoder().decode(res.code);\n  if (!code.includes('red')) throw new Error('no red in output: ' + code);\n  console.log('PASS');\n} catch (e) {\n  console.error(e instanceof Error ? (e.stack || e.message) : String(e));\n  process.exit(1);\n}"
     },
     {
       "name": "postcss",
@@ -570,17 +570,17 @@
     {
       "name": "rspack",
       "class": "Bundler",
-      "source": "// @rspack/core requires its native Rust binding (@rspack/binding-*, a .node addon)\n// via dynamic require(); the browser build is a separate package (@rspack/browser).\nconsole.log('SKIP: @rspack/core needs its native binding \u2014 @rspack/browser is the browser package');\nprocess.exit(0);"
+      "source": "// @rspack/core requires its native Rust binding (@rspack/binding-*, a .node addon)\n// via dynamic require(); the browser build is a separate package (@rspack/browser).\nconsole.log('SKIP: @rspack/core needs its native binding — @rspack/browser is the browser package');\nprocess.exit(0);"
     },
     {
       "name": "turbo",
       "class": "Bundler",
-      "source": "// The probe previously imported '@turbo/worker', which does not exist on npm (404).\n// The real 'turbo' package is a wrapper around a native Rust binary with no browser build.\nconsole.log('SKIP: turbo is a native Rust binary wrapper \u2014 no browser-compatible build exists');\nprocess.exit(0);"
+      "source": "// The probe previously imported '@turbo/worker', which does not exist on npm (404).\n// The real 'turbo' package is a wrapper around a native Rust binary with no browser build.\nconsole.log('SKIP: turbo is a native Rust binary wrapper — no browser-compatible build exists');\nprocess.exit(0);"
     },
     {
       "name": "ws",
       "class": "HTTP server",
-      "source": "import WebSocket, * as wsNs from 'ws';\ntry {\n  if (typeof wsNs.WebSocket === 'function') {\n    console.log('PASS');\n  } else {\n    // ws's package.json \"browser\" field maps the import to a stub that throws by design\n    // (browser clients must use the native WebSocket object). Accept a working real class,\n    // otherwise confirm the documented stub behavior and skip.\n    try {\n      const sock = new WebSocket('ws://localhost');\n      sock.close?.();\n      console.log('PASS');\n    } catch {\n      console.log('SKIP: ws browser field ships a throwing stub by design \u2014 native WebSocket is the browser path');\n    }\n  }\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+      "source": "import WebSocket, * as wsNs from 'ws';\ntry {\n  if (typeof wsNs.WebSocket === 'function') {\n    console.log('PASS');\n  } else {\n    // ws's package.json \"browser\" field maps the import to a stub that throws by design\n    // (browser clients must use the native WebSocket object). Accept a working real class,\n    // otherwise confirm the documented stub behavior and skip.\n    try {\n      const sock = new WebSocket('ws://localhost');\n      sock.close?.();\n      console.log('PASS');\n    } catch {\n      console.log('SKIP: ws browser field ships a throwing stub by design — native WebSocket is the browser path');\n    }\n  }\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
     }
   ]
 }

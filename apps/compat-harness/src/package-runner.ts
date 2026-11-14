@@ -59,7 +59,11 @@ interface SpecifierParts {
 }
 
 const ESM_SH_URL = /https?:\/\/esm\.sh\/([^\s'"\\)]+)/g;
-const IMPORT_SPECIFIER = /\b(?:from|import)\s*(?:\(\s*)?['"]([^'"\n]+)['"]/g;
+// `from`/`import` must be a statement keyword, not a member call: a probe
+// that writes `Buffer.from('a { color: red; }')` used to yield the CSS
+// snippet as an "import specifier", which the shell then tokenized into a
+// bare `{` and the registry answered 404 for a package named "{".
+const IMPORT_SPECIFIER = /(?:^|[^\w.$])(?:from|import)\s*(?:\(\s*)?['"]([^'"\n]+)['"]/g;
 export const DEFAULT_PACKAGE_TIMEOUT_MS = 60_000;
 
 /** Splits `lodash@4.17.21/fp` or `@scope/name@1/sub` into name, version and subpath. */
