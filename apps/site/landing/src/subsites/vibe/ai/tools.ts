@@ -60,6 +60,7 @@ export async function listFilesRecursive(container: BrowserContainer, dir: strin
 export function createContainerTools(
   container: BrowserContainer,
   onOutput?: (line: string) => void,
+  onDevServer?: () => void,
 ): ToolSet {
   return {
     writeFile: tool({
@@ -139,6 +140,9 @@ export function createContainerTools(
           proc.exit,
           new Promise<typeof timeout>((resolve) => setTimeout(() => resolve(timeout), RUN_TIMEOUT_MS)),
         ]);
+
+        const isDev = command === "npm" && args[0] === "run" && args[1] === "dev";
+        if (isDev && (result === timeout || result === 0)) onDevServer?.();
 
         if (result === timeout) {
           return {

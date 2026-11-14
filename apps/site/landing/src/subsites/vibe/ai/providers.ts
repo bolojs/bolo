@@ -135,6 +135,7 @@ export function createMockVibeModel(): LanguageModelV2 {
     async doStream(options) {
       void options;
       const hasTools = (options.tools?.length ?? 0) > 0;
+      const afterTools = options.prompt[options.prompt.length - 1]?.role === "tool";
       const parts: LanguageModelV2StreamPart[] = [{ type: "stream-start", warnings: [] }];
       if (!hasTools) {
         parts.push({ type: "text-start", id: "plan-text" });
@@ -143,6 +144,13 @@ export function createMockVibeModel(): LanguageModelV2 {
         }
         parts.push({ type: "text-end", id: "plan-text" });
         parts.push(...finish(MOCK_PLAN_TEXT));
+      } else if (afterTools) {
+        parts.push({ type: "text-start", id: "build-text" });
+        for (const delta of chunkDeltas(MOCK_BUILD_TEXT)) {
+          parts.push({ type: "text-delta", id: "build-text", delta });
+        }
+        parts.push({ type: "text-end", id: "build-text" });
+        parts.push(...finish(MOCK_BUILD_TEXT));
       } else {
         buildCalls += 1;
         parts.push({
@@ -157,12 +165,7 @@ export function createMockVibeModel(): LanguageModelV2 {
           toolName: "runCommand",
           input: JSON.stringify({ command: "npm", args: ["run", "dev"] }),
         });
-        parts.push({ type: "text-start", id: "build-text" });
-        for (const delta of chunkDeltas(MOCK_BUILD_TEXT)) {
-          parts.push({ type: "text-delta", id: "build-text", delta });
-        }
-        parts.push({ type: "text-end", id: "build-text" });
-        parts.push(...finish(MOCK_BUILD_TEXT));
+        parts.push({ type: "finish", finishReason: "tool-calls", usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } });
       }
       return { stream: streamScript(parts) };
     },

@@ -12,6 +12,7 @@ import FileTree from "../ui/FileTree";
 import SplitPane from "../ui/SplitPane";
 import VibeApp from "../vibe/components/VibeApp";
 import { vibeStarterTree } from "../vibe/scaffold";
+import VibePreview, { createVibePreview } from "../vibe/components/VibePreview";
 
 declare global {
    
@@ -82,6 +83,7 @@ interface Props {
 export default function SubsiteApp(props: Props) {
   const [bootState, setBootState] = createSignal<BootState>("booting");
   const [previewUrl, setPreviewUrl] = createSignal<string | null>(null);
+  const vibePreview = createVibePreview();
   const [documents, setDocuments] = createSignal<EditorDocument[]>([]);
   const [activePath, setActivePath] = createSignal<string | null>(null);
   const [lines, setLines] = createSignal<string[]>([]);
@@ -276,12 +278,19 @@ export default function SubsiteApp(props: Props) {
               <VibeApp
                 getContainer={() => container}
                 onOutput={appendLine}
+                onDevServer={() => {
+                  void vibePreview.refresh().catch((err) =>
+                    logger.error("vibe preview refresh failed", {
+                      error: err instanceof Error ? err.message : String(err),
+                    }),
+                  );
+                }}
                 ready={bootState() === "ready"}
               />
             }
             second={
               <SplitPane direction="column" initialRatio={0.6} dataPanel="preview-terminal"
-                first={<Preview url={previewUrl()} />}
+                first={<VibePreview html={vibePreview.html()} />}
                 second={terminal()}
               />
             }

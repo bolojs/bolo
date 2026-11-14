@@ -11,7 +11,7 @@ entirely client-side with no network access or API keys.
 * The key-stays-local banner is visible
 * I send the chat prompt "make it say hi"
 * The chat shows a done receipt for "writeFile" on "src/App.jsx"
-* The chat shows a done receipt for "runCommand" "npm run dev"
+* The chat shows a done receipt for "runCommand" on "npm run dev"
 * The assistant reports the dev server is running
 * The preview shows the text "Built by the bolo mock provider"
 * No service worker errors were recorded

@@ -19,6 +19,7 @@ import ConfigDialog, { type VibeConfig } from "./ConfigDialog";
 interface Props {
   getContainer: () => BrowserContainer | undefined;
   onOutput(line: string): void;
+  onDevServer?: () => void;
   ready: boolean;
 }
 
@@ -36,6 +37,7 @@ export default function VibeApp(props: Props) {
     apiKey: () => config().apiKey || null,
     modelId: () => config().modelId,
     onOutput: (line) => props.onOutput(line),
+    onDevServer: () => props.onDevServer?.(),
   });
 
   const canSend = () => props.ready && (config().provider === "mock" || config().apiKey.length > 0);

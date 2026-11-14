@@ -56,6 +56,7 @@ export interface VibeChatOptions {
   apiKey: () => string | null;
   modelId: () => string;
   onOutput?: (line: string) => void;
+  onDevServer?: () => void;
   onTurnComplete?: () => void;
 }
 
@@ -115,7 +116,7 @@ export function createVibeChat(options: VibeChatOptions) {
         model: getModel(provider, apiKey ?? "", modelId),
         system: BUILD_SYSTEM_PROMPT,
         messages: [...baseMessages, ...planMessages],
-        tools: createContainerTools(container, options.onOutput),
+        tools: createContainerTools(container, options.onOutput, options.onDevServer),
         stopWhen: stepCountIs(8),
       });
       for await (const part of buildResult.fullStream) {
