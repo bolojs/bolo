@@ -227,16 +227,70 @@ const getEventListenersFixed = (emitterOrTarget: unknown, type: string | symbol)
   if (isEventTargetLike(emitterOrTarget)) {
     // Real browsers expose the internal listener list only to DevTools; there
     // is no portable read. Track addEventListener ourselves per target.
-    const registry = eventTargetListeners.get(emitterOrTarget as EventTarget);
+    const registry = registryFor(emitterOrTarget as EventTarget).listeners.get(
+      emitterOrTarget as EventTarget,
+    );
     return registry ? [...(registry.get(type) ?? [])] : [];
   }
   return unenvGetEventListeners(emitterOrTarget as never, type as never);
 };
 
-const eventTargetListeners = new WeakMap<EventTarget, Map<string | symbol, Function[]>>();
+/**
+ * The listener registry hangs off `EventTarget.prototype` (a non-enumerable
+ * symbol property) rather than a module-local WeakMap: the shim module can
+ * be instantiated in more than one realm (the page bundles one copy, the
+ * process worker imports another), and realms share the prototype object
+ * but not their globals — a registry keyed on either side's `globalThis`
+ * would be invisible to the other.
+ */
+const EVENT_TARGET_LISTENERS = Symbol.for("bolojs.events.eventTargetListeners");
+
+interface ListenerRegistry {
+  readonly listeners: WeakMap<EventTarget, Map<string | symbol, Function[]>>;
+  tracked: boolean;
+}
+
+const createListenerRegistry = (): ListenerRegistry => ({
+  listeners: new WeakMap<EventTarget, Map<string | symbol, Function[]>>(),
+  tracked: false,
+});
+
+const registryOn = (proto: object): ListenerRegistry | undefined =>
+  (proto as Record<symbol, ListenerRegistry | undefined>)[EVENT_TARGET_LISTENERS];
+
+/**
+ * The registry that owns `target`: walk the target's own prototype chain, so
+ * the registry comes from the realm that owns the target (the process
+ * worker's realm), not from the realm the reader function happens to run
+ * in. Falls back to this realm's prototype for targets that carry no
+ * registry at all.
+ */
+const registryFor = (target: EventTarget): ListenerRegistry => {
+  let proto: object | null = Object.getPrototypeOf(target);
+  while (proto) {
+    const found = registryOn(proto);
+    if (found) return found;
+    proto = Object.getPrototypeOf(proto);
+  }
+  return listenerRegistry();
+};
+
+const listenerRegistry = (): ListenerRegistry => {
+  const proto = EventTarget.prototype as unknown as Record<symbol, ListenerRegistry | undefined>;
+  const existing = proto[EVENT_TARGET_LISTENERS];
+  if (existing) return existing;
+  const created = createListenerRegistry();
+  Object.defineProperty(proto, EVENT_TARGET_LISTENERS, {
+    configurable: true,
+    enumerable: false,
+    value: created,
+    writable: true,
+  });
+  return created;
+};
+
 const originalAddEventListener = EventTarget.prototype.addEventListener;
 const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
-let listenersTracked = false;
 
 /**
  * Tracks EventTarget listener registration so `getEventListeners` can report
@@ -244,14 +298,16 @@ let listenersTracked = false;
  * realms that own their globals (process workers, harness page).
  */
 export const trackEventTargetListeners = (): void => {
-  if (listenersTracked) return;
-  listenersTracked = true;
+  const registry0 = listenerRegistry();
+  if (registry0.tracked) return;
+  registry0.tracked = true;
   EventTarget.prototype.addEventListener = function addEventListener(
     this: EventTarget,
     type: string,
     listener: EventListenerOrEventListenerObject | null,
     options?: boolean | AddEventListenerOptions,
   ) {
+    const eventTargetListeners = registryFor(this).listeners;
     let registry = eventTargetListeners.get(this);
     if (!registry) {
       registry = new Map();
@@ -277,6 +333,7 @@ export const trackEventTargetListeners = (): void => {
     listener: EventListenerOrEventListenerObject | null,
     options?: boolean | EventListenerOptions,
   ) {
+    const eventTargetListeners = registryFor(this).listeners;
     const registry = eventTargetListeners.get(this);
     const list = registry?.get(type);
     if (list) {
