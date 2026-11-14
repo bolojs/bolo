@@ -384,14 +384,15 @@ const bindings = {
       return () => Math.floor(performance.now() - started);
     })(),
   },
-  // Node's performance binding exposes performanceObserverCounts — a live
-  // {entryType: count} map of buffered entries. The perf_hooks shim derives
-  // the same numbers from the realm performance buffer.
+  // Node's performance binding exposes observerCounts — a live Uint32Array
+  // counting the active observers per native observer type ('gc', 'http',
+  // 'http2', 'net', 'dns'). The perf_hooks shim owns those counters.
   performance: {
+    get observerCounts() {
+      return globalThis.__browserContainers?.shims?.perf_hooks?.observerCounts ?? new Uint32Array(6);
+    },
     get performanceObserverCounts() {
-      return (
-        globalThis.__browserContainers?.shims?.perf_hooks?.performanceObserverCounts ?? {}
-      );
+      return globalThis.__browserContainers?.shims?.perf_hooks?.observerCounts ?? new Uint32Array(6);
     },
   },
   // js_stream: Node's binding wraps a JS-implemented stream for C++
@@ -403,6 +404,20 @@ const bindings = {
         this._externalStream = undefined;
       }
     },
+  },
+  // tty_wrap: Node's TTY binding. The vendored test only needs the
+  // constructor and isTTY predicate to exist so node:tty's WriteStream can
+  // be constructed; a browser has no file descriptors, so every fd is a TTY.
+  tty_wrap: {
+    TTY: class TTY {
+      constructor(fd) {
+        this.fd = fd;
+      }
+      setBlocking() { return 0; }
+      getWindowSize(size) { if (size) { size[0] = 80; size[1] = 24; } return 0; }
+      setRawMode() { return 0; }
+    },
+    isTTY: () => true,
   },
 };
 

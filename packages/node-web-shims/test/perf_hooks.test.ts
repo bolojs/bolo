@@ -25,10 +25,28 @@ describe("node-web-shims: perf_hooks", () => {
   it("observe() requires entryTypes or type", () => {
     const obs = new PerformanceObserver(() => {});
     expect(() => obs.observe({} as never)).toThrowError(/entryTypes.*type|type.*entryTypes/);
-    expect(() => obs.observe({ entryTypes: [] } as never)).toThrowError();
-    expect(() => obs.observe({ entryTypes: ["not-a-real-entry-type"] } as never)).toThrowError(
-      /invalid/i,
+    // Node v22 accepts an empty entryTypes array (the observer ends up
+    // watching nothing) and ignores entry types it does not know — it
+    // does not throw for either.
+    expect(() => obs.observe({ entryTypes: [] } as never)).not.toThrow();
+    expect(() => obs.observe({ entryTypes: ["not-a-real-entry-type"] } as never)).not.toThrow();
+    expect(() => obs.observe({ type: "not-a-real-entry-type" } as never)).not.toThrow();
+  });
+
+  it("observe() refuses entryTypes and type together", () => {
+    const obs = new PerformanceObserver(() => {});
+    expect(() => obs.observe({ entryTypes: ["mark"], type: "mark" } as never)).toThrowError(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_VALUE" }),
     );
+  });
+
+  it("observe() rejects a non-array entryTypes with ERR_INVALID_ARG_TYPE", () => {
+    const obs = new PerformanceObserver(() => {});
+    for (const bad of [1, null, {}, Infinity]) {
+      expect(() => obs.observe({ entryTypes: bad } as never)).toThrowError(
+        expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" }),
+      );
+    }
   });
 
   it("disconnect() and takeRecords() are safe no-ops before observe()", () => {

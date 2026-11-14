@@ -220,11 +220,12 @@ const runProcess = async (msg: ProcRunMessage) => {
     const lifetime = new Promise<void>((resolve) => {
       resolveLifetime = resolve;
     });
-    // A worker_threads thread carries a threadId; child_process spawns do
-    // not (they do not keep the process alive here — the child outlives the
-    // parent's own lifetime by design of this environment).
-    const isThread = spec.threadId !== undefined;
-    if (isThread) liveThreads.add(lifetime);
+    // A worker_threads thread carries a threadId; a child_process spawn does
+    // not. Both are ref'd handles in Node: the process stays alive until the
+    // child exits (so its 'exit' event still reaches the parent — the Node
+    // test suite leans on this when a test's last mustCall fires from a
+    // spawned child's completion).
+    liveThreads.add(lifetime);
     const wrapExit = (c: number) => {
       liveThreads.delete(lifetime);
       resolveLifetime?.();
@@ -523,9 +524,10 @@ const runProcess = async (msg: ProcRunMessage) => {
     await sleep(10);
     if (exited) return;
     if (hasRefedTimers()) continue;
-    // A live worker thread is a ref'd handle in Node — the process stays
-    // alive until it exits (so its 'exit' event still fires). Poll instead of
-    // awaiting the thread: the loop must keep running timers meanwhile.
+    // A live worker thread or child process is a ref'd handle in Node — the
+    // process stays alive until it exits (so its 'exit' event still fires).
+    // Poll instead of awaiting the handle: the loop must keep running timers
+    // meanwhile.
     if (liveThreads.size > 0) {
       await sleep(10);
       continue;
