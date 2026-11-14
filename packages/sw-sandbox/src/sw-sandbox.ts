@@ -164,6 +164,18 @@ export class SWSandbox {
     this.fetchHandlers.push(handler);
   }
 
+  /**
+   * Unregister a fetch handler previously passed to `onFetch`.
+   *
+   * A listening server registers one; when it closes, the handler must go
+   * away — otherwise the sandbox still reports a live handler and the
+   * hosting process never reaches its natural exit.
+   */
+  removeFetch(handler: FetchHandler): void {
+    const index = this.fetchHandlers.indexOf(handler);
+    if (index !== -1) this.fetchHandlers.splice(index, 1);
+  }
+
   /** Register a handler for synchronous syscalls arriving over `/__bolo_sync/`.
    * Handlers are tried in registration order; the first to return wins. */
   onSyncRequest(handler: SyncHandler): void {

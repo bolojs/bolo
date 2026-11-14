@@ -255,8 +255,19 @@ export const createProcessOps = (deps: ProcessOpsDeps): OpDispatch => {
   }
 
   if (sandbox) {
-    ops["sandbox.onFetch"] = (cb: (plain: PlainRequest) => Promise<PlainResponse>) => {
-      sandbox.onFetch(async (req) => plainToResponse(await cb(await requestToPlain(req))));
+    const fetchHandlersById = new Map<number, (req: Request) => Promise<Response>>();
+    ops["sandbox.onFetch"] = (id: number, cb: (plain: PlainRequest) => Promise<PlainResponse>) => {
+      const handler = async (req: Request) => plainToResponse(await cb(await requestToPlain(req)));
+      fetchHandlersById.set(id, handler);
+      sandbox.onFetch(handler);
+      return 0;
+    };
+    ops["sandbox.removeFetch"] = (id: number) => {
+      const handler = fetchHandlersById.get(id);
+      if (handler) {
+        sandbox.removeFetch(handler);
+        fetchHandlersById.delete(id);
+      }
       return 0;
     };
   }
