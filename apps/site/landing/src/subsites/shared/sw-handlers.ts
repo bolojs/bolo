@@ -29,15 +29,17 @@ export interface PreviewListener {
 }
 
 /**
- * Subscribe to the container's preview URL: fires immediately with the
- * "/__preview/" base (the runtime emits it once the preview server starts)
- * and again if a user server announces itself later.
+ * Subscribe to the container's preview URL when a server announces itself.
+ * Note: the runtime emits its initial "server-ready" (the "/__preview/"
+ * base) during boot() itself, before callers can attach a listener; stubs
+ * therefore leave the preview empty until a user server starts. WP2 wires
+ * the Vite template where the preview base serves an index.html.
  */
 export const observePreviewUrl = (
   container: BrowserContainer,
   onUrl: (url: string) => void,
 ): void => {
   container.on("server-ready", (_port, url) => {
-    onUrl(url);
+    onUrl(new URL(url, globalThis.location.origin).toString());
   });
 };
