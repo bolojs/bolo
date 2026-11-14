@@ -44,6 +44,18 @@ export interface PackageEntry {
   /** Per-package probe deadline override (ms) — packages whose honest bundling
    * + eval budget exceeds the global 60s default (e.g. webpack's WASM bundle). */
   timeoutMs?: number;
+  /**
+   * Install-time version pins, keyed by package name. The probe source keeps
+   * importing the bare specifier (`import ts from 'typescript'`) so the
+   * bundler resolves it against the installed tree, while the install step
+   * fetches the pinned version.
+   *
+   * Needed when the latest release no longer ships the API the probe
+   * exercises — e.g. `typescript@7` is the native Go port whose npm package
+   * exposes no JavaScript compiler API at all, so the JS-API probe must pin
+   * the 5.x line.
+   */
+  pin?: Record<string, string>;
 }
 
 export interface PackageMatrix {
@@ -121,11 +133,17 @@ export const bareSpecifierToInstall = (spec: string): string | undefined => {
 };
 
 /** Extracts every installable bare specifier imported by a probe source. */
-export const extractInstallSpecs = (source: string): string[] => {
+export const extractInstallSpecs = (source: string, pin?: Record<string, string>): string[] => {
   const specs = new Set<string>();
   for (const match of source.matchAll(IMPORT_SPECIFIER)) {
     const install = bareSpecifierToInstall(match[1]);
-    if (install) specs.add(install);
+    if (!install) continue;
+    // A pin wins over the specifier's own version: the matrix states the
+    // version the probe is written against, even when the source imports a
+    // plain (unpinned) bare specifier.
+    const { name } = specifierParts(install);
+    const pinned = pin?.[name];
+    specs.add(pinned ? `${name}@${pinned}` : install);
   }
   return [...specs];
 };
@@ -279,7 +297,7 @@ export class PackageMatrixRunner {
     else if (!this.harness.ready) await this.harness.boot();
 
     const source = buildProbeSource(pkg);
-    const specs = extractInstallSpecs(source);
+    const specs = extractInstallSpecs(source, pkg.pin);
     const path = `/probe/${pkg.name}.mjs`;
 
     if (specs.length > 0) {

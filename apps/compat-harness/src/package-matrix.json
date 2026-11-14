@@ -55,6 +55,7 @@
     {
       "name": "tsc",
       "class": "Build tool",
+      "pin": { "typescript": "5.9.3" },
       "source": "import tsDefault, * as tsNs from 'typescript';\ntry {\n  // typescript.js is a 9MB CJS bundle; bundler CJS-interop shapes vary, so\n  // accept the API on the namespace, the default export, or either .default.\n  const ts = tsNs.transpile ? tsNs : tsDefault?.transpile ? tsDefault : tsNs.default?.transpile ? tsNs.default : tsNs.default?.default;\n  const out = ts.transpile('let x: number = 1;');\n  if (typeof out !== 'string') throw new Error('transpile failed');\n  console.log('PASS');\n} catch (e) {\n  console.error(e instanceof Error ? e.stack || e.message : String(e));\n  process.exit(1);\n}"
     },
     {
