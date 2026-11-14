@@ -1,11 +1,11 @@
 ---
 import SubsiteLayout from '../layouts/SubsiteLayout.astro';
-import SubsiteApp from '../subsites/shared/SubsiteApp.tsx';
+import SandboxApp from '../subsites/sandbox/SandboxApp.tsx';
 
 const title = 'Node sandbox | bolo';
 const description = 'A terminal-first Node.js playground in your browser.';
 ---
 
 <SubsiteLayout title={title} description={description} accent="#2563eb">
-  <SubsiteApp client:only="solid-js" subsite="sandbox" />
+  <SandboxApp client:only="solid-js" />
 </SubsiteLayout>
