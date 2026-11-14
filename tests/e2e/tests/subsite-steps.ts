@@ -20,18 +20,18 @@ export default class SubsiteSteps {
 
   /**
    * Step: The subsite SW (longest-scope match for the page) is controlling it.
+   * The suite shares one persistent browser profile across specs, so a
+   * previously-registered SW (e.g. the root "/sw.js") can still be the
+   * controller right after navigation; poll until claim() hands control to
+   * the subsite worker.
    */
   @Step('The subsite service worker at <path> controls the page')
   async subsiteSwControls(path: string) {
-    await currentPage.waitForFunction(() => navigator.serviceWorker.controller !== null, {
-      timeout: 15000,
-    });
-    const scriptURL = await currentPage.evaluate(
-      () => navigator.serviceWorker.controller?.scriptURL ?? '',
+    await currentPage.waitForFunction(
+      (expected) => navigator.serviceWorker.controller?.scriptURL.endsWith(expected) ?? false,
+      path,
+      { timeout: 15000 },
     );
-    if (!scriptURL.endsWith(path)) {
-      throw new Error(`Expected controlling SW "${path}", got "${scriptURL}"`);
-    }
   }
 
   /**
