@@ -22,6 +22,6 @@ export const toVirtualPath = (path: string): string =>
 export const apiFetch = ({ method, path, headers, body }: ApiRequest): Promise<Response> =>
   fetch(toVirtualPath(path), {
     method,
-    headers,
+    ...(headers ? { headers } : {}),
     ...(body && method !== "GET" ? { body } : {}),
   });

@@ -43,10 +43,11 @@ const matchPath = (pattern: string, pathname: string): Record<string, string> | 
   if (patternParts.length !== pathParts.length) return null;
   const params: Record<string, string> = {};
   for (let i = 0; i < patternParts.length; i++) {
-    const part = patternParts[i];
+    const part = patternParts[i] ?? "";
+    const actual = pathParts[i] ?? "";
     if (part.startsWith(":")) {
-      params[part.slice(1)] = decodeURIComponent(pathParts[i]);
-    } else if (part !== pathParts[i]) {
+      params[part.slice(1)] = decodeURIComponent(actual);
+    } else if (part !== actual) {
       return null;
     }
   }
@@ -71,9 +72,7 @@ export class AppBackend {
     for (const name of files) {
       const file = `${this.routesDir.replace(/\/$/, "")}/${name}`;
       const source = await this.fs.readFile(file);
-      const blobUrl = URL.createObjectURL(
-        new Blob([source], { type: "text/javascript" }),
-      );
+      const blobUrl = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
       newBlobs.push(blobUrl);
       try {
         const mod = (await import(/* @vite-ignore */ blobUrl)) as {

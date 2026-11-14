@@ -5,13 +5,19 @@ import * as v from "valibot";
 import { getLogger } from "@bolojs/log/browser";
 import type { BrowserContainer } from "@bolojs/runtime";
 import type { SWSandbox } from "@bolojs/sandbox";
-import { bootSubsite } from "../shared/boot";
+import { bootSubsite, getBootedVfs } from "../shared/boot";
 import { installSwErrorTracking } from "../shared/sw-handlers";
 import Editor, { type EditorDocument } from "../ui/Editor";
 import SplitPane from "../ui/SplitPane";
 import { AppBackend, VIRTUAL_BASE, type BackendFs, type RouteSummary } from "./backend";
 import { apiFetch, toVirtualPath } from "./client";
 import { schemaForPath } from "./contract";
+import {
+  clearRouteSnapshot,
+  loadRouteSnapshot,
+  routeSnapshot,
+  saveRouteSnapshot,
+} from "./persistence";
 import { STARTER_PACKAGE_JSON, STARTER_ROUTES } from "./starter";
 
 const logger = getLogger(["bolo", "site-landing", "subsite", "app"]);
@@ -71,6 +77,7 @@ export default function AppSubsite() {
   const [response, setResponse] = createSignal<ResponseView>(emptyResponse);
 
   let container: BrowserContainer | undefined;
+  let routesDirPath: string | undefined;
   let backend: AppBackend | undefined;
   let applyTimer: ReturnType<typeof setTimeout> | undefined;
   let appliedTimer: ReturnType<typeof setTimeout> | undefined;
@@ -90,6 +97,9 @@ export default function AppSubsite() {
       setApplyState("saving");
       const list = await backend.reload();
       setRoutes(list);
+      if (container && routesDirPath) {
+        await saveRouteSnapshot(routeSnapshot(getBootedVfs(), routesDirPath));
+      }
       setApplyState("applied");
       clearTimeout(appliedTimer);
       appliedTimer = setTimeout(() => setApplyState("idle"), 1500);
@@ -107,6 +117,11 @@ export default function AppSubsite() {
     applyTimer = setTimeout(() => {
       void container?.fs.writeFile(path, contents).then(applyRoutes);
     }, 400);
+  };
+
+  const resetRoutes = async () => {
+    await clearRouteSnapshot();
+    globalThis.location.reload();
   };
 
   const selectRoute = (route: RouteSummary) => {
@@ -140,7 +155,7 @@ export default function AppSubsite() {
           const result = v.safeParse(schema, parsed);
           contract = result.success
             ? { checked: true, ok: true }
-            : { checked: true, ok: false, issue: v.summarize(result.issues)[0]?.message };
+            : { checked: true, ok: false, issue: v.summarize(result.issues) };
         }
       } catch {
         // Not JSON: show the raw body, no contract check.
@@ -175,9 +190,14 @@ export default function AppSubsite() {
         // persist across reloads through the VfsBus OPFS layer.
         const fs = container.fs as unknown as BackendFs;
         const routesDir = `${container.workdir}/routes`;
-        if (!(await fs.exists(routesDir))) {
-          await fs.mkdir(routesDir, { recursive: true });
-          await fs.writeFile(`${container.workdir}/package.json`, STARTER_PACKAGE_JSON);
+        routesDirPath = routesDir;
+        const saved = await loadRouteSnapshot();
+        await fs.writeFile(`${container.workdir}/package.json`, STARTER_PACKAGE_JSON);
+        if (saved) {
+          for (const [path, contents] of Object.entries(saved)) {
+            await fs.writeFile(path, contents);
+          }
+        } else {
           for (const route of STARTER_ROUTES) {
             await fs.writeFile(`${container.workdir}/${route.file}`, route.contents);
           }
@@ -207,6 +227,7 @@ export default function AppSubsite() {
         logger.error("app subsite boot failed", {
           error: err instanceof Error ? err.message : String(err),
         });
+        console.error("[app] boot failed", err);
         setBootState("error");
       }
     })();
@@ -236,9 +257,16 @@ export default function AppSubsite() {
             </li>
           ))}
         </ul>
+        <button
+          type="button"
+          data-testid="reset-routes"
+          onClick={() => void resetRoutes()}
+          class="mt-3 rounded-lg border border-border px-2 py-1 text-[11px] text-muted transition-colors hover:text-[var(--fg)]"
+        >
+          Reset to starter routes
+        </button>
         <p class="mt-3 px-2 text-[11px] leading-relaxed text-muted">
-          Edit a handler, then hit send. Saves apply live through the service worker,
-          no restart.
+          Edit a handler, then hit send. Saves apply live through the service worker, no restart.
         </p>
       </div>
     </div>
@@ -364,9 +392,7 @@ export default function AppSubsite() {
                   documents={documents()}
                   activePath={activePath()}
                   onSelect={setActivePath}
-                  onClose={(path) =>
-                    setDocuments((docs) => docs.filter((d) => d.path !== path))
-                  }
+                  onClose={(path) => setDocuments((docs) => docs.filter((d) => d.path !== path))}
                   onChange={handleEditorChange}
                 />
               }
