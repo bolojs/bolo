@@ -22,12 +22,14 @@ function initSW(swGlobal) {
     swGlobal.addEventListener("fetch", (event) => {
         const url = new URL(event.request.url);
         const isSync = url.pathname.includes("/__bolo_sync/");
-        // Intercept the vite preview prefix (same origin), the virtual sandbox
+        // Intercept the vite preview prefix (same origin), the Next.js dev
+        // server prefix (same origin), the virtual sandbox
         // hostname (cross-origin user servers like Hono/Express), and the sync
         // channel prefix used by process workers for synchronous syscalls
         // (sync-XHR fallback when SharedArrayBuffer is unavailable).
         if (!isSync &&
             !url.pathname.startsWith("/__preview/") &&
+            !url.pathname.startsWith("/__next/") &&
             !url.pathname.startsWith("/__virtual__/") &&
             url.hostname !== "sandbox.local") {
             return;

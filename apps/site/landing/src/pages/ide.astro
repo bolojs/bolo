@@ -1,11 +1,11 @@
 ---
 import SubsiteLayout from '../layouts/SubsiteLayout.astro';
-import SubsiteApp from '../subsites/shared/SubsiteApp.tsx';
+import IdeApp from '../subsites/ide/IdeApp.tsx';
 
 const title = 'IDE | bolo';
 const description = 'File tree, editor, terminal and live preview, all in your browser.';
 ---
 
 <SubsiteLayout title={title} description={description} accent="#9333ea">
-  <SubsiteApp client:only="solid-js" subsite="ide" />
+  <IdeApp client:only="solid-js" />
 </SubsiteLayout>

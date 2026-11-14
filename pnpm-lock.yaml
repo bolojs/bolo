@@ -284,6 +284,9 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.9
         version: 0.9.9(prettier@3.9.5)(typescript@6.0.3)
+      '@bolojs/next-server':
+        specifier: workspace:*
+        version: link:../../../packages/next-server
       '@bolojs/vite-server':
         specifier: workspace:*
         version: link:../../../packages/vite-server

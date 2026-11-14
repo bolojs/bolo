@@ -246,7 +246,12 @@ export class RuntimeBuilder {
             headers,
           });
         });
-        events.emit("server-ready", 3000, previewBase);
+        // Defer the initial emit past a macrotask: boot() callers attach their
+        // "server-ready" listener only after build() resolves (a microtask
+        // chain), so a synchronous emit here would be lost to every post-boot
+        // listener and the preview URL would stay unset until a user server
+        // announces itself. A 0ms timer fires after boot()'s awaiters run.
+        setTimeout(() => events.emit("server-ready", 3000, previewBase), 0);
       }
 
       const nextBase = "/__next/";

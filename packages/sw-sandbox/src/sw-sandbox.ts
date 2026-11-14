@@ -30,6 +30,22 @@ export type SyncHandler = (
  */
 const HANDSHAKE_TIMEOUT_MS = 15_000;
 
+const waitForActive = async (registration: ServiceWorkerRegistration): Promise<void> => {
+  if (registration.active) return;
+  const worker = registration.installing ?? registration.waiting;
+  if (!worker) return;
+  await new Promise<void>((resolve) => {
+    const onChange = () => {
+      if (worker.state === "activated" || worker.state === "redundant") {
+        worker.removeEventListener("statechange", onChange);
+        resolve();
+      }
+    };
+    worker.addEventListener("statechange", onChange);
+    onChange();
+  });
+};
+
 export class SWSandbox {
   private origin: string;
   private swPath: string;
@@ -61,8 +77,11 @@ export class SWSandbox {
     // derived scope is "/" — same as today; for "/demo/sw.js" it becomes
     // "/demo/" — required when mounted under a sub-path.
     const scope = this.swPath.slice(0, this.swPath.lastIndexOf("/") + 1);
-    await navigator.serviceWorker.register(this.swPath, { scope });
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.register(this.swPath, { scope });
+    // Not `serviceWorker.ready`: that resolves the registration matching the
+    // PAGE's own scope, which is a different (longer-scoped) registration when
+    // a page under "/ide/" pairs with the root "/sw.js" worker.
+    await waitForActive(registration);
 
     const channel = new MessageChannel();
     this.messagePort = channel.port1;
