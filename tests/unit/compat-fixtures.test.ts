@@ -9,7 +9,12 @@ const nodeTests = join(harnessDir, "node-tests");
 
 describe("vendored node-tests support tree", () => {
   it("ships the common helpers tests require", () => {
-    for (const file of ["tmpdir.js", "arraystream.js", "fixtures.js"]) {
+    for (const file of [
+      "tmpdir.js",
+      "arraystream.js",
+      "fixtures.js",
+      "process-exit-code-cases.js",
+    ]) {
       expect(existsSync(join(nodeTests, "test/common", file)), file).toBe(true);
     }
   });
@@ -21,7 +26,6 @@ describe("vendored node-tests support tree", () => {
       "sample.png",
       "cjs-module-wrap.js",
       "cjs-module-wrapper.js",
-      "process-exit-code-cases.js",
       "utf8_test_text.txt",
       "es-modules/test-esm-ok.mjs",
       "es-modules/noext",
