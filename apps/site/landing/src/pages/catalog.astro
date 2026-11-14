@@ -1,0 +1,159 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'Catalog | bolo';
+const description =
+  'Four things you can build on bolo, all running in the browser: an IDE, a Node sandbox, a full-stack app and an AI vibe-coding sandbox.';
+
+interface UseCase {
+  href: string;
+  name: string;
+  tagline: string;
+  detail: string;
+  inspiredBy: string;
+  status: 'live' | 'soon';
+}
+
+const useCases: UseCase[] = [
+  {
+    href: '/ide',
+    name: 'IDE',
+    tagline: 'File tree, editor, terminal and live preview.',
+    detail: 'Open a Vite or Next.js project and run it entirely client-side, StackBlitz style.',
+    inspiredBy: 'StackBlitz',
+    status: 'soon',
+  },
+  {
+    href: '/sandbox',
+    name: 'Node sandbox',
+    tagline: 'A terminal-first Node.js playground.',
+    detail: 'Run scripts, a REPL and npm install with no server behind it.',
+    inspiredBy: 'justbash.dev',
+    status: 'soon',
+  },
+  {
+    href: '/app',
+    name: 'Full-stack app',
+    tagline: 'Frontend and backend, both in your tab.',
+    detail: 'An API client whose routes are served by a virtual server through a service worker.',
+    inspiredBy: 'Postman, Data Studio, dits',
+    status: 'soon',
+  },
+  {
+    href: '/vibe',
+    name: 'Vibe coding',
+    tagline: 'Chat with an LLM that drives the sandbox.',
+    detail: 'The model writes files, runs commands and previews the result. Bring your own key.',
+    inspiredBy: 'bolt.diy, bolt.new, v0',
+    status: 'soon',
+  },
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="catalog container" aria-labelledby="catalog-title">
+    <header class="catalog-head">
+      <h1 id="catalog-title">Catalog</h1>
+      <p class="lead">Four ways to use bolo. Everything runs in your browser, with zero server dependency.</p>
+    </header>
+
+    <ul class="catalog-grid">
+      {
+        useCases.map((u) => (
+          <li>
+            <a class="card" href={u.href} data-use-case={u.href.slice(1)}>
+              <span class="card-meta">
+                <span class="card-path">{u.href}</span>
+                {u.status === 'soon' && <span class="badge">In progress</span>}
+              </span>
+              <h2>{u.name}</h2>
+              <p class="card-tagline">{u.tagline}</p>
+              <p class="card-detail">{u.detail}</p>
+              <span class="card-foot">Inspired by {u.inspiredBy}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .catalog {
+    padding-block: 3rem 5rem;
+  }
+  .catalog-head h1 {
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+  .lead {
+    color: var(--muted);
+    max-width: 52ch;
+    font-size: 1.125rem;
+    margin-bottom: 2.5rem;
+  }
+  .catalog-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  @media (min-width: 720px) {
+    .catalog-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 100%;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    color: var(--fg);
+    text-decoration: none;
+    transition: border-color 150ms;
+  }
+  .card:hover,
+  .card:focus-visible {
+    border-color: var(--fg);
+    text-decoration: none;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .badge {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.125rem 0.625rem;
+  }
+  .card h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .card-tagline {
+    font-weight: 500;
+  }
+  .card-detail,
+  .card-foot {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+  .card-foot {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    font-size: 0.8125rem;
+  }
+</style>
