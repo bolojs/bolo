@@ -1,7 +1,11 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { SWSandbox } from "@bolojs/sandbox";
 import * as nodeWebShims from "@bolojs/node-web-shims";
-import { installUnhandledRejectionHandler } from "@bolojs/node-web-shims";
+import {
+  installUnhandledRejectionHandler,
+  createDgramShim,
+  createTlsShim,
+} from "@bolojs/node-web-shims";
 import { createFsShim } from "./fs-shim.js";
 import { createHttpShim } from "./http-shim.js";
 import { createNetShim } from "./net-shim.js";
@@ -21,6 +25,9 @@ import {
 import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
 import { getSystemErrorName } from "./errno.js";
+import { resolveBackend, registration } from "./backend-registry.js";
+import { createLoopbackDgramBackend } from "./dgram-backend.js";
+import type { DgramSocketBackend, TlsBackend } from "@bolojs/node-web-shims";
 
 interface WriteSink {
   write: (data: string) => unknown;
@@ -158,12 +165,18 @@ export interface StreamBackend {
   isIP(input: string): number;
 }
 
-export type DgramBackend = (deps: BackendDeps) => {
+/**
+ * The dgram capability seam. A host registers a factory; each
+ * `dgram.createSocket()` call gets a fresh backend socket handle.
+ */
+export type DgramBackend = (deps: BackendDeps) => DgramBackendFactory;
+
+export interface DgramBackendFactory {
   createSocket(
     type: "udp4" | "udp6",
     callback?: (msg: Uint8Array, rinfo: { address: string; port: number }) => void,
-  ): unknown;
-};
+  ): DgramSocketBackend;
+}
 export type WorkerThreadsBackend = (deps: BackendDeps) => unknown;
 export type NativeAddonLoader = (modulePath: string, vfs: VfsBus) => unknown;
 
@@ -198,7 +211,7 @@ export interface LiveShimRegistryOptions {
   // Extension points
   readonly netBackend?: (deps: BackendDeps) => StreamBackend;
   readonly dgramBackend?: DgramBackend;
-  readonly tlsBackend?: (deps: BackendDeps) => StreamBackend;
+  readonly tlsBackend?: (deps: BackendDeps) => TlsBackend;
   readonly workerThreadsBackend?: WorkerThreadsBackend;
   readonly nativeAddonLoader?: NativeAddonLoader;
 }
@@ -317,11 +330,38 @@ export const createLiveShimRegistry = (
     promise: unknown,
   ) => void);
 
-  if (options.dgramBackend) {
-    registry.dgram = options.dgramBackend({ vfs: options.vfs, sandbox: options.sandbox });
+  const backendDeps: BackendDeps = { vfs: options.vfs, sandbox: options.sandbox };
+
+  // Seam resolution is declarative: an ordered candidate list, first present
+  // candidate wins (see backend-registry.ts). The explicit host-provided
+  // backend always outranks the built-in skeleton.
+  // Dgram precedence: host backend, then the in-realm loopback backend
+  // (the node:dgram equivalent of net's LoopbackTransport). Without any
+  // backend the honest skeleton stays (send reports
+  // ERR_BOL_UNSUPPORTED_DGRAM_BACKEND through the callback).
+  const dgramResolved = resolveBackend(
+    [
+      options.dgramBackend ? registration("host-dgram", options.dgramBackend) : undefined,
+      registration("dgram-loopback", () => createLoopbackDgramBackend()),
+    ],
+    backendDeps,
+  );
+  if (dgramResolved) {
+    const factory = dgramResolved.backend;
+    registry.dgram = createDgramShim({
+      createBackend: (type) => factory.createSocket(type),
+    });
   }
-  if (options.tlsBackend) {
-    registry.tls = options.tlsBackend({ vfs: options.vfs, sandbox: options.sandbox });
+
+  // TLS precedence: host backend only. TLS over an arbitrary byte
+  // transport has no Web API equivalent, so without a backend the honest
+  // skeleton stays (connect throws ERR_BOL_UNSUPPORTED_TLS_BACKEND).
+  const tlsResolved = resolveBackend(
+    [options.tlsBackend ? registration("host-tls", options.tlsBackend) : undefined],
+    backendDeps,
+  );
+  if (tlsResolved) {
+    registry.tls = createTlsShim({ backend: tlsResolved.backend });
   }
   if (options.workerThreadsBackend) {
     registry.worker_threads = options.workerThreadsBackend({
@@ -333,12 +373,25 @@ export const createLiveShimRegistry = (
   const http = createHttpShim(options.sandbox, { onPortEvent: options.onPortEvent });
   registry.http = http;
   registry.https = http; // https delegates to http in browser context
-  registry.net = options.netBackend
-    ? options.netBackend({ vfs: options.vfs, sandbox: options.sandbox })
-    : createNetShim(options.sandbox, {
-        tcpRelay: options.tcpRelay,
-        onPortEvent: options.onPortEvent,
-      });
+  // Net precedence, made explicit and single-sourced:
+  //   1. host-registered netBackend
+  //   2. tcpRelay-derived transport (inside createNetShim)
+  //   3. in-process LoopbackTransport (inside createNetShim)
+  const netResolved = resolveBackend(
+    [
+      options.netBackend ? registration("host-net", options.netBackend) : undefined,
+      // The relay-vs-loopback choice lives inside createNetShim: a configured
+      // `tcpRelay` yields a WebSocketTransport, otherwise LoopbackTransport.
+      registration(options.tcpRelay?.url ? "tcp-relay" : "loopback", () =>
+        createNetShim(options.sandbox, {
+          tcpRelay: options.tcpRelay,
+          onPortEvent: options.onPortEvent,
+        }),
+      ),
+    ],
+    backendDeps,
+  );
+  registry.net = netResolved?.backend;
 
   registry.module = createModuleShim({
     vfs: options.vfs,

@@ -135,6 +135,45 @@ export interface SpawnedThreadHandle {
  */
 const BUNDLE_TIMEOUT_MS = 30_000;
 
+/**
+ * Bundle cache for `spawnThreadProcess` — `child_process.spawnSync` of a
+ * node script re-bundles the same entry on every call (Node's own test
+ * suite spawns a script dozens of times), and each rolldown pass costs
+ * ~1.3s of main-thread time. Keyed by resolved filename; invalidated when
+ * the file's mtime changes so edits after the first spawn still take.
+ */
+interface CachedBundle {
+  code: string;
+  mtimeMs: number;
+}
+const bundleCache = new Map<string, CachedBundle>();
+
+const mtimeOf = (vfs: VfsBus, path: string): number => {
+  try {
+    return vfs.hot.statSync(path).mtimeMs ?? 0;
+  } catch {
+    return -1;
+  }
+};
+
+const bundleWithCache = async (
+  vfs: VfsBus,
+  filename: string,
+  cwd: string,
+): Promise<{ code: string }> => {
+  const mtime = mtimeOf(vfs, filename);
+  const cached = bundleCache.get(filename);
+  if (cached && cached.mtimeMs === mtime) return { code: cached.code };
+  const { code } = await bundleEntry(filename, {
+    vfs,
+    cwd,
+    getShim: (builtin) =>
+      globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
+  });
+  bundleCache.set(filename, { code, mtimeMs: mtime });
+  return { code };
+};
+
 export class ShellService {
   private deps: ShellServiceDeps;
   private cwd: string;
@@ -471,12 +510,7 @@ export class ShellService {
       filename = "<worker eval>";
     } else {
       filename = spec.filename ? this.resolvePath(spec.filename) : "<worker>";
-      const bundle = await bundleEntry(filename, {
-        vfs: this.deps.vfs,
-        cwd: spec.cwd ?? this.cwd,
-        getShim: (builtin) =>
-          globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
-      });
+      const bundle = await bundleWithCache(this.deps.vfs, filename, spec.cwd ?? this.cwd);
       code = bundle.code;
     }
 

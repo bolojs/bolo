@@ -1,10 +1,4 @@
 {
-  "test/parallel/test-dgram-send-callback-buffer-empty-address.js": {
-    "lane": "B",
-    "reason": "UDP send callback semantics need a real socket backend; the skeleton can only report unsupported",
-    "location": "packages/node-web-shims/src/dgram.ts",
-    "remediation": "register a dgramBackend via createLiveShimRegistry (UDP has no Web API equivalent; needs a relay)"
-  },
   "test/parallel/test-dns-set-default-order.js": {
     "lane": "C",
     "reason": "dns shim resolves via DoH, not internalBinding('cares_wrap'), so the test's getaddrinfo monkey-patch is never invoked; setDefaultResultOrder also performs no argument validation",
@@ -29,24 +23,6 @@
     "location": "packages/node-web-shims/src/inspector.ts",
     "remediation": "none browser-faithful: no V8 debug port can listen in a browser"
   },
-  "test/parallel/test-module-wrap.js": {
-    "lane": "B",
-    "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
-    "location": "packages/node-runtime-shims/src/module-shim.ts",
-    "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
-  },
-  "test/parallel/test-module-wrapper.js": {
-    "lane": "B",
-    "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
-    "location": "packages/node-runtime-shims/src/module-shim.ts",
-    "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
-  },
-  "test/parallel/test-net-connect-buffer.js": {
-    "lane": "B",
-    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend); in-process loopback connect times out in-container",
-    "location": "packages/node-runtime-shims/src/net-shim.ts",
-    "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-  },
   "test/parallel/test-os-checked-function.js": {
     "lane": "C",
     "reason": "unenv os.homedir is a pure JS stub that never consults internalBinding('os'), so the test's getHomeDirectory monkey-patch is never invoked (no faithful os binding to expose)",
@@ -64,18 +40,6 @@
     "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
     "location": "packages/node-web-shims/src/timers_promises.ts",
     "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
-  },
-  "test/parallel/test-timers-socket-timeout-removes-other-socket-unref-timer.js": {
-    "lane": "B",
-    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
-    "location": "packages/node-runtime-shims/src/net-shim.ts",
-    "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-  },
-  "test/parallel/test-tls-legacy-deprecated.js": {
-    "lane": "B",
-    "reason": "no default tls backend: TLS over TCP is pluggable-only and connect() throws ERR_BOL_UNSUPPORTED_TLS_BACKEND",
-    "location": "packages/node-web-shims/src/tls.ts",
-    "remediation": "register a tlsBackend via createLiveShimRegistry (TLS over an arbitrary transport has no Web API equivalent)"
   },
   "test/parallel/test-tls-ticket-12.js": {
     "lane": "B",

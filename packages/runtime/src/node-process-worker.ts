@@ -287,7 +287,10 @@ const runProcess = async (msg: ProcRunMessage) => {
     xhrUrl: msg.xhrUrl,
     sab: msg.sab,
     postMessage: (m, _transfer) => post(m),
-    timeoutMs: 30000,
+    // Default ceiling: a sync call can legitimately run for minutes
+    // (spawnSync of a node script re-bundles the child on the main thread).
+    // The old hard-coded 30s killed long spawnSync chains mid-run with no
+    // stderr, indistinguishable from a hang.
   });
   void caller;
 

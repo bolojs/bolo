@@ -93,6 +93,19 @@ const describeReceived = (value: unknown): string => {
   return ` Received type ${typeof value} (${shown})`;
 };
 
+// Node's value-only rendering for the exit-code messages: "true", "2n",
+// "2.1", "an instance of Object" — the type is already spelled out in the
+// surrounding sentence, so the value is printed bare.
+const formatReceivedValue = (value: unknown): string => {
+  if (value === null) return "null";
+  if (typeof value === "object") {
+    const name = (value as object).constructor?.name;
+    return name ? `an instance of ${name}` : "an instance of Object";
+  }
+  if (typeof value === "bigint") return `${value}n`;
+  return String(value);
+};
+
 // Named `process` on purpose: V8's "Cannot delete property" message uses the
 // constructor name, and Node prints `#<process>`.
 const ProcessShim = class process extends EventEmitter {};
@@ -214,15 +227,19 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
   };
 
   // `process.exitCode` accepts only integer-ish values (or a numeric string);
-  // anything else throws ERR_INVALID_ARG_TYPE like Node.
+  // anything else throws like Node — ERR_INVALID_ARG_TYPE for non-numbers,
+  // ERR_OUT_OF_RANGE for non-integral numbers (Node's
+  // internal/process/per_thread.js: validateNumber then validateInteger).
   let exitCode: number | undefined;
   const validateExitCode = (code: unknown): number | undefined => {
     if (code === undefined || code === null) return undefined;
     if (typeof code === "number") {
       if (!Number.isInteger(code)) {
         throw Object.assign(
-          new TypeError(`The "code" argument must be an integer. Received ${String(code)}`),
-          { code: "ERR_INVALID_ARG_TYPE" },
+          new TypeError(
+            `The value of "code" is out of range. It must be an integer. Received ${formatReceivedValue(code)}`,
+          ),
+          { code: "ERR_OUT_OF_RANGE" },
         );
       }
       return code;
@@ -231,14 +248,26 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
       const trimmed = code.trim();
       if (!/^[+-]?\d+$/.test(trimmed)) {
         throw Object.assign(
-          new TypeError(`The "code" argument must be an integer. Received type string ('${code}')`),
+          new TypeError(
+            `The "code" argument must be of type number. Received type string ('${code}')`,
+          ),
           { code: "ERR_INVALID_ARG_TYPE" },
         );
       }
       return Number(trimmed);
     }
+    if (typeof code === "object") {
+      throw Object.assign(
+        new TypeError(
+          `The "code" argument must be of type number. Received ${formatReceivedValue(code)}`,
+        ),
+        { code: "ERR_INVALID_ARG_TYPE" },
+      );
+    }
     throw Object.assign(
-      new TypeError(`The "code" argument must be an integer. Received${describeReceived(code)}`),
+      new TypeError(
+        `The "code" argument must be of type number. Received type ${typeof code} (${formatReceivedValue(code)})`,
+      ),
       { code: "ERR_INVALID_ARG_TYPE" },
     );
   };

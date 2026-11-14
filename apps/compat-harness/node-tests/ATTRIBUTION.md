@@ -13,6 +13,9 @@ Vendored files:
   `require('../common/<name>')`.
 - `test/parallel/test-tls-ticket.js` — shared helper required by
   `test-tls-ticket-12.js`.
+- `test/fixtures/not-main-module.js` — required by the vendored
+  `cjs-module-wrap.js`/`cjs-module-wrapper.js` fixtures that
+  `test-module-wrap.js`/`test-module-wrapper.js` spawn.
 - `test/parallel/test-path-*.js` — manifest test files vendored so they run
   without a network fetch (`runner.ts` falls back to raw.githubusercontent.com
   for manifest files not vendored here).

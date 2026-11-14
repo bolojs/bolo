@@ -52,6 +52,39 @@ export interface AddressInfo {
 
 export type MessageListener = (msg: Uint8Array, rinfo: RemoteInfo) => void;
 
+/**
+ * The seam a host implements to give `node:dgram` real datagram
+ * capability. `node:dgram` has no Web API equivalent, so without a
+ * backend the shim keeps its honest skeleton (send() reports
+ * ERR_BOL_UNSUPPORTED_DGRAM_BACKEND through the callback).
+ *
+ * The backend owns the socket lifecycle; the shim owns Node's argument
+ * validation, event ordering and error shapes.
+ */
+export interface DgramSocketBackend {
+  /** Bind the socket; the callback receives an error or null. */
+  bind(port: number, address: string, callback: (error: Error | null) => void): void;
+  /**
+   * Send one datagram. Node's send callback is `(err, bytes)` — the byte
+   * count of the datagram actually written.
+   */
+  send(
+    msg: Uint8Array,
+    port: number,
+    address: string,
+    callback: (error: Error | null, bytes?: number) => void,
+  ): void;
+  /** Release the socket; the callback fires once the socket is closed. */
+  close(callback: () => void): void;
+  /** The bound address; throws when the socket is not bound. */
+  address(): AddressInfo;
+  /**
+   * Deliver an inbound datagram. The shim turns this into the socket's
+   * 'message' event (payload + rinfo).
+   */
+  onMessage(listener: (msg: Uint8Array, rinfo: RemoteInfo) => void): void;
+}
+
 const BAD_TYPE_MESSAGE = "Bad socket type specified. Valid types are: udp4, udp6";
 
 const defaultAddress = (type: SocketType): string => (type === "udp4" ? "0.0.0.0" : "::");
@@ -63,10 +96,12 @@ export class Socket extends EventEmitter {
   #info: AddressInfo | undefined;
   #abortSignal: AbortSignal | undefined;
   #onAborted: (() => void) | undefined;
+  #backend: DgramSocketBackend | undefined;
 
-  constructor(type: SocketType, options?: SocketOptions) {
+  constructor(type: SocketType, options?: SocketOptions, backend?: DgramSocketBackend) {
     super();
     this.#type = type;
+    this.#backend = backend;
     const signal = options?.signal;
     if (signal) {
       this.#abortSignal = signal;
@@ -107,13 +142,30 @@ export class Socket extends EventEmitter {
       throw nodeError("ERR_SOCKET_BAD_PORT", `Port should be >= 0 and < 65536. Received ${port_}`);
     }
 
+    const address_ = address ?? defaultAddress(this.#type);
     this.#bound = true;
     this.#closed = false;
     this.#info = {
-      address: address ?? defaultAddress(this.#type),
+      address: address_,
       family: this.#type === "udp4" ? "IPv4" : "IPv6",
       port: port_,
     };
+
+    if (this.#backend) {
+      this.#backend.onMessage((msg, rinfo) => {
+        this.emit("message", msg, rinfo);
+      });
+      this.#backend.bind(port_, address_, (error) => {
+        if (error) {
+          this.#bound = false;
+          this.#info = undefined;
+          this.emit("error", error);
+        } else {
+          this.emit("listening");
+        }
+      });
+      return this;
+    }
 
     queueMicrotask(() => {
       this.emit("listening");
@@ -135,6 +187,12 @@ export class Socket extends EventEmitter {
     if (this.#abortSignal && this.#onAborted) {
       this.#abortSignal.removeEventListener("abort", this.#onAborted);
     }
+    if (this.#backend) {
+      this.#backend.close(() => {
+        this.emit("close");
+      });
+      return this;
+    }
     queueMicrotask(() => {
       this.emit("close");
     });
@@ -144,6 +202,9 @@ export class Socket extends EventEmitter {
   address(): AddressInfo {
     if (!this.#bound || !this.#info) {
       throw nodeError("ERR_SOCKET_DGRAM_NOT_CONNECTED", "Not connected");
+    }
+    if (this.#backend) {
+      return this.#backend.address();
     }
     return { ...this.#info };
   }
@@ -156,12 +217,12 @@ export class Socket extends EventEmitter {
    */
   send(
     msg: unknown,
-    port?: number | (() => void) | ((error: Error | null) => void),
-    address?: string | ((error: Error | null) => void),
-    callback?: (error: Error | null) => void,
+    port?: number | (() => void) | ((error: Error | null, bytes?: number) => void),
+    address?: string | ((error: Error | null, bytes?: number) => void),
+    callback?: (error: Error | null, bytes?: number) => void,
   ): void {
     if (typeof port === "function") {
-      callback = port as (error: Error | null) => void;
+      callback = port as (error: Error | null, bytes?: number) => void;
       port = undefined;
     }
     if (typeof address === "function") {
@@ -186,6 +247,20 @@ export class Socket extends EventEmitter {
     }
 
     const error = notImplemented("dgram.Socket.send()");
+    if (this.#backend) {
+      const payload =
+        typeof msg === "string"
+          ? new TextEncoder().encode(msg)
+          : Uint8Array.from(msg as ArrayLike<number>);
+      this.#backend.send(payload, port_, address ?? defaultAddress(this.#type), (err, bytes) => {
+        if (callback) {
+          callback(err, err ? undefined : (bytes ?? payload.byteLength));
+        } else if (err) {
+          this.emit("error", err);
+        }
+      });
+      return;
+    }
     queueMicrotask(() => {
       if (callback) {
         callback(error);
@@ -253,6 +328,7 @@ export class Socket extends EventEmitter {
 export const createSocket = (
   typeOrOptions: SocketType | SocketOptions,
   listener?: MessageListener,
+  backend?: DgramSocketBackend,
 ): Socket => {
   let type: SocketType | undefined;
   let options: SocketOptions | undefined;
@@ -268,7 +344,7 @@ export const createSocket = (
     throw nodeError("ERR_SOCKET_BAD_TYPE", BAD_TYPE_MESSAGE);
   }
 
-  const socket = new Socket(type, options);
+  const socket = new Socket(type, options, backend);
   if (listener) socket.on("message", listener);
   return socket;
 };
@@ -277,12 +353,40 @@ export const _createSocketHandle = (): void => {
   throw notImplemented("dgram._createSocketHandle()");
 };
 
+/**
+ * A `dgram` shim bound to a backend factory. The factory is invoked per
+ * `createSocket()` call so each socket gets its own backend handle.
+ */
+export interface DgramShimOptions {
+  readonly createBackend?: (type: SocketType) => DgramSocketBackend;
+}
+
 const dgram = {
   Socket,
   _createSocketHandle,
   createSocket,
 };
 
-export const createDgramShim = (): typeof dgram => dgram;
+export const createDgramShim = (options?: DgramShimOptions): typeof dgram => {
+  if (!options?.createBackend) return dgram;
+  return {
+    ...dgram,
+    createSocket: (
+      typeOrOptions: SocketType | SocketOptions,
+      listener?: MessageListener,
+    ): Socket => {
+      let type: SocketType | undefined;
+      if (typeof typeOrOptions === "string") {
+        type = typeOrOptions;
+      } else if (typeOrOptions !== null && typeof typeOrOptions === "object") {
+        type = typeOrOptions.type;
+      }
+      if (type !== "udp4" && type !== "udp6") {
+        throw nodeError("ERR_SOCKET_BAD_TYPE", BAD_TYPE_MESSAGE);
+      }
+      return createSocket(typeOrOptions, listener, options.createBackend!(type));
+    },
+  };
+};
 
 export default createDgramShim();

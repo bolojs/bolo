@@ -88,14 +88,25 @@ interface SabCallerOptions {
   sab: SharedArrayBuffer;
   /** Delivers `{ seq, payload }` to the main thread (worker postMessage). */
   postRequest: (seq: number, payload: Uint8Array) => void;
-  /** Max ms to block waiting for a response. Default 30000. */
+  /** Max ms to block waiting for a response. Default {@link DEFAULT_SYNC_TIMEOUT_MS}. */
   timeoutMs?: number;
 }
+
+/**
+ * Default ceiling for one synchronous cross-realm call.
+ *
+ * A sync call can legitimately take minutes: `child_process.spawnSync` of a
+ * node script runs on the main thread and re-bundles the child each time, so
+ * a script that spawns a dozen children serially spends tens of seconds
+ * parked in a single call. The old 30s ceiling killed those callers with a
+ * bare SyncCallError (no stderr), which reads exactly like a hang.
+ */
+const DEFAULT_SYNC_TIMEOUT_MS = 10 * 60_000;
 
 const createSabCaller = (opts: SabCallerOptions): SyncCaller & { seq: number } => {
   const i32 = new Int32Array(opts.sab);
   const u8 = new Uint8Array(opts.sab);
-  const timeout = opts.timeoutMs ?? 30000;
+  const timeout = opts.timeoutMs ?? DEFAULT_SYNC_TIMEOUT_MS;
   const state = {
     seq: 0,
     call(payload: Uint8Array): Uint8Array {
@@ -187,11 +198,17 @@ export type SyncRequestHandler = (payload: Uint8Array) => Promise<Uint8Array> | 
 interface SyncProcess {
   handler: SyncRequestHandler;
   sab?: SharedArrayBuffer;
+  /** Called when a request arrives — proof the worker is alive and parked. */
+  onActivity?: () => void;
 }
 
 export interface SyncServer {
   /** Register a process's handler. Call before the worker issues requests. */
-  attach(pid: string, handler: SyncRequestHandler, opts?: { sab?: SharedArrayBuffer }): void;
+  attach(
+    pid: string,
+    handler: SyncRequestHandler,
+    opts?: { sab?: SharedArrayBuffer; onActivity?: () => void },
+  ): void;
   detach(pid: string): void;
   /** Route a `BOLO_SYNC_REQ` message from a process worker. Returns true if
    * the message was consumed (for use inside the worker's onmessage switch). */
@@ -235,7 +252,7 @@ export const createSyncServer = (deps: { sandbox?: SWSandbox }): SyncServer => {
 
   const server: SyncServer = {
     attach(pid, handler, opts) {
-      processes.set(pid, { handler, sab: opts?.sab });
+      processes.set(pid, { handler, sab: opts?.sab, onActivity: opts?.onActivity });
     },
     detach(pid) {
       processes.delete(pid);
@@ -250,6 +267,7 @@ export const createSyncServer = (deps: { sandbox?: SWSandbox }): SyncServer => {
         if (!proc) logger.warn("sync request for unknown pid", { pid });
         return true;
       }
+      proc.onActivity?.();
       const payload = msg.payload;
       void dispatch(proc, payload).then((raw) => respond(proc, msg.seq!, raw));
       return true;
@@ -261,6 +279,7 @@ export const createSyncServer = (deps: { sandbox?: SWSandbox }): SyncServer => {
       const pid = new URL(req.url).pathname.match(SYNC_URL_RE)?.[1];
       const proc = pid ? processes.get(pid) : undefined;
       if (!pid || !proc) return undefined;
+      proc.onActivity?.();
       const payload = req.body ? new Uint8Array(req.body) : new Uint8Array(0);
       const raw = await dispatch(proc, payload);
       return { status: 200, body: raw.slice().buffer };

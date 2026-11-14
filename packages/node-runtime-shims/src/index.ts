@@ -65,9 +65,15 @@ export type {
   StreamSocket,
   NetConnectOptions,
   NativeAddonLoader,
+  DgramBackend,
+  DgramBackendFactory as DgramBackendProvider,
 } from "./live.js";
+export { resolveBackend, registration } from "./backend-registry.js";
+export type { BackendCandidate, BackendRegistration } from "./backend-registry.js";
 export { createDnsShim } from "./dns-shim.js";
 export type { DnsShimOptions } from "./dns-shim.js";
+export { createLoopbackDgramBackend } from "./dgram-backend.js";
+export type { DgramBackendFactory } from "./dgram-backend.js";
 export { createVmShim } from "./vm-shim.js";
 export type { VmShimOptions, RunInContextOptions } from "./vm-shim.js";
 export {

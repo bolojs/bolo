@@ -232,4 +232,49 @@ describe("createModuleShim", () => {
     expect(moduleShim.findPackageJSON("lodash")).toBeUndefined();
     expect(moduleShim.findPackageJSON("./nope.js", "/other/index.js")).toBeUndefined();
   });
+
+  it("compiles a relative .js require with the live Module.wrapper", () => {
+    const vfs = new VfsBus();
+    vfs.hot.mkdirSync("/app", { recursive: true });
+    vfs.hot.writeFileSync("/app/entry.js", "require('./dep.js');");
+    vfs.hot.writeFileSync("/app/dep.js", "module.exports.ran = true;");
+    const shim = createModuleShim({ vfs, getShim: () => undefined }) as Record<string, unknown> & {
+      Module: { wrapper: string[] };
+      __compileCjs: (path: string) => unknown;
+      __isDefaultWrapper: () => boolean;
+      createRequire: (filename: string) => (specifier: string) => unknown;
+    };
+
+    expect(shim.wrapper).toBe(shim.Module.wrapper);
+    expect(shim.__isDefaultWrapper()).toBe(true);
+
+    // Node: a program that customizes Module.wrapper before a require sees
+    // the prefix run inside the required file.
+    const require = shim.createRequire("/app/entry.js");
+    shim.Module.wrapper[0] += "globalThis.__mwc = (globalThis.__mwc || 0) + 1;";
+    expect(shim.__isDefaultWrapper()).toBe(false);
+    const g = globalThis as { __mwc?: number };
+    g.__mwc = 0;
+    try {
+      const dep = require("./dep.js") as { ran: boolean };
+      expect(dep.ran).toBe(true);
+      expect(g.__mwc).toBe(1);
+    } finally {
+      delete (globalThis as { __mwc?: number }).__mwc;
+    }
+  });
+
+  it("caches relative requires by path so require.cache deletion re-executes", () => {
+    const vfs = new VfsBus();
+    vfs.hot.mkdirSync("/app", { recursive: true });
+    vfs.hot.writeFileSync("/app/entry.js", "require('./dep.js');");
+    vfs.hot.writeFileSync("/app/dep.js", "let n = 0; module.exports.count = () => ++n;");
+    const shim = createModuleShim({ vfs, getShim: () => undefined });
+    const require = shim.createRequire("/app/entry.js");
+    const first = require("./dep.js") as { count: () => number };
+    const second = require("./dep.js") as { count: () => number };
+    expect(second).toBe(first);
+    expect(second.count()).toBe(1);
+    expect(second.count()).toBe(2);
+  });
 });
