@@ -21,6 +21,7 @@ import {
 import { createModuleShim } from "./module-shim.js";
 import { createDnsShim } from "./dns-shim.js";
 import { getSystemErrorName } from "./errno.js";
+import { resolveBackend, registration } from "./backend-registry.js";
 
 interface WriteSink {
   write: (data: string) => unknown;
@@ -317,12 +318,22 @@ export const createLiveShimRegistry = (
     promise: unknown,
   ) => void);
 
-  if (options.dgramBackend) {
-    registry.dgram = options.dgramBackend({ vfs: options.vfs, sandbox: options.sandbox });
-  }
-  if (options.tlsBackend) {
-    registry.tls = options.tlsBackend({ vfs: options.vfs, sandbox: options.sandbox });
-  }
+  const backendDeps: BackendDeps = { vfs: options.vfs, sandbox: options.sandbox };
+
+  // Seam resolution is declarative: an ordered candidate list, first present
+  // candidate wins (see backend-registry.ts). The explicit host-provided
+  // backend always outranks the built-in skeleton.
+  const dgramResolved = resolveBackend(
+    [options.dgramBackend ? registration("host-dgram", options.dgramBackend) : undefined],
+    backendDeps,
+  );
+  if (dgramResolved) registry.dgram = dgramResolved.backend;
+
+  const tlsResolved = resolveBackend(
+    [options.tlsBackend ? registration("host-tls", options.tlsBackend) : undefined],
+    backendDeps,
+  );
+  if (tlsResolved) registry.tls = tlsResolved.backend;
   if (options.workerThreadsBackend) {
     registry.worker_threads = options.workerThreadsBackend({
       vfs: options.vfs,
@@ -333,12 +344,25 @@ export const createLiveShimRegistry = (
   const http = createHttpShim(options.sandbox, { onPortEvent: options.onPortEvent });
   registry.http = http;
   registry.https = http; // https delegates to http in browser context
-  registry.net = options.netBackend
-    ? options.netBackend({ vfs: options.vfs, sandbox: options.sandbox })
-    : createNetShim(options.sandbox, {
-        tcpRelay: options.tcpRelay,
-        onPortEvent: options.onPortEvent,
-      });
+  // Net precedence, made explicit and single-sourced:
+  //   1. host-registered netBackend
+  //   2. tcpRelay-derived transport (inside createNetShim)
+  //   3. in-process LoopbackTransport (inside createNetShim)
+  const netResolved = resolveBackend(
+    [
+      options.netBackend ? registration("host-net", options.netBackend) : undefined,
+      // The relay-vs-loopback choice lives inside createNetShim: a configured
+      // `tcpRelay` yields a WebSocketTransport, otherwise LoopbackTransport.
+      registration(options.tcpRelay?.url ? "tcp-relay" : "loopback", () =>
+        createNetShim(options.sandbox, {
+          tcpRelay: options.tcpRelay,
+          onPortEvent: options.onPortEvent,
+        }),
+      ),
+    ],
+    backendDeps,
+  );
+  registry.net = netResolved?.backend;
 
   registry.module = createModuleShim({
     vfs: options.vfs,

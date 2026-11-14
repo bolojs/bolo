@@ -66,6 +66,8 @@ export type {
   NetConnectOptions,
   NativeAddonLoader,
 } from "./live.js";
+export { resolveBackend, registration } from "./backend-registry.js";
+export type { BackendCandidate, BackendRegistration } from "./backend-registry.js";
 export { createDnsShim } from "./dns-shim.js";
 export type { DnsShimOptions } from "./dns-shim.js";
 export { createVmShim } from "./vm-shim.js";
