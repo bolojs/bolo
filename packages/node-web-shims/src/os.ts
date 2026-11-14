@@ -19,8 +19,31 @@ const nav = (): Navigator | undefined => (globalThis as { navigator?: Navigator 
 
 const cpuCount = (): number => nav()?.hardwareConcurrency || 8;
 
+/**
+ * CPU architecture, Node-style ("x64", "arm64", "ia32", ...).
+ *
+ * unenv's `os.arch()` returns an empty string, which breaks every loader
+ * that keys native-addon prebuilds off the arch (node-gyp-build's
+ * "platform=linux arch= runtime=node" target string never matches a
+ * prebuild). The browser has no architecture concept, but the CPU
+ * fingerprint in `navigator.userAgentData` / `navigator.userAgent` is the
+ * closest available signal — and it is the one package managers and
+ * prebuild resolvers already use to pick a per-platform binary.
+ */
+const detectArch = (): string => {
+  const n = nav();
+  const hint = `${n?.userAgent ?? ""} ${n?.platform ?? ""}`.toLowerCase();
+  if (hint.includes("aarch64") || hint.includes("arm64")) return "arm64";
+  if (hint.includes("armv7") || hint.includes("armv8l") || /\barm\b/.test(hint)) return "arm";
+  if (hint.includes("ia32") || hint.includes("x86")) return "ia32";
+  // x64 is the overwhelmingly common desktop case; 32-bit x86 browsers
+  // report "x86" in the UA, which the ia32 branch above already caught.
+  return "x64";
+};
+
 const os = {
   ...unenvOs,
+  arch: detectArch,
   cpus: () => {
     const info = {
       model: "",

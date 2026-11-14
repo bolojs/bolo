@@ -705,6 +705,17 @@ var __bc_Console = class {
     this._counts = Object.create(null);
     this._times = Object.create(null);
     this._indent = 0;
+    // Node's console methods are bound to the instance: extracting one
+    // (const log = console.log; log('x')) works there. Prototype methods
+    // would lose their receiver when a package extracts one at module scope
+    // (argon2-wasm does exactly that with console.error), and the extracted
+    // call would die with "Cannot read properties of undefined (reading
+    // '_write')".
+    for (var k of Object.getOwnPropertyNames(__bc_Console.prototype)) {
+      if (k === 'constructor') continue;
+      var m = this[k];
+      if (typeof m === 'function') this[k] = m.bind(this);
+    }
   }
   _write(stream, args) {
     var sink = stream === 'stderr' ? this._stderr : this._stdout;
