@@ -206,13 +206,33 @@ describe("process.exit re-entrancy", () => {
 });
 
 describe("process.exitCode validation", () => {
-  it("rejects non-integer exit codes with ERR_INVALID_ARG_TYPE", () => {
+  it("rejects invalid exit codes with Node's exact error shapes", () => {
     const process = createProcessShim();
-    for (const bad of ["", "1 one", "two", {}, [], true, false, 2n, 2.1, Infinity, NaN]) {
+    // Non-numbers: ERR_INVALID_ARG_TYPE.
+    for (const bad of ["", "1 one", "two", {}, [], true, false, 2n]) {
       expect(() => {
         (process as unknown as { exitCode: unknown }).exitCode = bad;
       }).toThrow(expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE", name: "TypeError" }));
     }
+    // Non-integral numbers: ERR_OUT_OF_RANGE (Node's validateInteger).
+    for (const bad of [2.1, Infinity, NaN]) {
+      expect(() => {
+        (process as unknown as { exitCode: unknown }).exitCode = bad;
+      }).toThrow(expect.objectContaining({ code: "ERR_OUT_OF_RANGE", name: "TypeError" }));
+    }
+    // Message parity with Node 22 for the shapes the vendored test regexes.
+    expect(() => {
+      (process as unknown as { exitCode: unknown }).exitCode = 2.1;
+    }).toThrow(/Received 2\.1$/);
+    expect(() => {
+      (process as unknown as { exitCode: unknown }).exitCode = "two";
+    }).toThrow(/Received type string \('two'\)$/);
+    expect(() => {
+      (process as unknown as { exitCode: unknown }).exitCode = {};
+    }).toThrow(/Received an instance of Object$/);
+    expect(() => {
+      (process as unknown as { exitCode: unknown }).exitCode = [];
+    }).toThrow(/Received an instance of Array$/);
   });
 
   it("accepts integers and numeric strings, coercing them", () => {

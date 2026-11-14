@@ -137,12 +137,25 @@ export class NodeProcess {
       async (payload) => {
         const { op, args } = decodeOpCall(payload);
         try {
+          // A sync op in flight is proof of liveness: the worker is parked on
+          // Atomics.wait/XHR and cannot post heartbeats. Without this the
+          // watchdog kills a healthy worker mid-syscall — e.g. a script whose
+          // spawnSync chains a dozen child workers back to back (each ~1.5s of
+          // main-thread bundling) hits MAX_MISSED_HEARTBEATS before finishing.
+          this.missedHeartbeats = 0;
           return encodeOpResult(true, await this.dispatch(op, args));
         } catch (err) {
           return encodeOpResult(false, marshalError(err));
         }
       },
-      { sab },
+      {
+        sab,
+        // A sync request is proof of liveness: the worker is parked on
+        // Atomics.wait/XHR and cannot post its 5s heartbeat meanwhile.
+        onActivity: () => {
+          this.missedHeartbeats = 0;
+        },
+      },
     );
 
     const worker = new Worker(new URL("./node-process-worker.js", import.meta.url), {
@@ -159,7 +172,14 @@ export class NodeProcess {
       this.finish(1);
     };
     worker.onmessage = ({ data }: MessageEvent) => {
-      if (this.deps.syncServer.handleWorkerMessage(deps.pid, data)) return;
+      if (this.deps.syncServer.handleWorkerMessage(deps.pid, data)) {
+        // A sync request proves the worker is alive: it is parked on
+        // Atomics.wait/XHR and cannot post its 5s heartbeat meanwhile. Reset
+        // the watchdog counter here, or a long syscall (e.g. spawnSync
+        // chaining a dozen child workers back to back) kills a healthy worker.
+        this.missedHeartbeats = 0;
+        return;
+      }
       if (rpc.handle(data)) return;
       const msg = data as ProcWorkerMessage;
       switch (msg.type) {

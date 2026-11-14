@@ -181,7 +181,7 @@ window.__runCanaries = async () => {
 window.__runNodeTests = async (filter?: string, module?: string) => {
   const response = await fetch("/src/manifest.json");
   const manifest = (await response.json()) as ModuleManifest;
-  const runner = new NodeTestRunner(manifest);
+  const runner = new NodeTestRunner(manifest, { testTimeoutMs: 90_000 });
   await runner.boot();
   const results = await runner.runAll(filter ? new RegExp(filter) : undefined, module);
   await runner.teardown();
