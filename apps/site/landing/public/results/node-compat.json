@@ -1,16 +1,29 @@
 {
-  "nodeVersion": "22.0.0",
-  "generatedAt": "2026-11-13T09:41:05.170Z",
+  "nodeVersion": "22.12.0",
+  "generatedAt": "2026-11-14T08:24:48.608Z",
   "validated": true,
   "total": 167,
-  "pass": 127,
-  "fail": 39,
+  "pass": 140,
+  "fail": 19,
   "skip": 1,
+  "expectedFail": 7,
+  "expectedFailByLane": {
+    "A": 1,
+    "B": 8,
+    "C": 7
+  },
+  "staleExpected": 0,
   "modules": [
     {
       "name": "path",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-path-basename.js",
@@ -28,13 +41,19 @@
     },
     {
       "name": "buffer",
-      "passed": 1,
+      "passed": 2,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-buffer-alloc.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: {\"message\":\"Array buffer allocation failed\"} deepStrictEqual {\"message\":\"Invalid typed array length: 2147483648\"}"
+          "error": "Uncaught AssertionError: Expected values to be strictly deep-equal:"
         },
         {
           "file": "test-buffer-concat.js",
@@ -42,8 +61,7 @@
         },
         {
           "file": "test-buffer-from.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: {\"code\":\"ERR_INVALID_ARG_TYPE\",\"name\":\"TypeError\",\"message\":\"The first argument must be of type string or an instance of Buffer, ArrayBuffer, SharedArrayBuffer, Array or an Array-like Object. Received an instance of Object\"} deepStrictEqual {\"code\":\"ERR_INVALID_ARG_TYPE\",\"na..."
+          "status": "pass"
         }
       ]
     },
@@ -51,10 +69,22 @@
       "name": "events",
       "passed": 2,
       "total": 3,
+      "expectedFail": 1,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 1
+      },
       "tests": [
         {
           "file": "test-events-once.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "asserts on Node-internal kEvents listener storage attached to AbortSignal (browser EventTarget has no kEvents bookkeeping)",
+            "location": "packages/node-web-shims/src/events.ts",
+            "remediation": "none browser-faithful: kEvents is a Node internal symbol layout"
+          },
           "error": "Uncaught Error: boom"
         },
         {
@@ -71,6 +101,12 @@
       "name": "url",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-url-format.js",
@@ -90,6 +126,12 @@
       "name": "querystring",
       "passed": 2,
       "total": 2,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-querystring.js",
@@ -105,6 +147,12 @@
       "name": "zlib",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-zlib-close-in-ondata.js",
@@ -124,6 +172,12 @@
       "name": "os",
       "passed": 2,
       "total": 3,
+      "expectedFail": 1,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 1
+      },
       "tests": [
         {
           "file": "test-os-eol.js",
@@ -132,6 +186,12 @@
         {
           "file": "test-os-checked-function.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "unenv os.homedir is a pure JS stub that never consults internalBinding('os'), so the test's getHomeDirectory monkey-patch is never invoked (no faithful os binding to expose)",
+            "location": "packages/node-web-shims/src/os.ts",
+            "remediation": "none browser-faithful: the test asserts on the os binding's monkey-patch surface"
+          },
           "error": "Uncaught Error: No such binding: os"
         },
         {
@@ -142,35 +202,58 @@
     },
     {
       "name": "util",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
+      "expectedFail": 2,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 2
+      },
       "tests": [
         {
           "file": "test-util-format.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: '118059162071741140000 118059162071741140000 123123123' strictEqual '118_059_162_071_741_140_000 118_059_162_071_741_140_000 123_123_123'"
+          "status": "pass"
         },
         {
           "file": "test-util-inspect.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "requires internal/test/binding and node:trace_events (--expose-internals native binding)",
+            "location": "packages/node-web-shims/src/util.ts",
+            "remediation": "none browser-faithful: --expose-internals bindings cannot exist"
+          },
           "error": "Uncaught Error: No such binding: util"
         },
         {
           "file": "test-util-types.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "needs a js_stream JSStream with a native _externalStream (util.types.isExternal is hard-coded false) plus vm.runInNewContext/vm.SourceTextModule semantics; none are faithfully shimable from the harness",
+            "location": "packages/node-web-shims/src/util.ts",
+            "remediation": "none browser-faithful: native stream/external markers cannot be forged"
+          },
           "error": "Uncaught AssertionError: Want undefined to match isExternal"
         }
       ]
     },
     {
       "name": "assert",
-      "passed": 1,
+      "passed": 2,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-assert.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: {\"message\":\"2 notStrictEqual 2\",\"name\":\"AssertionError\"} deepStrictEqual {\"message\":\"Expected \\\"actual\\\" to be strictly unequal to: 2\",\"name\":\"AssertionError\"}"
+          "error": "ok 1 some basics"
         },
         {
           "file": "test-assert-fail.js",
@@ -178,8 +261,7 @@
         },
         {
           "file": "test-assert-async.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got Map(0) {  }.\",\"code\":\"ERR_INVALID_RETURN_VALUE\",\"name\":\"TypeError\"} deepStrictEqual {\"message\":\"Expected instance of Promise to be returned from the \\\"promiseFn\\\" function but got..."
+          "status": "pass"
         }
       ]
     },
@@ -187,6 +269,12 @@
       "name": "stream",
       "passed": 2,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-stream-pipe-event.js",
@@ -195,7 +283,7 @@
         {
           "file": "test-stream-readable-event.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: 1 strictEqual 0"
+          "error": "Uncaught AssertionError: Expected values to be strictly equal:"
         },
         {
           "file": "test-stream-writable-finished.js",
@@ -205,40 +293,47 @@
     },
     {
       "name": "fs",
-      "passed": 0,
+      "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-fs-mkdir.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception (TypeError)."
+          "status": "pass"
         },
         {
           "file": "test-fs-write-file.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: The input did not match the regular expression {}. Input:"
+          "status": "pass"
         },
         {
           "file": "test-fs-readfile.js",
-          "status": "fail",
-          "error": "Validating readFile on file /home/harness/test/.tmp.0/.removeme-fs-readfile-1-1K.txt of length 1024"
+          "status": "pass"
         }
       ]
     },
     {
       "name": "crypto",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-crypto-hash.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: '' strictEqual '46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762f'"
+          "status": "pass"
         },
         {
           "file": "test-crypto-hmac.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: The input did not match the regular expression {}. Input:"
+          "status": "pass"
         },
         {
           "file": "test-crypto-randomuuid.js",
@@ -250,6 +345,12 @@
       "name": "http",
       "passed": 1,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-http-status-code.js",
@@ -263,7 +364,7 @@
         {
           "file": "test-http-write-head.js",
           "status": "fail",
-          "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'address')"
+          "error": "Uncaught AssertionError: Missing expected exception."
         }
       ]
     },
@@ -271,6 +372,12 @@
       "name": "process",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-process-env.js",
@@ -288,13 +395,18 @@
     },
     {
       "name": "timers",
-      "passed": 48,
+      "passed": 50,
       "total": 54,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 1,
+        "B": 1,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-timers-reset-process-domain-on-throw.js",
-          "status": "fail",
-          "error": "process.domain should be null in this timer callback, but is: undefined"
+          "status": "pass"
         },
         {
           "file": "test-timers-active.js",
@@ -346,13 +458,11 @@
         },
         {
           "file": "test-timers-immediate-promisified.js",
-          "status": "fail",
-          "error": "Uncaught [object Object]"
+          "status": "pass"
         },
         {
           "file": "test-timers-immediate-queue-throw.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: 0 strictEqual 1"
+          "status": "pass"
         },
         {
           "file": "test-timers-immediate-queue.js",
@@ -377,7 +487,13 @@
         {
           "file": "test-timers-interval-promisified.js",
           "status": "fail",
-          "error": "Uncaught [object Object]"
+          "expectedFail": {
+            "lane": "A",
+            "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
+            "location": "packages/node-web-shims/src/timers_promises.ts",
+            "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
+          },
+          "error": "Uncaught AssertionError: iterations was 2 < 3"
         },
         {
           "file": "test-timers-interval-throw.js",
@@ -413,7 +529,8 @@
         },
         {
           "file": "test-timers-promises-scheduler.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: Missing expected exception."
         },
         {
           "file": "test-timers-promises.js",
@@ -438,6 +555,12 @@
         {
           "file": "test-timers-socket-timeout-removes-other-socket-unref-timer.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "B",
+            "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
+            "location": "packages/node-runtime-shims/src/net-shim.ts",
+            "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
+          },
           "error": "TIMEOUT after 30000ms"
         },
         {
@@ -451,7 +574,7 @@
         {
           "file": "test-timers-timeout-promisified.js",
           "status": "fail",
-          "error": "Uncaught [object Object]"
+          "error": "Uncaught AssertionError: Missing expected rejection."
         },
         {
           "file": "test-timers-timeout-to-interval.js",
@@ -517,13 +640,18 @@
     },
     {
       "name": "console",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-console-clear.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: '\u001b[1;1H\u001b[0J' strictEqual ''"
+          "status": "pass"
         },
         {
           "file": "test-console-count.js",
@@ -537,8 +665,14 @@
     },
     {
       "name": "child_process",
-      "passed": 2,
+      "passed": 1,
       "total": 2,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-child-process-spawnsync.js",
@@ -546,7 +680,8 @@
         },
         {
           "file": "test-child-process-execsync-maxbuf.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught TypeError: escapePOSIXShell is not a function or its return value is not iterable"
         }
       ]
     },
@@ -554,6 +689,12 @@
       "name": "worker_threads",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-worker-message-port-constructor.js",
@@ -571,13 +712,18 @@
     },
     {
       "name": "perf_hooks",
-      "passed": 0,
+      "passed": 1,
       "total": 1,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-performanceobserver.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: Cannot read properties of undefined (reading '0')"
+          "status": "pass"
         }
       ]
     },
@@ -585,28 +731,51 @@
       "name": "net",
       "passed": 0,
       "total": 1,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 1,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-net-connect-buffer.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "B",
+            "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend); in-process loopback connect times out in-container",
+            "location": "packages/node-runtime-shims/src/net-shim.ts",
+            "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
+          },
           "error": "TIMEOUT after 30000ms"
         }
       ]
     },
     {
       "name": "dns",
-      "passed": 0,
+      "passed": 1,
       "total": 2,
+      "expectedFail": 1,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 1
+      },
       "tests": [
         {
           "file": "test-dns-set-default-order.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "dns shim resolves via DoH, not internalBinding('cares_wrap'), so the test's getaddrinfo monkey-patch is never invoked; setDefaultResultOrder also performs no argument validation",
+            "location": "packages/node-runtime-shims/src/dns-shim.ts",
+            "remediation": "none browser-faithful: the test asserts on cares_wrap binding internals that cannot exist"
+          },
           "error": "Uncaught Error: No such binding: cares_wrap"
         },
         {
           "file": "test-dns-setlocaladdress.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: resolver.setLocalAddress is not a function"
+          "status": "pass"
         }
       ]
     },
@@ -614,6 +783,12 @@
       "name": "https",
       "passed": 1,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-https-agent-constructor.js",
@@ -635,20 +810,44 @@
       "name": "tls",
       "passed": 0,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 3,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-tls-legacy-deprecated.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "B",
+            "reason": "no default tls backend: TLS over TCP is pluggable-only and connect() throws ERR_BOL_UNSUPPORTED_TLS_BACKEND",
+            "location": "packages/node-web-shims/src/tls.ts",
+            "remediation": "register a tlsBackend via createLiveShimRegistry (TLS over an arbitrary transport has no Web API equivalent)"
+          },
           "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
         },
         {
           "file": "test-tls-ticket-12.js",
           "status": "fail",
-          "error": "Uncaught Error: tls.connect() is not implemented: TLS handshakes are unavailable in the browser"
+          "expectedFail": {
+            "lane": "B",
+            "reason": "no default tls backend: session ticket handling needs a real TLS handshake via tlsBackend",
+            "location": "packages/node-web-shims/src/tls.ts",
+            "remediation": "register a tlsBackend via createLiveShimRegistry (TLS over an arbitrary transport has no Web API equivalent)"
+          },
+          "error": "Uncaught Error: tls.connect() requires a TLS backend: TLS handshakes over an arbitrary transport have no Web API equivalent. Register one via createLiveShimRegistry({ tlsBackend })"
         },
         {
           "file": "test-tls-wrap-no-abort.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "B",
+            "reason": "TLSWrap is genuinely native and util.inspect(new TLSWrap()) has no browser-faithful equivalent without a tlsBackend",
+            "location": "packages/node-web-shims/src/tls.ts",
+            "remediation": "register a tlsBackend via createLiveShimRegistry; TLSWrap inspection still has no faithful mapping"
+          },
           "error": "Uncaught Error: No such binding: tls_wrap"
         }
       ]
@@ -657,6 +856,12 @@
       "name": "dgram",
       "passed": 2,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 1,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-dgram-abort-closed.js",
@@ -665,7 +870,13 @@
         {
           "file": "test-dgram-send-callback-buffer-empty-address.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: ifError got unwanted exception: dgram.Socket.send() is not implemented: UDP sockets are unavailable in the browser"
+          "expectedFail": {
+            "lane": "B",
+            "reason": "UDP send callback semantics need a real socket backend; the skeleton can only report unsupported",
+            "location": "packages/node-web-shims/src/dgram.ts",
+            "remediation": "register a dgramBackend via createLiveShimRegistry (UDP has no Web API equivalent; needs a relay)"
+          },
+          "error": "Uncaught AssertionError: ifError got unwanted exception: dgram.Socket.send() requires a UDP backend: datagrams have no Web API equivalent. Register one via createLiveShimRegistry({ dgramBackend })"
         },
         {
           "file": "test-dgram-bind.js",
@@ -677,6 +888,12 @@
       "name": "cluster",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-cluster-basic.js",
@@ -696,6 +913,12 @@
       "name": "vm",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-vm-script-throw-in-tostring.js",
@@ -715,6 +938,12 @@
       "name": "repl",
       "passed": 2,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-repl-no-terminal.js",
@@ -723,6 +952,12 @@
         {
           "file": "test-repl-stdin-push-null.js",
           "status": "skip",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "no repl backend can exist: the REPL has no browser analogue",
+            "location": "packages/node-web-shims/src/repl.ts",
+            "remediation": "none browser-faithful"
+          },
           "error": "skipped"
         },
         {
@@ -735,6 +970,12 @@
       "name": "readline",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-readline-interface-no-trailing-newline.js",
@@ -752,8 +993,14 @@
     },
     {
       "name": "tty",
-      "passed": 1,
+      "passed": 2,
       "total": 2,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-tty-stdin-end.js",
@@ -761,8 +1008,7 @@
         },
         {
           "file": "test-tty-backwards-api.js",
-          "status": "fail",
-          "error": "Uncaught Error: No such binding: tty_wrap"
+          "status": "pass"
         }
       ]
     },
@@ -770,15 +1016,33 @@
       "name": "inspector",
       "passed": 1,
       "total": 3,
+      "expectedFail": 2,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 2
+      },
       "tests": [
         {
           "file": "test-inspector-stops-no-file.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "no inspector backend can exist: the DevTools protocol session cannot be bridged to a browser debug port",
+            "location": "packages/node-web-shims/src/inspector.ts",
+            "remediation": "none browser-faithful: no V8 debug port can listen in a browser"
+          },
           "error": "Uncaught Error: Build failed with 1 error:"
         },
         {
           "file": "test-inspector-already-activated-cli.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "C",
+            "reason": "no inspector backend can exist: the DevTools protocol session cannot be bridged to a browser debug port",
+            "location": "packages/node-web-shims/src/inspector.ts",
+            "remediation": "none browser-faithful: no V8 debug port can listen in a browser"
+          },
           "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'startsWith')"
         },
         {
@@ -791,6 +1055,12 @@
       "name": "async_hooks",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-async-hooks-constructor.js",
@@ -810,15 +1080,33 @@
       "name": "module",
       "passed": 1,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 2,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-module-wrap.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "B",
+            "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
+            "location": "packages/node-runtime-shims/src/module-shim.ts",
+            "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
+          },
           "error": "Uncaught Error: Build failed with 1 error:"
         },
         {
           "file": "test-module-wrapper.js",
           "status": "fail",
+          "expectedFail": {
+            "lane": "B",
+            "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
+            "location": "packages/node-runtime-shims/src/module-shim.ts",
+            "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
+          },
           "error": "Uncaught Error: Build failed with 1 error:"
         },
         {
@@ -831,6 +1119,12 @@
       "name": "string_decoder",
       "passed": 2,
       "total": 2,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-string-decoder-end.js",
@@ -846,6 +1140,12 @@
       "name": "v8",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-v8-deserialize-buffer.js",
@@ -865,6 +1165,12 @@
       "name": "diagnostics_channel",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-diagnostics-channel-has-subscribers.js",
@@ -884,6 +1190,12 @@
       "name": "fs/promises",
       "passed": 3,
       "total": 3,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-fs-promises-exists.js",
@@ -903,6 +1215,12 @@
       "name": "process-exit",
       "passed": 9,
       "total": 9,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-process-beforeexit-throw-exit.js",
@@ -946,6 +1264,12 @@
       "name": "next-tick",
       "passed": 8,
       "total": 8,
+      "expectedFail": 0,
+      "expectedFailByLane": {
+        "A": 0,
+        "B": 0,
+        "C": 0
+      },
       "tests": [
         {
           "file": "test-next-tick-doesnt-hang.js",
