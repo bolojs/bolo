@@ -25,7 +25,7 @@ globalThis.__preferLocalRolldown = true;
 
 const logger = getLogger(["bolo", "site-landing", "subsite"]);
 
-export type SubsiteName = "ide" | "sandbox" | "app" | "vibe";
+export type SubsiteName = "ide" | "sandbox" | "vibe";
 
 type BootState = "booting" | "installing" | "ready" | "error";
 
@@ -61,18 +61,12 @@ const STARTERS: Record<Exclude<SubsiteName, "vibe">, Record<string, string>> = {
     "fib.js":
       "const fib = (n) => (n < 2 ? n : fib(n - 1) + fib(n - 2));\nconsole.log(fib(20));\n",
   },
-  app: {
-    "package.json": starterPackageJson("app"),
-    "index.ts":
-      'import { createServer } from "node:http";\n\nconst server = createServer((req, res) => {\n  res.writeHead(200, { "content-type": "application/json" });\n  res.end(JSON.stringify({ route: req.url, ok: true }));\n});\nserver.listen(3000, () => console.log("API listening on 3000"));\n',
-  },
 };
 
 /** Which panels each subsite renders in its stub shell. */
 const PANELS: Record<SubsiteName, string[]> = {
   ide: ["file-tree", "editor", "preview", "terminal"],
   sandbox: ["terminal"],
-  app: ["editor", "preview", "terminal"],
   vibe: ["chat", "preview", "terminal"],
 };
 
@@ -257,18 +251,6 @@ export default function SubsiteApp(props: Props) {
                 second={terminal()}
               />
             }
-          />
-        );
-      case "app":
-        return (
-          <SplitPane direction="column" initialRatio={0.65} dataPanel="workbench"
-            first={
-              <SplitPane direction="row" initialRatio={0.5} dataPanel="editor-preview"
-                first={<Editor documents={documents()} activePath={activePath()} onSelect={setActivePath} onClose={handleClose} onChange={handleChange} />}
-                second={<Preview url={previewUrl()} />}
-              />
-            }
-            second={terminal()}
           />
         );
       case "vibe":

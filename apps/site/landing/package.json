@@ -15,11 +15,11 @@
   "dependencies": {
     "@astrojs/react": "^6.0.1",
     "@astrojs/solid-js": "^7.0.1",
+    "@bolojs/fs": "workspace:*",
     "@bolojs/log": "workspace:*",
     "@bolojs/pm": "workspace:*",
     "@bolojs/runtime": "workspace:*",
     "@bolojs/sandbox": "workspace:*",
-    "@bolojs/fs": "workspace:*",
     "@bolojs/vite-preset": "workspace:*",
     "@codemirror/commands": "^6.10.4",
     "@codemirror/lang-javascript": "^6.2.2",
@@ -45,10 +45,12 @@
     "sharp": "^0.35.3",
     "solid-js": "^1.9.13",
     "unenv": "^1.10.0",
+    "valibot": "^1.5.0",
     "zod": "^4.1.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@bolojs/vite-server": "workspace:*",
     "@tailwindcss/vite": "^4.3.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
@@ -59,8 +61,7 @@
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
     "vite": "^8.0.0",
-    "vite-plugin-solid": "^2.11.0",
-    "@bolojs/vite-server": "workspace:*"
+    "vite-plugin-solid": "^2.11.0"
   },
   "engines": {
     "node": ">=24.0.0"
