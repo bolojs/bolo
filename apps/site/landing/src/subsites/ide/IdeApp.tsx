@@ -60,7 +60,7 @@ const templateToTree = (files: Record<string, string>): FileSystemTree => {
         node = directory;
       }
     }
-    node[parts[parts.length - 1]] = { file: { contents } };
+    node[parts[parts.length - 1]!] = { file: { contents } };
   }
   return tree;
 };
@@ -129,7 +129,9 @@ export default function IdeApp() {
   const handleChange = (path: string, contents: string) => {
     setDocuments((docs) => docs.map((d) => (d.path === path ? { ...d, contents } : d)));
     void container?.fs.writeFile(path, contents).catch((err: unknown) => {
-      logger.error("editor write failed", { error: err instanceof Error ? err.message : String(err) });
+      logger.error("editor write failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     });
   };
 
@@ -144,7 +146,7 @@ export default function IdeApp() {
   const enterRepl = async () => {
     if (!container) return;
     await container.startRepl();
-    appendLine("\r\n\x1b[2mWelcome to Node.js REPL. Type \".exit\" to leave.\x1b[0m\r\n");
+    appendLine('\r\n\x1b[2mWelcome to Node.js REPL. Type ".exit" to leave.\x1b[0m\r\n');
     setReplActive(true);
   };
 
@@ -188,7 +190,10 @@ export default function IdeApp() {
     await previewServer.start();
     nextServer = new NextDevServer({ vfs, root: workdir, base: NEXT_BASE.replace(/\/$/, "") });
     await nextServer.start();
-    rootSandbox = await SWSandbox.create({ origin: globalThis.location.origin, swPath: PREVIEW_SW_PATH });
+    rootSandbox = await SWSandbox.create({
+      origin: globalThis.location.origin,
+      swPath: PREVIEW_SW_PATH,
+    });
     const withIsolationHeaders = (response: Response) => {
       const headers = new Headers(response.headers);
       headers.set("Cross-Origin-Embedder-Policy", "credentialless");
@@ -280,7 +285,10 @@ export default function IdeApp() {
   });
 
   const templatePicker = () => (
-    <div data-panel="templates" class="flex h-full min-h-0 flex-col items-center justify-center gap-4 p-6">
+    <div
+      data-panel="templates"
+      class="flex h-full min-h-0 flex-col items-center justify-center gap-4 p-6"
+    >
       <div class="w-full max-w-md">
         <h2 class="mb-1 text-[15px] font-semibold text-fg">Start a project</h2>
         <p class="mb-4 text-[12.5px] text-muted">
@@ -362,14 +370,17 @@ export default function IdeApp() {
     <div
       data-subsite="ide"
       data-panels="file-tree editor preview terminal"
-      data-boot-state={bootState()}
+      data-boot-state={bootState() === "booting" || bootState() === "error" ? bootState() : "ready"}
+      data-project-state={bootState()}
       class="flex h-full min-h-0 flex-col gap-2 overflow-hidden"
     >
       <div class="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm">
         {workbench()}
       </div>
       <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted">
-        <span class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`} />
+        <span
+          class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`}
+        />
         <span>{statusLabels[bootState()]}</span>
       </div>
     </div>

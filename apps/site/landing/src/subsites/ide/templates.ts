@@ -35,7 +35,11 @@ const packageJson = (name: string, extraDeps: Record<string, string> = {}) =>
   );
 
 const viteReactFiles = (): Record<string, string> => ({
-  "package.json": packageJson("ide-react", { react: "^19.1.0", "react-dom": "^19.1.0", vite: "^6.3.5" }),
+  "package.json": packageJson("ide-react", {
+    react: "^19.1.0",
+    "react-dom": "^19.1.0",
+    vite: "^6.3.5",
+  }),
   "index.html": `<!doctype html>
 <html lang="en">
   <head>
@@ -130,7 +134,8 @@ IDE_TEMPLATES.push({
   previewBase: "/__next/",
   entry: "pages/index.tsx",
   name: "Next.js (Pages Router)",
-  description: "Filesystem routes, getStaticProps and an API route served by the in-browser Next dev server.",
+  description:
+    "Filesystem routes, getStaticProps and an API route served by the in-browser Next dev server.",
   headline: "Welcome to Next.js on bolo",
   files: nextFiles(),
 });

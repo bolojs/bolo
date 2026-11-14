@@ -11,7 +11,7 @@ export default class IdeSteps {
     const button = `[data-template="${id}"]:not([disabled])`;
     await currentPage.waitForSelector(button, { timeout: 90000 });
     await currentPage.click(button);
-    await currentPage.waitForSelector('[data-subsite][data-boot-state="ready"]', {
+    await currentPage.waitForSelector('[data-subsite][data-project-state="ready"]', {
       timeout: 180000,
     });
   }
