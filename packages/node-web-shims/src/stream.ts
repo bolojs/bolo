@@ -1874,6 +1874,7 @@ const readableAddChunk = (
   }
 
   if (!state.objectMode && (chunk as { length: number }).length <= 0) {
+    if (process.env?.BOLO_DBG) console.log("DBG push empty chunk; reading=", state.reading, "needReadable=", state.needReadable);
     maybeReadMore(stream, state);
     return canPushMore(state);
   }
@@ -1968,6 +1969,7 @@ const maybeReadMore = (stream: Readable, state: ReadableState): void => {
 };
 
 const maybeReadMoreNow = (stream: Readable, state: ReadableState): void => {
+  if (process.env?.BOLO_DBG) console.log("DBG maybeReadMoreNow len=", state.length, "reading=", state.reading, "ended=", state.ended, "hwm=", state.highWaterMark);
   let len = state.length;
   while (
     !state.reading &&
