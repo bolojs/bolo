@@ -53,12 +53,6 @@
     "location": "packages/node-web-shims/src/os.ts",
     "remediation": "none browser-faithful: the test asserts on the os binding's monkey-patch surface"
   },
-  "test/parallel/test-performanceobserver.js": {
-    "lane": "A",
-    "reason": "perf_hooks PerformanceObserver.observe/disconnect are not-implemented unenv stubs; the browser has a real PerformanceObserver to delegate to",
-    "location": "packages/node-web-shims/src/perf_hooks.ts",
-    "remediation": "wire observe()/disconnect() to the browser PerformanceObserver instead of the unenv stub"
-  },
   "test/parallel/test-repl-stdin-push-null.js": {
     "lane": "C",
     "reason": "no repl backend can exist: the REPL has no browser analogue",
@@ -106,12 +100,6 @@
     "reason": "TLSWrap is genuinely native and util.inspect(new TLSWrap()) has no browser-faithful equivalent without a tlsBackend",
     "location": "packages/node-web-shims/src/tls.ts",
     "remediation": "register a tlsBackend via createLiveShimRegistry; TLSWrap inspection still has no faithful mapping"
-  },
-  "test/parallel/test-tty-backwards-api.js": {
-    "lane": "A",
-    "reason": "unenv tty.WriteStream implements cursorTo/moveCursor/clearLine/clearScreenDown directly instead of delegating through the tty_wrap binding and readline, so the test's replacements are never consulted",
-    "location": "packages/node-web-shims/src/tty.ts",
-    "remediation": "make tty.WriteStream delegate through the binding/readline path the test monkey-patches"
   },
   "test/parallel/test-util-inspect.js": {
     "lane": "C",
