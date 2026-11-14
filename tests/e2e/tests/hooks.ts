@@ -46,7 +46,23 @@ export default class Hooks {
   @BeforeSpec()
   async beforeSpec() {
     currentPage = await context.newPage();
-    await currentPage.goto(process.env.DEMO_URL ?? 'http://localhost:4321/e2e/');
+    const url = process.env.DEMO_URL ?? 'http://localhost:4321/e2e/';
+    await currentPage.goto(url);
+    // The profile is persistent (for SW registrations) and every subsite shares
+    // one origin and the same /home/web workdir, so the VFS cold tier (OPFS +
+    // IDB fallback) written by one spec would hydrate into the next spec's
+    // project. Wipe it so each spec starts from its own starter tree.
+    await currentPage.evaluate(async () => {
+      const root = await navigator.storage.getDirectory();
+      for await (const name of (root as unknown as { keys(): AsyncIterable<string> }).keys()) {
+        await root.removeEntry(name, { recursive: true }).catch(() => {});
+      }
+      await new Promise<void>((resolve) => {
+        const req = indexedDB.deleteDatabase('vfs-bus-opfs-fallback');
+        req.onsuccess = req.onerror = req.onblocked = () => resolve();
+      });
+    }).catch(() => {});
+    await currentPage.goto(url);
   }
 
   // gauge-ts runtime awaits Promises (Screenshot.capture checks
