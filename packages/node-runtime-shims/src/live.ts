@@ -1,7 +1,11 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { SWSandbox } from "@bolojs/sandbox";
 import * as nodeWebShims from "@bolojs/node-web-shims";
-import { installUnhandledRejectionHandler, createDgramShim } from "@bolojs/node-web-shims";
+import {
+  installUnhandledRejectionHandler,
+  createDgramShim,
+  createTlsShim,
+} from "@bolojs/node-web-shims";
 import { createFsShim } from "./fs-shim.js";
 import { createHttpShim } from "./http-shim.js";
 import { createNetShim } from "./net-shim.js";
@@ -23,7 +27,7 @@ import { createDnsShim } from "./dns-shim.js";
 import { getSystemErrorName } from "./errno.js";
 import { resolveBackend, registration } from "./backend-registry.js";
 import { createLoopbackDgramBackend } from "./dgram-backend.js";
-import type { DgramSocketBackend } from "@bolojs/node-web-shims";
+import type { DgramSocketBackend, TlsBackend } from "@bolojs/node-web-shims";
 
 interface WriteSink {
   write: (data: string) => unknown;
@@ -207,7 +211,7 @@ export interface LiveShimRegistryOptions {
   // Extension points
   readonly netBackend?: (deps: BackendDeps) => StreamBackend;
   readonly dgramBackend?: DgramBackend;
-  readonly tlsBackend?: (deps: BackendDeps) => StreamBackend;
+  readonly tlsBackend?: (deps: BackendDeps) => TlsBackend;
   readonly workerThreadsBackend?: WorkerThreadsBackend;
   readonly nativeAddonLoader?: NativeAddonLoader;
 }
@@ -349,11 +353,16 @@ export const createLiveShimRegistry = (
     });
   }
 
+  // TLS precedence: host backend only. TLS over an arbitrary byte
+  // transport has no Web API equivalent, so without a backend the honest
+  // skeleton stays (connect throws ERR_BOL_UNSUPPORTED_TLS_BACKEND).
   const tlsResolved = resolveBackend(
     [options.tlsBackend ? registration("host-tls", options.tlsBackend) : undefined],
     backendDeps,
   );
-  if (tlsResolved) registry.tls = tlsResolved.backend;
+  if (tlsResolved) {
+    registry.tls = createTlsShim({ backend: tlsResolved.backend });
+  }
   if (options.workerThreadsBackend) {
     registry.worker_threads = options.workerThreadsBackend({
       vfs: options.vfs,

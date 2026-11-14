@@ -148,9 +148,15 @@ describe("createLiveShimRegistry", () => {
         onMessage: () => {},
       }),
     };
-    const tlsShim: StreamBackend = {
-      connect: () => ({ write: () => true, end: () => ({}) }) as unknown as StreamSocket,
-      isIP: () => 6,
+    const tlsShim = {
+      connect: () => {
+        const socket = {
+          on: () => socket,
+          write: () => true,
+          end: () => socket,
+        };
+        return socket;
+      },
     };
     const workerThreadsShim = { Worker: class {} };
     const registry = createLiveShimRegistry({
@@ -167,7 +173,10 @@ describe("createLiveShimRegistry", () => {
     // the host factory supplies the socket backend.
     const dgram = registry.dgram as { createSocket: (type: "udp4") => unknown };
     expect(dgram.createSocket("udp4")).toBeDefined();
-    expect(registry.tls).toEqual(tlsShim);
+    // tls is wrapped the same way: the shim surface with the host backend
+    // routed into connect().
+    expect(registry.tls).toBeDefined();
+    expect((registry.tls as { connect: unknown }).connect).toBeDefined();
     expect(registry.worker_threads).toBe(workerThreadsShim);
   });
 

@@ -25,8 +25,8 @@ describe("expected-fail ledger", () => {
   it("tags every platform-bound family the plan calls out", () => {
     const laneOf = (suffix: string) =>
       Object.entries(entries).find(([file]) => file.endsWith(suffix))?.[1].lane;
-    expect(laneOf("test-tls-legacy-deprecated.js")).toBe("B");
     expect(laneOf("test-tls-ticket-12.js")).toBe("B");
+    expect(laneOf("test-tls-wrap-no-abort.js")).toBe("B");
     expect(laneOf("test-inspector-stops-no-file.js")).toBe("C");
     expect(laneOf("test-dns-set-default-order.js")).toBe("C");
     expect(laneOf("test-timers-interval-promisified.js")).toBe("A");

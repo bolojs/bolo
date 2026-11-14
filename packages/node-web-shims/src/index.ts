@@ -49,6 +49,7 @@ export { createVmShim, default as vm } from "./vm.js";
 export { createHttp2Shim, default as http2 } from "./http2.js";
 export { createDomainShim, default as domain } from "./domain.js";
 export { createTlsShim, default as tls } from "./tls.js";
+export type { TlsBackend, TlsSocket, TlsServer, TlsConnectOptions } from "./tls.js";
 export { createDgramShim, default as dgram } from "./dgram.js";
 export type {
   DgramSocketBackend,

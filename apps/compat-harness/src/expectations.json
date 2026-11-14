@@ -47,12 +47,6 @@
     "location": "packages/node-runtime-shims/src/net-shim.ts",
     "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
   },
-  "test/parallel/test-tls-legacy-deprecated.js": {
-    "lane": "B",
-    "reason": "no default tls backend: TLS over TCP is pluggable-only and connect() throws ERR_BOL_UNSUPPORTED_TLS_BACKEND",
-    "location": "packages/node-web-shims/src/tls.ts",
-    "remediation": "register a tlsBackend via createLiveShimRegistry (TLS over an arbitrary transport has no Web API equivalent)"
-  },
   "test/parallel/test-tls-ticket-12.js": {
     "lane": "B",
     "reason": "no default tls backend: session ticket handling needs a real TLS handshake via tlsBackend",

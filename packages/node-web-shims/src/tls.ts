@@ -27,9 +27,18 @@ const notImplemented = (what: string): NodeError =>
   ) as NodeError;
 
 // process.emitWarning calls go through globalThis so the module also works
-// outside Node (where the warning is silently dropped).
+// outside Node (where the warning is silently dropped). Inside a process
+// worker there is no global `process` — the live one is the container's
+// process shim on `__browserContainers.shims.process` (same lookup
+// domain.ts uses), so warnings reach process.on('warning') listeners,
+// which Node's own test harness (expectWarning) depends on.
 const emitWarning = (message: string, type: string, code: string): void => {
-  const proc = globalThis.process;
+  const bc = (
+    globalThis as {
+      __browserContainers?: { shims?: { process?: { emitWarning?: (...a: unknown[]) => void } } };
+    }
+  ).__browserContainers;
+  const proc = bc?.shims?.process ?? globalThis.process;
   if (typeof proc?.emitWarning === "function") proc.emitWarning(message, type, code);
 };
 
@@ -326,6 +335,55 @@ export interface TlsServerOptions {
   [key: string]: unknown;
 }
 
+/**
+ * The seam a host implements to give `node:tls` real TLS capability.
+ *
+ * TLS over an arbitrary byte transport has no Web API equivalent, so
+ * without a backend `tls.connect()` throws
+ * ERR_BOL_UNSUPPORTED_TLS_BACKEND. The shim keeps Node's argument
+ * validation and event surface; the backend owns the handshake.
+ *
+ * `connect` receives the normalized options and the secure-connect
+ * listener; it returns the socket the caller drives.
+ */
+export interface TlsBackend {
+  connect(options: TlsConnectOptions, secureConnectListener?: () => void): TlsSocket;
+  createServer?(options: TlsServerOptions, listener?: (socket: TlsSocket) => void): TlsServer;
+}
+
+/** The socket surface a TLS backend returns. */
+export interface TlsSocket {
+  on(event: string, listener: (...args: any[]) => void): this;
+  once?(event: string, listener: (...args: any[]) => void): this;
+  write?(chunk: Uint8Array | string): boolean;
+  end?(): this;
+  destroy?(error?: Error): this;
+  readonly encrypted?: boolean;
+  readonly authorized?: boolean;
+  getProtocol?(): string | null;
+  getCipher?(): { name: string } | null;
+}
+
+export interface TlsServer {
+  listen?(port?: number, callback?: () => void): this;
+  close?(callback?: (err?: Error) => void): void;
+  address?(): { port: number } | null;
+}
+
+/** Normalized options for `tls.connect`. */
+export interface TlsConnectOptions {
+  readonly port: number;
+  readonly host: string;
+  readonly servername?: string;
+  readonly rejectUnauthorized?: boolean;
+  readonly ca?: unknown;
+  readonly cert?: unknown;
+  readonly key?: unknown;
+  readonly ALPNProtocols?: readonly string[];
+  readonly session?: unknown;
+  readonly [key: string]: unknown;
+}
+
 export class Server extends EventEmitter {
   constructor(options?: TlsServerOptions, listener?: (...args: unknown[]) => void) {
     super();
@@ -351,20 +409,38 @@ export const createServer = (
 
 /**
  * tls.connect() — argument shape follows Node (port number or options
- * object), then fails honestly: opening a TLS session over an arbitrary
- * transport is impossible in the browser.
+ * object, optional host then optional callback). With a backend the
+ * call is delegated; without one it fails honestly: opening a TLS
+ * session over an arbitrary transport is impossible in the browser.
  */
-export const connect = (...args: unknown[]): never => {
-  const [first] = args;
-  if (typeof first === "number") {
-    if (!Number.isInteger(first) || first < 0 || first > 65535) {
-      throw nodeError("ERR_SOCKET_BAD_PORT", `Port should be >= 0 and < 65536. Received ${first}`);
+export const connect =
+  (backend?: TlsBackend) =>
+  (...args: unknown[]): TlsSocket => {
+    const [first, second, third] = args;
+    let options: Record<string, unknown>;
+    let listener: (() => void) | undefined;
+    if (typeof first === "number") {
+      if (!Number.isInteger(first) || first < 0 || first > 65535) {
+        throw nodeError(
+          "ERR_SOCKET_BAD_PORT",
+          `Port should be >= 0 and < 65536. Received ${first}`,
+        );
+      }
+      options =
+        second !== null && typeof second === "object"
+          ? { port: first, ...(second as Record<string, unknown>) }
+          : { port: first, host: second as string | undefined };
+      listener =
+        typeof second === "function" ? (second as () => void) : (third as (() => void) | undefined);
+    } else if (first === undefined || first === null || typeof first !== "object") {
+      throw nodeError("ERR_INVALID_ARG_TYPE", 'The "options" argument must be an object');
+    } else {
+      options = first as Record<string, unknown>;
+      listener = typeof second === "function" ? (second as () => void) : undefined;
     }
-  } else if (first === undefined || first === null) {
-    throw nodeError("ERR_INVALID_ARG_TYPE", 'The "options" argument must be an object');
-  }
-  throw notImplemented("tls.connect()");
-};
+    if (!backend) throw notImplemented("tls.connect()");
+    return backend.connect(options as TlsConnectOptions, listener);
+  };
 
 // --- Legacy deprecated exports (exact Node 22 codes/messages) ---
 
@@ -406,6 +482,8 @@ export const parseCertString = deprecate(
 
 // --- Shim assembly ---
 
+// The backend a host registered (createTlsShim({ backend })). The default
+// export's `connect` has no backend; per-registry shims get their own.
 const tls = {
   CLIENT_RENEG_LIMIT,
   CLIENT_RENEG_WINDOW,
@@ -415,7 +493,7 @@ const tls = {
   Server,
   TLSSocket,
   checkServerIdentity,
-  connect,
+  connect: connect(),
   convertALPNProtocols,
   createSecureContext,
   createSecurePair,
@@ -444,6 +522,12 @@ Object.defineProperties(tls, {
   },
 });
 
-export const createTlsShim = (): typeof tls => tls;
+export const createTlsShim = (options?: { readonly backend?: TlsBackend }): typeof tls => ({
+  ...tls,
+  // Each shim carries its own backend — a registry without one keeps the
+  // honest unsupported error even if another registry in the same realm
+  // registered a backend.
+  connect: connect(options?.backend),
+});
 
 export default createTlsShim();
