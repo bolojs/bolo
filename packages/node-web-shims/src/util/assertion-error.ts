@@ -42,7 +42,7 @@ const kReadableOperator: Record<string, string> = {
   notDeepEqualUnequal: "Expected values not to be loosely deep-equal:",
 };
 
-const kMaxShortLength = 12;
+const kMaxShortStringLength = 12;
 
 /**
  * Node's `determineSpecificType` (lib/internal/errors.js) — the "Received …"
@@ -351,7 +351,7 @@ const getStackedDiff = (
     }
   }
 
-  return { message, header: "", skipped: false };
+  return { message, header: "+ actual - expected", skipped: false };
 };
 
 /** Node's `getSimpleDiff` (lib/internal/assert/assertion_error.js). */
@@ -369,7 +369,7 @@ const getSimpleDiff = (
   if (typeof originalExpected === "string") {
     stringsLen -= 2;
   }
-  if (stringsLen <= kMaxShortLength && (originalActual !== 0 || originalExpected !== 0)) {
+  if (stringsLen <= kMaxShortStringLength && (originalActual !== 0 || originalExpected !== 0)) {
     return { message: `${actual} !== ${expected}`, header: "", skipped: false };
   }
 
@@ -377,7 +377,7 @@ const getSimpleDiff = (
     typeof originalActual === "string" && typeof originalExpected === "string";
   if (isStringComparison && colors.hasColors()) {
     const diff = myersDiff(actual.split(""), expected.split(""));
-    return { message: printSimpleMyersDiff(diff), header: "", skipped: false };
+    return { message: printSimpleMyersDiff(diff), header: "actual expected", skipped: false };
   }
 
   return getStackedDiff(originalActual, actual, originalExpected, expected);
@@ -399,7 +399,12 @@ const checkOperator = (actual: unknown, expected: unknown, operator: string): st
   return operator;
 };
 
-const createErrDiff = (actual: unknown, expected: unknown, operator: string): string => {
+const createErrDiff = (
+  actual: unknown,
+  expected: unknown,
+  operator: string,
+  customMessage?: string,
+): string => {
   operator = checkOperator(actual, expected, operator);
 
   let skipped = false;
@@ -453,7 +458,7 @@ const createErrDiff = (actual: unknown, expected: unknown, operator: string): st
     }
   }
 
-  const headerMessage = `${kReadableOperator[operator]}\n${header}`;
+  const headerMessage = `${customMessage || kReadableOperator[operator]}\n${header}`;
   const skippedMessage = skipped ? "\n... Skipped lines" : "";
 
   return `${headerMessage}${skippedMessage}\n${message}\n`;
@@ -500,7 +505,13 @@ export class AssertionError extends Error {
     let { actual, expected } = options;
 
     if (message != null) {
-      super(String(message));
+      // Node: a custom message on the diff operators is used as the diff
+      // header instead of the readable operator text (`oh no\n\n1 !== 2\n`).
+      if (operator === "deepStrictEqual" || operator === "strictEqual") {
+        super(createErrDiff(actual, expected, operator, String(message)));
+      } else {
+        super(String(message));
+      }
     } else {
       if (
         typeof actual === "object" &&
