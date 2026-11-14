@@ -274,6 +274,7 @@ module.exports = {
   isIBMi,
   isLinux: process.platform === 'linux',
   isOSX: process.platform === 'darwin',
+  isMacOS: process.platform === 'darwin',
   isMainThread: true,
   hasIntl: typeof Intl !== 'undefined',
   hasCrypto: typeof crypto !== 'undefined',
@@ -440,7 +441,7 @@ const internalBinding = (id) => {
 module.exports = { internalBinding };
 `,
 
-  // internal/linkedlist: vendored verbatim from Node v22.0.0
+  // internal/linkedlist: vendored verbatim from Node v22.12.0
   // lib/internal/linkedlist.js (pure JS, no primordials in that tree).
   "internal/linkedlist": String.raw`'use strict';
 

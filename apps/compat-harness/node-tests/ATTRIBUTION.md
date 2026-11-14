@@ -1,15 +1,16 @@
 # Attribution
 
 Files under `node-tests/test/` are vendored verbatim from the Node.js project
-(<https://github.com/nodejs/node>) at tag `v22.0.0`, the same Node version the
+(<https://github.com/nodejs/node>) at tag `v22.12.0`, the same Node version the
 harness pins in `src/manifest.json` (`nodeVersion`). Node.js is licensed under
 the MIT license; the license text is reproduced below as required.
 
 Vendored files:
 
 - `test/common/tmpdir.js`, `test/common/arraystream.js`,
-  `test/common/fixtures.js` — Node's own `test/common` helpers that
-  `test/parallel/*` files `require('../common/<name>')`.
+  `test/common/fixtures.js`, `test/common/process-exit-code-cases.js` — Node's
+  own `test/common` helpers that `test/parallel/*` files
+  `require('../common/<name>')`.
 - `test/parallel/test-tls-ticket.js` — shared helper required by
   `test-tls-ticket-12.js`.
 - `test/parallel/test-path-*.js` — manifest test files vendored so they run
