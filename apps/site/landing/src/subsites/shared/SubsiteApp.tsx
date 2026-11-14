@@ -10,6 +10,8 @@ import Editor, { type EditorDocument } from "../ui/Editor";
 import Preview from "../ui/Preview";
 import FileTree from "../ui/FileTree";
 import SplitPane from "../ui/SplitPane";
+import VibeApp from "../vibe/components/VibeApp";
+import { vibeStarterTree } from "../vibe/scaffold";
 
 declare global {
    
@@ -43,8 +45,9 @@ const statusDotStyles: Record<BootState, string> = {
 const starterPackageJson = (name: string) =>
   JSON.stringify({ name: `bolo-${name}`, private: true, type: "module" }, null, 2);
 
-/** Minimal per-subsite starter trees. Rich templates land with WP2/WP4-WP6. */
-const STARTERS: Record<SubsiteName, Record<string, string>> = {
+/** Flat per-subsite starter files (mounted at the workdir root). The vibe
+ * subsite mounts a nested Vite + React tree instead (see vibeStarterTree). */
+const STARTERS: Record<Exclude<SubsiteName, "vibe">, Record<string, string>> = {
   ide: {
     "package.json": starterPackageJson("ide"),
     "index.ts": 'console.log("Hello from the bolo IDE");\n',
@@ -61,10 +64,6 @@ const STARTERS: Record<SubsiteName, Record<string, string>> = {
     "package.json": starterPackageJson("app"),
     "index.ts":
       'import { createServer } from "node:http";\n\nconst server = createServer((req, res) => {\n  res.writeHead(200, { "content-type": "application/json" });\n  res.end(JSON.stringify({ route: req.url, ok: true }));\n});\nserver.listen(3000, () => console.log("API listening on 3000"));\n',
-  },
-  vibe: {
-    "package.json": starterPackageJson("vibe"),
-    "index.ts": 'console.log("Hello from the bolo vibe sandbox");\n',
   },
 };
 
@@ -132,27 +131,37 @@ export default function SubsiteApp(props: Props) {
 
   onMount(() => {
     installSwErrorTracking();
-    const starter = STARTERS[props.subsite];
+    const isVibe = props.subsite === "vibe";
 
     (async () => {
       try {
         container = await bootSubsite(props.subsite);
         observePreviewUrl(container, setPreviewUrl);
-        await container.mount(
-          Object.fromEntries(
-            Object.entries(starter).map(([name, contents]) => [
-              name,
-              { file: { contents } },
-            ]),
-          ),
-        );
+        if (isVibe) {
+          await container.mount(vibeStarterTree);
+        } else {
+          const starter = STARTERS[props.subsite as Exclude<SubsiteName, "vibe">];
+          await container.mount(
+            Object.fromEntries(
+              Object.entries(starter).map(([name, contents]) => [
+                name,
+                { file: { contents } },
+              ]),
+            ),
+          );
+        }
         setBootState("installing");
         appendLine("\x1b[2m~/project $ npm install\x1b[0m\r\n");
         await runToCompletion(container.spawn("npm", ["install", "--ignore-scripts"]));
         appendLine("\r\n\x1b[2mexit 0\x1b[0m\r\n");
         setBootState("ready");
-        const firstFile = Object.keys(starter).find((name) => name !== "package.json");
-        if (firstFile) await openFile(`${container.workdir}/${firstFile}`);
+        if (isVibe) {
+          await openFile(`${container.workdir}/src/App.jsx`);
+        } else {
+          const starter = STARTERS[props.subsite as Exclude<SubsiteName, "vibe">];
+          const firstFile = Object.keys(starter).find((name) => name !== "package.json");
+          if (firstFile) await openFile(`${container.workdir}/${firstFile}`);
+        }
       } catch (err) {
         logger.error("subsite boot failed", {
           error: err instanceof Error ? err.message : String(err),
@@ -264,10 +273,11 @@ export default function SubsiteApp(props: Props) {
         return (
           <SplitPane direction="row" initialRatio={0.35} dataPanel="workbench"
             first={
-              <div data-panel="chat" class="flex h-full min-h-0 flex-col items-center justify-center gap-2 p-4 text-muted">
-                <p class="text-[13px]">Chat arrives with the vibe-coding workspace.</p>
-                <p class="text-[12px]">The container below is already booted.</p>
-              </div>
+              <VibeApp
+                getContainer={() => container}
+                onOutput={appendLine}
+                ready={bootState() === "ready"}
+              />
             }
             second={
               <SplitPane direction="column" initialRatio={0.6} dataPanel="preview-terminal"

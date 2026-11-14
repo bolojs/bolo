@@ -26,13 +26,17 @@
     "@codemirror/language": "^6.11.3",
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.35.0",
+    "@openrouter/ai-sdk-provider": "^3.0.0",
     "@fontsource-variable/geist": "^5.2.9",
+    "fflate": "^0.8.2",
     "@fontsource-variable/geist-mono": "^5.2.8",
     "@lezer/highlight": "^1.2.3",
     "@rolldown/browser": "^1.1.5",
     "@shimmer-from-structure/solid": "^2.4.5",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
+    "@ai-sdk/provider": "^4.0.3",
+    "ai": "^7.0.31",
     "astro": "^7.1.0",
     "motion": "^12.42.2",
     "phosphor-icons-astro": "^2.1.1-17042025",
@@ -40,7 +44,8 @@
     "react-dom": "^19.0.0",
     "sharp": "^0.35.3",
     "solid-js": "^1.9.13",
-    "unenv": "^1.10.0"
+    "unenv": "^1.10.0",
+    "zod": "^4.1.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
