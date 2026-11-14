@@ -23,7 +23,7 @@ boots a container scoped to its own service worker, with no SW errors.
 
 * I open the subsite page "/app/"
 * The subsite service worker at "/app/sw.js" controls the page
-* The subsite shell shows the panels "editor preview terminal"
+* The subsite shell shows the panels "routes editor request response"
 * The subsite runtime is ready
 * No service worker errors were recorded
 
