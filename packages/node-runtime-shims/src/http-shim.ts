@@ -492,7 +492,11 @@ class ServerResponseImpl extends OutgoingMessageImpl {
    * - headers may be a flat `[name, value, …]` array or an object;
    * - a string second arg is the reason phrase;
    * - calling it after headers were sent throws ERR_HTTP_HEADERS_SENT;
-   * - an out-of-range status throws ERR_HTTP_INVALID_STATUS_CODE.
+   * - an out-of-range status throws ERR_HTTP_INVALID_STATUS_CODE;
+   * - a flat header array with an odd number of entries throws
+   *   ERR_INVALID_ARG_VALUE;
+   * - without an explicit reason phrase the status message defaults to the
+   *   standard reason for the code, or "unknown" for non-standard codes.
    */
   writeHead(
     statusCode: number,
@@ -519,6 +523,10 @@ class ServerResponseImpl extends OutgoingMessageImpl {
       headerSource = headers;
     } else {
       headerSource = reasonOrHeaders ?? headers;
+      // Node: `this.statusMessage ||= STATUS_CODES[statusCode] || 'unknown'`.
+      if (!this.statusMessage) {
+        this.statusMessage = STATUS_CODES[statusCode] || "unknown";
+      }
     }
     if (headerSource) this.applyWriteHeadHeaders(headerSource);
     this.headersSent = true;
@@ -534,6 +542,14 @@ class ServerResponseImpl extends OutgoingMessageImpl {
     source: Record<string, string | string[]> | (string | number)[],
   ): void {
     if (Array.isArray(source)) {
+      // Node: `if (obj.length % 2 !== 0) throw new ERR_INVALID_ARG_VALUE('headers', obj)`.
+      if (source.length % 2 !== 0) {
+        const err = new TypeError(
+          `The value of "headers" is invalid. Received ${String(source)}`,
+        ) as TypeError & { code: string };
+        err.code = "ERR_INVALID_ARG_VALUE";
+        throw err;
+      }
       for (let i = 0; i + 1 < source.length; i += 2) {
         const name = source[i];
         const value = source[i + 1];
