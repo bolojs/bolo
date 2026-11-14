@@ -237,6 +237,13 @@ export const createLiveShimRegistry = (
     // errno table lives here so child_process/fs error metadata can name
     // libuv codes the same way Node does.
     util: { ...nodeWebShims.util, getSystemErrorName },
+    // Subpath builtins the bundler resolves as their own modules
+    // (`import { ReadableStream } from "stream/web"`, happy-dom, undici,
+    // msgpackr). The web module is a plain namespace object — no class
+    // wrapping needed — and `stream.web` covers getBuiltinModule lookups.
+    "stream/web": nodeWebShims.streamWeb,
+    "stream/promises": nodeWebShims.streamPromises,
+    "stream/consumers": nodeWebShims.streamConsumers,
     async_hooks: nodeWebShims.async_hooks,
     querystring: nodeWebShims.querystring,
     worker_threads: createWorkerThreadsBackend({

@@ -1,5 +1,16 @@
 export { createCryptoShim, default as crypto } from "./crypto.js";
 export { createStreamShim, default as stream } from "./stream.js";
+// Subpath modules the live shim registry binds as their own registry keys
+// (`stream/web`, `stream/promises`, `stream/consumers`) — see
+// node-runtime-shims' createLiveShimRegistry.
+export {
+  ReadableStream,
+  WritableStream,
+  TransformStream,
+  default as streamWeb,
+} from "./stream/web.js";
+export { default as streamPromises } from "./stream/promises.js";
+export { default as streamConsumers } from "./stream/consumers.js";
 export { createBufferShim, default as buffer } from "./buffer.js";
 export { createPathShim, default as path } from "./path.js";
 export { createUrlShim, default as url } from "./url.js";
