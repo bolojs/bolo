@@ -38,13 +38,17 @@ const mockBroadcastChannel = () => {
 };
 
 // happy-dom provides `document`, so the server's default loader would try a
-// cross-origin dynamic import. Inject the Node-style data: URL loader; the
-// template pages exercised here getStaticProps-free API routes import nothing
-// bare, so data: imports resolve cleanly.
+// cross-origin dynamic import. Inject the Node-style data: URL loader. The
+// jsx-runtime rewrite stubs React so server-executed modules (getStaticProps,
+// API routes) import cleanly without a package install.
+const JSX_STUB =
+  'data:text/javascript,export const jsx=()=>null,jsxs=()=>null,Fragment=Symbol()';
 const dataUrlLoader: ModuleLoader = {
   load: async (_servedPath, code) =>
     (await import(
-      /* @vite-ignore */ `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`
+      /* @vite-ignore */ `data:text/javascript;charset=utf-8,${encodeURIComponent(
+        code.replace(/from "react\/jsx-runtime"/g, `from "${JSX_STUB}"`),
+      )}`
     )) as Record<string, unknown>,
 };
 
@@ -107,7 +111,7 @@ describe('Integration: NextDevServer onFetch against a VfsBus (happy-dom)', () =
     const body = await res!.text();
     expect(body).toContain('react/jsx-runtime');
     expect(body).toContain('/__next/_bolo/shims/head.js');
-    expect(body).toContain('/__next/_bolo/shims/router.js');
+    expect(body).toContain('/__next/_bolo/shims/link.js');
   });
 
   it('generates an entry module wiring _app and the page into boot()', async () => {
