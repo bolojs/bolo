@@ -285,16 +285,18 @@ app.listen(3000);`;
    */
   @Step('A request to the sandbox origin <path> returns <text>')
   async sandboxRequest(path: string, text: string) {
-    const ok = await currentPage.evaluate(
+    const result = await currentPage.evaluate(
       async ([p, t]) => {
         const r = await fetch('https://sandbox.local' + p);
         const body = await r.text();
-        return body.includes(t);
+        return { ok: body.includes(t), status: r.status, body: body.slice(0, 300) };
       },
       [path, text] as [string, string],
     );
-    if (!ok) {
-      throw new Error(`Expected response to contain "${text}"`);
+    if (!result.ok) {
+      throw new Error(
+        `Expected response to contain "${text}" (status ${result.status}): ${result.body}`,
+      );
     }
   }
 
