@@ -2,6 +2,13 @@ import { createEventsShim } from "@bolojs/node-web-shims";
 
 const { EventEmitter } = createEventsShim();
 
+/**
+ * Node version the runtime reports for compatibility (`process.version`,
+ * `process.versions.node`, uncaught-error trailers). Keep in sync with
+ * `apps/compat-harness/src/manifest.json` `nodeVersion`.
+ */
+export const BOLO_NODE_VERSION = "v22.12.0";
+
 export interface ProcessShimOptions {
   readonly cwd?: string;
   readonly argv?: string[];
@@ -268,9 +275,9 @@ export const createProcessShim = (options: ProcessShimOptions = {}) => {
     // Track an actively-maintained LTS line: tools gate on `process.version`
     // (e.g. rspack requires >=20.19 or >=22.12), and 22.0.0 fails those checks
     // even when the shimmed APIs they actually call are present.
-    version: "v22.12.0",
-    versions: { node: "22.12.0" },
-    release: { name: "node", version: "22.12.0" },
+    version: BOLO_NODE_VERSION,
+    versions: { node: BOLO_NODE_VERSION.slice(1) },
+    release: { name: "node", version: BOLO_NODE_VERSION.slice(1) },
     features: {
       inspector: false,
       debug: false,

@@ -1,8 +1,10 @@
-import { ProcessExit } from "@bolojs/node-runtime-shims";
+import { BOLO_NODE_VERSION, ProcessExit } from "@bolojs/node-runtime-shims";
 
 /** Minimal slice of the process shim that the supervisor needs. */
 export interface SupervisedProcess {
   exitCode?: number | undefined;
+  /** `process.version` — used for the uncaught-error trailer when present. */
+  version?: string | undefined;
   emit(event: string, ...args: unknown[]): boolean;
   listenerCount(event: string): number;
 }
@@ -47,7 +49,7 @@ const formatUncaught = (err: unknown, version: string): string => {
 export const superviseRun = async (options: SuperviseOptions): Promise<SuperviseResult> => {
   const { process: proc, run, stderr } = options;
   const target = options.target ?? globalThis;
-  const version = options.nodeVersion ?? "v22.0.0";
+  const version = options.nodeVersion ?? proc.version ?? BOLO_NODE_VERSION;
   const cap = options.quiescenceCapMs ?? 5000;
 
   let terminal: { code: number } | undefined;

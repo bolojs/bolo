@@ -53,7 +53,7 @@ export type {
   WorkerSpawnSpec,
   WorkerLike,
 } from "./child-process-shim.js";
-export { createProcessShim, ProcessExit } from "./process-shim.js";
+export { createProcessShim, ProcessExit, BOLO_NODE_VERSION } from "./process-shim.js";
 export type { ProcessShim, ProcessShimOptions } from "./process-shim.js";
 export { createModuleShim } from "./module-shim.js";
 export type { ModuleShim, ModuleShimOptions } from "./module-shim.js";
