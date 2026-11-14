@@ -41,12 +41,6 @@
     "location": "packages/node-web-shims/src/timers_promises.ts",
     "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
   },
-  "test/parallel/test-timers-socket-timeout-removes-other-socket-unref-timer.js": {
-    "lane": "B",
-    "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
-    "location": "packages/node-runtime-shims/src/net-shim.ts",
-    "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-  },
   "test/parallel/test-tls-ticket-12.js": {
     "lane": "B",
     "reason": "no default tls backend: session ticket handling needs a real TLS handshake via tlsBackend",
