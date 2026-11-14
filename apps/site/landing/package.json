@@ -5,7 +5,8 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "astro build",
+    "build": "pnpm build:sw && astro build",
+    "build:sw": "node scripts/build-sws.mjs",
     "dev": "portless run --name site --force astro dev",
     "preview": "astro preview",
     "lint": "eslint .",

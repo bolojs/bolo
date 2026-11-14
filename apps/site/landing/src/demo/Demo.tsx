@@ -5,16 +5,15 @@ import { Shimmer } from "@shimmer-from-structure/solid";
 import { boot, type BrowserContainer, type ReplResult } from "@bolojs/runtime";
 import { getLogger } from "@bolojs/log/browser";
 import { createE2eBridge } from "./e2e-bridge";
-import Terminal from "./Terminal";
+import Terminal from "../subsites/ui/Terminal";
 import Editor from "./Editor";
-import Preview from "./Preview";
+import Preview from "../subsites/ui/Preview";
 import EditorTabs, { type EditorTab } from "./EditorTabs";
 import ScenarioPicker from "./ScenarioPicker";
 import ChipMarquee from "./ChipMarquee";
 import { defaultScenario, type QuickAction, type Scenario } from "./scenarios";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __preferLocalRolldown: boolean | undefined;
 }
 

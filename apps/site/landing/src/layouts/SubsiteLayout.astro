@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import Navbar from '../../../shared/components/Navbar.astro';
+import ThemeInit from '../../../shared/components/ThemeInit.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Subsite accent hue (Tailwind v4 color value) applied over the shared tokens. */
+  accent?: string;
+}
+
+const {
+  title,
+  description = 'Browser-based Node.js runtime. Run Node.js in the browser with zero server dependency.',
+  accent,
+} = Astro.props;
+
+const links = [
+  { href: '/catalog', label: 'Catalog' },
+  { href: '/ide', label: 'IDE' },
+  { href: '/sandbox', label: 'Sandbox' },
+  { href: '/app', label: 'App' },
+  { href: '/vibe', label: 'Vibe' },
+  { href: '/docs', label: 'Docs' },
+  { href: '/compat', label: 'Are We Web Yet?' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <ThemeInit />
+  </head>
+  <body>
+    <Navbar links={links} />
+    <main class="subsite-main" style={accent ? `--accent: ${accent}; --accent-dim: color-mix(in srgb, ${accent} 30%, transparent);` : undefined}>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style>
+  .subsite-main {
+    /* Full-height workbench: navbar height is subtracted so panels get a
+       stable box regardless of terminal/editor content. */
+    height: calc(100dvh - 57px);
+    padding: 0.75rem;
+  }
+  @media (min-width: 640px) {
+    .subsite-main {
+      padding: 1rem;
+    }
+  }
+</style>

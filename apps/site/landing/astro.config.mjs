@@ -12,8 +12,8 @@ import {
 export default defineConfig({
   site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : "https://bolojs.dev",
   integrations: [
-    react({ include: ["**/shared/components/**/*"], exclude: ["**/demo/**/*"] }),
-    solid({ include: ["**/demo/**/*"] }),
+    react({ include: ["**/shared/components/**/*"], exclude: ["**/demo/**/*", "**/subsites/**/*"] }),
+    solid({ include: ["**/demo/**/*", "**/subsites/**/*"] }),
   ],
   server: {
     headers: coopCoepHeaders,
