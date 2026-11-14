@@ -1,6 +1,7 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { Plugin } from "@rolldown/browser";
 import { buildEsmShUrl } from "@bolojs/pm";
+import { NATIVE_ADDON_WASM_VARIANTS } from "./native-addon-resolver.js";
 
 declare global {
   // Set by a host app (see apps/compat-harness/src/main.ts) to load
@@ -1106,6 +1107,39 @@ const esmShFallbackPlugin = (vfs: VfsBus, warnings: string[]): Plugin => ({
   },
 });
 
+/**
+ * Bundle-time alias: a curated native addon whose npm package cannot execute
+ * in the browser is aliased to its WASM/pure-JS variant *before* the bundled
+ * node_modules tree is even read. This is the complement of the runtime
+ * `nativeAddonLoader` seam (native-addon-resolver.ts): that seam only sees
+ * post-bundle `require('*.node')` calls, but packages like argon2 resolve
+ * their binding through `node-gyp-build`, whose directory probes
+ * (`build/Release`, `prebuilds/<platform>-<arch>`) run at *module init* and
+ * throw "No native build was found" long before any `.node` require would
+ * fire — the variant exports sit in `NATIVE_ADDON_WASM_VARIANTS` (the same
+ * table the runtime loader consults) and the alias module ships the variant's
+ * real exports, so `import argon2 from 'argon2'` works instead of dying in a
+ * loader that exists only on native Node.
+ *
+ * Registered BEFORE vfsPlugin so the alias wins over the installed package's
+ * own resolution. The externalized URL rides the same esm.sh path as the
+ * fallback resolver — esm.sh serves the variant's browser build (argon2-wasm
+ * embeds its WASM as base64; bcryptjs is pure JS), which is exactly what the
+ * warm-up loader (`esmShAddonModuleLoader`) imports for the runtime seam.
+ */
+const nativeAddonVariantPlugin: Plugin = {
+  name: "bolo-native-addon-variant",
+  resolveId(id) {
+    const name = barePackageName(id);
+    // Exact-name matches only — the variant replaces the whole package entry,
+    // so an `argon2/hash` subpath import would point at a file the variant
+    // does not ship; leave those (and non-catalogued packages) untouched.
+    if (name !== id || !NATIVE_ADDON_WASM_VARIANTS[name]) return null;
+    const url = buildEsmShUrl(NATIVE_ADDON_WASM_VARIANTS[name]);
+    return { id: url, external: true };
+  },
+};
+
 const registryShimExpr = (name: string): string =>
   `globalThis.__browserContainers.shims[${JSON.stringify(name)}]`;
 
@@ -1308,6 +1342,7 @@ export const bundleEntry = async (
     cwd: options.cwd ?? "/",
     treeshake: false,
     plugins: [
+      nativeAddonVariantPlugin,
       jsrAliasPlugin(),
       vfsPlugin(vfs, warnings),
       nodeAliasPlugin(options.getShim, warnings),
