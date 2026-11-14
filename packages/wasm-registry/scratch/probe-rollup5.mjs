@@ -1,0 +1,11 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+const vfs=new VfsBus(); const cwd="/home/web/app";
+vfs.hot.mkdirSync(cwd,{recursive:true});
+vfs.hot.writeFileSync(`${cwd}/package.json`,JSON.stringify({name:"p",version:"1.0.0"}));
+const pm=new PackageManager({vfs,cwd,stdout:()=>{},stderr:()=>{}});
+await pm.install(["rollup"]);
+const base=`${cwd}/node_modules/rollup`;
+const pj=JSON.parse(vfs.hot.readFileSync(`${base}/package.json`,"utf8"));
+console.log(JSON.stringify(pj.exports,null,1).slice(0,1500));
+console.log("browser:",JSON.stringify(pj.browser));

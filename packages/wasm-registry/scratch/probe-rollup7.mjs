@@ -1,0 +1,12 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+const vfs=new VfsBus(); const cwd="/home/web/app";
+vfs.hot.mkdirSync(cwd,{recursive:true});
+vfs.hot.writeFileSync(`${cwd}/package.json`,JSON.stringify({name:"p",version:"1.0.0"}));
+const pm=new PackageManager({vfs,cwd,stdout:()=>{},stderr:()=>{}});
+await pm.install(["@rollup/wasm-node"]);
+const base=`${cwd}/node_modules/@rollup/wasm-node`;
+console.log("dist:", vfs.hot.readdirSync(`${base}/dist`));
+console.log("shared:", vfs.hot.readdirSync(`${base}/dist/shared`));
+const nat = vfs.hot.readFileSync(`${base}/dist/native.js`,"utf8");
+console.log("native.js head:\n", nat.slice(0,700));
