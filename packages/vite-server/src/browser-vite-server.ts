@@ -24,6 +24,15 @@ interface TranspileResult {
   ) => Promise<string>;
 }
 
+/**
+ * Browsers cannot tell the server a request is a JS-side module import (the
+ * Sec-Fetch-Dest header is not visible to the service worker), so mark
+ * `import "./x.css"` specifiers the way Vite's import analysis does: append
+ * `?import`, which makes the server answer with a style-injecting JS module.
+ */
+const rewriteCssImports = (code: string): string =>
+  code.replace(/\b(import\s*|from\s*)(["'])([^"'\n]+\.css)\2/g, "$1$2$3?import$2");
+
 export class BrowserViteServer {
   private readonly vfs: VfsBus;
   private readonly root: string;
@@ -60,7 +69,8 @@ export class BrowserViteServer {
     if (!this.transpiler) {
       throw new Error("BrowserViteServer not started. Call start() first.");
     }
-    return this.transpiler.transpileFile(code, undefined, filePath);
+    const transformed = await this.transpiler.transpileFile(code, undefined, filePath);
+    return rewriteCssImports(transformed);
   }
 
   async transformRequest(url: string): Promise<Response> {

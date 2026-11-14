@@ -227,6 +227,14 @@ describe("BrowserViteServer", () => {
     expect(res.headers.get("Cache-Control")).toBe("no-cache");
   });
 
+  it("marks CSS imports in transformed modules with ?import", async () => {
+    await vfs.writeFile("/project/main.ts", 'import "./style.css";\nexport const x: number = 1;');
+    const server = await createServer();
+    const res = await server.transformRequest("http://localhost/main.ts");
+
+    expect(await res.text()).toContain("./style.css?import");
+  });
+
   it("stop closes BroadcastChannel", async () => {
     const server = await createServer();
     await server.stop();
