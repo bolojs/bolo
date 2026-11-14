@@ -1015,6 +1015,8 @@ export class ServerImpl extends EventEmitter implements HttpServer {
   private sandbox?: SWSandbox;
   private onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
   private releaseLiveness?: () => void;
+  /** The sandbox fetch handler registered by `listen()` — unregistered on close. */
+  private registeredFetchHandler?: (req: Request) => Promise<Response>;
 
   constructor(
     sandbox?: SWSandbox,
@@ -1100,6 +1102,7 @@ export class ServerImpl extends EventEmitter implements HttpServer {
       };
 
       this.sandbox.onFetch(fetchHandler);
+      this.registeredFetchHandler = fetchHandler;
     }
 
     queueMicrotask(() => {
@@ -1114,6 +1117,16 @@ export class ServerImpl extends EventEmitter implements HttpServer {
   close(callback?: (err?: Error) => void): this {
     this.releaseLiveness?.();
     this.releaseLiveness = undefined;
+    // Node: closing the server stops accepting — the sandbox-side fetch
+    // handler must go too, or the worker still reports a live server and
+    // never reaches natural exit.
+    const sandbox = this.sandbox as
+      | { removeFetch?: (handler: (req: Request) => Promise<Response>) => void }
+      | undefined;
+    if (sandbox?.removeFetch && this.registeredFetchHandler) {
+      sandbox.removeFetch(this.registeredFetchHandler);
+      this.registeredFetchHandler = undefined;
+    }
     if (this.listening) {
       this.onPortEvent?.("port-close", { port: this.serverPort });
       this.listening = false;
