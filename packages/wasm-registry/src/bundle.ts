@@ -1126,6 +1126,14 @@ const esmShFallbackPlugin = (vfs: VfsBus, warnings: string[]): Plugin => ({
  * fallback resolver — esm.sh serves the variant's browser build (argon2-wasm
  * embeds its WASM as base64; bcryptjs is pure JS), which is exactly what the
  * warm-up loader (`esmShAddonModuleLoader`) imports for the runtime seam.
+ *
+ * Verified in-container (compat-harness probes, apps/compat-harness):
+ * - argon2 → argon2-wasm: PASS. The WASM API differs from node-argon2 —
+ *   hash() resolves to { hash, hashHex, encoded } and there is no verify().
+ * - bcrypt → bcryptjs: PASS (pure JS, same API).
+ * - lightningcss → lightningcss-wasm: PASS, but its init() needs an explicit
+ *   wasm URL — the default `new URL('...', import.meta.url)` cannot resolve
+ *   inside the bundled data:/blob: module scope.
  */
 const nativeAddonVariantPlugin: Plugin = {
   name: "bolo-native-addon-variant",
