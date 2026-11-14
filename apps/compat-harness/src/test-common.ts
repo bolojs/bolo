@@ -250,9 +250,9 @@ const escapePOSIXShell = (cmdParts, ...args) => {
   const env = { ...process.env };
   let cmd = cmdParts[0];
   for (let i = 0; i < args.length; i++) {
-    const envVarName = `ESCAPED_${i}`;
+    const envVarName = 'ESCAPED_' + i;
     env[envVarName] = args[i];
-    cmd += '${' + envVarName + '}' + cmdParts[i + 1];
+    cmd += '\${' + envVarName + '}' + cmdParts[i + 1];
   }
   return [cmd, { env }];
 };

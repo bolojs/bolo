@@ -39,6 +39,15 @@ const describeReceived = (value: unknown): string => {
   return ` Received type ${typeof value} (${shown})`;
 };
 
+// Node validates `delay` with validateNumber (ERR_INVALID_ARG_TYPE).
+const validateDelay = (delay: number): void => {
+  if (typeof delay !== "number" || Number.isNaN(delay))
+    throw withCode(
+      new TypeError('The "delay" argument must be of type number.' + describeReceived(delay)),
+      "ERR_INVALID_ARG_TYPE",
+    );
+};
+
 const validate = (options: TimerOptions) => {
   if (options === null || typeof options !== "object")
     throw withCode(
@@ -95,11 +104,18 @@ export const createTimersPromisesShim = (host: TimerHost = defaultHost) => {
     delay: number,
     value: T,
     options: TimerOptions = {},
-  ): Promise<T> =>
-    new Promise((resolve, reject) => {
+  ): Promise<T> => {
+    // Node (lib/timers/promises.js) validates inside a try/catch and returns
+    // `PromiseReject(err)` — the argument errors are *rejections*, not
+    // synchronous throws.
+    try {
       validate(options);
-      const { signal, ref = true } = options;
-      if (signal?.aborted) return reject(abortError(signal));
+    } catch (err) {
+      return Promise.reject(err);
+    }
+    const { signal, ref = true } = options;
+    if (signal?.aborted) return Promise.reject(abortError(signal));
+    return new Promise<T>((resolve, reject) => {
       const cleanup = () => signal?.removeEventListener("abort", abort);
       const done = () => {
         cleanup();
@@ -115,11 +131,19 @@ export const createTimersPromisesShim = (host: TimerHost = defaultHost) => {
       if (!ref) (handle as { unref?: () => void })?.unref?.();
       signal?.addEventListener("abort", abort, { once: true });
     });
-  const setTimeout = <T = void>(delay = 1, value?: T, options?: TimerOptions) =>
-    wait(false, delay, value, options);
+  };
+  const setTimeout = <T = void>(delay = 1, value?: T, options?: TimerOptions) => {
+    try {
+      validateDelay(delay);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+    return wait(false, delay, value, options);
+  };
   const setImmediate = <T = void>(value?: T, options?: TimerOptions) =>
     wait(true, 0, value, options);
   const setInterval = async function* <T = void>(delay = 1, value?: T, options: TimerOptions = {}) {
+    validateDelay(delay);
     validate(options);
     const { signal, ref = true } = options;
     if (signal?.aborted) throw abortError(signal);
@@ -153,10 +177,20 @@ export const createTimersPromisesShim = (host: TimerHost = defaultHost) => {
       signal?.removeEventListener("abort", abort);
     }
   };
-  const scheduler = {
-    wait: (delay: number, options?: TimerOptions) => setTimeout(delay, undefined, options),
-    yield: () => setImmediate(),
-  };
+  // Node's scheduler is a class instance whose constructor throws
+  // ERR_ILLEGAL_CONSTRUCTOR (users cannot subclass/instantiate it).
+  class Scheduler {
+    constructor() {
+      throw withCode(new TypeError("Illegal constructor"), "ERR_ILLEGAL_CONSTRUCTOR");
+    }
+  }
+  const scheduler = Object.setPrototypeOf(
+    {
+      wait: (delay: number, options?: TimerOptions) => setTimeout(delay, undefined, options),
+      yield: () => setImmediate(),
+    },
+    Scheduler.prototype,
+  );
   return { setTimeout, setImmediate, setInterval, scheduler };
 };
 

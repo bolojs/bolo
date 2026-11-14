@@ -721,12 +721,17 @@ export const createChildProcessShim = (
    * verbatim, quotes removed) and backslash escapes outside quotes. Node runs
    * execSync through /bin/sh -c; we only need the token stream to recognise a
    * leading `node`/quoted-node invocation — anything else stays a shell line.
+   *
+   * `${VAR}` / `$VAR` expand from the environment, as the shell does — Node's
+   * own test suite relies on it (`escapePOSIXShell` passes values through the
+   * environment instead of quoting them).
    */
-  const tokenizeCommandLine = (line: string): string[] => {
+  const tokenizeCommandLine = (line: string, env?: Record<string, string>): string[] => {
     const tokens: string[] = [];
     let cur = "";
     let has = false;
     let quote: '"' | "'" | null = null;
+    const expand = (name: string): string => env?.[name] ?? "";
     for (let i = 0; i < line.length; i++) {
       const ch = line[i]!;
       if (quote === "'") {
@@ -738,6 +743,23 @@ export const createChildProcessShim = (
         if (ch === '"') quote = null;
         else if (ch === "\\" && i + 1 < line.length && '"\\$`'.includes(line[i + 1]!)) {
           cur += line[++i];
+        } else if (ch === "$") {
+          // Parameter expansion is active inside double quotes.
+          const braced = line[i + 1] === "{";
+          const close = braced ? line.indexOf("}", i + 2) : -1;
+          if (braced && close !== -1) {
+            cur += expand(line.slice(i + 2, close));
+            i = close;
+            has = true;
+          } else if (!braced && /[A-Za-z_]/.test(line[i + 1] ?? "")) {
+            let j = i + 1;
+            while (j < line.length && /[A-Za-z0-9_]/.test(line[j]!)) j++;
+            cur += expand(line.slice(i + 1, j));
+            i = j - 1;
+            has = true;
+          } else {
+            cur += ch;
+          }
         } else cur += ch;
         continue;
       }
@@ -750,6 +772,24 @@ export const createChildProcessShim = (
         cur += line[++i];
         has = true;
         continue;
+      }
+      if (ch === "$") {
+        const braced = line[i + 1] === "{";
+        const close = braced ? line.indexOf("}", i + 2) : -1;
+        if (braced && close !== -1) {
+          cur += expand(line.slice(i + 2, close));
+          i = close;
+          has = true;
+          continue;
+        }
+        if (!braced && /[A-Za-z_]/.test(line[i + 1] ?? "")) {
+          let j = i + 1;
+          while (j < line.length && /[A-Za-z0-9_]/.test(line[j]!)) j++;
+          cur += expand(line.slice(i + 1, j));
+          i = j - 1;
+          has = true;
+          continue;
+        }
       }
       if (/\s/.test(ch)) {
         if (has || cur.length > 0) {
@@ -769,12 +809,13 @@ export const createChildProcessShim = (
   const execSync = (command: string, options?: Record<string, unknown>): Buffer | string => {
     const opts = options ?? {};
     const str = String(command);
-    const parts = tokenizeCommandLine(str.trim());
+    const env = envFrom(opts);
+    const parts = tokenizeCommandLine(str.trim(), env);
     const req =
       parts.length > 0 && isNodeCommand(parts[0]!)
         ? nodeRunSpec(parts.slice(1))
         : runSpecFor(str, [], true);
-    req.env = envFrom(opts);
+    req.env = env;
     req.cwd = cwdFrom(opts);
     const res = runSyncOrThrow(req);
 
