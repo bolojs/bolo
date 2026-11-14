@@ -12,7 +12,7 @@ import FileTree from "../ui/FileTree";
 import SplitPane from "../ui/SplitPane";
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __preferLocalRolldown: boolean | undefined;
 }
 
@@ -87,7 +87,6 @@ export default function SubsiteApp(props: Props) {
   const [activePath, setActivePath] = createSignal<string | null>(null);
   const [lines, setLines] = createSignal<string[]>([]);
   const [inputValue, setInputValue] = createSignal("");
-  const [focusInput, setFocusInput] = createSignal(0);
   const [replActive, setReplActive] = createSignal(false);
   let container: BrowserContainer | undefined;
 
@@ -214,7 +213,6 @@ export default function SubsiteApp(props: Props) {
       lines={lines()}
       disabled={bootState() !== "ready"}
       inputValue={inputValue()}
-      focusTrigger={focusInput()}
       onSubmit={handleSubmit}
     />
   );

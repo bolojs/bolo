@@ -1,5 +1,6 @@
 /** @jsxImportSource solid-js */
-import { createSignal, For, JSX, onCleanup, onMount } from "solid-js";
+import { createSignal, For, onCleanup, onMount } from "solid-js";
+import type { JSX } from "solid-js";
 import type { VfsBus } from "@bolojs/fs";
 
 interface Props {

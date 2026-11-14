@@ -14,7 +14,7 @@ import ChipMarquee from "./ChipMarquee";
 import { defaultScenario, type QuickAction, type Scenario } from "./scenarios";
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __preferLocalRolldown: boolean | undefined;
 }
 

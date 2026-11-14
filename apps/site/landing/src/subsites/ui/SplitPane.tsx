@@ -1,5 +1,6 @@
 /** @jsxImportSource solid-js */
-import { createSignal, JSX, onCleanup } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
+import type { JSX } from "solid-js";
 
 interface Props {
   direction: "row" | "column";
