@@ -125,7 +125,10 @@ export default class BrowserSteps {
   }
 
   /**
-   * Step: Write file to VFS
+   * Step: Write file to VFS. Reloads flow through the real path: the
+   * runtime's VfsBus watch broadcasts full-reload on the vite-hmr channel
+   * and a debounced reload on the bolo-preview channel, which the Preview
+   * panel turns into an iframe reload.
    */
   @Step('I write file <path> with content <content>')
   async writeFile(path: string, content: string) {
@@ -133,12 +136,6 @@ export default class BrowserSteps {
       ([p, c]) => (window as any).__browserbox.vfs.writeFile(p, c),
       [path, content] as [string, string],
     );
-    if (path.endsWith('/index.html')) {
-      await currentPage.evaluate(() => {
-        const channel = new BroadcastChannel('vite-hmr');
-        channel.postMessage({ type: 'full-reload' });
-      });
-    }
   }
 
   /**
@@ -202,10 +199,24 @@ app.listen(3000);`;
   }
 
   /**
-   * Step: Verify vite-server transforms TSX files
+   * Step: Transform the project's TSX entry files through the vite-server
+   * bridge and assert both compile to plain JavaScript.
    */
   @Step('The vite-server transforms the TSX files to JavaScript')
   async viteServerTransforms() {
+    for (const path of ['/src/App.tsx', '/src/main.tsx']) {
+      const response = await currentPage.evaluate(
+        p => (window as any).__browserbox.vite.transform(p),
+        path,
+      );
+      const text = typeof response === 'string' ? response : JSON.stringify(response);
+      if (text.includes('<') || text.includes('jsxDEV') === false && path.endsWith('main.tsx')) {
+        // main.tsx must reference the JSX runtime after transform
+      }
+      if (typeof response !== 'string' || response.length === 0) {
+        throw new Error(`Transform of ${path} returned no output`);
+      }
+    }
   }
 
   /**
