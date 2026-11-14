@@ -1,7 +1,7 @@
 import type { VfsBus } from "@bolojs/fs";
 import { enrichMessage } from "@bolojs/log/error-hints";
 import { buildRouteManifest, matchRoute, type RouteManifest } from "./route-manifest.js";
-import { compileModule, rewriteBareImports, type ImportMap } from "./compile.js";
+import { compileModule, rewriteBareImports, cssImportModule, type ImportMap } from "./compile.js";
 import { assembleDocument } from "./document.js";
 import { runApiRoute } from "./api.js";
 import { runGetStaticProps } from "./data.js";
@@ -120,10 +120,13 @@ export class NextDevServer {
         return this.serveEntry(parsed.searchParams);
       }
       if (subPath.startsWith("/_pages/")) {
-        return this.serveCompiledPage(subPath.slice("/_pages/".length));
+        return this.serveCompiledPage(
+          subPath.slice("/_pages/".length),
+          parsed.searchParams.has("exec"),
+        );
       }
       if (this.looksLikeFile(subPath)) {
-        return this.serveStatic(subPath);
+        return this.serveStatic(subPath, parsed.searchParams.has("import"));
       }
       return this.serveRoute(subPath, request);
     } catch (err) {
@@ -179,23 +182,34 @@ export class NextDevServer {
     return importMap ? rewriteBareImports(code, importMap) : code;
   }
 
-  private async serveCompiledPage(rel: string): Promise<Response> {
+  private async serveCompiledPage(rel: string, exec = false): Promise<Response> {
     const relNoExt = rel.replace(/\.js$/, "");
     for (const ext of PAGE_RESOLVE_EXTENSIONS) {
       const filePath = `${this.root}/pages/${relNoExt}${ext}`;
       if (await this.vfs.exists(filePath)) {
-        const code = await this.compilePage(filePath);
+        let code = await this.compilePage(filePath);
+        // The ?exec=1 variant resolves bare imports through the project
+        // importmap for server-side execution in contexts that have no
+        // importmap (getStaticProps, API routes). The plain variant keeps
+        // bare imports for browser module resolution via the document
+        // importmap.
+        if (exec) {
+          code = await this.executableCode(code);
+        }
         return jsResponse(code);
       }
     }
     return new Response(`No page module: ${rel}`, { status: 404 });
   }
 
-  private async serveStatic(subPath: string): Promise<Response> {
+  private async serveStatic(subPath: string, asCssImport = false): Promise<Response> {
     for (const candidate of [`${this.root}/public${subPath}`, `${this.root}${subPath}`]) {
       if (await this.vfs.exists(candidate)) {
         const raw = await this.vfs.readFile(candidate);
         const ext = this.getExtension(candidate);
+        if (asCssImport && ext === ".css") {
+          return jsResponse(cssImportModule(raw as string));
+        }
         return new Response(raw as BodyInit, {
           status: 200,
           headers: {
@@ -233,7 +247,7 @@ export class NextDevServer {
   ): Promise<Response> {
     const code = await this.compilePage(filePath);
     const mod = await this.loader.load(
-      `${this.base}/_pages${this.pagesRel(filePath)}.js`,
+      `${this.base}/_pages${this.pagesRel(filePath)}.js?exec=1`,
       await this.executableCode(code),
     );
     const result = await runApiRoute({
@@ -263,7 +277,7 @@ export class NextDevServer {
       // getStaticProps; plain pages are rendered entirely client-side.
       if (GET_STATIC_PROPS_RE.test(raw as string)) {
         const mod = await this.loader.load(
-          `${this.base}/_pages${this.pagesRel(filePath)}.js`,
+          `${this.base}/_pages${this.pagesRel(filePath)}.js?exec=1`,
           await this.executableCode(code),
         );
         if (typeof mod.getStaticProps === "function") {

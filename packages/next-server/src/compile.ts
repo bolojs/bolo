@@ -59,7 +59,9 @@ export const rewriteBareImports = (code: string, importMap: ImportMap): string =
 };
 
 /** Transform a page/module source file to browser-ready ESM via
- * oxc-transform (TS + automatic-runtime JSX). */
+ * oxc-transform (TS + automatic-runtime JSX). CSS imports become `?import`
+ * module requests served as style-injecting JS (matching the vite-server
+ * convention). */
 export const compileModule = async (
   code: string,
   filename: string,
@@ -72,9 +74,25 @@ export const compileModule = async (
         ? ("jsx" as const)
         : ("ts" as const);
     const { code: transformed } = await transformScript(code, { loader: ext });
-    return { code: rewriteNextImports(transformed, shimBase), engine: "oxc" };
+    const withCss = rewriteCssImports(rewriteNextImports(transformed, shimBase));
+    return { code: withCss, engine: "oxc" };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(enrichMessage(`Transform error: ${message}`));
   }
+};
+
+/** Rewrite `import "./x.css"` to a `?import` request answered by a JS module
+ * that injects a <style> tag (see serveStatic in next-dev-server). */
+export const rewriteCssImports = (code: string): string => {
+  return code.replace(
+    /(from\s*|import\s*)(["'])((?:\.\.?)?\/[^"']+?\.css)\2/g,
+    (_m, prefix: string, quote: string, specifier: string) =>
+      `${prefix}${quote}${specifier}?import${quote}`,
+  );
+};
+
+/** JS module that injects a stylesheet, served for `*.css?import` requests. */
+export const cssImportModule = (css: string): string => {
+  return `const css = ${JSON.stringify(css)};\nconst style = document.createElement('style');\nstyle.textContent = css;\ndocument.head.appendChild(style);\nexport default css;`;
 };

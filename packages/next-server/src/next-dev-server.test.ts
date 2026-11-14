@@ -234,6 +234,29 @@ export async function getStaticProps({ params }: { params: { id: string } }) {
     expect(body).toContain("const App = ({ Component, pageProps })");
   });
 
+  it("serves an importmap-rewritten exec variant of page modules", async () => {
+    await vfs.writeFile(
+      "/project/importmap.json",
+      JSON.stringify({
+        imports: { react: "https://esm.sh/react@19", "react/": "https://esm.sh/react@19/" },
+      }),
+    );
+    const server = await createServer();
+    const res = await server.onFetch(
+      "https://x/__next/_pages/index.js?exec=1",
+      new Request("https://x/__next/_pages/index.js?exec=1"),
+    );
+    expect(res?.status).toBe(200);
+    const body = await res!.text();
+    expect(body).toContain('from "https://esm.sh/react@19/jsx-runtime"');
+    // The plain variant keeps the bare specifier for the document importmap.
+    const plain = await server.onFetch(
+      "https://x/__next/_pages/index.js",
+      new Request("https://x/__next/_pages/index.js"),
+    );
+    expect(await plain!.text()).toContain('from "react/jsx-runtime"');
+  });
+
   it("broadcastHmr posts full-reload on the next-hmr channel", async () => {
     const server = await createServer();
     server.broadcastHmr({ type: "full-reload", path: "/project/pages/index.tsx" });

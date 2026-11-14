@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { rewriteBareImports, rewriteNextImports } from "./compile.js";
+import {
+  rewriteBareImports,
+  rewriteNextImports,
+  rewriteCssImports,
+  cssImportModule,
+} from "./compile.js";
 
 describe("rewriteBareImports", () => {
   const importMap = {
@@ -51,5 +56,28 @@ describe("rewriteNextImports", () => {
   it("leaves other imports alone", () => {
     const code = 'import React from "react";';
     expect(rewriteNextImports(code, "/shims")).toBe(code);
+  });
+});
+
+describe("rewriteCssImports", () => {
+  it("appends ?import to relative and absolute css imports", () => {
+    const code = 'import "../styles/globals.css";\nimport "/x.css";';
+    const out = rewriteCssImports(code);
+    expect(out).toContain('"../styles/globals.css?import"');
+    expect(out).toContain('"/x.css?import"');
+  });
+
+  it("leaves non-css imports alone", () => {
+    const code = 'import a from "./a.ts";\nimport b from "pkg/style";';
+    expect(rewriteCssImports(code)).toBe(code);
+  });
+});
+
+describe("cssImportModule", () => {
+  it("wraps css in a style-injecting module", () => {
+    const mod = cssImportModule("body { color: red; }");
+    expect(mod).toContain("createElement('style')");
+    expect(mod).toContain("export default css");
+    expect(mod).toContain("body { color: red; }");
   });
 });
