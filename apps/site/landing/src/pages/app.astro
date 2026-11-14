@@ -1,0 +1,11 @@
+---
+import SubsiteLayout from '../layouts/SubsiteLayout.astro';
+import SubsiteApp from '../subsites/shared/SubsiteApp.tsx';
+
+const title = 'Full-stack app | bolo';
+const description = 'Frontend and backend in one tab, served through a service worker.';
+---
+
+<SubsiteLayout title={title} description={description} accent="#16a34a">
+  <SubsiteApp client:only="solid-js" subsite="app" />
+</SubsiteLayout>
