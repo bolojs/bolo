@@ -84,6 +84,10 @@ describe("runtime-builder", () => {
       createViteServer(_vfs: VfsBus): undefined {
         return undefined;
       }
+
+      createNextServer(_vfs: VfsBus): undefined {
+        return undefined;
+      }
     }
 
     const builder = new NoViteBuilder(baseOptions);
