@@ -552,7 +552,8 @@ var __bcGlobals = () => globalThis.__browserContainers;
 var __bc_process = __bcGlobals()?.shims?.process;
 var __bc_Buffer = __bcGlobals()?.shims?.buffer?.Buffer;
 var __bc_global = globalThis;
-// Process workers inject handle-tracked timers so only the *program's* — infrastructure (logging, rpc) uses real
+// Process workers inject handle-tracked timers so only the *program's*
+// timers keep the process alive — infrastructure (logging, rpc) uses real
 // globals and is invisible to liveness. Main-thread path: real globals.
 var __bcTimers = __bcGlobals()?.timers;
 var __bc_setTimeout = __bcTimers?.setTimeout ?? globalThis.setTimeout;
