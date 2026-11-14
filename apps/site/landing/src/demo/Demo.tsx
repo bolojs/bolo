@@ -14,7 +14,6 @@ import ChipMarquee from "./ChipMarquee";
 import { defaultScenario, type QuickAction, type Scenario } from "./scenarios";
 
 declare global {
-   
   var __preferLocalRolldown: boolean | undefined;
 }
 
