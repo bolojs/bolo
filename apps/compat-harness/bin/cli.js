@@ -389,11 +389,13 @@ const main = async () => {
   const allowed = parsePackages(options.packages);
   const sourcePath = options.source || defaultSourcePath;
 
-  const browser = await chromium.launch({
+  // `let`: node-tests recovery escalates from page reload to full browser
+  // relaunch when the browser process itself dies.
+  let browser = await chromium.launch({
     headless: true,
     executablePath: process.env.CHROME || undefined,
   });
-  const context = await browser.newContext();
+  let context = await browser.newContext();
   // `let`: a renderer crash or top-level navigation destroys the page's
   // execution context — node-tests recovery swaps in a fresh page.
   let page = await context.newPage();
@@ -479,28 +481,60 @@ const main = async () => {
       };
       watchNodePage(page);
 
+      const bootNodePage = async (p) => {
+        // Boot-only recovery: startMatrixRun also wires the package-matrix
+        // channel and clicks #pkgBtn, neither of which applies here.
+        await p.goto(options.url, { timeout: LOAD_TIMEOUT });
+        await p.waitForFunction(() => typeof window.__compatHarness !== "undefined", undefined, {
+          timeout: LOAD_TIMEOUT,
+        });
+        await p.click("#bootBtn");
+        await p.waitForFunction(
+          () => document.getElementById("status")?.textContent === "ready",
+          undefined,
+          { timeout: LOAD_TIMEOUT },
+        );
+      };
+
       const rebootNodePage = async () => {
-        if (nodePageCrashed || page.isClosed()) {
-          nodePageCrashed = false;
+        let pageGone = nodePageCrashed;
+        try {
+          pageGone = pageGone || page.isClosed();
+        } catch {
+          pageGone = true;
+        }
+        try {
+          if (pageGone) {
+            nodePageCrashed = false;
+            const dead = page;
+            page = await context.newPage();
+            attachPageHooks(page);
+            watchNodePage(page);
+            await dead.close().catch(() => {});
+            logger.info("recreated harness page after renderer crash");
+          }
+          await bootNodePage(page);
+        } catch (firstErr) {
+          // Page-level recovery cannot fix a dead browser process (observed:
+          // net/dns/https modules killing Chrome, after which every page op
+          // rejects with "browser has been closed") — relaunch everything.
+          logger.error("harness page recovery failed — relaunching browser", {
+            error: String(firstErr),
+          });
+          await browser.close().catch(() => {});
+          browser = await chromium.launch({
+            headless: true,
+            executablePath: process.env.CHROME || undefined,
+          });
+          context = await browser.newContext();
           const dead = page;
           page = await context.newPage();
           attachPageHooks(page);
           watchNodePage(page);
           await dead.close().catch(() => {});
-          logger.info("recreated harness page after renderer crash");
+          await bootNodePage(page);
+          logger.info("relaunched browser after unrecoverable page");
         }
-        // Boot-only recovery: startMatrixRun also wires the package-matrix
-        // channel and clicks #pkgBtn, neither of which applies here.
-        await page.goto(options.url, { timeout: LOAD_TIMEOUT });
-        await page.waitForFunction(() => typeof window.__compatHarness !== "undefined", undefined, {
-          timeout: LOAD_TIMEOUT,
-        });
-        await page.click("#bootBtn");
-        await page.waitForFunction(
-          () => document.getElementById("status")?.textContent === "ready",
-          undefined,
-          { timeout: LOAD_TIMEOUT },
-        );
       };
 
       const crashResults = (moduleName, files, err) => [
