@@ -1,6 +1,6 @@
 {
   "name": "@bolojs/registry",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "In-browser bundler (rolldown + oxc-transform) with a registerWasmTool() extension seam for bolo.",
   "homepage": "https://bolojs.dev/docs/api/#extending-bolo",
   "license": "Apache-2.0",
