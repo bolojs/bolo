@@ -134,6 +134,46 @@ describe("http-shim - Port Discovery Events", () => {
       const closeCalls = onPortEvent.mock.calls.filter((call) => call[0] === "port-close");
       expect(closeCalls.length).toBe(1);
     });
+
+    // A listening server registers a sandbox fetch handler; the handler is a
+    // live handle that keeps the process alive (see `serving()` in
+    // node-process-worker.ts). If `close()` leaves it registered, the worker
+    // never reaches its natural exit and the container is killed — the
+    // failure mode behind the test-https-close.js / test-https-request-
+    // arguments.js timeouts.
+    it("unregisters the sandbox fetch handler on close", async () => {
+      const removeFetch = vi.fn();
+      const sandbox = {
+        onFetch: vi.fn(),
+        removeFetch,
+      } as unknown as SWSandbox;
+      const { createServer } = createHttpShim(sandbox);
+
+      const server = createServer(vi.fn());
+      await server.listen(3000);
+
+      const registered = (sandbox.onFetch as unknown as ReturnType<typeof vi.fn>).mock
+        .calls[0]?.[0];
+      expect(registered).toBeDefined();
+
+      await server.close();
+
+      expect(removeFetch).toHaveBeenCalledWith(registered);
+    });
+
+    it("does not unregister a fetch handler for a server that never listened", async () => {
+      const removeFetch = vi.fn();
+      const sandbox = {
+        onFetch: vi.fn(),
+        removeFetch,
+      } as unknown as SWSandbox;
+      const { createServer } = createHttpShim(sandbox);
+
+      const server = createServer(vi.fn());
+      await server.close();
+
+      expect(removeFetch).not.toHaveBeenCalled();
+    });
   });
 
   describe("Server chaining", () => {
