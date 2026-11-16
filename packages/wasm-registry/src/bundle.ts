@@ -904,22 +904,45 @@ const maybeWrapNamespaceDefault = (vfs: VfsBus, file: string): string => {
  *
  * Returns `undefined` when the file cannot be converted safely.
  */
-const cjsToEsm = (source: string, id: string): string | undefined => {
+const cjsToEsm = (
+  source: string,
+  id: string,
+  resolveRelative: (spec: string) => string | undefined,
+): string | undefined => {
   let counter = 0;
   const imports: string[] = [];
-  // `require("./x")` → `import * as __cjs0 from "./x.js"`. The extension is
-  // appended so the bundler's extension-less resolution finds the sibling
-  // file the CommonJS resolver would have found.
+  // `require("./x")` → `import * as __cjs0 from "./x.js"` (resolved). The
+  // specifier is resolved through the same Node-style lookup the resolver
+  // uses (exact file, then extensions, then `dir/index.js`) — guessing the
+  // extension textually breaks directory requires (`require('./config')`
+  // where `config/` is a directory became `./config.js`, resolving to
+  // nothing) and converts requires that cannot resolve at all (`try {
+  // require('./missing.node') }` — Node defers those to require-time
+  // MODULE_NOT_FOUND; a static import fails the build instead).
   const body = source.replace(CJS_REQUIRE_CALL, (_match, quote: string, spec: string) => {
     if (!spec.startsWith(".")) return _match;
-    const withExt = extname(spec) ? spec : `${spec}.js`;
+    const resolved = resolveRelative(spec);
+    if (!resolved) return _match;
+    // A namespace import is correct here: the module is converted to ESM by
+    // this same path (its `default` is `module.exports`), and rolldown's
+    // `__toCommonJS` unwraps through the exported `"module.exports"` key —
+    // the expression below lands on the raw CJS exports either way.
     const name = `__cjs${counter++}`;
-    imports.push(`import * as ${name} from ${quote}${withExt}${quote};`);
-    return `${name}`;
+    imports.push(`import * as ${name} from ${quote}${resolved}${quote};`);
+    return `(${name}["module.exports"] ?? ${name}.default ?? ${name})`;
   });
   // A bare `require("pkg")` survived the rewrite — the file needs Node's
   // runtime require, which the bundler cannot express statically.
   if (/\brequire\s*\(/.test(body)) return undefined;
+  // Named CJS exports (`exports.parse = ...`) are re-exported so a static
+  // `import { parse } from 'pkg'` — which an ESM entry of a dual package
+  // emits (@rollup/wasm-node's node-entry.js imports four names from
+  // native.js) — binds to the same live value as the default. A getter keeps
+  // late assignments visible; `as any`-style names (invalid identifiers,
+  // "module.exports") go through the string form.
+  const named = [...body.matchAll(/\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g)]
+    .map((m) => m[1])
+    .filter((n, i, a) => a.indexOf(n) === i && n !== "default");
   return [
     ...imports,
     // `var` (not `const`): CommonJS files reassign `exports` directly
@@ -928,7 +951,22 @@ const cjsToEsm = (source: string, id: string): string | undefined => {
     "var module = { exports: {} };",
     "var exports = module.exports;",
     body,
-    "export default module.exports;",
+    "var __cjsExports = module.exports;",
+    "export default __cjsExports;",
+    ...named.map(
+      (n) =>
+        // A prefixed local avoids colliding with a same-named local in the
+        // CJS body (`var ALGORITHMS = ...` in jws) — the export name itself
+        // stays the CJS name.
+        `const __cjsNamed_${n} = __cjsExports[${JSON.stringify(n)}];\nexport { __cjsNamed_${n} as ${n} };`,
+    ),
+    // Rolldown's `__toCommonJS` interop helper unwraps a namespace through
+    // its `"module.exports"` key when present (the CJS convention esbuild
+    // and rolldown both honour). Without it, a CommonJS importer of this
+    // module receives `{ default: fn, __esModule: true }` instead of Node's
+    // `require()` value — `hasFlag is not a function` in winston's
+    // @colors/colors. The string export name is legal ES2022.
+    'export { __cjsExports as "module.exports" };',
   ].join("\n");
 };
 
@@ -1113,9 +1151,15 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
     // `module`/`exports` bindings become locals whose final value is the
     // module's default export.
     if (ext === ".js" && LOOKS_CJS.test(contents) && !HAS_DEFAULT_EXPORT.test(contents)) {
-      const converted = cjsToEsm(contents, id);
+      const converted = cjsToEsm(contents, id, (spec) =>
+        resolveFile(vfs, joinPath(resolveDir, spec)),
+      );
       if (converted !== undefined) {
-        warnings?.push(`"${id}" is CommonJS — converted to ESM (module.exports → default export)`);
+        // No warning: the conversion is a routine internal transform, and
+        // every CommonJS dependency in a package tree would otherwise add a
+        // line of noise to the probe output (winston pulls 20+ such files).
+        // A conversion that actually breaks the build surfaces as a rolldown
+        // error, which is already reported.
         return {
           code: converted,
           map: null,
