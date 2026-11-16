@@ -62,6 +62,22 @@ describe("createProcess", () => {
     });
   });
 
+  it("should re-quote args so whitespace survives the command-string round trip", async () => {
+    const vfs = new VfsBus();
+    const shell = {
+      execute: vi.fn().mockResolvedValue({ exitCode: 0 }),
+    } as unknown as ShellService;
+    const runtimeWorker = { dispose: vi.fn() } as unknown as RuntimeWorker;
+    const proc = createProcess("git", ["commit", "-m", "a b c"], {}, { vfs, shell, runtimeWorker });
+
+    expect(await proc.exit).toBe(0);
+    expect(shell.execute).toHaveBeenCalledWith('git commit -m "a b c"', {
+      stdout: expect.any(Function),
+      stderr: expect.any(Function),
+      tag: expect.any(String),
+    });
+  });
+
   it("should route runtime run without file path through shell service", async () => {
     const vfs = new VfsBus();
     const shell = {

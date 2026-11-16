@@ -1,6 +1,7 @@
 import type { VfsBus } from "@bolojs/fs";
 import type { Process, SpawnOptions } from "./container-types.js";
 import type { ShellService } from "./shell-service.js";
+import { joinShellArgs } from "./shell-words.js";
 import type { RuntimeWorker } from "./runtime-worker.js";
 
 export interface ProcessDeps {
@@ -60,8 +61,10 @@ export function createProcess(
 
       // All commands — including `runtime run` — go through the shell service,
       // which routes node/bun/runtime entries through the VFS-backed bundler
-      // (bundleEntry) and live shim wiring in runNodeApp.
-      const fullCommand = [command, ...args].join(" ");
+      // (bundleEntry) and live shim wiring in runNodeApp. Args are re-quoted
+      // so a `spawn(cmd, args)` → join → re-parse round trip preserves arg
+      // boundaries (e.g. `git commit -m "a b c"` reached through spawn).
+      const fullCommand = joinShellArgs([command, ...args]);
       deps.shell
         .execute(fullCommand, {
           stdout: enqueue,
