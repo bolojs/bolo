@@ -18,10 +18,10 @@ const {
 
 const links = [
   { href: '/catalog', label: 'Catalog' },
-  { href: '/ide', label: 'IDE' },
-  { href: '/sandbox', label: 'Sandbox' },
-  { href: '/app', label: 'App' },
-  { href: '/vibe', label: 'Vibe' },
+  { href: '/ide/', label: 'IDE' },
+  { href: '/sandbox/', label: 'Sandbox' },
+  { href: '/app/', label: 'App' },
+  { href: '/vibe/', label: 'Vibe' },
   { href: '/docs', label: 'Docs' },
   { href: '/compat', label: 'Are We Web Yet?' },
 ];
@@ -41,6 +41,9 @@ const links = [
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <ThemeInit />
+    <script is:inline>
+      if (!location.pathname.endsWith('/')) location.replace(location.pathname + '/' + location.search + location.hash);
+    </script>
   </head>
   <body>
     <Navbar links={links} />

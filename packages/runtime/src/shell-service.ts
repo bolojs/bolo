@@ -390,7 +390,9 @@ export class ShellService {
       // vite inside the in-browser sandbox would just thrash on missing
       // node_modules + native APIs. Print a status so the model's mental
       // model of "npm run dev started a dev server" stays satisfied.
-      output.stdout("Vite dev server: in-browser preview is live at /__preview/\n");
+      output.stdout(
+        `Vite dev server: in-browser preview is live at ${this.deps.swSandbox?.scope ?? "/"}__preview/\n`,
+      );
       return 0;
     }
 
@@ -615,7 +617,13 @@ export class ShellService {
     try {
       let serving = false;
       const onPortEvent = (event: string, data: { port: number; url?: string }) => {
-        const url = data.url ?? "";
+        // Worker realms mint root-relative virtual URLs ("/__virtual__/..")
+        // because the remote SWSandbox proxy cannot expose `.scope`; rewrite
+        // them under the real scope so the scoped worker intercepts them.
+        const scope = this.deps.swSandbox?.scope ?? "/";
+        const rawUrl = data.url ?? "";
+        const url =
+          rawUrl.startsWith("/") && !rawUrl.startsWith(scope) ? scope + rawUrl.slice(1) : rawUrl;
         if (event === "server-ready") this.deps.events?.emit("server-ready", data.port, url);
         if (event === "port-open") {
           serving = true;
