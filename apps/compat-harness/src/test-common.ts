@@ -51,7 +51,7 @@ function register(fn, name, exact, atLeast) {
   };
 }
 
-const mustCall = (fn, exact = 1) => register(fn, undefined, exact, undefined);
+const mustCall = (fn, exact = 1, name) => register(fn, typeof fn === 'number' ? undefined : name, typeof fn === 'number' ? fn : exact, undefined);
 const mustCallAtLeast = (fn, minimum = 1) => register(fn, undefined, undefined, minimum);
 const mustNotCall = (msg) => function mustNotCall(...args) {
   const argsInfo = args.length > 0 ? '\ncalled with arguments: ' + args.map(String).join(', ') : '';

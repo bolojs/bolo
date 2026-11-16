@@ -68,9 +68,7 @@
       "files": [
         "test/parallel/test-stream-pipe-event.js",
         "test/parallel/test-stream-readable-event.js",
-        "test/parallel/test-stream-writable-finished.js",
-        "test/parallel/test-zz-debug-readable.js",
-        "test/parallel/test-zz-probe-stream.js"
+        "test/parallel/test-stream-writable-finished.js"
       ]
     },
     "fs": {
@@ -273,8 +271,7 @@
     },
     "string_decoder": {
       "files": [
-        "test/parallel/test-string-decoder-end.js",
-        "test/parallel/test-string-decoder-fuzz.js"
+        "test/parallel/test-string-decoder-end.js"
       ]
     },
     "v8": {
