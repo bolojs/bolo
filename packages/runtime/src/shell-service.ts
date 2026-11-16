@@ -135,6 +135,34 @@ export interface SpawnedThreadHandle {
  */
 const BUNDLE_TIMEOUT_MS = 30_000;
 
+const NODE_USAGE = `Node ${BOLO_NODE_VERSION} (in-browser)
+Usage: node <file.js>      run a JS/TS file in the container
+       node --version      print the Node version
+       node                start the REPL
+`;
+
+const NPM_USAGE = `Usage: npm install [pkg ...]   install packages (alias: npm i)
+       npm run <script>     run a package.json script
+`;
+
+const HELP_TEXT = `bolo shell — available commands
+
+  help                     this message (help <cmd> for details)
+  node <file.js>           run a JS/TS file (bun works too)
+  npm install [pkg ...]    install packages
+  npm run <script>         run a package.json script
+  runtime run <file>       run a file on the runtime
+  agent run <file>         run a file in the agent sandbox
+  curl  git  nc  tcping    network + git on the virtual fs
+  sleep <secs>
+
+Shell builtins (just-bash): ls cd pwd cat echo cp mv rm mkdir touch
+find grep sed awk jq head tail sort tar gzip which clear history ...
+Run '<cmd> --help' for details on any of these.
+
+Servers you start get a preview URL in the preview pane.
+`;
+
 /**
  * Bundle cache for `spawnThreadProcess` — `child_process.spawnSync` of a
  * node script re-bundles the same entry on every call (Node's own test
@@ -297,6 +325,7 @@ export class ShellService {
     // this command only — it must not leak into the shell's persistent cwd.
     const effectiveCwd = cwd ?? this.cwd;
 
+    if (cmd === "help") return this.routeHelp(rest, output);
     if (cmd === "npm") return this.routeNpm(rest, output);
     if (cmd === "runtime") return this.routeRuntime(rest, output);
     if (cmd === "agent") return this.routeAgent(rest, output);
@@ -314,6 +343,10 @@ export class ShellService {
       // no real binary, so the shimmed process.version is the answer.
       if (filePath === "--version" || filePath === "-v") {
         output.stdout(`${BOLO_NODE_VERSION}\n`);
+        return 0;
+      }
+      if (filePath === "--help" || filePath === "-h") {
+        output.stdout(NODE_USAGE);
         return 0;
       }
       return this.runNodeApp(filePath, output);
@@ -339,7 +372,13 @@ export class ShellService {
     // shell's persistent working directory is threaded through explicitly.
     const result = await this.bash.exec(command, { cwd: effectiveCwd });
     if (result.stdout) output.stdout(result.stdout);
-    if (result.stderr) output.stderr(result.stderr);
+    // just-bash reports misses as "bash: <cmd>: command not found" — point
+    // the user at the help builtin so the surface is discoverable.
+    const stderr =
+      result.exitCode === 127
+        ? result.stderr.replaceAll("command not found", "command not found — type 'help'")
+        : result.stderr;
+    if (stderr) output.stderr(stderr);
     if (cwd === undefined) this.cwd = result.env.PWD ?? this.cwd;
     return result.exitCode;
   }
@@ -359,8 +398,21 @@ export class ShellService {
     return 0;
   }
 
+  private routeHelp(args: string[], output: OutputCallbacks): Promise<number> {
+    const topic = args[0];
+    if (topic === "node" || topic === "bun") output.stdout(NODE_USAGE);
+    else if (topic === "npm") output.stdout(NPM_USAGE);
+    else output.stdout(HELP_TEXT);
+    return Promise.resolve(0);
+  }
+
   private async routeNpm(args: string[], output: OutputCallbacks): Promise<number> {
     const [subcmd, ...rest] = args;
+
+    if (subcmd === undefined || subcmd === "--help" || subcmd === "-h" || subcmd === "help") {
+      output.stdout(NPM_USAGE);
+      return 0;
+    }
 
     if (subcmd !== "install" && subcmd !== "i") {
       if (subcmd === "run") return this.routeNpmRun(rest, output);
@@ -416,6 +468,11 @@ export class ShellService {
   private async routeRuntime(args: string[], output: OutputCallbacks): Promise<number> {
     const [subcmd, ...rest] = args;
 
+    if (subcmd === "--help" || subcmd === "-h" || subcmd === "help") {
+      output.stdout("Usage: runtime run <script>\n");
+      return 0;
+    }
+
     if (subcmd !== "run") {
       output.stderr(`Unsupported runtime subcommand: ${subcmd}`);
       return 1;
@@ -433,7 +490,7 @@ export class ShellService {
   private async routeRepl(output: OutputCallbacks): Promise<number> {
     // ponytail: shell→REPL streaming integration post-v1; Terminal.tsx will wire ReplService directly
     this.deps.runtimeWorker.startRepl();
-    output.stdout("REPL started. (streaming integration post-v1)\n");
+    output.stdout(`Node ${BOLO_NODE_VERSION}. Usage: node <file.js> — or 'node --help'\n`);
     return 0;
   }
 
@@ -738,6 +795,11 @@ export class ShellService {
 
   private async routeAgent(args: string[], output: OutputCallbacks): Promise<number> {
     const [subcmd, ...rest] = args;
+
+    if (subcmd === "--help" || subcmd === "-h" || subcmd === "help") {
+      output.stdout("Usage: agent run <script>\n");
+      return 0;
+    }
 
     if (subcmd !== "run") {
       output.stderr(`Unsupported agent subcommand: ${subcmd}`);
