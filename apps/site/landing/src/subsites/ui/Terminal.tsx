@@ -10,7 +10,13 @@ interface Props {
   onSubmit(commandLine: string): void | Promise<{ continuation?: boolean } | void>;
   inputValue?: string;
   focusTrigger?: number;
+  /** Prompt written after each submission and on enable. ANSI escapes allowed. */
+  prompt?: string;
 }
+
+/** Echoed user input renders bold so it reads distinctly from command output. */
+const INPUT_ON = "\x1b[1m";
+const INPUT_OFF = "\x1b[22m";
 
 export default function Terminal(props: Props) {
   let container!: HTMLDivElement;
@@ -18,9 +24,13 @@ export default function Terminal(props: Props) {
   let fitAddon: FitAddon | undefined;
 
   let lineBuffer = "";
+  let cursor = 0;
   let history: string[] = [];
   let historyIndex: number | null = null;
+  let stashedLine = "";
   let prevDisabled = true;
+
+  const promptFor = () => props.prompt ?? "> ";
 
   const buildTheme = () => {
     const style = getComputedStyle(container);
@@ -63,6 +73,7 @@ export default function Terminal(props: Props) {
       cursorBlink: true,
       fontFamily: "var(--font-mono)",
       fontSize: 13,
+      scrollback: 2000,
       theme: buildTheme(),
     });
 
@@ -76,8 +87,67 @@ export default function Terminal(props: Props) {
     xterm.open(container);
     fitAddon.fit();
 
-    const eraseVisible = (n: number) => {
-      for (let i = 0; i < n; i++) xterm?.write("\b \b");
+    const writeInput = (s: string) => xterm?.write(INPUT_ON + s + INPUT_OFF);
+
+    /** Replace the editable line wholesale and park the cursor at `pos`. */
+    const setLine = (s: string, pos = s.length) => {
+      const tail = lineBuffer.length - cursor;
+      if (tail > 0) xterm?.write(`\x1b[${tail}C`);
+      for (let i = 0; i < lineBuffer.length; i++) xterm?.write("\b \b");
+      lineBuffer = s;
+      writeInput(s);
+      const back = s.length - pos;
+      if (back > 0) xterm?.write(`\x1b[${back}D`);
+      cursor = pos;
+    };
+
+    const insertText = (s: string) => {
+      const after = lineBuffer.slice(cursor);
+      lineBuffer = lineBuffer.slice(0, cursor) + s + after;
+      cursor += s.length;
+      if (after.length === 0) {
+        writeInput(s);
+      } else {
+        xterm?.write(INPUT_ON + s + after + INPUT_OFF + `\x1b[${after.length}D`);
+      }
+    };
+
+    const moveCursor = (delta: number) => {
+      const next = Math.max(0, Math.min(lineBuffer.length, cursor + delta));
+      if (next === cursor) return;
+      const d = next - cursor;
+      xterm?.write(d > 0 ? `\x1b[${d}C` : `\x1b[${-d}D`);
+      cursor = next;
+    };
+
+    const backspace = () => {
+      if (cursor === 0) return;
+      const after = lineBuffer.slice(cursor);
+      lineBuffer = lineBuffer.slice(0, cursor - 1) + after;
+      cursor -= 1;
+      xterm?.write("\b" + INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
+    };
+
+    const deleteForward = () => {
+      if (cursor >= lineBuffer.length) return;
+      const after = lineBuffer.slice(cursor + 1);
+      lineBuffer = lineBuffer.slice(0, cursor) + after;
+      xterm?.write(INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
+    };
+
+    const killWordBack = () => {
+      const before = lineBuffer.slice(0, cursor);
+      const kept = before.replace(/\S+\s*$/, "");
+      if (kept.length === before.length) return;
+      setLine(kept + lineBuffer.slice(cursor), kept.length);
+    };
+
+    /** Ctrl+L: clear the visible screen, keep scrollback, redraw the input line. */
+    const clearScreen = () => {
+      xterm?.write("\x1b[2J\x1b[H" + promptFor());
+      writeInput(lineBuffer);
+      const back = lineBuffer.length - cursor;
+      if (back > 0) xterm?.write(`\x1b[${back}D`);
     };
 
     // Submissions run strictly in order. The line buffer is consumed
@@ -88,59 +158,110 @@ export default function Terminal(props: Props) {
     const submitLine = () => {
       const line = lineBuffer.trim();
       lineBuffer = "";
+      cursor = 0;
       xterm?.write("\r\n");
       pending = pending.then(async () => {
         let continuation = false;
         if (line) {
+          historyIndex = null;
+          if (history[history.length - 1] !== line) history.push(line);
+          if (line === "clear") {
+            xterm?.clear();
+            xterm?.write(promptFor());
+            return;
+          }
           try {
             const result = await props.onSubmit(line);
             continuation = result?.continuation ?? false;
           } catch {
             // surfaced by the caller; keep the prompt usable
           }
-          history.push(line);
-          historyIndex = null;
         }
-        xterm?.write(continuation ? "\r\n... " : "\r\n> ");
+        xterm?.write(continuation ? "\r\n... " : "\r\n" + promptFor());
       });
       return pending;
+    };
+
+    const interruptLine = () => {
+      xterm?.write("^C\r\n" + promptFor());
+      lineBuffer = "";
+      cursor = 0;
+      historyIndex = null;
+      stashedLine = "";
     };
 
     xterm.onData((data) => {
       if (props.disabled) return;
 
-      if (data === "\r") {
-        submitLine();
-      } else if (data === "\x7f") {
-        if (lineBuffer.length === 0) return;
-        lineBuffer = lineBuffer.slice(0, -1);
-        xterm?.write("\b \b");
-      } else if (data === "\x1b[A") {
-        if (history.length === 0) return;
-        const idx = historyIndex === null ? history.length - 1 : Math.max(0, historyIndex - 1);
-        const entry = history[idx];
-        if (entry === undefined) return;
-        historyIndex = idx;
-        eraseVisible(lineBuffer.length);
-        lineBuffer = entry;
-        xterm?.write(entry);
-      } else if (data === "\x1b[B") {
-        if (historyIndex === null) return;
-        if (historyIndex >= history.length - 1) {
-          historyIndex = null;
-          eraseVisible(lineBuffer.length);
-          lineBuffer = "";
-        } else {
-          const next = history[historyIndex + 1];
-          if (next === undefined) return;
+      switch (data) {
+        case "\r":
+          return submitLine();
+        case "\x7f":
+          return backspace();
+        case "\x1b[A": // ArrowUp — history back
+          if (history.length === 0) return;
+          if (historyIndex === null) {
+            stashedLine = lineBuffer;
+            historyIndex = history.length - 1;
+          } else {
+            historyIndex = Math.max(0, historyIndex - 1);
+          }
+          return setLine(history[historyIndex] ?? "");
+        case "\x1b[B": // ArrowDown — history forward
+          if (historyIndex === null) return;
+          if (historyIndex >= history.length - 1) {
+            historyIndex = null;
+            const restored = stashedLine;
+            stashedLine = "";
+            return setLine(restored);
+          }
           historyIndex += 1;
-          eraseVisible(lineBuffer.length);
-          lineBuffer = next;
-          xterm?.write(next);
-        }
-      } else if (data >= " " || data === "\t") {
-        lineBuffer += data;
-        xterm?.write(data);
+          return setLine(history[historyIndex] ?? "");
+        case "\x1b[C":
+          return moveCursor(1);
+        case "\x1b[D":
+          return moveCursor(-1);
+        case "\x1b[H":
+        case "\x1bOH":
+        case "\x1b[1~":
+          return moveCursor(-lineBuffer.length);
+        case "\x1b[F":
+        case "\x1bOF":
+        case "\x1b[4~":
+          return moveCursor(lineBuffer.length);
+        case "\x1b[3~":
+          return deleteForward();
+        case "\x01": // Ctrl+A
+          return moveCursor(-lineBuffer.length);
+        case "\x05": // Ctrl+E
+          return moveCursor(lineBuffer.length);
+        case "\x0b": // Ctrl+K — kill to end of line
+          if (cursor >= lineBuffer.length) return;
+          lineBuffer = lineBuffer.slice(0, cursor);
+          return xterm?.write("\x1b[K");
+        case "\x15": // Ctrl+U — kill to start of line
+          return setLine(lineBuffer.slice(cursor), 0);
+        case "\x17": // Ctrl+W — kill word back
+          return killWordBack();
+        case "\x0c": // Ctrl+L
+          return clearScreen();
+        case "\x03": // Ctrl+C — copy selection, else interrupt the line
+          if (xterm?.hasSelection()) {
+            const selection = xterm.getSelection();
+            if (selection) void navigator.clipboard?.writeText(selection).catch(() => {});
+            return;
+          }
+          return interruptLine();
+        default:
+          break;
+      }
+
+      if (data < " " && data !== "\t" && !data.includes("\n") && !data.includes("\r")) return;
+      // Bracketed paste delivers a whole chunk; split it into submitted lines.
+      const parts = data.split(/\r\n|\r|\n/);
+      for (const [i, part] of parts.entries()) {
+        if (i > 0) submitLine();
+        if (part) insertText(part);
       }
     });
 
@@ -151,8 +272,10 @@ export default function Terminal(props: Props) {
         xterm?.clear();
         written = 0;
         lineBuffer = "";
+        cursor = 0;
         history = [];
         historyIndex = null;
+        stashedLine = "";
       }
       for (let i = written; i < lines.length; i++) {
         const line = lines[i];
@@ -164,7 +287,7 @@ export default function Terminal(props: Props) {
     createEffect(() => {
       const disabled = props.disabled;
       if (!disabled && prevDisabled) {
-        xterm?.write("\r\n> ");
+        xterm?.write("\r\n" + promptFor());
       }
       prevDisabled = disabled;
     });
@@ -175,9 +298,7 @@ export default function Terminal(props: Props) {
       // still re-fires (inputValue alone wouldn't change).
       props.focusTrigger;
       if (!v) return;
-      eraseVisible(lineBuffer.length);
-      lineBuffer = v;
-      xterm?.write(v);
+      setLine(v);
       xterm?.focus();
       submitLine();
     });

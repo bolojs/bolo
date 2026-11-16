@@ -227,6 +227,7 @@ export default function Demo(props: Props = {}) {
             disabled={bootState() !== "ready"}
             inputValue={inputValue()}
             focusTrigger={focusInput()}
+            prompt={replActive() ? "\x1b[36m>\x1b[0m " : "\x1b[36m~/demo\x1b[0m $ "}
             onSubmit={handleSubmit}
           />
         </Shimmer>

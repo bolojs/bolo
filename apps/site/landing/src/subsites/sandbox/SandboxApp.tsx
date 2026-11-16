@@ -186,6 +186,7 @@ export default function SandboxApp() {
         disabled={bootState() !== "ready" || (active === "repl" && !replStarted())}
         inputValue={active === "script" ? scriptInput().value : replInput().value}
         focusTrigger={active === "script" ? scriptInput().trigger : replInput().trigger}
+        prompt={active === "script" ? "\x1b[36m~/project\x1b[0m $ " : "\x1b[36m>\x1b[0m "}
         onSubmit={(line) => (active === "script" ? runScriptCommand(line) : submitReplLine(line))}
       />
     );
