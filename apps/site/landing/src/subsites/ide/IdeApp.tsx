@@ -90,6 +90,7 @@ export default function IdeApp() {
   const [inputValue, setInputValue] = createSignal("");
   const [replActive, setReplActive] = createSignal(false);
   let container: BrowserContainer | undefined;
+  let currentProcess: ReturnType<BrowserContainer["spawn"]> | null = null;
   let previewServer: BrowserViteServer | undefined;
   let nextServer: NextDevServer | undefined;
   let rootSandbox: SWSandbox | undefined;
@@ -113,8 +114,14 @@ export default function IdeApp() {
   const runCommand = async (command: string, args: string[]) => {
     if (!container) return;
     appendLine(`\r\n\x1b[2m~/project $ ${[command, ...args].join(" ")}\x1b[0m\r\n`);
-    const exitCode = await runToCompletion(container.spawn(command, args));
-    appendLine(`\r\n\x1b[2mexit ${exitCode}\x1b[0m\r\n`);
+    const proc = container.spawn(command, args);
+    currentProcess = proc;
+    try {
+      const exitCode = await runToCompletion(proc);
+      appendLine(`\r\n\x1b[2mexit ${exitCode}\x1b[0m\r\n`);
+    } finally {
+      currentProcess = null;
+    }
   };
 
   const openFile = async (path: string) => {
@@ -319,6 +326,7 @@ export default function IdeApp() {
       inputValue={inputValue()}
       prompt={replActive() ? "\x1b[36m>\x1b[0m " : "\x1b[36m~/project\x1b[0m $ "}
       onSubmit={handleSubmit}
+      onInterrupt={() => currentProcess?.kill()}
     />
   );
 

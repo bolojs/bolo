@@ -145,8 +145,14 @@ export const createRpcPeer = (send: RpcSend): RpcPeer => {
   const handlers = new Map<string, (...args: unknown[]) => unknown>();
   const callbacks = new Map<number, (...args: unknown[]) => unknown>();
   let nextCbId = 1;
+  // Set by reset() (peer dead — e.g. a terminated process worker). Calls made
+  // afterwards would post to a dead endpoint and never settle, so they reject
+  // immediately instead of hanging the caller (a stale sandbox.onFetch
+  // callback must not wedge SW fetches forever).
+  let resetReason: Error | undefined;
 
   const callRemoteCallback = async (cbId: number, args: unknown[]): Promise<unknown> => {
+    if (resetReason) throw resetReason;
     const id = nextId++;
     return new Promise((resolve, reject) => {
       cbPending.set(id, { resolve, reject });
@@ -170,6 +176,7 @@ export const createRpcPeer = (send: RpcSend): RpcPeer => {
     serveAny: undefined,
 
     call<T>(op: string, ...args: unknown[]): Promise<T> {
+      if (resetReason) return Promise.reject(resetReason);
       const id = nextId++;
       return new Promise<T>((resolve, reject) => {
         pending.set(id, {
@@ -185,6 +192,7 @@ export const createRpcPeer = (send: RpcSend): RpcPeer => {
     },
 
     reset(reason: Error) {
+      resetReason ??= reason;
       for (const p of pending.values()) p.reject(reason);
       pending.clear();
       for (const p of cbPending.values()) p.reject(reason);

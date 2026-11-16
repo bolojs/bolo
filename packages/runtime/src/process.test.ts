@@ -108,6 +108,11 @@ describe("createProcess", () => {
 
     expect(await install.exit).toBe(1);
     expect(runtimeWorker.dispose).not.toHaveBeenCalled();
+    // The output stream must close on kill too — a terminal's read loop
+    // drains to EOF before returning to the prompt, even when the command
+    // isn't a reclaimable process worker (shell.kill returns false for it).
+    const { done } = await install.output.getReader().read();
+    expect(done).toBe(true);
     // The dev server process's exit promise must remain unresolved — killing
     // `install` must not have terminated the shared worker it depends on.
     const raced = await Promise.race([
