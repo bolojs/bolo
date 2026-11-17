@@ -938,34 +938,34 @@ const maybeWrapNamespaceDefault = (vfs: VfsBus, file: string): string => {
  * Returns `undefined` when the file cannot be converted safely.
  */
 const cjsToEsm = (
- source: string,
- id: string,
- resolveRelative: (spec: string) => string | undefined,
+  source: string,
+  id: string,
+  resolveRelative: (spec: string) => string | undefined,
 ): string | undefined => {
- let counter = 0;
- const imports: string[] = [];
- // `require("./x")` → unwrapped namespace of the converted target. The target
- // is converted to ESM by this same path (its `default` is `module.exports`),
- // and rolldown lowers a namespace import of a CJS-shaped module to
- // `__toESM(require_helper())` — a namespace whose `"module.exports"` getter
- // is DROPPED by `__toESM`'s copy (rolldown ≥1.3; 1.1 emitted the helper call
- // directly, where the getter survived). Picking through
- // `ns["module.exports"] ?? ns.default ?? ns` then lands on `ns.default` —
- // which for an `exports.default = Class` module is the CLASS, not the
- // exports object the CJS consumer needs (`provider_1.default` → undefined,
- // "Class extends value undefined" in globby/fast-glob).
- // The `__bc_cjsNs` helper restores Node semantics: a `__esModule` namespace
- // stays the namespace (its `.default` getter still exposes the exports
- // value to plain `x.default` reads); a plain namespace keeps the old
- // `mo ?? default ?? ns` chain.
- const body = source.replace(CJS_REQUIRE_CALL, (_match, quote: string, spec: string) => {
+  let counter = 0;
+  const imports: string[] = [];
+  // `require("./x")` → unwrapped namespace of the converted target. The target
+  // is converted to ESM by this same path (its `default` is `module.exports`),
+  // and rolldown lowers a namespace import of a CJS-shaped module to
+  // `__toESM(require_helper())` — a namespace whose `"module.exports"` getter
+  // is DROPPED by `__toESM`'s copy (rolldown ≥1.3; 1.1 emitted the helper call
+  // directly, where the getter survived). Picking through
+  // `ns["module.exports"] ?? ns.default ?? ns` then lands on `ns.default` —
+  // which for an `exports.default = Class` module is the CLASS, not the
+  // exports object the CJS consumer needs (`provider_1.default` → undefined,
+  // "Class extends value undefined" in globby/fast-glob).
+  // The `__bc_cjsNs` helper restores Node semantics: a `__esModule` namespace
+  // stays the namespace (its `.default` getter still exposes the exports
+  // value to plain `x.default` reads); a plain namespace keeps the old
+  // `mo ?? default ?? ns` chain.
+  const body = source.replace(CJS_REQUIRE_CALL, (_match, quote: string, spec: string) => {
     if (!spec.startsWith(".")) return _match;
     const resolved = resolveRelative(spec);
     if (!resolved) return _match;
     const name = `__cjs${counter++}`;
     imports.push(`import * as ${name} from ${quote}${resolved}${quote};`);
     return `__bc_cjsNs(${name})`;
- });
+  });
   // A bare `require("pkg")` survived the rewrite — the file needs Node's
   // runtime require, which the bundler cannot express statically.
   if (/\brequire\s*\(/.test(body)) return undefined;

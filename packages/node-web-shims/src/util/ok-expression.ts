@@ -113,9 +113,7 @@ export const setOkExpressionSourceReader = (reader: SourceReader | undefined): v
  * Installs the (host-provided) call-site source reader used by `assert.ok`.
  * Takes precedence over the filename reader when both are installed.
  */
-export const setOkExpressionCallSiteReader = (
-  reader: CallSiteSourceReader | undefined,
-): void => {
+export const setOkExpressionCallSiteReader = (reader: CallSiteSourceReader | undefined): void => {
   readCallSite = reader;
 };
 
@@ -474,9 +472,7 @@ export const getErrMessage = (
       errorCache.set(identifier, undefined);
       return undefined;
     }
-    const source = callSiteReader
-      ? callSiteReader({ filename, line, column })
-      : reader!(filename);
+    const source = callSiteReader ? callSiteReader({ filename, line, column }) : reader!(filename);
     if (source === undefined) {
       errorCache.set(identifier, undefined);
       return undefined;

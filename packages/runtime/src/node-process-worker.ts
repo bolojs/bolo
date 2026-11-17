@@ -20,9 +20,7 @@ import {
 import { createSyncCaller } from "./sync-channel.js";
 import { SourceMapIndex } from "./source-map.js";
 import type { RawBundleSourceMap } from "@bolojs/registry/bundle";
-import {
-  setOkExpressionCallSiteReader,
-} from "@bolojs/node-web-shims/dist/util/ok-expression.js";
+import { setOkExpressionCallSiteReader } from "@bolojs/node-web-shims/dist/util/ok-expression.js";
 import { createNodeTimers } from "./node-timers.js";
 import { createEventLoop } from "./event-loop.js";
 import {
@@ -73,11 +71,11 @@ export interface ProcRunMessage {
   sab?: SharedArrayBuffer;
   quiescenceCapMs?: number;
   /**
-  * The bundle's hidden source map (see `bundleEntry`). A bundle runs from a
-  * single `blob:` URL, so stack frames point at the bundle — the map (with
-  * `sourcesContent`) lets the worker resolve an `assert.ok(...)` call site
-  * back to the original module (Node's falsy-expression message).
-  */
+   * The bundle's hidden source map (see `bundleEntry`). A bundle runs from a
+   * single `blob:` URL, so stack frames point at the bundle — the map (with
+   * `sourcesContent`) lets the worker resolve an `assert.ok(...)` call site
+   * back to the original module (Node's falsy-expression message).
+   */
   sourceMap?: RawBundleSourceMap;
   /** Present when this process runs a worker_threads thread. */
   thread?: { workerData?: unknown; threadId?: number };
