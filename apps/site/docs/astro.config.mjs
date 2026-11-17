@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, passthroughImageService } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import { searchForWorkspaceRoot } from 'vite';
@@ -6,6 +6,9 @@ import { searchForWorkspaceRoot } from 'vite';
 export default defineConfig({
   site: process.env.SITE_DOMAIN ? `https://${process.env.SITE_DOMAIN}` : 'https://bolojs.dev',
   base: '/docs',
+  // Internal reference docs embed screenshots; passthrough avoids a sharp
+  // native dependency in CI for images that are never optimized anyway.
+  image: { service: passthroughImageService() },
   vite: {
     server: { fs: { allow: [searchForWorkspaceRoot(process.cwd())] } },
   },

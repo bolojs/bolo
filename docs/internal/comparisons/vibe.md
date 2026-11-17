@@ -1,3 +1,7 @@
+---
+title: "internal: /vibe comparison"
+---
+
 # bolo /vibe vs AI vibe-coding alternatives
 
 Date of research: 2026-11-14.

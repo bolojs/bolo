@@ -1,3 +1,7 @@
+---
+title: "internal: /ide comparison"
+---
+
 # bolo /ide vs web IDE alternatives
 
 Date of test: 2026-11-14. Branch checkout of bolo at `ba92856` (landing dev server, `astro dev`, not a production build).

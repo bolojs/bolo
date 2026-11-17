@@ -1,3 +1,7 @@
+---
+title: "internal: /sandbox comparison"
+---
+
 # Competitive comparison: bolo /sandbox
 
 Date: 2026-11-14. Scope: terminal and script execution only (bolo `/sandbox`, see `apps/site/landing/src/subsites/sandbox/SandboxApp.tsx`).
