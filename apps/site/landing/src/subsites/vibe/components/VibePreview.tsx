@@ -1,16 +1,17 @@
 /** @jsxImportSource solid-js */
 import { createSignal } from "solid-js";
 
-const PREVIEW_BASE = "/__preview/";
-
 /**
  * Preview for the vibe subsite. The subsite service worker is scoped to
- * "/vibe/", so a plain iframe navigation to "/__preview/" is not intercepted
- * (iframe navigations use the SW matching the destination URL). Page-initiated
- * fetch() and subresources of an about:srcdoc frame do go through the
- * controlling SW, so the document is fetched by the page and injected as
- * srcdoc with a <base> pointing at the preview prefix.
+ * "/vibe/", and the runtime mounts its preview under "<scope>__preview/"
+ * (runtime-builder.ts). A plain iframe navigation to the scope-prefixed URL
+ * would work, but subresource fetches outside the controlling SW's scope are
+ * not intercepted, so a bare "/__preview/" fetch bypasses every service
+ * worker and 404s. Fetching "vibe/__preview/" relative to the page URL lands
+ * inside the controlling scope, and the document is injected as srcdoc with
+ * a <base> pointing at the same prefix so its subresources stay in scope.
  */
+const PREVIEW_BASE = new URL("__preview/", globalThis.location.href).pathname;
 export const createVibePreview = () => {
   const [html, setHtml] = createSignal<string | null>(null);
 
