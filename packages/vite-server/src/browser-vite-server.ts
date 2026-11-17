@@ -174,6 +174,14 @@ export class BrowserViteServer {
           headers: { "Content-Type": "text/html" },
         });
       }
+
+      // No index.html yet — serving "/" through transformRequest would try to
+      // read the root directory and 500 (EISDIR). A placeholder keeps the
+      // preview pane alive until the user scaffolds an app.
+      return new Response(
+        `<!doctype html><html><body style="font-family:system-ui;background:#0a0a0a;color:#888;display:grid;place-items:center;height:100vh;margin:0"><p>No <code>index.html</code> yet — create one in <code>${this.root}</code> or run your dev server.</p></body></html>`,
+        { status: 200, headers: { "Content-Type": "text/html" } },
+      );
     }
 
     return this.transformRequest(url);
