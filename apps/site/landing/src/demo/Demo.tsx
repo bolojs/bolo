@@ -64,6 +64,7 @@ export default function Demo(props: Props = {}) {
   const [focusInput, setFocusInput] = createSignal(0);
   const [replActive, setReplActive] = createSignal(false);
   let container: BrowserContainer | undefined;
+  let currentProcess: ReturnType<BrowserContainer["spawn"]> | null = null;
 
   const appendLine = (s: string) => setLines((prev) => [...prev, s]);
 
@@ -84,8 +85,14 @@ export default function Demo(props: Props = {}) {
   const runCommand = async (command: string, args: string[]) => {
     if (!container) return;
     appendLine(`\r\n\x1b[2m~/demo $ ${[command, ...args].join(" ")}\x1b[0m\r\n`);
-    const exitCode = await runToCompletion(container.spawn(command, args));
-    appendLine(`\r\n\x1b[2mexit ${exitCode}\x1b[0m\r\n`);
+    const proc = container.spawn(command, args);
+    currentProcess = proc;
+    try {
+      const exitCode = await runToCompletion(proc);
+      appendLine(`\r\n\x1b[2mexit ${exitCode}\x1b[0m\r\n`);
+    } finally {
+      currentProcess = null;
+    }
   };
 
   const bootScenario = async (scenario: Scenario) => {
@@ -229,6 +236,7 @@ export default function Demo(props: Props = {}) {
             focusTrigger={focusInput()}
             prompt={replActive() ? "\x1b[36m>\x1b[0m " : "\x1b[36m~/demo\x1b[0m $ "}
             onSubmit={handleSubmit}
+            onInterrupt={() => currentProcess?.kill()}
           />
         </Shimmer>
       </section>

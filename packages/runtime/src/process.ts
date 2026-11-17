@@ -118,7 +118,19 @@ export function createProcess(
     // stop reporting output.
     deps.shell.kill(tag);
     if (!closed) {
+      closed = true;
       resolveExit(1);
+      // The output stream closes like the timeout path: a reader draining to
+      // EOF (a terminal awaiting the prompt) is released even when nothing
+      // killable was registered under the tag — the underlying command still
+      // unwinds in the background with its output dropped by `aborted`.
+      for (const controller of streamController) {
+        try {
+          controller.close();
+        } catch {
+          /* already closed or errored */
+        }
+      }
     }
   };
 

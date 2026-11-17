@@ -90,6 +90,9 @@ export class NodeProcess {
 
   /** Threads this process spawned via the `thread.*` ops — killed on exit. */
   private readonly spawnedThreads = new Set<{ terminate(): void }>();
+  /** Ports announced open and not yet closed. A terminated worker cannot
+   * report its own closes, so finish() synthesizes them for listeners. */
+  private readonly openPorts = new Map<number, string | undefined>();
 
   readonly exit: Promise<number>;
 
@@ -188,6 +191,11 @@ export class NodeProcess {
         case "STDERR":
           return this.onStderr?.(msg.data);
         case "PORT_EVENT":
+          if (msg.event === "port-open") {
+            this.openPorts.set(msg.data.port, msg.data.url);
+          } else if (msg.event === "port-close") {
+            this.openPorts.delete(msg.data.port);
+          }
           return this.onPortEvent?.(msg.event, msg.data);
         case "THREAD_MSG":
           return this.onThreadMessage?.(msg.data);
@@ -262,6 +270,17 @@ export class NodeProcess {
     this.worker = null;
     this.rpc?.reset(new Error(this.killed ? "process killed" : `process exited with code ${code}`));
     this.deps.syncServer.detach(this.deps.pid);
+    // The worker is gone — any port it left open is closed for good, but the
+    // worker can't post that itself. Emit the closes so `port` listeners and
+    // previews stop treating the server as live.
+    for (const [port, url] of this.openPorts) {
+      try {
+        this.onPortEvent?.("port-close", { port, url });
+      } catch {
+        /* a listener error must not block teardown */
+      }
+    }
+    this.openPorts.clear();
     this.resolveExit(code);
   }
 }

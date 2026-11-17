@@ -209,6 +209,13 @@ export class ShellService {
   private viteWatcher?: ReturnType<VfsBus["watch"]>;
   private processes = new Map<unknown, NodeProcess>();
   /**
+   * Tags killed before their process worker registered (a `node app.js`
+   * killed while `bundleEntry` is still running). runNodeApp checks this set
+   * after bundling so a killed spawn doesn't start — and orphan — a server
+   * with no live kill handle.
+   */
+  private killedTags = new Set<unknown>();
+  /**
    * Warmed `.node` → WASM-variant exports, populated lazily by
    * `ensureWasmAddons()` the first time a bundle contains a `.node` require.
    * The map is mutated in place so the synchronous `nativeAddonLoader`
@@ -263,14 +270,20 @@ export class ShellService {
 
     try {
       const exitCode = await this.route(command, callbacks, cwd);
-      if (output?.tag !== undefined) this.processes.delete(output.tag);
+      if (output?.tag !== undefined) {
+        this.processes.delete(output.tag);
+        this.killedTags.delete(output.tag);
+      }
       return {
         stdout: stdoutChunks.join(""),
         stderr: stderrChunks.join(""),
         exitCode,
       };
     } catch (err) {
-      if (output?.tag !== undefined) this.processes.delete(output.tag);
+      if (output?.tag !== undefined) {
+        this.processes.delete(output.tag);
+        this.killedTags.delete(output.tag);
+      }
       const message = err instanceof Error ? err.message : String(err);
       callbacks.stderr(message);
       return {
@@ -285,7 +298,13 @@ export class ShellService {
    * Returns true when a process was killed. */
   kill(tag: unknown): boolean {
     const proc = this.processes.get(tag);
-    if (!proc) return false;
+    if (!proc) {
+      // No worker under this tag — either nothing killable is running (npm,
+      // just-bash) or a node app is still bundling. Remember the tag so the
+      // post-bundle check in runNodeApp aborts instead of orphaning a worker.
+      this.killedTags.add(tag);
+      return false;
+    }
     this.processes.delete(tag);
     proc.kill();
     return true;
@@ -744,6 +763,13 @@ export class ShellService {
         }),
       ]).finally(() => clearTimeout(bundleTimer));
       for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
+
+      // Killed (Ctrl+C / exec timeout) while the bundle was resolving —
+      // starting the app now would spawn a worker no kill handle can reach.
+      if (rawOutput.tag !== undefined && this.killedTags.has(rawOutput.tag)) {
+        terminated = true;
+        return 1;
+      }
 
       if (this.deps.syncServer && typeof Worker === "function") {
         // Process workers are separate realms — they warm their own addon

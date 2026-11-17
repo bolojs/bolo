@@ -1,5 +1,5 @@
 /** @jsxImportSource solid-js */
-import { createEffect, onCleanup, onMount } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
@@ -8,6 +8,10 @@ interface Props {
   lines: string[];
   disabled: boolean;
   onSubmit(commandLine: string): void | Promise<{ continuation?: boolean } | void>;
+  /** Ctrl+C while a submission is in flight — the caller kills the
+   * foreground process (Process.kill); the unwinding submit reprints the
+   * prompt. With nothing in flight the input line is just cancelled. */
+  onInterrupt?(): void;
   inputValue?: string;
   focusTrigger?: number;
   /** Prompt written after each submission and on enable. ANSI escapes allowed. */
@@ -29,6 +33,24 @@ export default function Terminal(props: Props) {
   let historyIndex: number | null = null;
   let stashedLine = "";
   let prevDisabled = true;
+  const [busy, setBusy] = createSignal(false);
+  // Depth rather than a flag: a line submitted mid-run queues behind the
+  // in-flight one, and each is still interruptible when its turn comes.
+  let running = 0;
+  const interrupt = () => {
+    xterm?.write("^C");
+    lineBuffer = "";
+    cursor = 0;
+    historyIndex = null;
+    stashedLine = "";
+    if (running > 0) {
+      // The killed command unwinds the pending submit, which reprints the
+      // prompt — don't write one here or it would appear twice.
+      props.onInterrupt?.();
+    } else {
+      xterm?.write("\r\n" + promptFor());
+    }
+  };
 
   const promptFor = () => props.prompt ?? "> ";
 
@@ -170,24 +192,21 @@ export default function Terminal(props: Props) {
             xterm?.write(promptFor());
             return;
           }
+          running++;
+          setBusy(true);
           try {
             const result = await props.onSubmit(line);
             continuation = result?.continuation ?? false;
           } catch {
             // surfaced by the caller; keep the prompt usable
+          } finally {
+            running--;
+            setBusy(running > 0);
           }
         }
         xterm?.write(continuation ? "\r\n... " : "\r\n" + promptFor());
       });
       return pending;
-    };
-
-    const interruptLine = () => {
-      xterm?.write("^C\r\n" + promptFor());
-      lineBuffer = "";
-      cursor = 0;
-      historyIndex = null;
-      stashedLine = "";
     };
 
     xterm.onData((data) => {
@@ -251,7 +270,7 @@ export default function Terminal(props: Props) {
             if (selection) void navigator.clipboard?.writeText(selection).catch(() => {});
             return;
           }
-          return interruptLine();
+          return interrupt();
         default:
           break;
       }
@@ -315,9 +334,20 @@ export default function Terminal(props: Props) {
 
   return (
     <section data-panel="terminal" class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
-      <div class="min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2">
+      <div class="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2">
         {/* Padding must live on this wrapper, not the ref target — FitAddon measures the ref's own clientHeight. */}
         <div ref={container} aria-label="Terminal" class="h-full w-full overflow-hidden" />
+        {busy() && (
+          <button
+            type="button"
+            data-terminal-stop
+            title="Kill the running command (Ctrl+C)"
+            class="absolute right-3 top-3 z-10 rounded border border-border bg-[var(--surface-2)] px-2 py-1 text-[11px] leading-none text-muted transition-colors hover:border-[var(--danger)] hover:text-[var(--danger)]"
+            onClick={() => interrupt()}
+          >
+            stop
+          </button>
+        )}
       </div>
     </section>
   );

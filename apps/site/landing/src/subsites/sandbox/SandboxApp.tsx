@@ -73,6 +73,7 @@ export default function SandboxApp() {
   const [replInput, setReplInput] = createSignal({ value: "", trigger: 0 });
   let container: BrowserContainer | undefined;
   let replStartPromise: Promise<void> | null = null;
+  let currentProcess: ReturnType<BrowserContainer["spawn"]> | null = null;
 
   const appendScript = (s: string) => setScriptLines((prev) => [...prev, s]);
   const appendRepl = (s: string) => setReplLines((prev) => [...prev, s]);
@@ -96,8 +97,14 @@ export default function SandboxApp() {
     const [command, ...args] = line.split(/\s+/);
     if (!command) return;
     appendScript(`\r\n\x1b[2m~/project $ ${line}\x1b[0m\r\n`);
-    const exitCode = await runToCompletion(container.spawn(command, args));
-    appendScript(`\r\n\x1b[2mexit ${exitCode}\x1b[0m\r\n`);
+    const proc = container.spawn(command, args);
+    currentProcess = proc;
+    try {
+      const exitCode = await runToCompletion(proc);
+      appendScript(`\r\n\x1b[2mexit ${exitCode}\x1b[0m\r\n`);
+    } finally {
+      currentProcess = null;
+    }
   };
 
   const startRepl = (): Promise<void> => {
@@ -188,6 +195,11 @@ export default function SandboxApp() {
         focusTrigger={active === "script" ? scriptInput().trigger : replInput().trigger}
         prompt={active === "script" ? "\x1b[36m~/project\x1b[0m $ " : "\x1b[36m>\x1b[0m "}
         onSubmit={(line) => (active === "script" ? runScriptCommand(line) : submitReplLine(line))}
+        onInterrupt={() => {
+          // ^C targets the visible terminal — a script running in the other
+          // tab isn't killed from the REPL tab.
+          if (active === "script") currentProcess?.kill();
+        }}
       />
     );
   };
