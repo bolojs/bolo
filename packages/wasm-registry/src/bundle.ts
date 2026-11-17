@@ -1513,6 +1513,10 @@ export const bundleEntry = async (
     // The bundle executes from a single data:/blob: URL — relative chunk
     // imports (dynamic import() splitting) would be unresolvable.
     inlineDynamicImports: true,
+    // Inline sourcemap so the assert.ok() expression reader can map a
+    // bundle-frame position back to the original VFS source text
+    // (see util/bundle-sourcemap.ts in @bolojs/node-web-shims).
+    sourcemap: "inline",
   });
 
   const chunk = result.output.find((o) => o.type === "chunk");
@@ -1581,7 +1585,42 @@ const routeCjsThroughWrapper = (code: string, cwd: string): string => {
     const next = body.replace("__commonJSMin(", `__bc_cjsModule(${JSON.stringify(absolute)}, `);
     return `//#region ${path}\n${next}\n//#endregion`;
   });
-  return routed ? CJS_MODULE_HELPER + rewritten : rewritten;
+  if (!routed) return rewritten;
+  const helperLines = CJS_MODULE_HELPER.split("\n").length - 1;
+  return shiftInlineSourcemap(CJS_MODULE_HELPER + rewritten, helperLines);
+};
+
+const INLINE_MAP_MARKER = "//# sourceMappingURL=data:application/json;base64,";
+
+const b64encode = (text: string): string => {
+  let bin = "";
+  for (const b of new TextEncoder().encode(text)) bin += String.fromCharCode(b);
+  return btoa(bin);
+};
+
+const b64decode = (text: string): string =>
+  new TextDecoder().decode(Uint8Array.from(atob(text), (c) => c.charCodeAt(0)));
+
+/**
+ * Rebases an inline `data:` sourcemap after lines were prepended to the
+ * generated code: a sourcemap's mappings are keyed by generated line, so
+ * inserting `lineShift` empty lines (`;` entries) at the head of `mappings`
+ * shifts every recorded position down by exactly that many lines. Column
+ * edits on existing lines (e.g. the `__commonJSMin(` → `__bc_cjsModule(...)`
+ * rewrite above) are not represented — they only affect module-wrapper
+ * header lines that carry no user-code mappings the assert expression
+ * reader consumes.
+ */
+const shiftInlineSourcemap = (code: string, lineShift: number): string => {
+  const idx = code.lastIndexOf(INLINE_MAP_MARKER);
+  if (idx === -1) return code;
+  try {
+    const map = JSON.parse(b64decode(code.slice(idx + INLINE_MAP_MARKER.length).trim()));
+    map.mappings = ";".repeat(lineShift) + map.mappings;
+    return `${code.slice(0, idx)}${INLINE_MAP_MARKER}${b64encode(JSON.stringify(map))}`;
+  } catch {
+    return code;
+  }
 };
 
 export interface TransformScriptOptions {

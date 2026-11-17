@@ -54,7 +54,28 @@ const parseFirstFrame = (
 
 const errorCache = new Map<string, string | undefined>();
 
-type SourceReader = (filename: string) => string | undefined;
+/**
+ * A resolved source position: the text plus the 0-based line/column the
+ * call site maps to inside it. Plain string results keep the call site's
+ * own position (the file was read verbatim); mapped readers (sourcemaps)
+ * remap into the original source instead.
+ */
+export interface ResolvedSource {
+  code: string;
+  line: number;
+  column: number;
+}
+
+/**
+ * Reads the source a stack frame points at. Receives the 1-based line and
+ * column from the stack frame. Returns the file text, a {@link ResolvedSource}
+ * with remapped coordinates, or `undefined` when the source is unknown.
+ */
+export type SourceReader = (
+  filename: string,
+  line: number,
+  column: number,
+) => string | ResolvedSource | undefined;
 
 let readSource: SourceReader | undefined;
 
@@ -391,8 +412,8 @@ export const getErrMessage = (
   }
 
   const filename = call.getFileName();
-  const line = call.getLineNumber() - 1;
-  const column = call.getColumnNumber() - 1;
+  let line = call.getLineNumber() - 1;
+  let column = call.getColumnNumber() - 1;
   if (process.env.BOLO_DEBUG_OK_EXPRESSION) {
     process.stdout.write(`ok-expr: file=${filename} line=${line} col=${column}\n`);
   }
@@ -410,7 +431,13 @@ export const getErrMessage = (
       errorCache.set(identifier, undefined);
       return undefined;
     }
-    const source = reader(filename);
+    const resolved = reader(filename, line + 1, column + 1);
+    let source: string | undefined;
+    if (typeof resolved === "string") {
+      source = resolved;
+    } else if (resolved) {
+      ({ code: source, line, column } = resolved);
+    }
     if (source === undefined) {
       errorCache.set(identifier, undefined);
       return undefined;
