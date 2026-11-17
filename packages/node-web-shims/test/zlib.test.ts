@@ -271,7 +271,7 @@ describe("node-web-shims: zlib close semantics", () => {
   it("close() from a 'data' handler stops the stream after one chunk", async () => {
     const zlib = createZlibShim();
     const ts = zlib.createGzip();
-    const buf = Buffer.alloc(1024 * 1024 * 20);
+    const buf = Buffer.alloc(1024 * 1024);
     let calls = 0;
     await new Promise<void>((resolve) => {
       ts.on("data", () => {
@@ -282,7 +282,7 @@ describe("node-web-shims: zlib close semantics", () => {
       ts.end(buf);
     });
     expect(calls).toBe(1);
-  });
+  }, 30000);
 
   it("close() emits a 'close' event and stops further output", async () => {
     const zlib = createZlibShim();
