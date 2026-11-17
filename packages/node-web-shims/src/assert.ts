@@ -636,9 +636,16 @@ const innerOk = (fn: AssertFn, argLen: number, value: unknown, message?: unknown
   throw err;
 };
 
-const ok = (...args: unknown[]): void => {
+// A `function` declaration, not an arrow: `innerOk` passes `ok` to
+// `Error.captureStackTrace` as the frame boundary (Node's shape — lib/assert.js
+// declares `function ok(...args)`). V8 cannot use an arrow function as a
+// boundary (its stack entry has no receiver to match), so an arrow here makes
+// captureStackTrace return an empty stack and `getErrMessage` lose the caller
+// frame — assert.ok(false) then reports `false == true` instead of the source
+// expression.
+function ok(...args: unknown[]): void {
   innerOk(ok as AssertFn, args.length, args[0], args[1]);
-};
+}
 
 const equal = checked(
   ["actual", "expected"],

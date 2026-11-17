@@ -26,6 +26,85 @@ interface ContextRecord {
 type ScopeProxyTarget = Record<string | symbol, unknown>;
 
 /**
+ * Names a fresh context seeds with its own copies of, so cross-realm identity
+ * behaves like Node: a real `vm` context has its own intrinsics, and
+ * `errorFromContext instanceof OuterRealmCtor` is false. Browser realms
+ * cannot be minted inside a worker (no iframe, no ShadowRealm in the
+ * baseline), so a fresh context gets its own error constructors instead —
+ * enough for Node's test-assert, which builds an error inside
+ * `vm.createContext()` and expects the outer `assert.throws(fn, RangeError)`
+ * to reject it by prototype identity.
+ *
+ * A sandbox supplied by the caller is NOT seeded: user-provided globals must
+ * not be silently augmented (Node leaves the sandbox object untouched too).
+ */
+const contextIntrinsics = [
+  "Error",
+  "EvalError",
+  "RangeError",
+  "ReferenceError",
+  "SyntaxError",
+  "TypeError",
+  "URIError",
+  "AggregateError",
+] as const;
+
+/**
+ * Installs the context's own error constructors on the sandbox.
+ *
+ * The context's constructor is a *sibling* of the outer realm's, not a
+ * subclass: an error created inside the context must NOT be an `instanceof`
+ * the outer realm's constructor, which is exactly what Node's separate realm
+ * gives (`errFromContext instanceof OuterRangeError === false`). The
+ * prototype chain is rebuilt so the only shared ancestry is `Error.prototype`
+ * itself — matching a real realm, where the context's `Error.prototype` is a
+ * distinct object from the outer realm's.
+ */
+const seedContextGlobals = (sandbox: ScopeProxyTarget): void => {
+  for (const name of contextIntrinsics) {
+    const outer = (globalThis as unknown as Record<string, unknown>)[name];
+    if (typeof outer !== "function") continue;
+    if (name in sandbox) continue;
+    const outerProto = (outer as { prototype?: object }).prototype;
+    // The context's prototype inherits from the outer realm's *parent*
+    // prototype (RangeError.prototype -> Error.prototype -> Object.prototype),
+    // so the error keeps `message`/`stack` behaviour but never reaches the
+    // outer realm's RangeError.prototype.
+    const outerParent = outerProto ? (Object.getPrototypeOf(outerProto) as object | null) : null;
+    const ctxProto = Object.create(
+      name === "Error" ? Object.prototype : (outerParent ?? Object.prototype),
+    );
+    const ctxCtor = function (this: unknown, ...args: unknown[]) {
+      const outerCtor = outer as new (...a: unknown[]) => Error;
+      const err = Reflect.construct(outerCtor, args) as Error;
+      Object.setPrototypeOf(err, ctxProto);
+      return err;
+    } as unknown as { new (...a: unknown[]): Error; prototype: object };
+    Object.defineProperty(ctxCtor, "prototype", { value: ctxProto, writable: false });
+    Object.defineProperty(ctxCtor, "name", { value: name, configurable: true });
+    // The context's own `name`: a fresh realm's `SyntaxError.prototype.name` is
+    // "SyntaxError", not the outer realm's "Error" (which is what the
+    // inherited prototype chain would give).
+    Object.defineProperty(ctxProto, "name", {
+      value: name,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(ctxProto, "constructor", {
+      value: ctxCtor,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(sandbox, name, {
+      value: ctxCtor,
+      writable: true,
+      enumerable: false,
+      configurable: true,
+    });
+  }
+};
+
+/**
  * The scope chain object a vm script runs against: reads fall through to the
  * sandbox first, then the realm's globalThis (builtins like `Object` and
  * `JSON` resolve); writes land on the sandbox, so `var`/`this.x =` populate
@@ -129,8 +208,9 @@ export class Script {
     if (this.#disposed) {
       throw new Error("Script has already been disposed");
     }
-    const sandbox = contextObject ?? {};
-    contextify(sandbox);
+    const sandbox = (contextObject ?? {}) as ScopeProxyTarget;
+    if (contextObject === undefined) seedContextGlobals(sandbox);
+    contextify(sandbox as Record<string | symbol, unknown>);
     return runInSandbox(this.#code, sandbox, options?.filename ?? this.#filename);
   }
 
@@ -158,7 +238,9 @@ export const createContext = (
   sandbox?: Record<string | symbol, unknown>,
   _options?: unknown,
 ): ContextRecord => {
-  return contextify(sandbox ?? {});
+  const target = (sandbox ?? {}) as ScopeProxyTarget;
+  if (sandbox === undefined) seedContextGlobals(target);
+  return contextify(sandbox ?? (target as Record<string | symbol, unknown>));
 };
 
 /** True when `sandbox` has been contextified with {@link createContext}. */
