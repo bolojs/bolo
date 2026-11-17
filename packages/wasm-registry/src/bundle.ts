@@ -44,11 +44,7 @@ let _rolldown: Promise<typeof import("@rolldown/browser")> | undefined;
 const getRolldown = () => {
   if (!_rolldown) {
     _rolldown = preferLocalRolldown()
-      ? (globalThis.process?.versions?.node
-          ? import(
-              "/Users/josocjoq/Documents/prjcts/_own/bolo/.worktrees/npm-interop/node_modules/.pnpm/rolldown@1.1.5/node_modules/rolldown/dist/index.mjs"
-            )
-          : import("@rolldown/browser"))
+      ? import("@rolldown/browser")
       : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
         import(/* @vite-ignore */ "https://esm.sh/@rolldown/browser@latest");
   }

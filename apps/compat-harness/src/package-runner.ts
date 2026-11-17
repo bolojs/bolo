@@ -326,7 +326,7 @@ export class PackageMatrixRunner {
   }
 }
 
-const MAX_ERROR_LENGTH = 500;
+const MAX_ERROR_LENGTH = 8000;
 const MAX_LINE_LENGTH = 300;
 
 // Uncaught crashes in the container print `at data:text/javascript,<encoded
