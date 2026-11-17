@@ -1,11 +1,11 @@
 ---
 import SubsiteLayout from '../layouts/SubsiteLayout.astro';
-import AppSubsite from '../subsites/app/AppSubsite.tsx';
+import AppWorkbench from '../subsites/app/AppWorkbench.tsx';
 
 const title = 'Full-stack app | bolo';
 const description = 'Frontend and backend in one tab, served through a service worker.';
 ---
 
 <SubsiteLayout title={title} description={description} accent="#16a34a">
-  <AppSubsite client:only="solid-js" />
+  <AppWorkbench client:only="solid-js" />
 </SubsiteLayout>

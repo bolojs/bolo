@@ -11,10 +11,13 @@ worker with no restart.
 * The subsite runtime is ready
 * I reset the backend routes to the starters
 * I select the backend route file "hello.js"
+* I activate the "Request" tab
 * I send the request
 * The response status is "200"
 * The response body contains "hello from the bolo backend"
+* I activate the "hello.js" tab
 * I change the hello handler message to "edited live, no restart"
+* I activate the "Request" tab
 * I send the request
 * The response body contains "edited live, no restart"
 * No service worker errors were recorded
