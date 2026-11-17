@@ -34,11 +34,22 @@ export default function Terminal(props: Props) {
   let stashedLine = "";
   let prevDisabled = true;
   const [busy, setBusy] = createSignal(false);
+  // Writes that arrive before xterm.open() (the mount is font-gated) would
+  // land in an unopened buffer and vanish — queue them and flush on open.
+  let opened = false;
+  let outQueue: string[] = [];
+  const write = (s: string) => {
+    if (!opened) {
+      outQueue.push(s);
+      return;
+    }
+    xterm?.write(s);
+  };
   // Depth rather than a flag: a line submitted mid-run queues behind the
   // in-flight one, and each is still interruptible when its turn comes.
   let running = 0;
   const interrupt = () => {
-    xterm?.write("^C");
+    write("^C");
     lineBuffer = "";
     cursor = 0;
     historyIndex = null;
@@ -48,7 +59,7 @@ export default function Terminal(props: Props) {
       // prompt — don't write one here or it would appear twice.
       props.onInterrupt?.();
     } else {
-      xterm?.write("\r\n" + promptFor());
+      write("\r\n" + promptFor());
     }
   };
 
@@ -141,7 +152,6 @@ export default function Terminal(props: Props) {
     // xterm bakes cell metrics at open(); if the webfont hasn't loaded the
     // fallback stack's metrics stick forever. Gate the first render on the
     // font, bounded so a stalled load can never block the mount.
-    let opened = false;
     let disposed = false;
     const openWhenFontReady = async () => {
       const timeout = new Promise((resolve) => setTimeout(resolve, 2000));
@@ -156,6 +166,8 @@ export default function Terminal(props: Props) {
       if (disposed || !xterm) return;
       xterm.open(container);
       opened = true;
+      for (const s of outQueue) xterm.write(s);
+      outQueue = [];
       fitAddon?.fit();
       // Insurance: if a late font load shifts metrics, refit once it settles.
       void document.fonts.ready.then(() => {
@@ -164,17 +176,17 @@ export default function Terminal(props: Props) {
     };
     void openWhenFontReady();
 
-    const writeInput = (s: string) => xterm?.write(INPUT_ON + s + INPUT_OFF);
+    const writeInput = (s: string) => write(INPUT_ON + s + INPUT_OFF);
 
     /** Replace the editable line wholesale and park the cursor at `pos`. */
     const setLine = (s: string, pos = s.length) => {
       const tail = lineBuffer.length - cursor;
-      if (tail > 0) xterm?.write(`\x1b[${tail}C`);
-      for (let i = 0; i < lineBuffer.length; i++) xterm?.write("\b \b");
+      if (tail > 0) write(`\x1b[${tail}C`);
+      for (let i = 0; i < lineBuffer.length; i++) write("\b \b");
       lineBuffer = s;
       writeInput(s);
       const back = s.length - pos;
-      if (back > 0) xterm?.write(`\x1b[${back}D`);
+      if (back > 0) write(`\x1b[${back}D`);
       cursor = pos;
     };
 
@@ -185,7 +197,7 @@ export default function Terminal(props: Props) {
       if (after.length === 0) {
         writeInput(s);
       } else {
-        xterm?.write(INPUT_ON + s + after + INPUT_OFF + `\x1b[${after.length}D`);
+        write(INPUT_ON + s + after + INPUT_OFF + `\x1b[${after.length}D`);
       }
     };
 
@@ -193,7 +205,7 @@ export default function Terminal(props: Props) {
       const next = Math.max(0, Math.min(lineBuffer.length, cursor + delta));
       if (next === cursor) return;
       const d = next - cursor;
-      xterm?.write(d > 0 ? `\x1b[${d}C` : `\x1b[${-d}D`);
+      write(d > 0 ? `\x1b[${d}C` : `\x1b[${-d}D`);
       cursor = next;
     };
 
@@ -202,14 +214,14 @@ export default function Terminal(props: Props) {
       const after = lineBuffer.slice(cursor);
       lineBuffer = lineBuffer.slice(0, cursor - 1) + after;
       cursor -= 1;
-      xterm?.write("\b" + INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
+      write("\b" + INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
     };
 
     const deleteForward = () => {
       if (cursor >= lineBuffer.length) return;
       const after = lineBuffer.slice(cursor + 1);
       lineBuffer = lineBuffer.slice(0, cursor) + after;
-      xterm?.write(INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
+      write(INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
     };
 
     const killWordBack = () => {
@@ -221,10 +233,10 @@ export default function Terminal(props: Props) {
 
     /** Ctrl+L: clear the visible screen, keep scrollback, redraw the input line. */
     const clearScreen = () => {
-      xterm?.write("\x1b[2J\x1b[H" + promptFor());
+      write("\x1b[2J\x1b[H" + promptFor());
       writeInput(lineBuffer);
       const back = lineBuffer.length - cursor;
-      if (back > 0) xterm?.write(`\x1b[${back}D`);
+      if (back > 0) write(`\x1b[${back}D`);
     };
 
     // Submissions run strictly in order. The line buffer is consumed
@@ -236,7 +248,7 @@ export default function Terminal(props: Props) {
       const line = lineBuffer.trim();
       lineBuffer = "";
       cursor = 0;
-      xterm?.write("\r\n");
+      write("\r\n");
       pending = pending.then(async () => {
         let continuation = false;
         if (line) {
@@ -244,7 +256,7 @@ export default function Terminal(props: Props) {
           if (history[history.length - 1] !== line) history.push(line);
           if (line === "clear") {
             xterm?.clear();
-            xterm?.write(promptFor());
+            write(promptFor());
             return;
           }
           running++;
@@ -259,7 +271,7 @@ export default function Terminal(props: Props) {
             setBusy(running > 0);
           }
         }
-        xterm?.write(continuation ? "\r\n... " : "\r\n" + promptFor());
+        write(continuation ? "\r\n... " : "\r\n" + promptFor());
       });
       return pending;
     };
@@ -312,7 +324,7 @@ export default function Terminal(props: Props) {
         case "\x0b": // Ctrl+K — kill to end of line
           if (cursor >= lineBuffer.length) return;
           lineBuffer = lineBuffer.slice(0, cursor);
-          return xterm?.write("\x1b[K");
+          return write("\x1b[K");
         case "\x15": // Ctrl+U — kill to start of line
           return setLine(lineBuffer.slice(cursor), 0);
         case "\x17": // Ctrl+W — kill word back
@@ -353,7 +365,7 @@ export default function Terminal(props: Props) {
       }
       for (let i = written; i < lines.length; i++) {
         const line = lines[i];
-        if (line !== undefined) xterm?.write(line);
+        if (line !== undefined) write(line);
       }
       written = lines.length;
     });
@@ -361,7 +373,7 @@ export default function Terminal(props: Props) {
     createEffect(() => {
       const disabled = props.disabled;
       if (!disabled && prevDisabled) {
-        xterm?.write("\r\n" + promptFor());
+        write("\r\n" + promptFor());
       }
       prevDisabled = disabled;
     });
