@@ -161,16 +161,19 @@ export const createTimersPromisesShim = (host: TimerHost = defaultHost) => {
     signal?.addEventListener("abort", abort, { once: true });
     try {
       for (;;) {
-        if (!pending && !signal?.aborted)
-          await new Promise<void>((resolve) => {
-            wake = resolve;
-          });
-        if (signal?.aborted) throw abortError(signal);
+        // Ticks that accumulated while the consumer was suspended are still
+        // delivered after abort — Node drains the queued iterations before
+        // the iterator rejects with AbortError (test-timers-interval-
+        // promisified's "unresolved callbacks" case: abort at iteration 2
+        // must still run iterations 3+).
         while (pending > 0) {
           pending--;
           yield value;
-          if (signal?.aborted) throw abortError(signal);
         }
+        if (signal?.aborted) throw abortError(signal);
+        await new Promise<void>((resolve) => {
+          wake = resolve;
+        });
       }
     } finally {
       host.clearInterval(handle);

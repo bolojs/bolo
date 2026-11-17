@@ -1,4 +1,5 @@
 import { isIP } from "./net-shim.js";
+import { registerInternalBinding } from "@bolojs/node-web-shims/dist/internal/bindings.js";
 
 export interface DnsShimOptions {
   /**
@@ -349,23 +350,161 @@ export const setServers = (servers: string[]): void => defaultResolver.setServer
 // Result order is recorded for API parity (Node's default is 'verbatim');
 // DoH answers arrive in resolver order and the shim does not re-sort them,
 // which matches 'verbatim' semantics. Invalid values throw like Node.
-let defaultResultOrder: "verbatim" | "ipv4first" = "verbatim";
 
-export const setDefaultResultOrder = (order: "verbatim" | "ipv4first"): void => {
-  if (order !== "verbatim" && order !== "ipv4first") {
-    throw Object.assign(
-      new TypeError(
-        `The argument 'order' must be one of: 'verbatim', 'ipv4first'. Received ${String(order)}`,
-      ),
-      { code: "ERR_INVALID_ARG_VALUE" },
-    );
-  }
-  defaultResultOrder = order;
+export const DNS_ORDER_VERBATIM = 0;
+export const DNS_ORDER_IPV4_FIRST = 1;
+export const DNS_ORDER_IPV6_FIRST = 2;
+
+type ResultOrder = "verbatim" | "ipv4first" | "ipv6first";
+
+const ORDER_TO_CONST: Record<ResultOrder, number> = {
+  verbatim: DNS_ORDER_VERBATIM,
+  ipv4first: DNS_ORDER_IPV4_FIRST,
+  ipv6first: DNS_ORDER_IPV6_FIRST,
 };
-export const getDefaultResultOrder = (): "verbatim" | "ipv4first" => defaultResultOrder;
+const CONST_TO_ORDER = ["verbatim", "ipv4first", "ipv6first"] as const;
+
+/** The `req` object Node passes to cares.getaddrinfo; oncomplete is the C++ callback seam. */
+export interface GetAddrInfoReq {
+  callback?: (err: unknown, address?: unknown, family?: number) => void;
+  oncomplete?: (err: number, addresses: string[], family: number) => void;
+  family?: number;
+  hostname?: string;
+}
+
+export interface CaresWrapBinding {
+  DNS_ORDER_VERBATIM: number;
+  DNS_ORDER_IPV4_FIRST: number;
+  DNS_ORDER_IPV6_FIRST: number;
+  getDefaultVerbatim: () => boolean;
+  setDefaultResultOrder: (order: number) => void;
+  /** Not part of Node's binding surface; the JS shim reads the numeric order. */
+  getDefaultOrder: () => number;
+  getaddrinfo: (
+    req: GetAddrInfoReq,
+    hostname: string,
+    family: number,
+    hints: number,
+    order: number,
+  ) => number;
+}
+
+/**
+ * `internalBinding('cares_wrap')` — owns the default result order (numeric)
+ * and the getaddrinfo entry point dns.lookup/dns.promises.lookup route
+ * through, so a test that monkey-patches `cares.getaddrinfo` observes the
+ * same call Node's lib/dns.js would make: (req, hostname, family, hints,
+ * order).
+ */
+export const createCaresWrapBinding = (resolver: Resolver): CaresWrapBinding => {
+  let defaultOrder = DNS_ORDER_VERBATIM;
+  return {
+    DNS_ORDER_VERBATIM,
+    DNS_ORDER_IPV4_FIRST,
+    DNS_ORDER_IPV6_FIRST,
+    getDefaultVerbatim: () => defaultOrder === DNS_ORDER_VERBATIM,
+    setDefaultResultOrder: (order: number) => {
+      defaultOrder = order;
+    },
+    getDefaultOrder: () => defaultOrder,
+    getaddrinfo: (req, hostname, family, _hints, _order) => {
+      resolver.lookup(String(hostname)).then(
+        ({ address, family: fam }) => req.oncomplete?.(0, [address], fam || family || 4),
+        () => req.oncomplete?.(1, [], family || 4),
+      );
+      return 0;
+    },
+  };
+};
+
+const lookupError = (hostname: string): Error & { code: string; syscall: string } =>
+  Object.assign(new Error(`getaddrinfo ENOTFOUND ${hostname}`), {
+    code: "ENOTFOUND",
+    syscall: "getaddrinfo",
+    hostname,
+  });
+
+interface LookupOptions {
+  family?: number;
+  hints?: number;
+  all?: boolean;
+}
+
+const isValidOrder = (order: unknown): order is ResultOrder =>
+  order === "verbatim" || order === "ipv4first" || order === "ipv6first";
+
+const invalidOrderError = (order: unknown): TypeError =>
+  Object.assign(
+    new TypeError(
+      `The argument 'order' must be one of: 'verbatim', 'ipv4first', 'ipv6first'. Received ${String(order)}`,
+    ),
+    { code: "ERR_INVALID_ARG_VALUE" },
+  );
+
+/**
+ * dns.lookup callback path shared by `dns.lookup` and `dns.promises.lookup`:
+ * both reach cares.getaddrinfo with the binding's current default order, so
+ * a monkey-patched getaddrinfo records every call.
+ */
+const lookupViaBinding = (
+  cares: CaresWrapBinding,
+  hostname: string,
+  options: LookupOptions | undefined,
+  callback: ((err: unknown, address?: unknown, family?: number) => void) | undefined,
+): GetAddrInfoReq => {
+  if (typeof hostname !== "string") {
+    throw invalidArgType("hostname", "string", hostname);
+  }
+  const family = options?.family ?? 0;
+  const all = options?.all === true;
+  const req: GetAddrInfoReq = {
+    callback,
+    family,
+    hostname,
+    oncomplete: (err, addresses, fam) => {
+      if (typeof callback !== "function") return;
+      if (err) {
+        callback(lookupError(hostname));
+      } else if (all) {
+        callback(null, addresses.map((address) => ({ address, family: fam })));
+      } else {
+        callback(null, addresses[0], fam);
+      }
+    },
+  };
+  const err = cares.getaddrinfo(req, hostname, family, options?.hints ?? 0, cares.getDefaultOrder());
+  if (err && typeof callback === "function") {
+    queueMicrotask(() => callback(lookupError(hostname)));
+  }
+  return req;
+};
+
+const lookupPromise = (
+  cares: CaresWrapBinding,
+  hostname: string,
+  options?: LookupOptions,
+): Promise<{ address: string; family: number } | { address: string; family: number }[]> =>
+  new Promise((resolve, reject) => {
+    lookupViaBinding(cares, hostname, options, (err, address, family) => {
+      if (err) reject(err);
+      else if (options?.all) resolve(address as { address: string; family: number }[]);
+      else resolve({ address: address as string, family: family ?? 4 });
+    });
+  });
+
+const moduleCares = createCaresWrapBinding(defaultResolver);
+
+let defaultResultOrder: ResultOrder = "verbatim";
+
+export const setDefaultResultOrder = (order: ResultOrder): void => {
+  if (!isValidOrder(order)) throw invalidOrderError(order);
+  defaultResultOrder = order;
+  moduleCares.setDefaultResultOrder(ORDER_TO_CONST[order]);
+};
+export const getDefaultResultOrder = (): ResultOrder => defaultResultOrder;
 
 export const promises = {
-  lookup: (hostname: string) => defaultResolver.lookup(hostname),
+  lookup: (hostname: string, options?: LookupOptions) => lookupPromise(moduleCares, hostname, options),
   resolve4: (hostname: string) => defaultResolver.resolve4(hostname),
   resolve6: (hostname: string) => defaultResolver.resolve6(hostname),
   reverse: (ip: string) => defaultResolver.reverse(ip),
@@ -386,9 +525,34 @@ export const promises = {
 export const createDnsShim = (options?: DnsShimOptions) => {
   const resolver = new Resolver();
   resolver.setServers([options?.dohEndpoint ?? DEFAULT_ENDPOINT]);
+  // The cares_wrap binding owns the default result order and the getaddrinfo
+  // seam every lookup flows through; registering it makes
+  // `internalBinding('cares_wrap')` resolve to this instance's binding so a
+  // monkey-patched getaddrinfo observes this container's lookups.
+  const cares = createCaresWrapBinding(resolver);
+  registerInternalBinding("cares_wrap", cares as unknown as Record<string, unknown>);
+  const setOrder = (order: ResultOrder): void => {
+    if (!isValidOrder(order)) throw invalidOrderError(order);
+    cares.setDefaultResultOrder(ORDER_TO_CONST[order]);
+  };
+  const getOrder = (): ResultOrder => CONST_TO_ORDER[cares.getDefaultOrder()] ?? "verbatim";
   const shim = {
-    // Core lookup methods wired to the per-registry resolver instance.
-    lookup: (hostname: string) => resolver.lookup(hostname),
+    // Node's dns.lookup is callback-based and flows through
+    // cares.getaddrinfo with the binding's current default order
+    // (test-dns-set-default-order).
+    lookup: (
+      hostname: string,
+      lookupOptions?: LookupOptions | ((err: unknown, address?: unknown, family?: number) => void),
+      callback?: (err: unknown, address?: unknown, family?: number) => void,
+    ): GetAddrInfoReq => {
+      let opts = lookupOptions;
+      let cb = callback;
+      if (typeof lookupOptions === "function") {
+        cb = lookupOptions;
+        opts = undefined;
+      }
+      return lookupViaBinding(cares, hostname, opts as LookupOptions | undefined, cb);
+    },
     resolve: (hostname: string, rrtype?: string) => resolver.resolve(hostname, rrtype),
     resolve4: (hostname: string) => resolver.resolve4(hostname),
     resolve6: (hostname: string) => resolver.resolve6(hostname),
@@ -405,14 +569,32 @@ export const createDnsShim = (options?: DnsShimOptions) => {
     setServers: (servers: string[]) => resolver.setServers(servers),
     // Constructor — required by packages that call `new dns.Resolver(...)`.
     Resolver,
-    // Result-order control — no-ops in the browser (DoH always returns both).
-    setDefaultResultOrder,
-    getDefaultResultOrder,
+    // Result-order control backed by this instance's cares_wrap binding.
+    setDefaultResultOrder: setOrder,
+    getDefaultResultOrder: getOrder,
     ADDRCONFIG: 1024,
     V4MAPPED: 2048,
     ALL: 256,
-    // `dns/promises` subpath: our shim is already promisified so point to self.
-    promises,
+    // `dns/promises` subpath bound to this instance's resolver + binding.
+    promises: {
+      lookup: (hostname: string, lookupOptions?: LookupOptions) =>
+        lookupPromise(cares, hostname, lookupOptions),
+      resolve4: (hostname: string) => resolver.resolve4(hostname),
+      resolve6: (hostname: string) => resolver.resolve6(hostname),
+      reverse: (ip: string) => resolver.reverse(ip),
+      resolve: (hostname: string, rrtype?: string) => resolver.resolve(hostname, rrtype),
+      resolveCname: (hostname: string) => resolver.resolveCname(hostname),
+      resolveTxt: (hostname: string) => resolver.resolveTxt(hostname),
+      resolveMx: (hostname: string) => resolver.resolveMx(hostname),
+      resolveSrv: (hostname: string) => resolver.resolveSrv(hostname),
+      resolvePtr: (ip: string) => resolver.resolvePtr(ip),
+      resolveNs: (hostname: string) => resolver.resolveNs(hostname),
+      resolveSoa: (hostname: string) => resolver.resolveSoa(hostname),
+      resolveNaptr: (hostname: string, flags?: string) => resolver.resolveNaptr(hostname, flags),
+      setDefaultResultOrder: setOrder,
+      getDefaultResultOrder: getOrder,
+      Resolver,
+    },
   };
   return shim;
 };

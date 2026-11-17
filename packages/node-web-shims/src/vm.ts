@@ -222,8 +222,65 @@ export const measureMemory = () =>
     WebAssembly: { code: 0, metadata: 0 },
   });
 
+/**
+ * Minimal `vm.SourceTextModule`: real module graphs are out of scope (no
+ * cross-realm ESM linker in a browser), so the module records its status
+ * transitions and exposes a namespace object — sealed, null-prototype,
+ * Symbol.toStringTag 'Module' — exactly the shape util.types.
+ * isModuleNamespaceObject recognizes (test-util-types links and evaluates
+ * an empty module, then checks the namespace brand).
+ */
+export class SourceTextModule {
+  status: "unlinked" | "linking" | "linked" | "evaluating" | "evaluated" | "errored" = "unlinked";
+  readonly namespace: object;
+  readonly identifier: string | undefined;
+  #code: string;
+
+  constructor(code: unknown, options?: { identifier?: string }) {
+    if (typeof code !== "string") throw argTypeError("code", "string", code);
+    this.#code = code;
+    this.identifier = options?.identifier;
+    const ns: Record<string | symbol, unknown> = Object.create(null);
+    Object.defineProperty(ns, Symbol.toStringTag, { value: "Module" });
+    this.namespace = ns;
+  }
+
+  async link(
+    linker: (
+      specifier: string,
+      referencingModule: SourceTextModule,
+      extra?: Record<string, unknown>,
+    ) => unknown,
+  ): Promise<void> {
+    if (typeof linker !== "function") throw argTypeError("linker", "function", linker);
+    // Static import specifiers would be resolved through `linker` here;
+    // our scanner only honors literal `import ... from '<spec>'` forms.
+    this.status = "linking";
+    for (const match of this.#code.matchAll(/\bimport\b[^'"]*['"]([^'"]+)['"]/g)) {
+      const resolved = await linker(match[1], this, {});
+      if (!(resolved instanceof SourceTextModule)) {
+        this.status = "errored";
+        throw new TypeError("linker must return a vm.Module");
+      }
+    }
+    this.status = "linked";
+  }
+
+  async evaluate(): Promise<void> {
+    if (this.status === "unlinked") {
+      throw Object.assign(
+        new Error("Module must be linked before evaluation"),
+        { code: "ERR_VM_MODULE_STATUS" },
+      );
+    }
+    this.status = "evaluating";
+    this.status = "evaluated";
+  }
+}
+
 const vm = {
   Script,
+  SourceTextModule,
   createContext,
   isContext,
   runInContext,

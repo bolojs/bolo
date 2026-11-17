@@ -46,10 +46,9 @@ describe("createDnsShim", () => {
   it("looks up A records via DoH", async () => {
     dohResponse = { Answer: [{ data: "1.2.3.4" }] };
     const dns = createDnsShim();
-    const result = await dns.lookup("example.com");
+    const result = await dns.promises.lookup("example.com");
 
-    expect(result.address).toBe("1.2.3.4");
-    expect(result.family).toBe(4);
+    expect(result).toMatchObject({ address: "1.2.3.4", family: 4 });
   });
 
   it("queries PTR records and strips trailing dots for reverse", async () => {
@@ -67,7 +66,7 @@ describe("createDnsShim", () => {
   it("uses the configured DoH endpoint", async () => {
     const customEndpoint = "https://doh.example/dns-query";
     const dns = createDnsShim({ dohEndpoint: customEndpoint });
-    await dns.lookup("example.com");
+    await dns.promises.lookup("example.com");
 
     expect(fetchCalls[0].url.startsWith(customEndpoint)).toBe(true);
   });
@@ -77,6 +76,28 @@ describe("createDnsShim", () => {
     expect(typeof dns.Resolver).toBe("function");
     const r = new dns.Resolver();
     expect(typeof r.getServers).toBe("function");
+  });
+
+  it("routes callback lookup through the cares_wrap binding with the default order", async () => {
+    dohResponse = { Answer: [{ data: "1.2.3.4" }] };
+    const dns = createDnsShim();
+    const cares = (
+      globalThis as { __boloBindings?: Record<string, Record<string, (...a: never[]) => unknown>> }
+    ).__boloBindings!.cares_wrap as unknown as {
+      getaddrinfo: (...a: unknown[]) => number;
+      DNS_ORDER_IPV4_FIRST: number;
+    };
+    const original = cares.getaddrinfo;
+    const calls: unknown[][] = [];
+    cares.getaddrinfo = (...args: unknown[]) => {
+      calls.push(args);
+      return original(...(args as [never, never, never, never, never]));
+    };
+    dns.setDefaultResultOrder("ipv4first");
+    await new Promise((resolve) => dns.lookup("example.com", resolve));
+    expect(calls).toHaveLength(1);
+    expect(calls[0][4]).toBe(cares.DNS_ORDER_IPV4_FIRST);
+    dns.setDefaultResultOrder("verbatim");
   });
 
   it("exposes setDefaultResultOrder and getDefaultResultOrder", () => {

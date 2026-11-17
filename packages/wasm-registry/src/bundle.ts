@@ -715,7 +715,13 @@ var __bc_Console = class {
     for (var k of Object.getOwnPropertyNames(__bc_Console.prototype)) {
       if (k === 'constructor') continue;
       var m = this[k];
-      if (typeof m === 'function') this[k] = m.bind(this);
+      if (typeof m === 'function') {
+        var bound = m.bind(this);
+        // bind() stamps 'bound log' as the name; Node console methods report
+        // their own name (test-console-methods asserts strictEqual on it).
+        Object.defineProperty(bound, 'name', { value: k, configurable: true });
+        this[k] = bound;
+      }
     }
   }
   _write(stream, args) {
@@ -776,6 +782,23 @@ var __bc_Console = class {
 };
 var __bc_console = new __bc_Console();
 __bc_console.Console = __bc_Console;
+
+// util.types.isProxy: proxies are opaque to JS introspection, so every
+// Proxy the bundled program constructs is tracked in a realm WeakSet the
+// util/types shim reads (globalThis.__boloProxies). Proxy behavior itself
+// is untouched — construct() delegates straight through.
+var __bc_RealProxy = globalThis.Proxy;
+if (typeof __bc_RealProxy === 'function') {
+  var __bc_proxies = new WeakSet();
+  globalThis.Proxy = new __bc_RealProxy(__bc_RealProxy, {
+    construct: function (target, args, newTarget) {
+      var p = Reflect.construct(target, args, newTarget);
+      __bc_proxies.add(p);
+      return p;
+    },
+  });
+  globalThis.__boloProxies = __bc_proxies;
+}
 `.trim();
 
 // Emits a `const <name>=<literal>;` prelude declaration for a CJS implicit

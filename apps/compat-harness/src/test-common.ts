@@ -415,11 +415,17 @@ const bindings = {
   },
   // js_stream: Node's binding wraps a JS-implemented stream for C++
   // consumers. The vendored tests only need the constructor surface — a
-  // faithful byte-pipe is out of scope for the browser container.
+  // faithful byte-pipe is out of scope. _externalStream is a native
+  // External handle in Node; here it is an object branded by the 'util'
+  // binding (util.types.isExternal — test-util-types).
   js_stream: {
     JSStream: class JSStream {
       constructor() {
-        this._externalStream = undefined;
+        var utilBinding = globalThis.__boloBindings && globalThis.__boloBindings.util;
+        this._externalStream =
+          utilBinding && typeof utilBinding.createExternal === 'function'
+            ? utilBinding.createExternal()
+            : {};
       }
     },
   },
@@ -446,7 +452,13 @@ const internalBinding = (id) => {
     error.code = 'ERR_INVALID_MODULE';
     throw error;
   }
-  const binding = bindings[id];
+  // The harness-local table covers bindings whose JS is authored here;
+  // shim packages register theirs on the realm-wide __boloBindings map
+  // (os, util, cares_wrap) so the monkey-patch surface and the node:* shims
+  // share one object.
+  const binding = bindings[id] !== undefined
+    ? bindings[id]
+    : globalThis.__boloBindings && globalThis.__boloBindings[id];
   if (binding === undefined) {
     const error = new Error('No such binding: ' + id);
     error.code = 'ERR_INVALID_MODULE';
