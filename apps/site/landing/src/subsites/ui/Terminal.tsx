@@ -54,6 +54,20 @@ export default function Terminal(props: Props) {
 
   const promptFor = () => props.prompt ?? "> ";
 
+  /** Resolve a CSS color expression to a concrete rgb()/hex string via the
+   * computed style of a probe node. xterm parses theme colors on a detached
+   * canvas, which can handle rgb()/hex but not color-mix() on every browser
+   * version we support. */
+  const resolveColor = (css: string, fallback: string) => {
+    const probe = document.createElement("span");
+    probe.style.display = "none";
+    probe.style.color = css;
+    container.append(probe);
+    const resolved = getComputedStyle(probe).color;
+    probe.remove();
+    return resolved || fallback;
+  };
+
   const buildTheme = () => {
     const style = getComputedStyle(container);
     const bg = style.getPropertyValue("--surface-2").trim() || "#0a0a0a";
@@ -65,11 +79,17 @@ export default function Terminal(props: Props) {
     const accentDim = style.getPropertyValue("--accent-dim").trim();
 
     return {
-      background: bg,
+      // Custom-property values come back as written — --surface-2 and
+      // --accent-dim are color-mix() tokens the canvas parser can't read, so
+      // resolve them to rgb() through the probe.
+      background: resolveColor(bg, bg || "#0a0a0a"),
       foreground: fg,
       cursor: accent,
-      selectionBackground: accentDim,
-      black: bg,
+      selectionBackground: resolveColor(accentDim, accent || fg),
+      // ANSI black must differ from the background or \x1b[30m text is
+      // invisible — a dark blend of muted over the surface reads as "black"
+      // in both themes.
+      black: resolveColor(`color-mix(in srgb, ${muted} 45%, ${bg})`, muted || fg),
       brightBlack: muted,
       red: danger,
       brightRed: danger,
@@ -89,12 +109,23 @@ export default function Terminal(props: Props) {
   };
 
   onMount(() => {
+    // xterm's canvas renderer feeds fontFamily to ctx.font, which cannot
+    // resolve var() — glyphs would rasterize at 10px sans-serif against a
+    // correctly measured cell grid. Resolve the token to a literal stack.
+    const fontFamily =
+      getComputedStyle(document.documentElement).getPropertyValue("--font-mono").trim() ||
+      '"Geist Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace';
+
     xterm = new XTerm({
       convertEol: true,
       disableStdin: false,
       cursorBlink: true,
-      fontFamily: "var(--font-mono)",
+      fontFamily,
       fontSize: 13,
+      lineHeight: 1.25,
+      letterSpacing: 0,
+      fontWeight: 400,
+      fontWeightBold: 600,
       scrollback: 2000,
       theme: buildTheme(),
     });
@@ -106,8 +137,32 @@ export default function Terminal(props: Props) {
 
     fitAddon = new FitAddon();
     xterm.loadAddon(fitAddon);
-    xterm.open(container);
-    fitAddon.fit();
+
+    // xterm bakes cell metrics at open(); if the webfont hasn't loaded the
+    // fallback stack's metrics stick forever. Gate the first render on the
+    // font, bounded so a stalled load can never block the mount.
+    let opened = false;
+    let disposed = false;
+    const openWhenFontReady = async () => {
+      const timeout = new Promise((resolve) => setTimeout(resolve, 2000));
+      try {
+        await Promise.race([
+          Promise.all([document.fonts.load('13px "Geist Mono Variable"'), document.fonts.ready]),
+          timeout,
+        ]);
+      } catch {
+        // Missing font still mounts — the fallback stack renders.
+      }
+      if (disposed || !xterm) return;
+      xterm.open(container);
+      opened = true;
+      fitAddon?.fit();
+      // Insurance: if a late font load shifts metrics, refit once it settles.
+      void document.fonts.ready.then(() => {
+        if (!disposed) fitAddon?.fit();
+      });
+    };
+    void openWhenFontReady();
 
     const writeInput = (s: string) => xterm?.write(INPUT_ON + s + INPUT_OFF);
 
@@ -318,7 +373,7 @@ export default function Terminal(props: Props) {
       props.focusTrigger;
       if (!v) return;
       setLine(v);
-      xterm?.focus();
+      if (opened) xterm?.focus();
       submitLine();
     });
 
@@ -326,6 +381,7 @@ export default function Terminal(props: Props) {
     ro.observe(container);
 
     onCleanup(() => {
+      disposed = true;
       xterm?.dispose();
       ro.disconnect();
       themeObserver.disconnect();
@@ -333,7 +389,7 @@ export default function Terminal(props: Props) {
   });
 
   return (
-    <section data-panel="terminal" class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+    <section data-panel="terminal" class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div class="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2">
         {/* Padding must live on this wrapper, not the ref target — FitAddon measures the ref's own clientHeight. */}
         <div ref={container} aria-label="Terminal" class="h-full w-full overflow-hidden" />
