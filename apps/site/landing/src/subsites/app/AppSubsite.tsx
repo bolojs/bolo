@@ -3,12 +3,13 @@ import "../../demo/client-globals";
 import { createSignal, onMount } from "solid-js";
 import * as v from "valibot";
 import { getLogger } from "@bolojs/log/browser";
-import type { BrowserContainer } from "@bolojs/runtime";
+import type { BrowserContainer, ReplResult } from "@bolojs/runtime";
 import type { SWSandbox } from "@bolojs/sandbox";
 import { bootSubsite, getBootedVfs } from "../shared/boot";
 import { installSwErrorTracking } from "../shared/sw-handlers";
 import Editor, { type EditorDocument } from "../ui/Editor";
 import SplitPane from "../ui/SplitPane";
+import Terminal from "../ui/Terminal";
 import { AppBackend, VIRTUAL_BASE, type BackendFs, type RouteSummary } from "./backend";
 import { apiFetch, toVirtualPath } from "./client";
 import { schemaForPath } from "./contract";
@@ -75,6 +76,9 @@ export default function AppSubsite() {
   const [reqBody, setReqBody] = createSignal<string>("");
   const [sending, setSending] = createSignal(false);
   const [response, setResponse] = createSignal<ResponseView>(emptyResponse);
+  const [terminalOpen, setTerminalOpen] = createSignal(false);
+  const [termLines, setTermLines] = createSignal<string[]>([]);
+  const [replActive, setReplActive] = createSignal(false);
 
   let container: BrowserContainer | undefined;
   let routesDirPath: string | undefined;
@@ -177,6 +181,77 @@ export default function AppSubsite() {
       });
     } finally {
       setSending(false);
+    }
+  };
+
+  const appendTerm = (s: string) => setTermLines((prev) => [...prev, s]);
+
+  const runToCompletion = async (proc: ReturnType<BrowserContainer["spawn"]>) => {
+    const reader = proc.output.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        appendTerm(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    return proc.exit;
+  };
+
+  const runTermCommand = async (command: string, args: string[]) => {
+    if (!container) return;
+    appendTerm(`\r\n\x1b[2m~/project $ ${[command, ...args].join(" ")}\x1b[0m\r\n`);
+    const exitCode = await runToCompletion(container.spawn(command, args));
+    appendTerm(`\r\n\x1b[2mexit ${exitCode}\x1b[0m\r\n`);
+  };
+
+  const enterRepl = async () => {
+    if (!container) return;
+    await container.startRepl();
+    appendTerm('\r\n\x1b[2mWelcome to Node.js REPL. Type ".exit" to leave.\x1b[0m\r\n');
+    setReplActive(true);
+  };
+
+  const handleReplLine = async (line: string): Promise<{ continuation?: boolean } | void> => {
+    if (!container) return;
+    if (line.trim() === ".exit") {
+      container.exitRepl();
+      setReplActive(false);
+      appendTerm("\r\n");
+      return;
+    }
+    const result: ReplResult = await container.evalRepl(line);
+    if (result.error) {
+      appendTerm(`\x1b[2m${result.error}\x1b[0m\r\n`);
+    } else if (result.value !== undefined) {
+      appendTerm(`${result.value}\r\n`);
+    }
+    return result.continuation ? { continuation: true } : {};
+  };
+
+  const handleTermSubmit = async (line: string): Promise<{ continuation?: boolean } | void> => {
+    if (!container) return;
+    if (replActive()) return handleReplLine(line);
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    const [command, ...args] = trimmed.split(/\s+/);
+    if (!command) return;
+    if (command === "node" && args.length === 0) {
+      await enterRepl();
+      return;
+    }
+    await runTermCommand(command, args);
+  };
+
+  const toggleTerminal = () => {
+    const next = !terminalOpen();
+    setTerminalOpen(next);
+    if (next && termLines().length === 0) {
+      appendTerm(
+        "\x1b[2mApp container terminal — node, npm, curl and git share the routes' VFS.\x1b[0m\r\n",
+      );
     }
   };
 
@@ -368,54 +443,86 @@ export default function AppSubsite() {
     );
   };
 
+  const workbench = () => (
+    <SplitPane
+      direction="row"
+      initialRatio={0.45}
+      dataPanel="workbench"
+      first={
+        <SplitPane
+          direction="column"
+          initialRatio={0.3}
+          dataPanel="routes-editor"
+          first={routeList()}
+          second={
+            <Editor
+              documents={documents()}
+              activePath={activePath()}
+              onSelect={setActivePath}
+              onClose={(path) => setDocuments((docs) => docs.filter((d) => d.path !== path))}
+              onChange={handleEditorChange}
+            />
+          }
+        />
+      }
+      second={
+        <SplitPane
+          direction="column"
+          initialRatio={0.45}
+          dataPanel="request-response"
+          first={requestBuilder()}
+          second={responseViewer()}
+        />
+      }
+    />
+  );
+
   return (
     <div
       data-subsite="app"
-      data-panels="routes editor request response"
+      data-panels="routes editor request response terminal"
       data-boot-state={bootState()}
       data-apply-state={applyState()}
+      data-terminal-open={terminalOpen()}
       class="flex h-full min-h-0 flex-col gap-2 overflow-hidden"
     >
       <div class="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm">
-        <SplitPane
-          direction="row"
-          initialRatio={0.45}
-          dataPanel="workbench"
-          first={
-            <SplitPane
-              direction="column"
-              initialRatio={0.3}
-              dataPanel="routes-editor"
-              first={routeList()}
-              second={
-                <Editor
-                  documents={documents()}
-                  activePath={activePath()}
-                  onSelect={setActivePath}
-                  onClose={(path) => setDocuments((docs) => docs.filter((d) => d.path !== path))}
-                  onChange={handleEditorChange}
-                />
-              }
-            />
-          }
-          second={
-            <SplitPane
-              direction="column"
-              initialRatio={0.45}
-              dataPanel="request-response"
-              first={requestBuilder()}
-              second={responseViewer()}
-            />
-          }
-        />
+        {terminalOpen() ? (
+          <SplitPane
+            direction="column"
+            initialRatio={0.68}
+            dataPanel="workbench-terminal"
+            first={workbench()}
+            second={
+              <Terminal
+                lines={termLines()}
+                disabled={bootState() !== "ready"}
+                onSubmit={handleTermSubmit}
+              />
+            }
+          />
+        ) : (
+          workbench()
+        )}
       </div>
-      <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted">
-        <span
-          class="size-2 rounded-full transition-colors duration-500"
-          classList={{ [statusDotStyles[bootState()]]: true }}
-        />
-        <span>{statusLabels[bootState()]}</span>
-        {applyState() === "applied" && <span data-testid="applied">routes applied</span>}
+      <div class="flex shrink-0 items-center gap-2 text-[12px] leading-none text-muted">
+        <button
+          type="button"
+          data-testid="terminal-toggle"
+          aria-expanded={terminalOpen()}
+          onClick={toggleTerminal}
+          class="rounded-lg border border-border px-3 py-1.5 text-[12.5px] leading-none text-muted transition-colors hover:border-[var(--accent)] hover:text-[var(--fg)]"
+        >
+          Terminal
+        </button>
+        <span class="ml-auto flex items-center gap-2">
+          <span
+            class="size-2 rounded-full transition-colors duration-500"
+            classList={{ [statusDotStyles[bootState()]]: true }}
+          />
+          <span>{statusLabels[bootState()]}</span>
+          {applyState() === "applied" && <span data-testid="applied">routes applied</span>}
+        </span>
       </div>
     </div>
   );
