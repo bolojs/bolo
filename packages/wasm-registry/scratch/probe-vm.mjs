@@ -1,0 +1,10 @@
+import { VfsBus } from "@bolojs/fs";
+import { PackageManager } from "@bolojs/pm";
+const vfs = new VfsBus();
+const cwd="/home/web/app";
+vfs.hot.mkdirSync(cwd,{recursive:true});
+vfs.hot.writeFileSync(`${cwd}/package.json`, JSON.stringify({name:"p",version:"1.0.0"}));
+const pm=new PackageManager({vfs,cwd,stdout:()=>{},stderr:()=>{}});
+await pm.install(["happy-dom"]);
+const f=`${cwd}/node_modules/.bolo/happy-dom@21.0.4/node_modules/happy-dom/lib/browser/utilities/BrowserFrameScriptEvaluator.js`;
+console.log(vfs.hot.readFileSync(f,"utf8").slice(0,400));

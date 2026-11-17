@@ -837,6 +837,16 @@ const NATIVE_STUB = {
 const HAS_DEFAULT_EXPORT = /\bexport\s+default\b|\bexport\s*\{[^}]*\bdefault\b/;
 const LOOKS_ESM = /^\s*(?:import|export)\s/m;
 
+// CommonJS markers — `require(...)`, `module.exports`, `exports.foo`, or a
+// top-level `return`. A `.js` file carrying any of these is CommonJS, not
+// ESM, even when it also has an `import`/`export` statement somewhere (a
+// mixed file is still CJS in Node's resolution: the nearest package.json
+// `type` decides, and `type: commonjs` is the default).
+const LOOKS_CJS = /\brequire\s*\(|\bmodule\s*\.\s*exports\b|\bexports\s*\.\s*\w/;
+
+// `require("./x")` — the specifier is relative, so it names a sibling file.
+const CJS_REQUIRE_CALL = /\brequire\s*\(\s*(['"])(\.[^'"\n]*)\1\s*\)/g;
+
 // Static ESM statements only — a dynamic `import()` call or `import.meta`
 // inside a script-style file must not disqualify the esbuild-wrapper path.
 const HAS_ESM_STATEMENT = /^\s*(?:import\s*\.\s*meta|import(?!\s*\()[\s{'"*]|export[\s{'"*.])/m;
@@ -874,6 +884,90 @@ const maybeWrapNamespaceDefault = (vfs: VfsBus, file: string): string => {
   const contents = vfs.hot.readFileSync(file, "utf8") as string;
   if (!LOOKS_ESM.test(contents) || HAS_DEFAULT_EXPORT.test(contents)) return file;
   return `${NS_DEFAULT_PREFIX}${file}`;
+};
+
+/**
+ * Converts a CommonJS source file to an ES module so the bundler can treat
+ * it as one:
+ *
+ * - every relative `require("./x")` becomes a static `import * as __cjsN
+ *   from "./x.js"` (the bundler resolves those statically — a bare
+ *   `require()` would stay unresolved at build time),
+ * - `module` and `exports` become locals over one shared object, and the
+ *   final value of that object is the module's default export.
+ *
+ * The conversion is deliberately conservative: a file whose `require()`
+ * targets a *bare* specifier (an npm package) is left alone — the bundler
+ * cannot statically resolve a dynamic require, and rewriting it would
+ * silently drop the dependency. Such files keep Node's own semantics
+ * through the runtime `require` shim instead.
+ *
+ * Returns `undefined` when the file cannot be converted safely.
+ */
+const cjsToEsm = (
+  source: string,
+  id: string,
+  resolveRelative: (spec: string) => string | undefined,
+): string | undefined => {
+  let counter = 0;
+  const imports: string[] = [];
+  // `require("./x")` → `import * as __cjs0 from "./x.js"` (resolved). The
+  // specifier is resolved through the same Node-style lookup the resolver
+  // uses (exact file, then extensions, then `dir/index.js`) — guessing the
+  // extension textually breaks directory requires (`require('./config')`
+  // where `config/` is a directory became `./config.js`, resolving to
+  // nothing) and converts requires that cannot resolve at all (`try {
+  // require('./missing.node') }` — Node defers those to require-time
+  // MODULE_NOT_FOUND; a static import fails the build instead).
+  const body = source.replace(CJS_REQUIRE_CALL, (_match, quote: string, spec: string) => {
+    if (!spec.startsWith(".")) return _match;
+    const resolved = resolveRelative(spec);
+    if (!resolved) return _match;
+    // A namespace import is correct here: the module is converted to ESM by
+    // this same path (its `default` is `module.exports`), and rolldown's
+    // `__toCommonJS` unwraps through the exported `"module.exports"` key —
+    // the expression below lands on the raw CJS exports either way.
+    const name = `__cjs${counter++}`;
+    imports.push(`import * as ${name} from ${quote}${resolved}${quote};`);
+    return `(${name}["module.exports"] ?? ${name}.default ?? ${name})`;
+  });
+  // A bare `require("pkg")` survived the rewrite — the file needs Node's
+  // runtime require, which the bundler cannot express statically.
+  if (/\brequire\s*\(/.test(body)) return undefined;
+  // Named CJS exports (`exports.parse = ...`) are re-exported so a static
+  // `import { parse } from 'pkg'` — which an ESM entry of a dual package
+  // emits (@rollup/wasm-node's node-entry.js imports four names from
+  // native.js) — binds to the same live value as the default. A getter keeps
+  // late assignments visible; `as any`-style names (invalid identifiers,
+  // "module.exports") go through the string form.
+  const named = [...body.matchAll(/\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g)]
+    .map((m) => m[1])
+    .filter((n, i, a) => a.indexOf(n) === i && n !== "default");
+  return [
+    ...imports,
+    // `var` (not `const`): CommonJS files reassign `exports` directly
+    // (`exports = module.exports = { ... }` — semver's internal/re.js), and
+    // `var` also hoists past any top-level use that precedes the binding.
+    "var module = { exports: {} };",
+    "var exports = module.exports;",
+    body,
+    "var __cjsExports = module.exports;",
+    "export default __cjsExports;",
+    ...named.map(
+      (n) =>
+        // A prefixed local avoids colliding with a same-named local in the
+        // CJS body (`var ALGORITHMS = ...` in jws) — the export name itself
+        // stays the CJS name.
+        `const __cjsNamed_${n} = __cjsExports[${JSON.stringify(n)}];\nexport { __cjsNamed_${n} as ${n} };`,
+    ),
+    // Rolldown's `__toCommonJS` interop helper unwraps a namespace through
+    // its `"module.exports"` key when present (the CJS convention esbuild
+    // and rolldown both honour). Without it, a CommonJS importer of this
+    // module receives `{ default: fn, __esModule: true }` instead of Node's
+    // `require()` value — `hasFlag is not a function` in winston's
+    // @colors/colors. The string export name is legal ES2022.
+    'export { __cjsExports as "module.exports" };',
+  ].join("\n");
 };
 
 /**
@@ -1047,6 +1141,32 @@ const vfsPlugin = (vfs: VfsBus, warnings?: string[]): Plugin => ({
     // Strip shebangs — `#!/usr/bin/env node` bin entries (dotenv, parcel) are
     // not parseable JS.
     if (contents.startsWith("#!")) contents = contents.replace(/^#![^\n]*(\n|$)/, "");
+    // A `.js` file with CommonJS markers is CommonJS. Rolldown's own CJS
+    // detection needs a `module.exports`/`exports.foo` write or a top-level
+    // `return` — a file that only *requires* (parcel's `lib/bin.js`:
+    // `require('./cli')`) is classified "unknown", and `import x from
+    // "<that file>"` then fails the build with MISSING_EXPORT "default".
+    // Convert such files to ESM here: relative `require()` calls become
+    // static imports (the bundler resolves them statically), and the
+    // `module`/`exports` bindings become locals whose final value is the
+    // module's default export.
+    if (ext === ".js" && LOOKS_CJS.test(contents) && !HAS_DEFAULT_EXPORT.test(contents)) {
+      const converted = cjsToEsm(contents, id, (spec) =>
+        resolveFile(vfs, joinPath(resolveDir, spec)),
+      );
+      if (converted !== undefined) {
+        // No warning: the conversion is a routine internal transform, and
+        // every CommonJS dependency in a package tree would otherwise add a
+        // line of noise to the probe output (winston pulls 20+ such files).
+        // A conversion that actually breaks the build surfaces as a rolldown
+        // error, which is already reported.
+        return {
+          code: converted,
+          map: null,
+          moduleSideEffects: "no-treeshake",
+        };
+      }
+    }
     // Prepend __dirname/__filename for CJS-style implicit globals
     const prelude =
       implicitGlobalDecl("__filename", JSON.stringify(id), contents) +

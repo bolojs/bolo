@@ -1,0 +1,11 @@
+import { VfsBus } from "@bolojs/fs";
+import { bundleEntry } from "@bolojs/registry/bundle";
+import * as nws from "@bolojs/node-web-shims";
+const vfs = new VfsBus();
+const cwd="/home/web/app";
+vfs.hot.mkdirSync(`${cwd}/probe`,{recursive:true});
+const shims = { ...nws, vm: nws.vm };
+vfs.hot.writeFileSync(`${cwd}/probe/entry.mjs`, `import { Script } from 'vm';\nexport const ok = typeof Script === 'function';`);
+const { code, warnings } = await bundleEntry(`${cwd}/probe/entry.mjs`, { vfs, cwd, getShim:(b)=>shims[b] });
+console.log("WARN:", warnings);
+console.log("CODE:", code);

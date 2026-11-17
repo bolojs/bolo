@@ -448,6 +448,14 @@ const runProcess = async (msg: ProcRunMessage) => {
     },
   });
   globalThis.__browserContainers!.timers = trackedTimers;
+  // happy-dom (AsyncTaskManager TIMER), zx and other DOM-adjacent packages
+  // capture Node's immediate API off the realm — `globalThis.setImmediate.bind
+  // (globalThis)` — at module scope, which throws "Cannot read properties of
+  // undefined (reading 'bind')" in a browser realm where the pair doesn't
+  // exist. Publish the loop-backed pair so those captures get Node semantics
+  // (ref-counted, drained before exit) instead of crashing.
+  globalThis.setImmediate = trackedTimers.setImmediate as unknown as typeof setImmediate;
+  globalThis.clearImmediate = trackedTimers.clearImmediate as unknown as typeof clearImmediate;
   // `require('node:timers')` sees the same implementation.
   const timersShim = shims.timers as Record<string, unknown> | undefined;
   shims.timers = { ...timersShim, ...trackedTimers, promises: timerPromises };
