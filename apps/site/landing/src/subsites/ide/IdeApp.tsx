@@ -236,14 +236,28 @@ export default function IdeApp() {
     const deadline = Date.now() + 30_000;
     for (;;) {
       try {
-        const response = await fetch(url, { cache: "no-store" });
-        const body = await response.text();
-        if (response.status === 200 && body.includes("<")) {
+        // A fetch() to /__preview/ is a subresource request on a page
+        // controlled by the subsite-scoped SW ("/ide/"), so it bypasses the
+        // root SW entirely and 404s. The preview servers live in this page —
+        // probe them directly and keep the network URL only for the iframe.
+        const isNext = base.startsWith(NEXT_BASE);
+        let probeUrl = url;
+        if (!isNext) {
+          const stripped = new URL(url);
+          stripped.pathname = stripped.pathname.replace(/^\/__preview/, "") || "/";
+          probeUrl = stripped.toString();
+        }
+        const probe = new Request(probeUrl, { cache: "no-store" });
+        const response = isNext
+          ? await nextServer!.onFetch(url, probe)
+          : await previewServer!.onFetch(probeUrl, probe);
+        const body = response ? await response.text() : "";
+        if (response?.status === 200 && body.includes("<")) {
           setPreviewUrl(url);
           return;
         }
       } catch {
-        // SW not ready yet; retry.
+        // Server not ready yet; retry.
       }
       if (Date.now() > deadline) {
         throw new Error("Preview server did not serve HTML within 30s");
