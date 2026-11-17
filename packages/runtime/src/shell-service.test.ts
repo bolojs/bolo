@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { VfsBus } from "@bolojs/fs";
+import { BOLO_NODE_VERSION } from "@bolojs/node-runtime-shims";
 import { ShellService, type ShellServiceDeps } from "./shell-service.js";
 
 const createMockDeps = (): ShellServiceDeps => {
@@ -320,5 +321,73 @@ server.listen(3000);`,
     const result = await shell.execute("agent list");
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("Unsupported agent subcommand");
+  });
+
+  it("help → prints the command surface", async () => {
+    const result = await shell.execute("help");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("node <file.js>");
+    expect(result.stdout).toContain("npm install");
+    expect(result.stdout).toContain("npm run");
+    expect(result.stdout).toContain("preview pane");
+  });
+
+  it("help node / help npm → per-command usage", async () => {
+    const nodeHelp = await shell.execute("help node");
+    expect(nodeHelp.exitCode).toBe(0);
+    expect(nodeHelp.stdout).toContain("Usage: node <file.js>");
+
+    const npmHelp = await shell.execute("help npm");
+    expect(npmHelp.exitCode).toBe(0);
+    expect(npmHelp.stdout).toContain("npm install");
+  });
+
+  it("node --help and node -h → usage", async () => {
+    for (const flag of ["--help", "-h"]) {
+      const result = await shell.execute(`node ${flag}`);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Usage: node <file.js>");
+      expect(result.stdout).toContain(BOLO_NODE_VERSION);
+    }
+  });
+
+  it("node --version → prints the compat version", async () => {
+    const result = await shell.execute("node --version");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe(`${BOLO_NODE_VERSION}\n`);
+  });
+
+  it("node with no args → prints a usage hint and still starts the REPL", async () => {
+    const result = await shell.execute("node");
+    expect(deps.runtimeWorker.startRepl).toHaveBeenCalled();
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Usage: node <file.js>");
+    expect(result.stdout).toContain("node --help");
+  });
+
+  it("npm --help / npm -h / bare npm → usage", async () => {
+    for (const cmd of ["npm --help", "npm -h", "npm"]) {
+      const result = await shell.execute(cmd);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Usage: npm install");
+      expect(result.stdout).toContain("npm run <script>");
+    }
+  });
+
+  it("runtime --help and agent --help → usage", async () => {
+    const runtimeHelp = await shell.execute("runtime --help");
+    expect(runtimeHelp.exitCode).toBe(0);
+    expect(runtimeHelp.stdout).toContain("Usage: runtime run");
+
+    const agentHelp = await shell.execute("agent --help");
+    expect(agentHelp.exitCode).toBe(0);
+    expect(agentHelp.stdout).toContain("Usage: agent run");
+  });
+
+  it("unknown command → suggests help", async () => {
+    const result = await shell.execute("foo bar");
+    expect(result.exitCode).toBe(127);
+    expect(result.stderr).toContain("foo: command not found");
+    expect(result.stderr).toContain("type 'help'");
   });
 });
