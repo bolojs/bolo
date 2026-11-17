@@ -1,6 +1,7 @@
 /** @jsxImportSource solid-js */
 import "../../demo/client-globals";
-import { createSignal, onMount } from "solid-js";
+import { createSignal, getOwner, onMount, runWithOwner } from "solid-js";
+import type { JSX } from "solid-js";
 import * as v from "valibot";
 import { getLogger } from "@bolojs/log/browser";
 import type { BrowserContainer, ReplResult } from "@bolojs/runtime";
@@ -8,8 +9,10 @@ import type { SWSandbox } from "@bolojs/sandbox";
 import { bootSubsite, getBootedVfs } from "../shared/boot";
 import { installSwErrorTracking } from "../shared/sw-handlers";
 import Editor, { type EditorDocument } from "../ui/Editor";
-import SplitPane from "../ui/SplitPane";
 import Terminal from "../ui/Terminal";
+import WorkbenchShell from "../workbench/WorkbenchShell";
+import { createWorkbenchTabs } from "../workbench/tabs";
+import type { PanelView, SidebarView, StatusItem } from "../workbench/types";
 import { AppBackend, VIRTUAL_BASE, type BackendFs, type RouteSummary } from "./backend";
 import { apiFetch, toVirtualPath } from "./client";
 import { schemaForPath } from "./contract";
@@ -55,16 +58,23 @@ const emptyResponse: ResponseView = {
   contract: { checked: false, ok: false },
 };
 
-const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
+const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
+
+const codeTabId = (path: string) => `code:${path}`;
+const fileName = (path: string) => path.split("/").filter(Boolean).pop() ?? path;
 
 /**
- * The /app subsite: a Postman/Data Studio style full-stack demo where the
- * frontend and backend both run in the browser. Left: the backend route
- * editor (route files persisted in the container VFS, executed live on
- * save). Right: request builder plus response viewer, talking to the
- * backend through the sw-sandbox virtual origin.
+ * The /app workbench on the shared shell: a "Backend routes" explorer
+ * sidebar (opens a request tab pre-filled with the route's method/path plus
+ * a code tab for its handler file, the Postman "open folder" move), the
+ * request builder as the strip's main tab, and the terminal in the
+ * collapsible bottom panel.
+ *
+ * Backend wiring is unchanged from the pre-shell subsite: route files live
+ * in the container VFS, AppBackend reloads them as blob modules, and the
+ * sw-sandbox virtual origin serves them live on save.
  */
-export default function AppSubsite() {
+export default function AppWorkbench() {
   const [bootState, setBootState] = createSignal<BootState>("booting");
   const [applyState, setApplyState] = createSignal<ApplyState>("idle");
   const [routes, setRoutes] = createSignal<RouteSummary[]>([]);
@@ -76,9 +86,9 @@ export default function AppSubsite() {
   const [reqBody, setReqBody] = createSignal<string>("");
   const [sending, setSending] = createSignal(false);
   const [response, setResponse] = createSignal<ResponseView>(emptyResponse);
-  const [terminalOpen, setTerminalOpen] = createSignal(false);
   const [termLines, setTermLines] = createSignal<string[]>([]);
   const [replActive, setReplActive] = createSignal(false);
+  const tabs = createWorkbenchTabs();
 
   let container: BrowserContainer | undefined;
   let routesDirPath: string | undefined;
@@ -93,6 +103,14 @@ export default function AppSubsite() {
       docs.some((d) => d.path === file) ? docs : [...docs, { path: file, contents }],
     );
     setActivePath(file);
+    const id = codeTabId(file);
+    tabs.open({
+      id,
+      kind: "code",
+      title: fileName(file),
+      onClose: () => setDocuments((docs) => docs.filter((d) => d.path !== file)),
+      render: () => <div class="h-full min-h-0">{tabs.activeId() === id ? editor() : null}</div>,
+    });
   };
 
   const applyRoutes = async () => {
@@ -131,6 +149,8 @@ export default function AppSubsite() {
   const selectRoute = (route: RouteSummary) => {
     setMethod(route.method);
     setUrl(`${VIRTUAL_BASE}${route.path}`);
+    // Opening the handler file activates its code tab; the request tab stays
+    // one click away in the strip.
     void openRouteFile(route.file);
   };
 
@@ -245,18 +265,13 @@ export default function AppSubsite() {
     await runTermCommand(command, args);
   };
 
-  const toggleTerminal = () => {
-    const next = !terminalOpen();
-    setTerminalOpen(next);
-    if (next && termLines().length === 0) {
-      appendTerm(
-        "\x1b[2mApp container terminal — node, npm, curl and git share the routes' VFS.\x1b[0m\r\n",
-      );
-    }
-  };
-
   onMount(() => {
     installSwErrorTracking();
+    // The terminal is now always available in the bottom panel; greet on
+    // first open instead of gating the whole pane behind a toggle.
+    appendTerm(
+      "\x1b[2mApp container terminal — node, npm, curl and git share the routes' VFS.\x1b[0m\r\n",
+    );
     (async () => {
       try {
         container = await bootSubsite("app");
@@ -308,46 +323,76 @@ export default function AppSubsite() {
     })();
   });
 
-  const routeList = () => (
-    <div data-panel="routes" class="flex h-full min-h-0 flex-col overflow-hidden">
-      <div class="border-b border-border px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted">
-        Backend routes
-      </div>
-      <div class="min-h-0 flex-1 overflow-y-auto p-2">
-        <ul class="flex flex-col gap-1">
-          {routes().map((route) => (
-            <li>
-              <button
-                type="button"
-                data-route-file={route.file}
-                class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition-colors hover:bg-[var(--surface-2)]"
-                classList={{ "bg-[var(--surface-2)]": activePath() === route.file }}
-                onClick={() => selectRoute(route)}
-              >
-                <span class="rounded bg-[var(--accent-dim)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--accent)]">
-                  {route.method}
-                </span>
-                <span class="truncate font-mono text-[11px]">{route.path}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          data-testid="reset-routes"
-          onClick={() => void resetRoutes()}
-          class="mt-3 rounded-lg border border-border px-2 py-1 text-[11px] text-muted transition-colors hover:text-[var(--fg)]"
-        >
-          Reset to starter routes
-        </button>
-        <p class="mt-3 px-2 text-[11px] leading-relaxed text-muted">
-          Edit a handler, then hit send. Saves apply live through the service worker, no restart.
-        </p>
-      </div>
-    </div>
-  );
+  // One shared Editor reparented into the active code tab's body, so the
+  // workbench strip owns file tabs while the Editor keeps its per-path
+  // CodeMirror states. Created under this component's owner: an element
+  // created inside a conditional branch is disposed with it.
+  const activeCodePath = () => {
+    const id = tabs.activeId();
+    return id?.startsWith("code:") ? id.slice("code:".length) : null;
+  };
 
-  const requestBuilder = () => (
+  const owner = getOwner();
+  let editorEl: JSX.Element | undefined;
+  const editor = () =>
+    (editorEl ??= runWithOwner(owner, () => (
+      <Editor
+        documents={documents()}
+        activePath={activeCodePath()}
+        showTabs={false}
+        onSelect={() => {}}
+        onClose={(path) => tabs.close(codeTabId(path))}
+        onChange={handleEditorChange}
+      />
+    )));
+
+  const sidebarViews: SidebarView[] = [
+    {
+      id: "routes",
+      title: "Backend routes",
+      width: 260,
+      render: () => (
+        <div data-panel="routes" class="flex h-full min-h-0 flex-col overflow-hidden">
+          <div class="min-h-0 flex-1 overflow-y-auto p-2">
+            <ul class="flex flex-col gap-1">
+              {routes().map((route) => (
+                <li>
+                  <button
+                    type="button"
+                    data-route-file={route.file}
+                    class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition-colors hover:bg-[var(--surface-2)]"
+                    classList={{ "bg-[var(--surface-2)]": activePath() === route.file }}
+                    onClick={() => selectRoute(route)}
+                  >
+                    <span class="rounded bg-[var(--accent-dim)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--accent)]">
+                      {route.method}
+                    </span>
+                    <span class="truncate font-mono text-[11px]">{route.path}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="shrink-0 border-t border-border p-2">
+            <button
+              type="button"
+              data-testid="reset-routes"
+              onClick={() => void resetRoutes()}
+              class="w-full rounded-lg border border-border px-2 py-1 text-[11px] text-muted transition-colors hover:text-[var(--fg)]"
+            >
+              Reset to starter routes
+            </button>
+            <p class="mt-2 text-[11px] leading-relaxed text-muted">
+              Edit a handler, then hit send. Saves apply live through the service worker, no
+              restart.
+            </p>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  const requestTab = () => (
     <div data-panel="request" class="flex h-full min-h-0 flex-col gap-2 overflow-hidden p-3">
       <div class="flex shrink-0 items-center gap-2">
         <select
@@ -393,137 +438,108 @@ export default function AppSubsite() {
         spellcheck={false}
         class="min-h-0 flex-1 resize-none rounded-lg border border-border bg-transparent px-2 py-1.5 font-mono text-[11px] outline-none placeholder:text-muted"
       />
-    </div>
-  );
-
-  const responseViewer = () => {
-    const res = response();
-    return (
-      <div data-panel="response" class="flex h-full min-h-0 flex-col overflow-hidden">
-        <div class="flex shrink-0 items-center gap-3 border-b border-border px-3 py-2">
-          <span data-testid="response-status" class="font-mono text-[12px] font-medium">
-            {res.status ? `${res.status} ${res.statusText}` : "No response yet"}
-          </span>
-          {res.contract.checked && (
-            <span
-              data-testid="contract-badge"
-              classList={{
-                "text-[var(--success)]": res.contract.ok,
-                "text-[var(--danger)]": !res.contract.ok,
-              }}
-              class="text-[11px]"
-            >
-              {res.contract.ok
-                ? "matches contract"
-                : `contract mismatch${res.contract.issue ? `: ${res.contract.issue}` : ""}`}
-            </span>
-          )}
-        </div>
-        <div class="max-h-28 shrink-0 overflow-y-auto border-b border-border px-3 py-2">
-          {res.headers.length === 0 ? (
-            <p class="text-[11px] text-muted">Response headers appear here.</p>
-          ) : (
-            <dl class="flex flex-col gap-0.5">
-              {res.headers.map(([name, value]) => (
-                <div class="flex gap-2 font-mono text-[11px]">
-                  <dt class="shrink-0 text-muted">{name}:</dt>
-                  <dd class="break-all">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-        </div>
+      <div class="flex h-44 shrink-0 flex-col overflow-hidden rounded-lg border border-border">
+        <ResponseMeta response={response()} />
         <pre
           data-testid="response-body"
           class="min-h-0 flex-1 overflow-auto whitespace-pre-wrap p-3 font-mono text-[12px]"
         >
-          {res.body || "Send a request to see the response body."}
+          {response().body || "Send a request to see the response body."}
         </pre>
       </div>
-    );
-  };
-
-  const workbench = () => (
-    <SplitPane
-      direction="row"
-      initialRatio={0.45}
-      dataPanel="workbench"
-      first={
-        <SplitPane
-          direction="column"
-          initialRatio={0.3}
-          dataPanel="routes-editor"
-          first={routeList()}
-          second={
-            <Editor
-              documents={documents()}
-              activePath={activePath()}
-              onSelect={setActivePath}
-              onClose={(path) => setDocuments((docs) => docs.filter((d) => d.path !== path))}
-              onChange={handleEditorChange}
-            />
-          }
-        />
-      }
-      second={
-        <SplitPane
-          direction="column"
-          initialRatio={0.45}
-          dataPanel="request-response"
-          first={requestBuilder()}
-          second={responseViewer()}
-        />
-      }
-    />
+    </div>
   );
 
-  return (
-    <div
-      data-subsite="app"
-      data-panels="routes editor request response terminal"
-      data-boot-state={bootState()}
-      data-apply-state={applyState()}
-      data-terminal-open={terminalOpen()}
-      class="flex h-full min-h-0 flex-col gap-2 overflow-hidden"
-    >
-      <div class="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm">
-        {terminalOpen() ? (
-          <SplitPane
-            direction="column"
-            initialRatio={0.68}
-            dataPanel="workbench-terminal"
-            first={workbench()}
-            second={
-              <Terminal
-                lines={termLines()}
-                disabled={bootState() !== "ready"}
-                onSubmit={handleTermSubmit}
-              />
-            }
-          />
-        ) : (
-          workbench()
-        )}
-      </div>
-      <div class="flex shrink-0 items-center gap-2 text-[12px] leading-none text-muted">
-        <button
-          type="button"
-          data-testid="terminal-toggle"
-          aria-expanded={terminalOpen()}
-          onClick={toggleTerminal}
-          class="rounded-lg border border-border px-3 py-1.5 text-[12.5px] leading-none text-muted transition-colors hover:border-[var(--accent)] hover:text-[var(--fg)]"
-        >
-          Terminal
-        </button>
-        <span class="ml-auto flex items-center gap-2">
+  onMount(() => {
+    tabs.open({
+      id: "request",
+      kind: "request",
+      title: "Request",
+      closable: false,
+      render: () => requestTab(),
+    });
+  });
+
+  const bottomPanels: PanelView[] = [
+    {
+      id: "terminal",
+      title: "Terminal",
+      render: () => (
+        <Terminal
+          lines={termLines()}
+          disabled={bootState() !== "ready"}
+          onSubmit={handleTermSubmit}
+        />
+      ),
+    },
+  ];
+
+  const statusItems: StatusItem[] = [
+    {
+      id: "boot-state",
+      side: "left",
+      render: () => (
+        <span class="flex items-center gap-2">
           <span
-            class="size-2 rounded-full transition-colors duration-500"
-            classList={{ [statusDotStyles[bootState()]]: true }}
+            class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`}
           />
           <span>{statusLabels[bootState()]}</span>
           {applyState() === "applied" && <span data-testid="applied">routes applied</span>}
         </span>
-      </div>
-    </div>
+      ),
+    },
+    {
+      id: "terminal-toggle",
+      side: "right",
+      render: (ctx) => (
+        <button
+          type="button"
+          aria-expanded={ctx.panelVisible()}
+          class="rounded px-1.5 py-0.5 transition-colors hover:text-fg"
+          classList={{ "text-fg": ctx.panelVisible() }}
+          onClick={() => ctx.togglePanel()}
+        >
+          Terminal
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <WorkbenchShell
+      subsite="app"
+      panels={["routes", "editor", "request", "response", "terminal"]}
+      bootState={bootState()}
+      attrs={{ "data-apply-state": applyState }}
+      sidebar={sidebarViews}
+      tabs={tabs}
+      bottom={bottomPanels}
+      status={statusItems}
+    />
   );
 }
+
+const ResponseMeta = (props: { response: ResponseView }) => {
+  const res = () => props.response;
+  return (
+    <div class="flex shrink-0 items-center gap-3 border-b border-border px-3 py-2">
+      <span data-testid="response-status" class="font-mono text-[12px] font-medium">
+        {res().status ? `${res().status} ${res().statusText}` : "No response yet"}
+      </span>
+      {res().contract.checked && (
+        <span
+          data-testid="contract-badge"
+          classList={{
+            "text-[var(--success)]": res().contract.ok,
+            "text-[var(--danger)]": !res().contract.ok,
+          }}
+          class="text-[11px]"
+        >
+          {res().contract.ok
+            ? "matches contract"
+            : `contract mismatch${res().contract.issue ? `: ${res().contract.issue}` : ""}`}
+        </span>
+      )}
+    </div>
+  );
+};

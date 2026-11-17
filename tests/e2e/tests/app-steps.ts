@@ -20,6 +20,16 @@ export default class AppSteps {
     await currentPage.waitForSelector('.cm-content', { timeout: 10000 });
   }
 
+  /**
+   * Activate a workbench tab by its title. The strip owns file tabs and the
+   * request tab, so a step that drives the request builder has to switch to
+   * it first (and back to the code tab before editing a handler).
+   */
+  @Step('I activate the <title> tab')
+  async activateTab(title: string) {
+    await currentPage.click(`[role="tab"]:has-text("${title}")`);
+  }
+
   @Step('I send the request')
   async sendRequest() {
     const before = await currentPage.getByTestId('response-body').textContent();

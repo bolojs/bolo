@@ -20,7 +20,8 @@
   "dependencies": {
     "@bolojs/log": "workspace:*",
     "@bolojs/node-web-shims": "workspace:*",
-    "@bolojs/runtime": "workspace:*"
+    "@bolojs/runtime": "workspace:*",
+    "playwright-core": "^1.61.1"
   },
   "devDependencies": {
     "@stryker-mutator/core": "^10.1.1",
