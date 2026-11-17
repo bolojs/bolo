@@ -1,6 +1,6 @@
 /** @jsxImportSource solid-js */
 import "../../demo/client-globals";
-import { createSignal, onMount } from "solid-js";
+import { createEffect, createSignal, onMount } from "solid-js";
 import { getLogger } from "@bolojs/log/browser";
 import type { BrowserContainer, ReplResult } from "@bolojs/runtime";
 import { bootSubsite } from "../shared/boot";
@@ -66,6 +66,7 @@ export default function SandboxApp() {
   const [bootState, setBootState] = createSignal<BootState>("booting");
   const [tab, setTab] = createSignal<TerminalTab>("script");
   const [previewUrl, setPreviewUrl] = createSignal<string | null>(null);
+  const [previewHidden, setPreviewHidden] = createSignal(false);
   const [scriptLines, setScriptLines] = createSignal<string[]>([]);
   const [replLines, setReplLines] = createSignal<string[]>([]);
   const [replStarted, setReplStarted] = createSignal(false);
@@ -186,6 +187,17 @@ export default function SandboxApp() {
     })();
   });
 
+  // A new server announcement re-shows the preview even if a previous one
+  // was dismissed.
+  let lastPreviewUrl: string | null = null;
+  createEffect(() => {
+    const url = previewUrl();
+    if (url !== lastPreviewUrl) {
+      lastPreviewUrl = url;
+      setPreviewHidden(false);
+    }
+  });
+
   const terminal = () => {
     const active = tab();
     return (
@@ -213,53 +225,75 @@ export default function SandboxApp() {
       data-terminal-tab={tab()}
       class="flex h-full min-h-0 flex-col overflow-hidden"
     >
-      <div class="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm">
-        {previewUrl() ? (
-          <SplitPane
-            direction="row"
-            initialRatio={0.55}
-            dataPanel="terminal-preview"
-            first={terminal()}
-            second={<Preview url={previewUrl()} />}
-          />
-        ) : (
-          terminal()
-        )}
-      </div>
-      <div class="flex shrink-0 flex-wrap items-center gap-2 pt-2">
-        <div role="tablist" aria-label="Terminal mode" class="flex overflow-hidden rounded-lg border border-border">
-          {(["script", "repl"] as const).map((name) => (
+      <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm">
+        {/* Panel header: session tabs on the left, cwd + runtime status + preview toggle on the right. */}
+        <header class="flex h-9 shrink-0 items-center gap-2 border-b border-border bg-[color-mix(in_srgb,var(--fg)_3%,transparent)] px-2">
+          <div role="tablist" aria-label="Terminal mode" class="flex items-center">
+            {(["script", "repl"] as const).map((name) => (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab() === name}
+                data-tab={name}
+                class="rounded-md px-2.5 py-1 text-[12px] leading-none transition-colors"
+                classList={{
+                  "bg-[var(--surface-2)] text-[var(--fg)] shadow-sm": tab() === name,
+                  "border-transparent text-muted hover:text-[var(--fg)]": tab() !== name,
+                }}
+                onClick={() => switchTab(name)}
+              >
+                {name === "script" ? "Script" : "REPL"}
+              </button>
+            ))}
+          </div>
+          <span class="ml-auto hidden items-center font-mono text-[11px] leading-none text-muted sm:flex">
+            ~/project
+          </span>
+          <span class="ml-auto flex items-center gap-1.5 text-[11px] leading-none text-muted sm:ml-0">
+            <span class={`size-1.5 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`} />
+            <span>{statusLabels[bootState()]}</span>
+          </span>
+          {previewUrl() && (
             <button
               type="button"
-              role="tab"
-              aria-selected={tab() === name}
-              data-tab={name}
-              class="px-3 py-1.5 text-[12.5px] leading-none transition-colors"
-              classList={{
-                "bg-[var(--accent)] text-white": tab() === name,
-                "text-muted hover:text-[var(--fg)]": tab() !== name,
-              }}
-              onClick={() => switchTab(name)}
+              data-preview-toggle
+              class="rounded border border-border px-1.5 py-0.5 text-[11px] leading-none text-muted transition-colors hover:border-[var(--accent)] hover:text-[var(--fg)]"
+              onClick={() => setPreviewHidden((v) => !v)}
             >
-              {name === "script" ? "Script" : "REPL"}
+              {previewHidden() ? "Show preview" : "Hide preview"}
+            </button>
+          )}
+        </header>
+
+        <div class="flex min-h-0 flex-1 overflow-hidden">
+          {previewUrl() && !previewHidden() ? (
+            <SplitPane
+              direction="row"
+              initialRatio={0.55}
+              dataPanel="terminal-preview"
+              first={terminal()}
+              second={<Preview url={previewUrl()} />}
+            />
+          ) : (
+            terminal()
+          )}
+        </div>
+
+        {/* Example strip, attached to the card's bottom edge. */}
+        <footer class="flex h-9 shrink-0 items-center gap-0.5 overflow-x-auto border-t border-border bg-[color-mix(in_srgb,var(--fg)_3%,transparent)] px-2">
+          {CHIPS.map((chip) => (
+            <button
+              type="button"
+              class="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11.5px] leading-none text-muted transition-colors hover:bg-[color-mix(in_srgb,var(--fg)_6%,transparent)] hover:text-[var(--fg)] disabled:opacity-40"
+              disabled={bootState() !== "ready"}
+              title={chip.note}
+              onClick={() => runChip(chip)}
+            >
+              <span aria-hidden="true" class="text-[8px]">▸</span>
+              {chip.label}
             </button>
           ))}
-        </div>
-        {CHIPS.map((chip) => (
-          <button
-            type="button"
-            class="rounded-full border border-border px-3 py-1.5 text-[12.5px] leading-none text-muted transition-colors hover:border-[var(--accent)] hover:text-[var(--fg)] disabled:opacity-40"
-            disabled={bootState() !== "ready"}
-            title={chip.note}
-            onClick={() => runChip(chip)}
-          >
-            {chip.label}
-          </button>
-        ))}
-        <span class="ml-auto flex items-center gap-2 text-[12px] leading-none text-muted">
-          <span class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`} />
-          <span>{statusLabels[bootState()]}</span>
-        </span>
+        </footer>
       </div>
     </div>
   );
