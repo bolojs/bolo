@@ -20,6 +20,7 @@ import type { RuntimeWorker } from "./runtime-worker.js";
 import type { SandboxBackend } from "./sandbox-backend.js";
 import type { ContainerEvents } from "./events.js";
 import { VfsBashFileSystem } from "./vfs-bash-fs.js";
+import { joinShellArgs, splitShellArgs } from "./shell-words.js";
 import { superviseRun } from "./supervise-run.js";
 import { NodeProcess } from "./node-process.js";
 import { DEFAULT_SAB_BYTES } from "./sync-channel.js";
@@ -108,6 +109,16 @@ const { Buffer } = __shims.buffer;
 // node -e snippets reach builtins through the same createRequire the
 // module shim exposes (no static bundler resolution in eval code).
 const require = __shims.module.createRequire("/");
+// Process workers inject handle-tracked timers so eval'd timers keep the
+// process alive; elsewhere real globals (which the main-realm supervisor
+// patches for quiescence tracking).
+const __timers = globalThis.__browserContainers.timers;
+const setTimeout = __timers?.setTimeout ?? globalThis.setTimeout;
+const clearTimeout = __timers?.clearTimeout ?? globalThis.clearTimeout;
+const setInterval = __timers?.setInterval ?? globalThis.setInterval;
+const clearInterval = __timers?.clearInterval ?? globalThis.clearInterval;
+const setImmediate = __timers?.setImmediate ?? ((fn, ...a) => globalThis.setTimeout(fn, 0, ...a));
+const clearImmediate = __timers?.clearImmediate ?? ((h) => globalThis.clearTimeout(h));
 `;
 
 export interface ThreadSpawnSpec {
@@ -137,6 +148,7 @@ const BUNDLE_TIMEOUT_MS = 30_000;
 
 const NODE_USAGE = `Node ${BOLO_NODE_VERSION} (in-browser)
 Usage: node <file.js>      run a JS/TS file in the container
+       node -e <code>      evaluate a string (alias: --eval)
        node --version      print the Node version
        node                start the REPL
 `;
@@ -145,12 +157,20 @@ const NPM_USAGE = `Usage: npm install [pkg ...]   install packages (alias: npm i
        npm run <script>     run a package.json script
 `;
 
+const NPX_USAGE = `Usage: npx <tool> [args...]  run a tool from node_modules/.bin or a wasm tool
+       npx --version       print the npm version
+`;
+
+/** npm version bundled with the Node release BOLO_NODE_VERSION tracks (22.12 → npm 10.9). */
+const BOLO_NPM_VERSION = "10.9.0";
+
 const HELP_TEXT = `bolo shell — available commands
 
   help                     this message (help <cmd> for details)
-  node <file.js>           run a JS/TS file (bun works too)
+  node <file.js>           run a JS/TS file (bun works too); node -e evals a string
   npm install [pkg ...]    install packages
   npm run <script>         run a package.json script
+  npx <tool>               run a tool from node_modules/.bin or a wasm tool
   runtime run <file>       run a file on the runtime
   agent run <file>         run a file in the agent sandbox
   curl  git  nc  tcping    network + git on the virtual fs
@@ -339,13 +359,16 @@ export class ShellService {
   }
 
   private async route(command: string, output: OutputCallbacks, cwd?: string): Promise<number> {
-    const [cmd, ...rest] = command.trim().split(/\s+/);
+    // Tokenize (not whitespace-split) so quoting survives the argv boundary:
+    // `git commit -m "a b c"` must reach the git builtin as one `-m` arg.
+    const [cmd = "", ...rest] = splitShellArgs(command.trim());
     // A scoped cwd (child_process spawnSync/execSync `cwd` option) applies to
     // this command only — it must not leak into the shell's persistent cwd.
     const effectiveCwd = cwd ?? this.cwd;
 
     if (cmd === "help") return this.routeHelp(rest, output);
     if (cmd === "npm") return this.routeNpm(rest, output);
+    if (cmd === "npx") return this.routeNpx(rest, output);
     if (cmd === "runtime") return this.routeRuntime(rest, output);
     if (cmd === "agent") return this.routeAgent(rest, output);
     if (cmd === "curl") return curl(rest, output);
@@ -353,23 +376,7 @@ export class ShellService {
     if (cmd === "nc") return nc(rest, output);
     if (cmd === "tcping") return tcping(rest, output);
     if (cmd === "sleep") return this.routeSleep(rest, output);
-    if (cmd === "node" || cmd === "bun") {
-      const filePath = rest[0];
-      if (!filePath) {
-        return this.routeRepl(output);
-      }
-      // `node --version`/`-v` prints the compat target and exits — there is
-      // no real binary, so the shimmed process.version is the answer.
-      if (filePath === "--version" || filePath === "-v") {
-        output.stdout(`${BOLO_NODE_VERSION}\n`);
-        return 0;
-      }
-      if (filePath === "--help" || filePath === "-h") {
-        output.stdout(NODE_USAGE);
-        return 0;
-      }
-      return this.runNodeApp(filePath, output);
-    }
+    if (cmd === "node" || cmd === "bun") return this.routeNode(rest, output);
 
     // WASM tool dispatch (esbuild/swc and friends) sits between the builtin
     // commands and just-bash, mirroring the "WASM tool not found" fallthrough
@@ -421,8 +428,94 @@ export class ShellService {
     const topic = args[0];
     if (topic === "node" || topic === "bun") output.stdout(NODE_USAGE);
     else if (topic === "npm") output.stdout(NPM_USAGE);
+    else if (topic === "npx") output.stdout(NPX_USAGE);
     else output.stdout(HELP_TEXT);
     return Promise.resolve(0);
+  }
+
+  private async routeNode(args: string[], output: OutputCallbacks): Promise<number> {
+    const first = args[0];
+    if (!first) {
+      return this.routeRepl(output);
+    }
+    // `node --version`/`-v` prints the compat target and exits — there is
+    // no real binary, so the shimmed process.version is the answer.
+    if (first === "--version" || first === "-v") {
+      output.stdout(`${BOLO_NODE_VERSION}\n`);
+      return 0;
+    }
+    if (first === "--help" || first === "-h") {
+      output.stdout(NODE_USAGE);
+      return 0;
+    }
+    // `node -e <code>` / `node --eval <code>` (also `--eval=<code>`): run the
+    // snippet behind WORKER_EVAL_PRELUDE in a process worker when the
+    // process-model infra exists, else in the main realm — either way
+    // builtins resolve through the prelude's createRequire.
+    if (first === "-e" || first === "--eval" || first.startsWith("--eval=")) {
+      const inline = first.startsWith("--eval=") ? first.slice("--eval=".length) : undefined;
+      const source = inline ?? args[1];
+      if (source === undefined) {
+        output.stderr(`node: ${first} requires an argument\n`);
+        return 9;
+      }
+      return this.runNodeEval(source, args.slice(inline === undefined ? 2 : 1), output);
+    }
+    if (first === "-") {
+      output.stderr("node: reading a script from stdin is not supported in the browser sandbox\n");
+      return 1;
+    }
+    if (first.startsWith("-")) {
+      // Mirrors real Node's "bad option" diagnostic (exit 9) instead of
+      // treating the flag as a filename and failing on ENOENT.
+      output.stderr(`node: bad option: ${first}\n`);
+      return 9;
+    }
+    return this.runNodeApp(first, output, args.slice(1));
+  }
+
+  private async routeNpx(args: string[], output: OutputCallbacks): Promise<number> {
+    const [tool, ...toolArgs] = args;
+
+    if (tool === undefined || tool === "--help" || tool === "-h") {
+      output.stdout(NPX_USAGE);
+      return 0;
+    }
+    if (tool === "--version" || tool === "-v") {
+      output.stdout(`${BOLO_NPM_VERSION}\n`);
+      return 0;
+    }
+    if (tool.startsWith("-")) {
+      output.stderr(`npx: unsupported option: ${tool}\n`);
+      return 1;
+    }
+
+    // Local install first, like real npx: node_modules/.bin/<tool> is the
+    // package bin link the installer writes — run it as a node entry.
+    // resolvePath keeps cwd "/" results relative; the memfs volume and the
+    // bundler both need the absolute form.
+    const binPath = this.resolvePath(`node_modules/.bin/${tool}`);
+    const absBinPath = binPath.startsWith("/") ? binPath : `/${binPath}`;
+    if (this.deps.vfs.hot.existsSync(absBinPath)) {
+      return this.runNodeApp(absBinPath, output, toolArgs);
+    }
+
+    // Then the curated wasm-tool registry (esbuild, swc): same "WASM tool
+    // not found" fallthrough contract as the bare-command dispatch above.
+    if (this.deps.wasmRegistry) {
+      const result = await this.deps.wasmRegistry.dispatch(tool, toolArgs);
+      const fellThrough = result.exitCode !== 0 && result.stderr.includes("WASM tool not found");
+      if (!fellThrough) {
+        if (result.stdout) output.stdout(result.stdout);
+        if (result.stderr) output.stderr(result.stderr);
+        return result.exitCode;
+      }
+    }
+
+    output.stderr(
+      `npx: '${tool}' not found — install it with \`npm install ${tool}\` or use a wasm tool (esbuild, swc)\n`,
+    );
+    return 1;
   }
 
   private async routeNpm(args: string[], output: OutputCallbacks): Promise<number> {
@@ -435,7 +528,7 @@ export class ShellService {
 
     if (subcmd !== "install" && subcmd !== "i") {
       if (subcmd === "run") return this.routeNpmRun(rest, output);
-      output.stderr(`Unsupported npm subcommand: ${subcmd}`);
+      output.stderr(`Unsupported npm subcommand: ${subcmd}\n`);
       return 1;
     }
 
@@ -535,6 +628,7 @@ export class ShellService {
     code: string,
     output: OutputCallbacks,
     onPortEvent: (event: string, data: { port: number; url?: string }) => void,
+    args?: string[],
   ): NodeProcess {
     const pid = `p${++runCounter}`;
     const scope = this.deps.swSandbox?.scope ?? "/";
@@ -546,7 +640,7 @@ export class ShellService {
       xhrUrl: `${scope}__bolo_sync/${pid}`,
       wasmRegistry: this.deps.wasmRegistry,
       shellService: {
-        exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
+        exec: (cmd, cmdArgs, cwd) => this.execute(joinShellArgs([cmd, ...cmdArgs]), undefined, cwd),
       },
       spawnThread: (spec, onMessage, onExit, onStdout, onStderr) =>
         this.spawnThreadProcess(spec, { onMessage, onExit, onStdout, onStderr }),
@@ -561,7 +655,7 @@ export class ShellService {
     void proc.exit.finally(() => {
       if (output.tag !== undefined) this.processes.delete(output.tag);
     });
-    proc.run({ code, filename: entry, cwd: this.cwd });
+    proc.run({ code, filename: entry, args, cwd: this.cwd });
     return proc;
   }
 
@@ -602,7 +696,7 @@ export class ShellService {
       xhrUrl: `${scope}__bolo_sync/${pid}`,
       wasmRegistry: this.deps.wasmRegistry,
       shellService: {
-        exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
+        exec: (cmd, cmdArgs, cwd) => this.execute(joinShellArgs([cmd, ...cmdArgs]), undefined, cwd),
       },
       // Threads themselves can spawn threads — the same op path recurses.
       spawnThread: (s, onMessage, onExit, onStdout, onStderr) =>
@@ -677,7 +771,77 @@ export class ShellService {
     };
   };
 
-  private async runNodeApp(filePath: string, rawOutput: OutputCallbacks): Promise<number> {
+  private async runNodeApp(
+    filePath: string,
+    rawOutput: OutputCallbacks,
+    scriptArgs: string[] = [],
+  ): Promise<number> {
+    // User files are written under the workdir but referenced with paths
+    // relative to it (e.g. '/server.ts' → '/home/web/server.ts').
+    const entry = this.resolvePath(filePath);
+    return this.runNodeProgram({
+      filename: entry,
+      argv: ["node", entry, ...scriptArgs],
+      scriptArgs,
+      output: rawOutput,
+      loadCode: () => this.bundleEntryTimed(entry),
+    });
+  }
+
+  /**
+   * `node -e`/`--eval`: no bundler pass — the snippet runs raw behind
+   * WORKER_EVAL_PRELUDE, which wires process/console/Buffer/require/timers
+   * from the live shim registry. Same process-worker/main-realm split as a
+   * bundled app.
+   */
+  private async runNodeEval(
+    source: string,
+    evalArgs: string[],
+    rawOutput: OutputCallbacks,
+  ): Promise<number> {
+    return this.runNodeProgram({
+      filename: "[eval]",
+      argv: ["node", ...evalArgs],
+      scriptArgs: evalArgs,
+      output: rawOutput,
+      loadCode: async () => ({ code: WORKER_EVAL_PRELUDE + source, warnings: [] }),
+    });
+  }
+
+  private async bundleEntryTimed(entry: string): Promise<{ code: string; warnings: string[] }> {
+    let bundleTimer: ReturnType<typeof setTimeout> | undefined;
+    return Promise.race([
+      bundleEntry(entry, {
+        vfs: this.deps.vfs,
+        cwd: this.cwd,
+        getShim: (builtin) =>
+          globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
+      }),
+      new Promise<never>((_resolve, reject) => {
+        bundleTimer = setTimeout(() => {
+          // The bundler's WASM instance may be poisoned (Atomics.wait
+          // poison) — drop the cached module handles so the next call
+          // re-initialises instead of reusing the wedged one.
+          resetBundler();
+          reject(
+            new Error(
+              `bundleEntry timed out after ${BUNDLE_TIMEOUT_MS}ms — bundler wedged, module cache reset`,
+            ),
+          );
+        }, BUNDLE_TIMEOUT_MS);
+      }),
+    ]).finally(() => clearTimeout(bundleTimer));
+  }
+
+  private async runNodeProgram(spec: {
+    filename: string;
+    argv: string[];
+    /** Args after the entry — appended to argv in the process worker. */
+    scriptArgs: string[];
+    output: OutputCallbacks;
+    loadCode: () => Promise<{ code: string; warnings?: string[] }>;
+  }): Promise<number> {
+    const rawOutput = spec.output;
     // Drop output after the program has terminated (e.g. code following
     // process.exit() that already started running).
     let terminated = false;
@@ -708,19 +872,18 @@ export class ShellService {
         if (event === "port-close") this.deps.events?.emit("port", data.port, "close", url);
       };
 
-      // User files are written under the workdir but referenced with paths
-      // relative to it (e.g. '/server.ts' → '/home/web/server.ts').
-      const entry = this.resolvePath(filePath);
+      const entry = spec.filename;
 
       const shims = createLiveShimRegistry({
         vfs: this.deps.vfs,
         sandbox: this.deps.swSandbox,
         onPortEvent,
         shellService: {
-          exec: (cmd, cmdArgs, cwd) => this.execute([cmd, ...cmdArgs].join(" "), undefined, cwd),
+          exec: (cmd, cmdArgs, cwd) =>
+            this.execute(joinShellArgs([cmd, ...cmdArgs]), undefined, cwd),
         },
         cwd: this.cwd,
-        argv: ["node", entry],
+        argv: spec.argv,
         onStdout: output.stdout,
         onStderr: output.stderr,
         // worker_threads/fork on the main realm spawn real process workers —
@@ -740,29 +903,8 @@ export class ShellService {
         shims,
       };
 
-      let bundleTimer: ReturnType<typeof setTimeout> | undefined;
-      const { code, warnings } = await Promise.race([
-        bundleEntry(entry, {
-          vfs: this.deps.vfs,
-          cwd: this.cwd,
-          getShim: (builtin) =>
-            globalThis.__browserContainers?.shims[builtin] as Record<string, unknown> | undefined,
-        }),
-        new Promise<never>((_resolve, reject) => {
-          bundleTimer = setTimeout(() => {
-            // The bundler's WASM instance may be poisoned (Atomics.wait
-            // poison) — drop the cached module handles so the next call
-            // re-initialises instead of reusing the wedged one.
-            resetBundler();
-            reject(
-              new Error(
-                `bundleEntry timed out after ${BUNDLE_TIMEOUT_MS}ms — bundler wedged, module cache reset`,
-              ),
-            );
-          }, BUNDLE_TIMEOUT_MS);
-        }),
-      ]).finally(() => clearTimeout(bundleTimer));
-      for (const warning of warnings) output.stderr(`[bundle warning] ${warning}\n`);
+      const { code, warnings } = await spec.loadCode();
+      for (const warning of warnings ?? []) output.stderr(`[bundle warning] ${warning}\n`);
 
       // Killed (Ctrl+C / exec timeout) while the bundle was resolving —
       // starting the app now would spawn a worker no kill handle can reach.
@@ -774,7 +916,7 @@ export class ShellService {
       if (this.deps.syncServer && typeof Worker === "function") {
         // Process workers are separate realms — they warm their own addon
         // variants inside node-process-worker.ts; nothing to do here.
-        const proc = this.runNodeAppInWorker(entry, code, output, onPortEvent);
+        const proc = this.runNodeAppInWorker(entry, code, output, onPortEvent, spec.scriptArgs);
         const exitCode = await proc.exit;
         terminated = true;
         return exitCode;

@@ -323,6 +323,142 @@ server.listen(3000);`,
     expect(result.stderr).toContain("Unsupported agent subcommand");
   });
 
+  it("node --version and -v → prints v22.12.0", async () => {
+    for (const flag of ["--version", "-v"]) {
+      const result = await shell.execute(`node ${flag}`);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe(`${BOLO_NODE_VERSION}\n`);
+      expect(result.stdout).toBe("v22.12.0\n");
+    }
+  });
+
+  it("node --help / -h → usage", async () => {
+    for (const flag of ["--help", "-h"]) {
+      const result = await shell.execute(`node ${flag}`);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Usage: node <file.js>");
+      expect(result.stdout).toContain(BOLO_NODE_VERSION);
+    }
+  });
+
+  it("node -e evaluates a snippet (console + require of node:*)", async () => {
+    const result = await shell.execute(
+      `node -e "const fs = require('node:fs'); console.log('eval-ok ' + typeof fs.readFileSync)"`,
+    );
+    expect(result.stderr).toBe("");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("eval-ok function");
+  });
+
+  it("node --eval and --eval=<code> evaluate snippets", async () => {
+    const spaced = await shell.execute(`node --eval "console.log('eval-two')"`);
+    expect(spaced.exitCode).toBe(0);
+    expect(spaced.stdout).toContain("eval-two");
+
+    const inline = await shell.execute(`node --eval=console.log(123)`);
+    expect(inline.exitCode).toBe(0);
+    expect(inline.stdout).toContain("123");
+  });
+
+  it("node -e honours process.exitCode", async () => {
+    const result = await shell.execute(`node -e "process.exitCode = 3"`);
+    expect(result.exitCode).toBe(3);
+  });
+
+  it("node -e with no argument → clear error, not a file lookup", async () => {
+    const result = await shell.execute("node -e");
+    expect(result.exitCode).toBe(9);
+    expect(result.stderr).toContain("-e requires an argument");
+  });
+
+  it("node --bogus → bad option error, not an opaque bundler ENOENT", async () => {
+    const result = await shell.execute("node --inspect-brk");
+    expect(result.exitCode).toBe(9);
+    expect(result.stderr).toContain("node: bad option: --inspect-brk");
+  });
+
+  it("npx --version / -v → prints the npm version", async () => {
+    for (const flag of ["--version", "-v"]) {
+      const result = await shell.execute(`npx ${flag}`);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe("10.9.0\n");
+    }
+  });
+
+  it("npx <tool> resolves node_modules/.bin first and runs it as a node app", async () => {
+    const dispatch = vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
+    deps.wasmRegistry = { dispatch };
+    shell = new ShellService(deps);
+
+    const hot = deps.vfs.hot as unknown as {
+      mkdirSync: (p: string, o?: { recursive?: boolean }) => void;
+      writeFileSync: (p: string, c: string) => void;
+    };
+    hot.mkdirSync("/node_modules/.bin", { recursive: true });
+    hot.writeFileSync("/node_modules/.bin/hello-bin", "console.log('ran from .bin');");
+
+    const result = await shell.execute("npx hello-bin");
+    expect(result.stderr).toBe("");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("ran from .bin");
+    // A local .bin hit must not reach the wasm registry.
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it("npx <tool> falls through to the wasm registry when no .bin exists", async () => {
+    const dispatch = vi.fn().mockResolvedValue({
+      stdout: "0.20.2\n",
+      stderr: "",
+      exitCode: 0,
+    });
+    deps.wasmRegistry = { dispatch };
+    shell = new ShellService(deps);
+
+    const result = await shell.execute("npx esbuild --version");
+    expect(dispatch).toHaveBeenCalledWith("esbuild", ["--version"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("0.20.2\n");
+  });
+
+  it("npx <unknown> → named error, not 'command not found'", async () => {
+    const result = await shell.execute("npx frobnicate");
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("npx: 'frobnicate' not found");
+    expect(result.stderr).toContain("npm install frobnicate");
+  });
+
+  it("npx with no tool → usage", async () => {
+    const result = await shell.execute("npx");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Usage: npx");
+  });
+
+  it("quoted args reach routed builtins as single argv entries", async () => {
+    const dispatch = vi.fn().mockResolvedValue({
+      stdout: "",
+      stderr: "WASM tool not found: mytool",
+      exitCode: 1,
+    });
+    deps.wasmRegistry = { dispatch };
+    shell = new ShellService(deps);
+
+    await shell.execute('mytool -m "a b c"');
+    expect(dispatch).toHaveBeenCalledWith("mytool", ["-m", "a b c"]);
+  });
+
+  it('git commit -m "a b c" keeps the whole message', async () => {
+    expect((await shell.execute("git init")).exitCode).toBe(0);
+    await deps.vfs.writeFile("/msg.txt", "x");
+    expect((await shell.execute("git add msg.txt")).exitCode).toBe(0);
+
+    const commit = await shell.execute('git commit -m "a b c"');
+    expect(commit.exitCode).toBe(0);
+    expect(commit.stdout).toContain("a b c");
+
+    const log = await shell.execute("git log");
+    expect(log.stdout).toContain("a b c");
+  });
+
   it("help → prints the command surface", async () => {
     const result = await shell.execute("help");
     expect(result.exitCode).toBe(0);
