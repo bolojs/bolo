@@ -326,7 +326,12 @@ export class PackageMatrixRunner {
   }
 }
 
-const MAX_ERROR_LENGTH = 500;
+/**
+ * The most characters of a probe's output the harness keeps. The window is
+ * generous on purpose: a truncated package error hides the real cause, and
+ * the report is read by humans.
+ */
+export const MAX_ERROR_LENGTH = 8000;
 const MAX_LINE_LENGTH = 300;
 
 // Uncaught crashes in the container print `at data:text/javascript,<encoded

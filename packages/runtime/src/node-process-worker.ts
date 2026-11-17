@@ -18,6 +18,9 @@ import {
   bundleHasNativeAddon,
 } from "@bolojs/registry/native-addon-resolver";
 import { createSyncCaller } from "./sync-channel.js";
+import { SourceMapIndex } from "./source-map.js";
+import type { RawBundleSourceMap } from "@bolojs/registry/bundle";
+import { setOkExpressionCallSiteReader } from "@bolojs/node-web-shims/dist/util/ok-expression.js";
 import { createNodeTimers } from "./node-timers.js";
 import { createEventLoop } from "./event-loop.js";
 import {
@@ -67,6 +70,13 @@ export interface ProcRunMessage {
   hasWasmRegistry: boolean;
   sab?: SharedArrayBuffer;
   quiescenceCapMs?: number;
+  /**
+   * The bundle's hidden source map (see `bundleEntry`). A bundle runs from a
+   * single `blob:` URL, so stack frames point at the bundle — the map (with
+   * `sourcesContent`) lets the worker resolve an `assert.ok(...)` call site
+   * back to the original module (Node's falsy-expression message).
+   */
+  sourceMap?: RawBundleSourceMap;
   /** Present when this process runs a worker_threads thread. */
   thread?: { workerData?: unknown; threadId?: number };
 }
@@ -189,6 +199,24 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
 });
 
 const runProcess = async (msg: ProcRunMessage) => {
+  // The bundle's hidden source map resolves a stack frame that points at the
+  // single `blob:` URL back to the original module — `assert.ok(expr)` then
+  // reports the falsy expression the way Node does (reading the caller's
+  // source file). Installed per-run: the map (and bundle) is process-scoped.
+  if (msg.sourceMap) {
+    try {
+      const index = new SourceMapIndex(msg.sourceMap);
+      setOkExpressionCallSiteReader((callSite) => {
+        const mapped = index.originalPositionFor(callSite.line + 1, callSite.column);
+        if (!mapped?.content) return undefined;
+        return { source: mapped.content, line: mapped.line, column: mapped.column };
+      });
+    } catch (err) {
+      logger.warn("ok-expression source map install failed", { error: String(err) });
+    }
+  } else {
+    setOkExpressionCallSiteReader(undefined);
+  }
   const rpc = createRpcPeer((m) => post(m));
   // Promise continuations announce an async resource so async_hooks
   // init/before/after/promiseResolve fire around them (Node parity).

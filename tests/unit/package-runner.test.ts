@@ -7,6 +7,7 @@ import {
   esmShUrlToSpecifier,
   extractInstallSpecs,
   PackageMatrixRunner,
+  MAX_ERROR_LENGTH,
   rewriteEsmImports,
   tail,
   type PackageMatrix,
@@ -320,9 +321,9 @@ describe("tail", () => {
   });
 
   it("keeps both ends of long output so the head error survives", () => {
-    const output = `Error: first\n${"filler\n".repeat(200)}last line`;
+    const output = `Error: first\n${"filler\n".repeat(4000)}last line`;
     const result = tail(output);
-    expect(result.length).toBeLessThanOrEqual(520);
+    expect(result.length).toBeLessThanOrEqual(MAX_ERROR_LENGTH + 20);
     expect(result).toContain("Error: first");
     expect(result).toContain("last line");
   });

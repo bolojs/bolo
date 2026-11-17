@@ -34,7 +34,7 @@
     "@bolojs/fs": "workspace:*",
     "@bolojs/pm": "workspace:*",
     "@oxc-transform/binding-wasm32-wasi": "0.140.0",
-    "@rolldown/browser": "^1.1.5",
+    "@rolldown/browser": "^1.3.2",
     "oxc-transform": "^0.140.0"
   },
   "devDependencies": {

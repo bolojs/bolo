@@ -19,6 +19,11 @@
     "reason": "loads a native .node binding through per-platform optional dependencies; no WASM fallback ships in this package",
     "remediation": "the bundle-time native-addon variant alias maps 'lightningcss' to lightningcss-wasm@1.33.0 (napi-wasm); its init() needs an explicit wasm URL because new URL(..., import.meta.url) cannot resolve inside the bundled module scope"
   },
+  "parcel": {
+    "lane": "C",
+    "reason": "parcel's core path runs through @parcel/rust, a napi-rs native binding; the browser entry (browser.js → napi-wasm) needs a parcel_node_bindings.wasm artifact that is never published to npm (it is only built from source via yarn wasm:build-release), and @parcel/watcher is native-only",
+    "remediation": "none browser-faithful: no published wasm build of parcel's Rust bindings exists; use a Node host for parcel"
+  },
   "rspack": {
     "lane": "C",
     "reason": "@rspack/core requires its native Rust binding (@rspack/binding-*, a .node addon) via dynamic require; the browser build is a separate package",

@@ -9,6 +9,7 @@ import type { OpDispatch } from "./remote-ops.js";
 import { createSyncBuffer } from "./sync-channel.js";
 import type { SyncServer } from "./sync-channel.js";
 import type { ProcRunMessage, ProcWorkerMessage } from "./node-process-worker.js";
+import type { RawBundleSourceMap } from "@bolojs/registry/bundle";
 
 const logger = getLogger(["bolo", "runtime", "node-process"]);
 
@@ -60,6 +61,15 @@ export interface NodeProcessRunOptions {
   args?: string[];
   env?: Record<string, string>;
   cwd?: string;
+  /**
+   * The bundle's source map (v3), when the code came from `bundleEntry`.
+   *
+   * The worker installs a source reader from it so `assert.ok(...)` can
+   * report the falsy expression the way Node does — Node reads the caller's
+   * source file, and a bundled program's frames all point at the bundle's
+   * `blob:` URL (see node-process-worker.ts).
+   */
+  sourceMap?: RawBundleSourceMap;
   /** Present when this process runs a worker_threads thread. */
   thread?: { workerData?: unknown; threadId?: number };
 }
@@ -221,6 +231,7 @@ export class NodeProcess {
       hasWasmRegistry: deps.wasmRegistry !== undefined,
       sab,
       quiescenceCapMs: deps.quiescenceCapMs,
+      sourceMap: opts.sourceMap,
       thread: opts.thread,
     };
     worker.postMessage(run);

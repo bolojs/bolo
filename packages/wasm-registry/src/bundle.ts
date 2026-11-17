@@ -237,6 +237,25 @@ export interface BundleEntryOptions {
 export interface BundleEntryResult {
   readonly code: string;
   readonly warnings: string[];
+  /**
+   * The bundle's source map (v3), when one could be produced.
+   *
+   * A bundle runs from a single `blob:` URL, so every stack frame points at
+   * the bundle, not at the original module. The map carries the original
+   * modules' text in `sourcesContent`, which is what lets a host recover an
+   * `assert.ok(...)` call site (Node reads the caller's source file to report
+   * the falsy expression) without a filesystem.
+   */
+  readonly map?: RawBundleSourceMap;
+}
+
+/** The source-map shape `bundleEntry` returns (a v3 map). */
+export interface RawBundleSourceMap {
+  readonly version: number;
+  readonly sources: string[];
+  readonly sourcesContent?: (string | null)[];
+  readonly mappings: string;
+  readonly names?: string[];
 }
 
 const dirname = (path: string): string => {
@@ -689,6 +708,14 @@ if (typeof __bc_modRequire === 'function') {
 }
 if (typeof globalThis.require !== 'function') globalThis.require = __bc_require;
 
+// CommonJS-namespace pick for cjsToEsm-converted files. __toESM (rolldown >=1.3)
+// drops the namespace's "module.exports" getter, so the raw mo-default-ns chain
+// lands on ns.default -- the CLASS for exports.default = Class modules -- and
+// the consumer's .default read becomes undefined ("Class extends value
+// undefined"). An __esModule namespace IS the module.exports view (its .default
+// getter still exposes the exports value), so return it untouched; a plain
+// namespace keeps the old chain.
+var __bc_cjsNs = (ns) => ns["module.exports"] ?? (ns.__esModule ? ns : ns.default ?? ns);
 var __bcFormat = (args) => args.map((a) => {
   if (typeof a === 'string') return a;
   if (a instanceof Error) return a.stack || String(a);
@@ -715,7 +742,13 @@ var __bc_Console = class {
     for (var k of Object.getOwnPropertyNames(__bc_Console.prototype)) {
       if (k === 'constructor') continue;
       var m = this[k];
-      if (typeof m === 'function') this[k] = m.bind(this);
+      if (typeof m === 'function') {
+        var bound = m.bind(this);
+        // bind renames the function to "bound log"; node keeps the method
+        // name ("log"), and test-console-methods asserts exactly that.
+        try { Object.defineProperty(bound, 'name', { value: k, configurable: true }); } catch (_) {}
+        this[k] = bound;
+      }
     }
   }
   _write(stream, args) {
@@ -771,7 +804,7 @@ var __bc_Console = class {
     this._write('stdout', [label + ': ' + ms.toFixed(3) + 'ms', ...args]);
   }
   group(...args) { if (args.length) this._write('stdout', args); this._indent++; }
-  groupCollapsed(...args) { this.group(...args); }
+  groupCollapsed(...args) { this._indent++; if (args.length) this._write('stdout', args); }
   groupEnd() { if (this._indent > 0) this._indent--; }
 };
 var __bc_console = new __bc_Console();
@@ -911,25 +944,27 @@ const cjsToEsm = (
 ): string | undefined => {
   let counter = 0;
   const imports: string[] = [];
-  // `require("./x")` → `import * as __cjs0 from "./x.js"` (resolved). The
-  // specifier is resolved through the same Node-style lookup the resolver
-  // uses (exact file, then extensions, then `dir/index.js`) — guessing the
-  // extension textually breaks directory requires (`require('./config')`
-  // where `config/` is a directory became `./config.js`, resolving to
-  // nothing) and converts requires that cannot resolve at all (`try {
-  // require('./missing.node') }` — Node defers those to require-time
-  // MODULE_NOT_FOUND; a static import fails the build instead).
+  // `require("./x")` → unwrapped namespace of the converted target. The target
+  // is converted to ESM by this same path (its `default` is `module.exports`),
+  // and rolldown lowers a namespace import of a CJS-shaped module to
+  // `__toESM(require_helper())` — a namespace whose `"module.exports"` getter
+  // is DROPPED by `__toESM`'s copy (rolldown ≥1.3; 1.1 emitted the helper call
+  // directly, where the getter survived). Picking through
+  // `ns["module.exports"] ?? ns.default ?? ns` then lands on `ns.default` —
+  // which for an `exports.default = Class` module is the CLASS, not the
+  // exports object the CJS consumer needs (`provider_1.default` → undefined,
+  // "Class extends value undefined" in globby/fast-glob).
+  // The `__bc_cjsNs` helper restores Node semantics: a `__esModule` namespace
+  // stays the namespace (its `.default` getter still exposes the exports
+  // value to plain `x.default` reads); a plain namespace keeps the old
+  // `mo ?? default ?? ns` chain.
   const body = source.replace(CJS_REQUIRE_CALL, (_match, quote: string, spec: string) => {
     if (!spec.startsWith(".")) return _match;
     const resolved = resolveRelative(spec);
     if (!resolved) return _match;
-    // A namespace import is correct here: the module is converted to ESM by
-    // this same path (its `default` is `module.exports`), and rolldown's
-    // `__toCommonJS` unwraps through the exported `"module.exports"` key —
-    // the expression below lands on the raw CJS exports either way.
     const name = `__cjs${counter++}`;
     imports.push(`import * as ${name} from ${quote}${resolved}${quote};`);
-    return `(${name}["module.exports"] ?? ${name}.default ?? ${name})`;
+    return `__bc_cjsNs(${name})`;
   });
   // A bare `require("pkg")` survived the rewrite — the file needs Node's
   // runtime require, which the bundler cannot express statically.
@@ -1513,12 +1548,53 @@ export const bundleEntry = async (
     // The bundle executes from a single data:/blob: URL — relative chunk
     // imports (dynamic import() splitting) would be unresolvable.
     inlineDynamicImports: true,
+    // A hidden source map: not linked from the bundle (no `//# sourceMappingURL`
+    // comment), but returned to the caller so a host can resolve stack frames
+    // back to the original modules. `sourcesContent` carries the original
+    // module texts, so the map is self-contained.
+    sourcemap: "hidden",
   });
 
   const chunk = result.output.find((o) => o.type === "chunk");
   if (!chunk) throw new Error(`rolldown produced no output for entry "${entry}"`);
 
-  return { code: routeCjsThroughWrapper(chunk.code, options.cwd ?? "/"), warnings };
+  const { code, prependedLines } = routeCjsThroughWrapper(chunk.code, options.cwd ?? "/");
+  const rawMap = toRawSourceMap(chunk.map);
+  return {
+    code,
+    warnings,
+    // The CJS helper is prepended after the map was rendered — shift the map
+    // so its generated lines match the shipped code.
+    map: rawMap ? shiftSourceMapLines(rawMap, prependedLines) : undefined,
+  };
+};
+
+/**
+ * Normalises rolldown's source map into the plain v3 shape the runtime's
+ * source-map reader consumes. Rolldown's map is already v3; the conversion
+ * exists to drop the bundler's extra fields and to keep the result
+ * structurally-cloneable (it crosses a `postMessage` boundary to the process
+ * worker).
+ */
+const toRawSourceMap = (map: unknown): RawBundleSourceMap | undefined => {
+  if (!map || typeof map !== "object") return undefined;
+  const raw = map as {
+    version?: unknown;
+    sources?: unknown;
+    sourcesContent?: unknown;
+    mappings?: unknown;
+    names?: unknown;
+  };
+  if (!Array.isArray(raw.sources) || typeof raw.mappings !== "string") return undefined;
+  return {
+    version: typeof raw.version === "number" ? raw.version : 3,
+    sources: raw.sources.map((s) => String(s)),
+    sourcesContent: Array.isArray(raw.sourcesContent)
+      ? raw.sourcesContent.map((c) => (c === null || c === undefined ? null : String(c)))
+      : undefined,
+    mappings: raw.mappings,
+    names: Array.isArray(raw.names) ? raw.names.map((n) => String(n)) : undefined,
+  };
 };
 
 /**
@@ -1563,8 +1639,21 @@ var __bc_cjsModule = (path, cb) => {
 };
 `;
 
-const routeCjsThroughWrapper = (code: string, cwd: string): string => {
-  if (!code.includes("//#region ") || !code.includes("__commonJSMin(")) return code;
+/**
+ * Rewrites the CJS regions in a bundle to route through `__bc_cjsModule`.
+ *
+ * Returns the rewritten code *and* the number of lines the CJS helper
+ * prepends: the helper is added after the bundler rendered the chunk, so
+ * every generated line moves down by that many — the source map has to be
+ * shifted to match (see `shiftSourceMapLines`).
+ */
+const routeCjsThroughWrapper = (
+  code: string,
+  cwd: string,
+): { code: string; prependedLines: number } => {
+  if (!code.includes("//#region ") || !code.includes("__commonJSMin(")) {
+    return { code, prependedLines: 0 };
+  }
   const regionPattern = /\/\/#region ([^\n]*)\n([\s\S]*?)\n\/\/#endregion/g;
   let routed = false;
   const rewritten = code.replace(regionPattern, (match, path: string, body: string) => {
@@ -1581,7 +1670,28 @@ const routeCjsThroughWrapper = (code: string, cwd: string): string => {
     const next = body.replace("__commonJSMin(", `__bc_cjsModule(${JSON.stringify(absolute)}, `);
     return `//#region ${path}\n${next}\n//#endregion`;
   });
-  return routed ? CJS_MODULE_HELPER + rewritten : rewritten;
+  if (!routed) return { code: rewritten, prependedLines: 0 };
+  return { code: CJS_MODULE_HELPER + rewritten, prependedLines: lineCount(CJS_MODULE_HELPER) };
+};
+
+/** The number of lines in `text` (a trailing newline does not add a line). */
+const lineCount = (text: string): number => {
+  const lines = text.split("\n");
+  if (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
+  return lines.length;
+};
+
+/**
+ * Shifts a source map's mappings down by `lines` generated lines.
+ *
+ * Prepending code to a rendered chunk (the CJS helper) moves every generated
+ * line, so the map's line indices no longer match the code. A source map's
+ * `mappings` is `;`-separated per generated line, so the shift is a prefix of
+ * empty lines.
+ */
+const shiftSourceMapLines = (map: RawBundleSourceMap, lines: number): RawBundleSourceMap => {
+  if (lines <= 0) return map;
+  return { ...map, mappings: `${";".repeat(lines)}${map.mappings}` };
 };
 
 export interface TransformScriptOptions {
