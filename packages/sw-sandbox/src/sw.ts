@@ -12,6 +12,7 @@ const requestQueue: Array<() => void> = [];
 const SW_ERROR_MESSAGE_TYPE = "BOLO_SW_ERROR";
 
 interface SWGlobal {
+  registration?: { readonly scope: string };
   addEventListener(type: "install", listener: () => void): void;
   addEventListener(
     type: "activate",
@@ -62,6 +63,15 @@ export function initSW(swGlobal: SWGlobal): void {
   swGlobal.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
     const isSync = url.pathname.includes("/__bolo_sync/");
+    // Under a sub-path scope ("/sandbox/sw.js" -> "/sandbox/") the emitted
+    // URLs carry the scope prefix; strip it before matching virtual routes.
+    const scopePath = swGlobal.registration?.scope
+      ? new URL(swGlobal.registration.scope).pathname
+      : "/";
+    const routePath =
+      scopePath !== "/" && url.pathname.startsWith(scopePath)
+        ? url.pathname.slice(scopePath.length - 1)
+        : url.pathname;
     // Intercept the vite preview prefix (same origin), the Next.js dev
     // server prefix (same origin), the virtual sandbox
     // hostname (cross-origin user servers like Hono/Express), and the sync
@@ -69,9 +79,9 @@ export function initSW(swGlobal: SWGlobal): void {
     // (sync-XHR fallback when SharedArrayBuffer is unavailable).
     if (
       !isSync &&
-      !url.pathname.startsWith("/__preview/") &&
-      !url.pathname.startsWith("/__next/") &&
-      !url.pathname.startsWith("/__virtual__/") &&
+      !routePath.startsWith("/__preview/") &&
+      !routePath.startsWith("/__next/") &&
+      !routePath.startsWith("/__virtual__/") &&
       url.hostname !== "sandbox.local"
     ) {
       return;

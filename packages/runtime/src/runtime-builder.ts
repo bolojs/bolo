@@ -68,19 +68,19 @@ export class RuntimeBuilder {
     return this.options.shellService ?? new ShellService(deps);
   }
 
-  protected createViteServer(vfs: VfsBus): BrowserViteServer | undefined {
+  protected createViteServer(vfs: VfsBus, scope = "/"): BrowserViteServer | undefined {
     return new BrowserViteServer({
       vfs,
       root: this.options.workdirName ?? "/home/web",
-      base: "/__preview/",
+      base: `${scope}__preview/`,
     });
   }
 
-  protected createNextServer(vfs: VfsBus): NextDevServer | undefined {
+  protected createNextServer(vfs: VfsBus, scope = "/"): NextDevServer | undefined {
     return new NextDevServer({
       vfs,
       root: this.options.workdirName ?? "/home/web",
-      base: "/__next",
+      base: `${scope}__next`,
     });
   }
 
@@ -177,6 +177,13 @@ export class RuntimeBuilder {
       const httpShimOptions = {
         onPortEvent: (event: string, data: { port: number; url?: string }) => {
           if (data.url) {
+            // See ShellService: worker realms cannot read the remote
+            // sandbox's scope, so emitted virtual URLs arrive root-relative
+            // and are rewritten under the real SW scope here.
+            const scope = sandbox.scope;
+            if (data.url.startsWith("/") && !data.url.startsWith(scope)) {
+              data.url = scope + data.url.slice(1);
+            }
             if (event === "server-ready") {
               events.emit("server-ready", data.port, data.url);
             }
@@ -207,9 +214,9 @@ export class RuntimeBuilder {
 
       installNavigatorUserAgent();
 
-      const previewBase = "/__preview/";
+      const previewBase = `${sandbox.scope}__preview/`;
       const previewChannel = new BroadcastChannel("bolo-preview");
-      const previewServer = this.createViteServer(vfs);
+      const previewServer = this.createViteServer(vfs, sandbox.scope);
       if (previewServer) {
         await previewServer.start();
         let reloadTimer: ReturnType<typeof setTimeout> | null = null;
@@ -234,7 +241,7 @@ export class RuntimeBuilder {
             throw new Error("not handled");
           }
           const serverUrl = new URL(req.url);
-          serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, "") || "/";
+          serverUrl.pathname = url.pathname.slice(previewBase.length - 1) || "/";
           const response = await previewServer.onFetch(serverUrl.toString(), req);
           const headers = new Headers(response.headers);
           headers.set("Cross-Origin-Embedder-Policy", "credentialless");
@@ -254,8 +261,8 @@ export class RuntimeBuilder {
         setTimeout(() => events.emit("server-ready", 3000, previewBase), 0);
       }
 
-      const nextBase = "/__next/";
-      const nextServer = this.createNextServer(vfs);
+      const nextBase = `${sandbox.scope}__next/`;
+      const nextServer = this.createNextServer(vfs, sandbox.scope);
       if (nextServer) {
         await nextServer.start();
         let nextReloadTimer: ReturnType<typeof setTimeout> | null = null;

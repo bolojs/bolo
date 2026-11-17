@@ -622,7 +622,7 @@ const dispatchLocalRequest = async (
   body: Uint8Array | undefined,
 ): Promise<LocalDispatchResult> => {
   let pathname = url.pathname;
-  const virtualMatch = pathname.match(/^\/__virtual__\/\d+(\/.*)?$/);
+  const virtualMatch = pathname.match(/\/__virtual__\/\d+(\/.*)?$/);
   if (virtualMatch) pathname = virtualMatch[1] || "/";
   const request = new IncomingMessageImpl({
     url: pathname + url.search,
@@ -1036,7 +1036,7 @@ export class ServerImpl extends EventEmitter implements HttpServer {
       actualPort = optPort === 0 ? nextEphemeralHttpPort++ : (optPort ?? 3000);
       cb = (typeof host === "function" ? host : callback) as (() => void) | undefined;
     }
-    const url = `/__virtual__/${actualPort}`;
+    const url = `${this.sandbox?.scope ?? "/"}__virtual__/${actualPort}`;
 
     this.listening = true;
     this.serverPort = actualPort;
@@ -1056,7 +1056,7 @@ export class ServerImpl extends EventEmitter implements HttpServer {
 
         const reqUrl = new URL(req.url);
         let pathname = reqUrl.pathname;
-        const virtualMatch = pathname.match(/^\/__virtual__\/\d+(\/.*)?$/);
+        const virtualMatch = pathname.match(/\/__virtual__\/\d+(\/.*)?$/);
         if (virtualMatch) {
           pathname = virtualMatch[1] || "/";
         }
@@ -1080,7 +1080,25 @@ export class ServerImpl extends EventEmitter implements HttpServer {
         this.emit("request", request, response);
         await responseFinished;
 
-        return response.toResponse();
+        const res = response.toResponse();
+        // The host page runs under COEP (SharedArrayBuffer), so a navigated
+        // iframe document must opt in via CORP — mirror the vite/next preview
+        // handlers, but never clobber headers the user server set itself.
+        const headers = new Headers(res.headers);
+        if (!headers.has("Cross-Origin-Embedder-Policy")) {
+          headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+        }
+        if (!headers.has("Cross-Origin-Opener-Policy")) {
+          headers.set("Cross-Origin-Opener-Policy", "same-origin");
+        }
+        if (!headers.has("Cross-Origin-Resource-Policy")) {
+          headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+        }
+        return new Response(res.body, {
+          status: res.status,
+          statusText: res.statusText,
+          headers,
+        });
       };
 
       this.sandbox.onFetch(fetchHandler);
