@@ -1,3 +1,7 @@
+---
+title: "internal: bolt-web spike"
+---
+
 # Reference: running bolt.new locally as guidance for /vibe
 
 Spike date: 2026-11-15. Repo: https://github.com/stackblitz/bolt.new (open-source bolt, not the hosted product).

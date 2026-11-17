@@ -2,5 +2,11 @@
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "ignoreDeprecations": "6.0"
-  }
+  },
+  "exclude": [
+    // Symlinked internal reference material (spike code, scratch configs) —
+    // it renders as docs pages but is not part of the site's checked source.
+    "src/content/docs/internal",
+    "dist"
+  ]
 }

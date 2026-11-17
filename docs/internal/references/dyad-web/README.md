@@ -1,3 +1,7 @@
+---
+title: "internal: dyad-web spike"
+---
+
 # Running Dyad as a web app (spike)
 
 Date: 2026-11-15. Dyad commit `0838405` (v1.24.0-beta.1, MIT), cloned to `/tmp/dyad-try/dyad`.

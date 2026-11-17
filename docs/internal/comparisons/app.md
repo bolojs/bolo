@@ -1,3 +1,7 @@
+---
+title: "internal: /app comparison"
+---
+
 # Competitive comparison: bolo /app vs API clients and in-browser full-stack tools
 
 Date: 2026-11-14. Scope: the `/app` subsite of `apps/site/landing` versus widely used API clients, data studios and in-browser full-stack environments.
