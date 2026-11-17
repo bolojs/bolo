@@ -1,11 +1,11 @@
 ---
 import SubsiteLayout from '../layouts/SubsiteLayout.astro';
-import SubsiteApp from '../subsites/shared/SubsiteApp.tsx';
+import VibeWorkbench from '../subsites/vibe/components/VibeWorkbench.tsx';
 
 const title = 'Vibe coding | bolo';
 const description = 'Chat with an LLM that drives the sandbox. Bring your own key.';
 ---
 
 <SubsiteLayout title={title} description={description} accent="#db2777">
-  <SubsiteApp client:only="solid-js" subsite="vibe" />
+  <VibeWorkbench client:only="solid-js" />
 </SubsiteLayout>
