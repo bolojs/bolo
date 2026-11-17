@@ -73,6 +73,9 @@ importers:
       '@bolojs/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
+      playwright-core:
+        specifier: ^1.61.1
+        version: 1.61.1
     devDependencies:
       '@stryker-mutator/core':
         specifier: ^10.1.1
@@ -80,9 +83,6 @@ importers:
       '@stryker-mutator/vitest-runner':
         specifier: ^10.1.1
         version: 10.1.1(@stryker-mutator/core@10.1.1(@types/node@26.1.1))(vitest@4.1.10(@types/node@26.1.1)(happy-dom@20.10.6)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(tsx@4.23.1)(yaml@2.9.0)))
-      playwright-core:
-        specifier: ^1.59.1
-        version: 1.59.1
       portless:
         specifier: latest
         version: 0.17.0
@@ -6975,11 +6975,6 @@ packages:
   pkg-dir@5.0.0:
     resolution: {integrity: sha512-NPE8TDbzl/3YQYY7CSS228s3g2ollTFnc+Qi3tqmqJp9Vg2ovUpixcJEo2HJScN2Ez+kEaal6y70c0ehqJBJeA==}
     engines: {node: '>=10'}
-
-  playwright-core@1.59.1:
-    resolution: {integrity: sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==}
-    engines: {node: '>=18'}
-    hasBin: true
 
   playwright-core@1.61.1:
     resolution: {integrity: sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==}
@@ -15191,8 +15186,6 @@ snapshots:
   pkg-dir@5.0.0:
     dependencies:
       find-up: 5.0.0
-
-  playwright-core@1.59.1: {}
 
   playwright-core@1.61.1: {}
 
