@@ -1,19 +1,20 @@
 /** @jsxImportSource solid-js */
 import "../../demo/client-globals";
-import { createSignal, onMount } from "solid-js";
+import { createSignal, getOwner, onMount, runWithOwner } from "solid-js";
+import type { JSX } from "solid-js";
 import { getLogger } from "@bolojs/log/browser";
 import type { BrowserContainer, ReplResult } from "@bolojs/runtime";
 import type { FileSystemTree } from "@bolojs/runtime";
-import { BrowserViteServer } from "@bolojs/vite-server";
-import { NextDevServer } from "@bolojs/next-server";
-import { SWSandbox } from "@bolojs/sandbox";
 import { bootSubsite, getBootedVfs } from "../shared/boot";
 import { installSwErrorTracking } from "../shared/sw-handlers";
+import { startPreviewServers, waitForPreview } from "../shared/preview-servers";
 import Terminal from "../ui/Terminal";
 import Editor, { type EditorDocument } from "../ui/Editor";
 import Preview from "../ui/Preview";
 import FileTree from "../ui/FileTree";
-import SplitPane from "../ui/SplitPane";
+import WorkbenchShell from "../workbench/WorkbenchShell";
+import { createWorkbenchTabs } from "../workbench/tabs";
+import type { PanelView, SidebarView, StatusItem } from "../workbench/types";
 import { IDE_TEMPLATES, type IdeTemplate } from "./templates";
 
 declare global {
@@ -65,35 +66,33 @@ const templateToTree = (files: Record<string, string>): FileSystemTree => {
   return tree;
 };
 
-const VITE_BASE = "/__preview/";
-const NEXT_BASE = "/__next/";
-const PREVIEW_SW_PATH = "/sw.js";
+const fileName = (path: string) => path.split("/").filter(Boolean).pop() ?? path;
+const codeTabId = (path: string) => `code:${path}`;
 
 /**
- * The /ide workbench, StackBlitz-embed style: file tree + editor on the
- * left, live preview on the right, terminal drawer underneath.
+ * The /ide workbench on the shared shell: an Explorer sidebar (file tree),
+ * a tab strip hosting code tabs plus a pinned Preview tab, and a terminal
+ * in the collapsible bottom panel.
  *
  * Preview wiring: the runtime's own BrowserViteServer answers top-page
  * requests, but the preview iframe is a separate client at "/__preview/"
  * (root-SW scope), which the subsite's "/ide/sw.js" cannot control. So the
  * IDE pairs with the root SW itself and serves the iframe through a
- * dedicated BrowserViteServer over the same VfsBus. Editor writes flow
- * through the runtime's VfsBus watch into broadcastHmr plus the debounced
- * "bolo-preview" reload the Preview panel listens on.
+ * dedicated BrowserViteServer over the same VfsBus (see
+ * shared/preview-servers.ts). Editor writes flow through the runtime's
+ * VfsBus watch into broadcastHmr plus the debounced "bolo-preview" reload
+ * the Preview panel listens on.
  */
 export default function IdeApp() {
   const [bootState, setBootState] = createSignal<BootState>("booting");
   const [previewUrl, setPreviewUrl] = createSignal<string | null>(null);
   const [documents, setDocuments] = createSignal<EditorDocument[]>([]);
-  const [activePath, setActivePath] = createSignal<string | null>(null);
   const [lines, setLines] = createSignal<string[]>([]);
   const [inputValue, setInputValue] = createSignal("");
   const [replActive, setReplActive] = createSignal(false);
+  const tabs = createWorkbenchTabs();
   let container: BrowserContainer | undefined;
   let currentProcess: ReturnType<BrowserContainer["spawn"]> | null = null;
-  let previewServer: BrowserViteServer | undefined;
-  let nextServer: NextDevServer | undefined;
-  let rootSandbox: SWSandbox | undefined;
 
   const appendLine = (s: string) => setLines((prev) => [...prev, s]);
 
@@ -124,13 +123,46 @@ export default function IdeApp() {
     }
   };
 
+  /**
+   * One shared Editor reparented into the active code tab's body, so the
+   * workbench strip owns file tabs while the Editor keeps its per-path
+   * CodeMirror states (history and cursor survive tab switches). Created
+   * under this component's owner: an element created inside a conditional
+   * branch is disposed with it, which would destroy the EditorView.
+   */
+  const activeCodePath = () => {
+    const id = tabs.activeId();
+    return id?.startsWith("code:") ? id.slice("code:".length) : null;
+  };
+
+  const owner = getOwner();
+  let editorEl: JSX.Element | undefined;
+  const editor = () =>
+    (editorEl ??= runWithOwner(owner, () => (
+      <Editor
+        documents={documents()}
+        activePath={activeCodePath()}
+        showTabs={false}
+        onSelect={() => {}}
+        onClose={(path) => tabs.close(codeTabId(path))}
+        onChange={handleChange}
+      />
+    )));
+
   const openFile = async (path: string) => {
     if (!container) return;
     const contents = await container.fs.readFile(path).catch(() => "");
     setDocuments((docs) =>
       docs.some((d) => d.path === path) ? docs : [...docs, { path, contents }],
     );
-    setActivePath(path);
+    const id = codeTabId(path);
+    tabs.open({
+      id,
+      kind: "code",
+      title: fileName(path),
+      onClose: () => setDocuments((docs) => docs.filter((d) => d.path !== path)),
+      render: () => <div class="h-full min-h-0">{tabs.activeId() === id ? editor() : null}</div>,
+    });
   };
 
   const handleChange = (path: string, contents: string) => {
@@ -139,14 +171,6 @@ export default function IdeApp() {
       logger.error("editor write failed", {
         error: err instanceof Error ? err.message : String(err),
       });
-    });
-  };
-
-  const handleClose = (path: string) => {
-    setDocuments((docs) => {
-      const next = docs.filter((d) => d.path !== path);
-      if (activePath() === path) setActivePath(next[next.length - 1]?.path ?? null);
-      return next;
     });
   };
 
@@ -189,98 +213,32 @@ export default function IdeApp() {
     await runCommand(command, args);
   };
 
-  /** Serve the iframes (root-SW scope) through dedicated dev servers. */
-  const startPreviewServers = async () => {
-    const vfs = getBootedVfs();
-    const workdir = container?.workdir ?? "/home/web";
-    previewServer = new BrowserViteServer({ vfs, root: workdir, base: VITE_BASE });
-    await previewServer.start();
-    nextServer = new NextDevServer({ vfs, root: workdir, base: NEXT_BASE.replace(/\/$/, "") });
-    await nextServer.start();
-    rootSandbox = await SWSandbox.create({
-      origin: globalThis.location.origin,
-      swPath: PREVIEW_SW_PATH,
-    });
-    const withIsolationHeaders = (response: Response) => {
-      const headers = new Headers(response.headers);
-      headers.set("Cross-Origin-Embedder-Policy", "credentialless");
-      headers.set("Cross-Origin-Opener-Policy", "same-origin");
-      headers.set("Cross-Origin-Resource-Policy", "cross-origin");
-      headers.set("Access-Control-Allow-Origin", "*");
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers,
-      });
-    };
-    rootSandbox.onFetch(async (req) => {
-      const url = new URL(req.url);
-      if (url.pathname.startsWith(VITE_BASE)) {
-        const serverUrl = new URL(req.url);
-        serverUrl.pathname = url.pathname.replace(/^\/(__preview)/, "") || "/";
-        return withIsolationHeaders(await previewServer!.onFetch(serverUrl.toString(), req));
-      }
-      if (url.pathname.startsWith(NEXT_BASE)) {
-        const response = await nextServer!.onFetch(req.url, req);
-        if (response) return withIsolationHeaders(response);
-      }
-      throw new Error("not handled");
-    });
-  };
-
-  /** The initial "server-ready" fires during boot before listeners attach,
-   *  so poll the preview URL from the (SW-controlled) top page until the
-   *  Vite server actually serves HTML, then reveal the iframe. */
-  const waitForPreview = async (base: string): Promise<void> => {
-    const url = new URL(base, globalThis.location.origin).href;
-    const deadline = Date.now() + 30_000;
-    for (;;) {
-      try {
-        // A fetch() to /__preview/ is a subresource request on a page
-        // controlled by the subsite-scoped SW ("/ide/"), so it bypasses the
-        // root SW entirely and 404s. The preview servers live in this page —
-        // probe them directly and keep the network URL only for the iframe.
-        const isNext = base.startsWith(NEXT_BASE);
-        let probeUrl = url;
-        if (!isNext) {
-          const stripped = new URL(url);
-          stripped.pathname = stripped.pathname.replace(/^\/__preview/, "") || "/";
-          probeUrl = stripped.toString();
-        }
-        const probe = new Request(probeUrl, { cache: "no-store" });
-        const response = isNext
-          ? await nextServer!.onFetch(url, probe)
-          : await previewServer!.onFetch(probeUrl, probe);
-        const body = response ? await response.text() : "";
-        if (response?.status === 200 && body.includes("<")) {
-          setPreviewUrl(url);
-          return;
-        }
-      } catch {
-        // Server not ready yet; retry.
-      }
-      if (Date.now() > deadline) {
-        throw new Error("Preview server did not serve HTML within 30s");
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  };
-
   const selectTemplate = async (template: IdeTemplate) => {
     if (!container) return;
     try {
       setBootState("installing");
+      tabs.open({
+        id: "preview",
+        kind: "preview",
+        title: "Preview",
+        closable: false,
+        render: () => <Preview url={previewUrl()} />,
+      });
       appendLine(`\x1b[2mCreating project from template: ${template.name}\x1b[0m\r\n`);
       await container.mount(templateToTree(template.files));
       await openFile(`${container.workdir}/${template.entry}`).catch(() => {});
       appendLine("\x1b[2m~/project $ npm install\x1b[0m\r\n");
       await runToCompletion(container.spawn("npm", ["install"]));
       appendLine("\r\n\x1b[2mexit 0\x1b[0m\r\n");
-      await startPreviewServers();
+      const previewServers = await startPreviewServers(
+        getBootedVfs(),
+        container.workdir ?? "/home/web",
+      );
       // Next is served by NextDevServer directly; there is no `next dev` process.
       if (template.kind === "vite") await runCommand("npm", ["run", "dev"]);
       else appendLine("\x1b[2mNext dev server mounted at /__next/\x1b[0m\r\n");
-      await waitForPreview(template.previewBase);
+      setPreviewUrl(await waitForPreview(previewServers, template.previewBase));
+      tabs.activate("preview");
       setBootState("ready");
     } catch (err) {
       logger.error("template setup failed", {
@@ -333,79 +291,84 @@ export default function IdeApp() {
     </div>
   );
 
-  const terminal = () => (
-    <Terminal
-      lines={lines()}
-      disabled={bootState() !== "ready"}
-      inputValue={inputValue()}
-      prompt={replActive() ? "\x1b[36m>\x1b[0m " : "\x1b[36m~/project\x1b[0m $ "}
-      onSubmit={handleSubmit}
-      onInterrupt={() => currentProcess?.kill()}
-    />
-  );
+  const sidebarViews: SidebarView[] = [
+    {
+      id: "explorer",
+      title: "Explorer",
+      width: 240,
+      render: () => (
+        <FileTree
+          vfs={getBootedVfs()}
+          root={container?.workdir ?? "/home/web"}
+          activePath={activeCodePath()}
+          onSelect={(path) => void openFile(path)}
+          exclude={(path) => path.includes("node_modules") || path.includes("/.npm-cache/")}
+        />
+      ),
+    },
+  ];
 
-  const workbench = () =>
-    bootState() === "picking" || bootState() === "booting" || bootState() === "error" ? (
-      templatePicker()
-    ) : (
-      <SplitPane
-        direction="row"
-        initialRatio={0.2}
-        dataPanel="workbench"
-        first={
-          <FileTree
-            vfs={getBootedVfs()}
-            root={container?.workdir ?? "/home/web"}
-            activePath={activePath()}
-            onSelect={(path) => void openFile(path)}
-            exclude={(path) => path.includes("node_modules") || path.includes("/.npm-cache/")}
+  const bottomPanels: PanelView[] = [
+    {
+      id: "terminal",
+      title: "Terminal",
+      render: () => (
+        <Terminal
+          lines={lines()}
+          disabled={bootState() !== "ready"}
+          inputValue={inputValue()}
+          prompt={replActive() ? "\x1b[36m>\x1b[0m " : "\x1b[36m~/project\x1b[0m $ "}
+          onSubmit={handleSubmit}
+          onInterrupt={() => currentProcess?.kill()}
+        />
+      ),
+    },
+  ];
+
+  const statusItems: StatusItem[] = [
+    {
+      id: "boot-state",
+      side: "left",
+      render: () => (
+        <span class="flex items-center gap-2">
+          <span
+            class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`}
           />
-        }
-        second={
-          <SplitPane
-            direction="column"
-            initialRatio={0.68}
-            dataPanel="workbench-main"
-            first={
-              <SplitPane
-                direction="row"
-                initialRatio={0.55}
-                dataPanel="editor-preview"
-                first={
-                  <Editor
-                    documents={documents()}
-                    activePath={activePath()}
-                    onSelect={setActivePath}
-                    onClose={handleClose}
-                    onChange={handleChange}
-                  />
-                }
-                second={<Preview url={previewUrl()} />}
-              />
-            }
-            second={terminal()}
-          />
-        }
-      />
-    );
+          <span>{statusLabels[bootState()]}</span>
+        </span>
+      ),
+    },
+    {
+      id: "terminal-toggle",
+      side: "right",
+      render: (ctx) => (
+        <button
+          type="button"
+          aria-expanded={ctx.panelVisible()}
+          class="rounded px-1.5 py-0.5 transition-colors hover:text-fg"
+          classList={{ "text-fg": ctx.panelVisible() }}
+          onClick={() => ctx.togglePanel()}
+        >
+          Terminal
+        </button>
+      ),
+    },
+  ];
+
+  const picking = () =>
+    bootState() === "picking" || bootState() === "booting" || bootState() === "error";
 
   return (
-    <div
-      data-subsite="ide"
-      data-panels="file-tree editor preview terminal"
-      data-boot-state={bootState() === "booting" || bootState() === "error" ? bootState() : "ready"}
-      data-project-state={bootState()}
-      class="flex h-full min-h-0 flex-col gap-2 overflow-hidden"
-    >
-      <div class="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-sm">
-        {workbench()}
-      </div>
-      <div class="flex shrink-0 items-center justify-end gap-2 text-[12px] leading-none text-muted">
-        <span
-          class={`size-2 rounded-full transition-colors duration-500 ${statusDotStyles[bootState()]}`}
-        />
-        <span>{statusLabels[bootState()]}</span>
-      </div>
-    </div>
+    <WorkbenchShell
+      subsite="ide"
+      panels={["file-tree", "editor", "preview", "terminal"]}
+      bootState={bootState() === "booting" || bootState() === "error" ? bootState() : "ready"}
+      attrs={{ "data-project-state": bootState }}
+      sidebar={sidebarViews}
+      tabs={tabs}
+      bottom={bottomPanels}
+      status={statusItems}
+      placeholder={picking() ? templatePicker() : null}
+    />
   );
 }
