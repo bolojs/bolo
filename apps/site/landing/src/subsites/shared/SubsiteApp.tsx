@@ -218,6 +218,7 @@ export default function SubsiteApp(props: Props) {
       lines={lines()}
       disabled={bootState() !== "ready"}
       inputValue={inputValue()}
+      prompt={replActive() ? "\x1b[36m>\x1b[0m " : "\x1b[36m~/project\x1b[0m $ "}
       onSubmit={handleSubmit}
     />
   );
