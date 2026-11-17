@@ -3,6 +3,7 @@ import type { PackageManager } from "@bolojs/pm";
 import type { SWSandbox } from "@bolojs/sandbox";
 import {
   bundleEntry,
+  type RawBundleSourceMap,
   resetBundler,
   bundleHasNativeAddon,
   createWasmNativeAddonLoader,
@@ -626,6 +627,7 @@ export class ShellService {
   private runNodeAppInWorker(
     entry: string,
     code: string,
+    map: RawBundleSourceMap | undefined,
     output: OutputCallbacks,
     onPortEvent: (event: string, data: { port: number; url?: string }) => void,
     args?: string[],
@@ -655,7 +657,7 @@ export class ShellService {
     void proc.exit.finally(() => {
       if (output.tag !== undefined) this.processes.delete(output.tag);
     });
-    proc.run({ code, filename: entry, args, cwd: this.cwd });
+    proc.run({ code, filename: entry, args, cwd: this.cwd, sourceMap: map });
     return proc;
   }
 
@@ -808,7 +810,9 @@ export class ShellService {
     });
   }
 
-  private async bundleEntryTimed(entry: string): Promise<{ code: string; warnings: string[] }> {
+  private async bundleEntryTimed(
+    entry: string,
+  ): Promise<{ code: string; warnings: string[]; map?: RawBundleSourceMap }> {
     let bundleTimer: ReturnType<typeof setTimeout> | undefined;
     return Promise.race([
       bundleEntry(entry, {
@@ -839,7 +843,7 @@ export class ShellService {
     /** Args after the entry — appended to argv in the process worker. */
     scriptArgs: string[];
     output: OutputCallbacks;
-    loadCode: () => Promise<{ code: string; warnings?: string[] }>;
+    loadCode: () => Promise<{ code: string; warnings?: string[]; map?: RawBundleSourceMap }>;
   }): Promise<number> {
     const rawOutput = spec.output;
     // Drop output after the program has terminated (e.g. code following
@@ -903,7 +907,7 @@ export class ShellService {
         shims,
       };
 
-      const { code, warnings } = await spec.loadCode();
+      const { code, warnings, map } = await spec.loadCode();
       for (const warning of warnings ?? []) output.stderr(`[bundle warning] ${warning}\n`);
 
       // Killed (Ctrl+C / exec timeout) while the bundle was resolving —
@@ -916,7 +920,14 @@ export class ShellService {
       if (this.deps.syncServer && typeof Worker === "function") {
         // Process workers are separate realms — they warm their own addon
         // variants inside node-process-worker.ts; nothing to do here.
-        const proc = this.runNodeAppInWorker(entry, code, output, onPortEvent, spec.scriptArgs);
+        const proc = this.runNodeAppInWorker(
+          entry,
+          code,
+          map,
+          output,
+          onPortEvent,
+          spec.scriptArgs,
+        );
         const exitCode = await proc.exit;
         terminated = true;
         return exitCode;

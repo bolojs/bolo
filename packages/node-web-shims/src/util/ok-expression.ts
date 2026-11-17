@@ -54,18 +54,79 @@ const parseFirstFrame = (
 
 const errorCache = new Map<string, string | undefined>();
 
-type SourceReader = (filename: string) => string | undefined;
+/**
+ * Where the `assert.ok(...)` call site is, as the shim sees it: the frame's
+ * file name (a VFS path, a `blob:` URL, ...) plus the zero-based line and
+ * column the stack reported.
+ */
+export interface OkExpressionCallSite {
+  readonly filename: string;
+  readonly line: number;
+  readonly column: number;
+}
+
+/**
+ * The host-provided source reader: given the frame's file name, return that
+ * file's source text. Works when the frame's file name is a path the host can
+ * read (Node-style: the caller file is read verbatim).
+ */
+export type SourceReader = (filename: string) => string | undefined;
+
+/**
+ * The host-provided *call-site* reader: given the position of the
+ * `assert.ok(...)` call, return the source text of the file that call is in.
+ *
+ * A bundled program runs from a single `blob:` URL, so the frame's file name
+ * identifies the bundle, not the original module. Such a host resolves the
+ * call site through the bundle's source map (see the `line`/`column` fields,
+ * which are the position inside the *bundle*) and returns the original
+ * module's text, together with the position the call occupies *in that
+ * original text*.
+ */
+export type CallSiteSourceReader = (
+  callSite: OkExpressionCallSite,
+) => OkExpressionSource | string | undefined;
+
+/**
+ * The source of the file that holds an `assert.ok(...)` call site.
+ *
+ * `line`/`column` are the position of the call inside `source` (zero-based).
+ * They default to the call-site position when the host does not report them —
+ * which is the case for a host that reads the caller's file directly (the
+ * file name in the frame *is* the file the position refers to).
+ */
+export interface OkExpressionSource {
+  readonly source: string;
+  readonly line?: number;
+  readonly column?: number;
+}
 
 let readSource: SourceReader | undefined;
+let readCallSite: CallSiteSourceReader | undefined;
 
 /** Installs the (host-provided) source reader used by `assert.ok`. */
 export const setOkExpressionSourceReader = (reader: SourceReader | undefined): void => {
   readSource = reader;
 };
 
+/**
+ * Installs the (host-provided) call-site source reader used by `assert.ok`.
+ * Takes precedence over the filename reader when both are installed.
+ */
+export const setOkExpressionCallSiteReader = (
+  reader: CallSiteSourceReader | undefined,
+): void => {
+  readCallSite = reader;
+};
+
 const globalReader = (): SourceReader | undefined => {
   const g = globalThis as { __boloOkExpressionSourceReader?: SourceReader };
   return g.__boloOkExpressionSourceReader;
+};
+
+const globalCallSiteReader = (): CallSiteSourceReader | undefined => {
+  const g = globalThis as { __boloOkExpressionCallSiteReader?: CallSiteSourceReader };
+  return g.__boloOkExpressionCallSiteReader;
 };
 
 const escapeSequencesRegExp = /[\x00-\x08\x0b\x0c\x0e-\x1f]/g;
@@ -405,35 +466,46 @@ export const getErrMessage = (
   }
 
   try {
+    // The call-site reader wins when installed: it can resolve a bundled
+    // frame (a `blob:` URL) back to the original module through a source map.
+    const callSiteReader = readCallSite ?? globalCallSiteReader();
     const reader = readSource ?? globalReader();
-    if (!reader) {
+    if (!callSiteReader && !reader) {
       errorCache.set(identifier, undefined);
       return undefined;
     }
-    const source = reader(filename);
+    const source = callSiteReader
+      ? callSiteReader({ filename, line, column })
+      : reader!(filename);
     if (source === undefined) {
       errorCache.set(identifier, undefined);
       return undefined;
     }
+    // A call-site reader may re-map the position into the original module it
+    // returns (a source-map host); the filename reader cannot (the frame's
+    // file name *is* the file the position refers to).
+    const remapped = typeof source === "string" ? { source, line, column } : source;
+    const atLine = remapped.line ?? line;
+    const atColumn = remapped.column ?? column;
 
     // Extract the source of the call line and following lines.
-    const lines = source.split("\n");
-    let code = lines.slice(line).join("\n");
-    const parsed = parseCallExpression(code, column);
+    const lines = remapped.source.split("\n");
+    let code = lines.slice(atLine).join("\n");
+    const parsed = parseCallExpression(code, atColumn);
     if (!parsed) {
       errorCache.set(identifier, undefined);
       return undefined;
     }
-    let text = parsed[1];
-    if (text.includes("\n")) {
+    let extracted = parsed[1];
+    if (extracted.includes("\n")) {
       // Node normalises the indentation: the first line keeps its position,
       // every following line loses the base indentation of the call site and
       // is re-indented by two spaces.
-      const frames = text.split("\n");
+      const frames = extracted.split("\n");
       const first = frames.shift() as string;
       // The base indentation is the leading whitespace of the source line the
       // call starts on.
-      const sourceLine = lines[line] ?? "";
+      const sourceLine = lines[atLine] ?? "";
       let baseIndent = 0;
       while (
         baseIndent < sourceLine.length &&
@@ -447,9 +519,9 @@ export const getErrMessage = (
         while (pos < baseIndent && (frame[pos] === " " || frame[pos] === "\t")) pos += 1;
         rebuilt += `\n  ${frame.slice(pos)}`;
       }
-      text = rebuilt;
+      extracted = rebuilt;
     }
-    const result = `The expression evaluated to a falsy value:\n\n  ${text}\n`;
+    const result = `The expression evaluated to a falsy value:\n\n  ${extracted}\n`;
     errorCache.set(identifier, result);
     return result;
   } catch {
