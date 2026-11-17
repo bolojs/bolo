@@ -34,11 +34,33 @@ export default function Terminal(props: Props) {
   let stashedLine = "";
   let prevDisabled = true;
   const [busy, setBusy] = createSignal(false);
+  // Writes that arrive before xterm.open() (the mount is font-gated) would
+  // land in an unopened buffer and vanish — queue them and flush on open.
+  let opened = false;
+  let outQueue: string[] = [];
+  // The rendered terminal only exposes its visible rows, so anything that
+  // scrolled past is unreachable from the DOM. Mirror the whole stream into
+  // a hidden node so the full output stays inspectable.
+  let mirror!: HTMLDivElement;
+  let mirrored = "";
+  const stripAnsi = (s: string) =>
+    s.replace(/\u001b\][^\u0007]*(?:\u0007|\u001b\\)/g, "").replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
+  const write = (s: string) => {
+    if (mirror) {
+      mirrored = (mirrored + stripAnsi(s)).slice(-100_000);
+      mirror.textContent = mirrored;
+    }
+    if (!opened) {
+      outQueue.push(s);
+      return;
+    }
+    xterm?.write(s);
+  };
   // Depth rather than a flag: a line submitted mid-run queues behind the
   // in-flight one, and each is still interruptible when its turn comes.
   let running = 0;
   const interrupt = () => {
-    xterm?.write("^C");
+    write("^C");
     lineBuffer = "";
     cursor = 0;
     historyIndex = null;
@@ -48,11 +70,25 @@ export default function Terminal(props: Props) {
       // prompt — don't write one here or it would appear twice.
       props.onInterrupt?.();
     } else {
-      xterm?.write("\r\n" + promptFor());
+      write("\r\n" + promptFor());
     }
   };
 
   const promptFor = () => props.prompt ?? "> ";
+
+  /** Resolve a CSS color expression to a concrete rgb()/hex string via the
+   * computed style of a probe node. xterm parses theme colors on a detached
+   * canvas, which can handle rgb()/hex but not color-mix() on every browser
+   * version we support. */
+  const resolveColor = (css: string, fallback: string) => {
+    const probe = document.createElement("span");
+    probe.style.display = "none";
+    probe.style.color = css;
+    container.append(probe);
+    const resolved = getComputedStyle(probe).color;
+    probe.remove();
+    return resolved || fallback;
+  };
 
   const buildTheme = () => {
     const style = getComputedStyle(container);
@@ -65,11 +101,17 @@ export default function Terminal(props: Props) {
     const accentDim = style.getPropertyValue("--accent-dim").trim();
 
     return {
-      background: bg,
+      // Custom-property values come back as written — --surface-2 and
+      // --accent-dim are color-mix() tokens the canvas parser can't read, so
+      // resolve them to rgb() through the probe.
+      background: resolveColor(bg, bg || "#0a0a0a"),
       foreground: fg,
       cursor: accent,
-      selectionBackground: accentDim,
-      black: bg,
+      selectionBackground: resolveColor(accentDim, accent || fg),
+      // ANSI black must differ from the background or \x1b[30m text is
+      // invisible — a dark blend of muted over the surface reads as "black"
+      // in both themes.
+      black: resolveColor(`color-mix(in srgb, ${muted} 45%, ${bg})`, muted || fg),
       brightBlack: muted,
       red: danger,
       brightRed: danger,
@@ -89,12 +131,23 @@ export default function Terminal(props: Props) {
   };
 
   onMount(() => {
+    // xterm's canvas renderer feeds fontFamily to ctx.font, which cannot
+    // resolve var() — glyphs would rasterize at 10px sans-serif against a
+    // correctly measured cell grid. Resolve the token to a literal stack.
+    const fontFamily =
+      getComputedStyle(document.documentElement).getPropertyValue("--font-mono").trim() ||
+      '"Geist Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace';
+
     xterm = new XTerm({
       convertEol: true,
       disableStdin: false,
       cursorBlink: true,
-      fontFamily: "var(--font-mono)",
+      fontFamily,
       fontSize: 13,
+      lineHeight: 1.25,
+      letterSpacing: 0,
+      fontWeight: 400,
+      fontWeightBold: 600,
       scrollback: 2000,
       theme: buildTheme(),
     });
@@ -106,20 +159,45 @@ export default function Terminal(props: Props) {
 
     fitAddon = new FitAddon();
     xterm.loadAddon(fitAddon);
-    xterm.open(container);
-    fitAddon.fit();
 
-    const writeInput = (s: string) => xterm?.write(INPUT_ON + s + INPUT_OFF);
+    // xterm bakes cell metrics at open(); if the webfont hasn't loaded the
+    // fallback stack's metrics stick forever. Gate the first render on the
+    // font, bounded so a stalled load can never block the mount.
+    let disposed = false;
+    const openWhenFontReady = async () => {
+      const timeout = new Promise((resolve) => setTimeout(resolve, 2000));
+      try {
+        await Promise.race([
+          Promise.all([document.fonts.load('13px "Geist Mono Variable"'), document.fonts.ready]),
+          timeout,
+        ]);
+      } catch {
+        // Missing font still mounts — the fallback stack renders.
+      }
+      if (disposed || !xterm) return;
+      xterm.open(container);
+      opened = true;
+      for (const s of outQueue) xterm.write(s);
+      outQueue = [];
+      fitAddon?.fit();
+      // Insurance: if a late font load shifts metrics, refit once it settles.
+      void document.fonts.ready.then(() => {
+        if (!disposed) fitAddon?.fit();
+      });
+    };
+    void openWhenFontReady();
+
+    const writeInput = (s: string) => write(INPUT_ON + s + INPUT_OFF);
 
     /** Replace the editable line wholesale and park the cursor at `pos`. */
     const setLine = (s: string, pos = s.length) => {
       const tail = lineBuffer.length - cursor;
-      if (tail > 0) xterm?.write(`\x1b[${tail}C`);
-      for (let i = 0; i < lineBuffer.length; i++) xterm?.write("\b \b");
+      if (tail > 0) write(`\x1b[${tail}C`);
+      for (let i = 0; i < lineBuffer.length; i++) write("\b \b");
       lineBuffer = s;
       writeInput(s);
       const back = s.length - pos;
-      if (back > 0) xterm?.write(`\x1b[${back}D`);
+      if (back > 0) write(`\x1b[${back}D`);
       cursor = pos;
     };
 
@@ -130,7 +208,7 @@ export default function Terminal(props: Props) {
       if (after.length === 0) {
         writeInput(s);
       } else {
-        xterm?.write(INPUT_ON + s + after + INPUT_OFF + `\x1b[${after.length}D`);
+        write(INPUT_ON + s + after + INPUT_OFF + `\x1b[${after.length}D`);
       }
     };
 
@@ -138,7 +216,7 @@ export default function Terminal(props: Props) {
       const next = Math.max(0, Math.min(lineBuffer.length, cursor + delta));
       if (next === cursor) return;
       const d = next - cursor;
-      xterm?.write(d > 0 ? `\x1b[${d}C` : `\x1b[${-d}D`);
+      write(d > 0 ? `\x1b[${d}C` : `\x1b[${-d}D`);
       cursor = next;
     };
 
@@ -147,14 +225,14 @@ export default function Terminal(props: Props) {
       const after = lineBuffer.slice(cursor);
       lineBuffer = lineBuffer.slice(0, cursor - 1) + after;
       cursor -= 1;
-      xterm?.write("\b" + INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
+      write("\b" + INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
     };
 
     const deleteForward = () => {
       if (cursor >= lineBuffer.length) return;
       const after = lineBuffer.slice(cursor + 1);
       lineBuffer = lineBuffer.slice(0, cursor) + after;
-      xterm?.write(INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
+      write(INPUT_ON + after + " " + INPUT_OFF + `\x1b[${after.length + 1}D`);
     };
 
     const killWordBack = () => {
@@ -166,10 +244,10 @@ export default function Terminal(props: Props) {
 
     /** Ctrl+L: clear the visible screen, keep scrollback, redraw the input line. */
     const clearScreen = () => {
-      xterm?.write("\x1b[2J\x1b[H" + promptFor());
+      write("\x1b[2J\x1b[H" + promptFor());
       writeInput(lineBuffer);
       const back = lineBuffer.length - cursor;
-      if (back > 0) xterm?.write(`\x1b[${back}D`);
+      if (back > 0) write(`\x1b[${back}D`);
     };
 
     // Submissions run strictly in order. The line buffer is consumed
@@ -181,7 +259,7 @@ export default function Terminal(props: Props) {
       const line = lineBuffer.trim();
       lineBuffer = "";
       cursor = 0;
-      xterm?.write("\r\n");
+      write("\r\n");
       pending = pending.then(async () => {
         let continuation = false;
         if (line) {
@@ -189,7 +267,7 @@ export default function Terminal(props: Props) {
           if (history[history.length - 1] !== line) history.push(line);
           if (line === "clear") {
             xterm?.clear();
-            xterm?.write(promptFor());
+            write(promptFor());
             return;
           }
           running++;
@@ -204,7 +282,7 @@ export default function Terminal(props: Props) {
             setBusy(running > 0);
           }
         }
-        xterm?.write(continuation ? "\r\n... " : "\r\n" + promptFor());
+        write(continuation ? "\r\n... " : "\r\n" + promptFor());
       });
       return pending;
     };
@@ -257,7 +335,7 @@ export default function Terminal(props: Props) {
         case "\x0b": // Ctrl+K — kill to end of line
           if (cursor >= lineBuffer.length) return;
           lineBuffer = lineBuffer.slice(0, cursor);
-          return xterm?.write("\x1b[K");
+          return write("\x1b[K");
         case "\x15": // Ctrl+U — kill to start of line
           return setLine(lineBuffer.slice(cursor), 0);
         case "\x17": // Ctrl+W — kill word back
@@ -298,7 +376,7 @@ export default function Terminal(props: Props) {
       }
       for (let i = written; i < lines.length; i++) {
         const line = lines[i];
-        if (line !== undefined) xterm?.write(line);
+        if (line !== undefined) write(line);
       }
       written = lines.length;
     });
@@ -306,7 +384,7 @@ export default function Terminal(props: Props) {
     createEffect(() => {
       const disabled = props.disabled;
       if (!disabled && prevDisabled) {
-        xterm?.write("\r\n" + promptFor());
+        write("\r\n" + promptFor());
       }
       prevDisabled = disabled;
     });
@@ -318,7 +396,7 @@ export default function Terminal(props: Props) {
       props.focusTrigger;
       if (!v) return;
       setLine(v);
-      xterm?.focus();
+      if (opened) xterm?.focus();
       submitLine();
     });
 
@@ -326,6 +404,7 @@ export default function Terminal(props: Props) {
     ro.observe(container);
 
     onCleanup(() => {
+      disposed = true;
       xterm?.dispose();
       ro.disconnect();
       themeObserver.disconnect();
@@ -333,10 +412,11 @@ export default function Terminal(props: Props) {
   });
 
   return (
-    <section data-panel="terminal" class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+    <section data-panel="terminal" class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div class="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2">
         {/* Padding must live on this wrapper, not the ref target — FitAddon measures the ref's own clientHeight. */}
         <div ref={container} aria-label="Terminal" class="h-full w-full overflow-hidden" />
+        <div ref={mirror} data-terminal-buffer aria-hidden="true" class="hidden" />
         {busy() && (
           <button
             type="button"

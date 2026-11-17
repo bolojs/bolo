@@ -60,8 +60,15 @@ export default class BrowserSteps {
    */
   @Step('The terminal output contains <text>')
   async terminalOutputContains(text: string) {
+    // `.xterm-rows` only holds the *visible* viewport, so output that
+    // scrolled past is unreachable. The terminal mirrors the whole stream
+    // into a hidden buffer node; prefer it and fall back to the rows.
     await currentPage.waitForFunction(
-      (t) => document.querySelector('.xterm-rows')?.textContent?.includes(t) ?? false,
+      (t) => {
+        const buffer = document.querySelector('[data-terminal-buffer]');
+        if (buffer?.textContent?.includes(t)) return true;
+        return document.querySelector('.xterm-rows')?.textContent?.includes(t) ?? false;
+      },
       text,
       { timeout: 15000 },
     );
