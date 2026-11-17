@@ -38,7 +38,18 @@ export default function Terminal(props: Props) {
   // land in an unopened buffer and vanish — queue them and flush on open.
   let opened = false;
   let outQueue: string[] = [];
+  // The rendered terminal only exposes its visible rows, so anything that
+  // scrolled past is unreachable from the DOM. Mirror the whole stream into
+  // a hidden node so the full output stays inspectable.
+  let mirror!: HTMLDivElement;
+  let mirrored = "";
+  const stripAnsi = (s: string) =>
+    s.replace(/\u001b\][^\u0007]*(?:\u0007|\u001b\\)/g, "").replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
   const write = (s: string) => {
+    if (mirror) {
+      mirrored = (mirrored + stripAnsi(s)).slice(-100_000);
+      mirror.textContent = mirrored;
+    }
     if (!opened) {
       outQueue.push(s);
       return;
@@ -405,6 +416,7 @@ export default function Terminal(props: Props) {
       <div class="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-[var(--surface-2)] p-2">
         {/* Padding must live on this wrapper, not the ref target — FitAddon measures the ref's own clientHeight. */}
         <div ref={container} aria-label="Terminal" class="h-full w-full overflow-hidden" />
+        <div ref={mirror} data-terminal-buffer aria-hidden="true" class="hidden" />
         {busy() && (
           <button
             type="button"
