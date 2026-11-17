@@ -1,0 +1,11 @@
+--- a/dist/rolldown-binding.wasi-browser.js
++++ b/dist/rolldown-binding.wasi-browser.js
+@@ -87,7 +87,7 @@
+   maximum: 65536,
+   shared: true,
+ })
+-const __asyncWorkPoolSize = 4
++const __asyncWorkPoolSize = 0 // ponytail: disable napi async-work pool (see patches/@rolldown__browser@1.3.2.patch)
+ const __workerPoolSize = Math.max(
+   2,
+   globalThis.navigator?.hardwareConcurrency ?? 4,
