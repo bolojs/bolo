@@ -1,15 +1,15 @@
 {
   "nodeVersion": "22.12.0",
-  "generatedAt": "2026-11-14T08:24:48.608Z",
+  "generatedAt": "2026-11-17T07:53:51.185Z",
   "validated": true,
-  "total": 167,
-  "pass": 140,
-  "fail": 19,
+  "total": 166,
+  "pass": 146,
+  "fail": 12,
   "skip": 1,
   "expectedFail": 7,
   "expectedFailByLane": {
     "A": 1,
-    "B": 8,
+    "B": 2,
     "C": 7
   },
   "staleExpected": 0,
@@ -355,7 +355,7 @@
         {
           "file": "test-http-status-code.js",
           "status": "fail",
-          "error": "TIMEOUT after 30000ms"
+          "error": "--"
         },
         {
           "file": "test-http-methods.js",
@@ -364,7 +364,7 @@
         {
           "file": "test-http-write-head.js",
           "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception."
+          "error": "exit code 137"
         }
       ]
     },
@@ -395,12 +395,12 @@
     },
     {
       "name": "timers",
-      "passed": 50,
+      "passed": 53,
       "total": 54,
       "expectedFail": 0,
       "expectedFailByLane": {
         "A": 1,
-        "B": 1,
+        "B": 0,
         "C": 0
       },
       "tests": [
@@ -529,8 +529,7 @@
         },
         {
           "file": "test-timers-promises-scheduler.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected exception."
+          "status": "pass"
         },
         {
           "file": "test-timers-promises.js",
@@ -554,14 +553,7 @@
         },
         {
           "file": "test-timers-socket-timeout-removes-other-socket-unref-timer.js",
-          "status": "fail",
-          "expectedFail": {
-            "lane": "B",
-            "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend)",
-            "location": "packages/node-runtime-shims/src/net-shim.ts",
-            "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-          },
-          "error": "TIMEOUT after 30000ms"
+          "status": "pass"
         },
         {
           "file": "test-timers-this.js",
@@ -573,8 +565,7 @@
         },
         {
           "file": "test-timers-timeout-promisified.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Missing expected rejection."
+          "status": "pass"
         },
         {
           "file": "test-timers-timeout-to-interval.js",
@@ -640,7 +631,7 @@
     },
     {
       "name": "console",
-      "passed": 3,
+      "passed": 2,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -659,13 +650,14 @@
         },
         {
           "file": "test-console-methods.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught AssertionError: Expected values to be strictly equal:"
         }
       ]
     },
     {
       "name": "child_process",
-      "passed": 1,
+      "passed": 2,
       "total": 2,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -680,8 +672,7 @@
         },
         {
           "file": "test-child-process-execsync-maxbuf.js",
-          "status": "fail",
-          "error": "Uncaught TypeError: escapePOSIXShell is not a function or its return value is not iterable"
+          "status": "pass"
         }
       ]
     },
@@ -729,25 +720,18 @@
     },
     {
       "name": "net",
-      "passed": 0,
+      "passed": 1,
       "total": 1,
       "expectedFail": 0,
       "expectedFailByLane": {
         "A": 0,
-        "B": 1,
+        "B": 0,
         "C": 0
       },
       "tests": [
         {
           "file": "test-net-connect-buffer.js",
-          "status": "fail",
-          "expectedFail": {
-            "lane": "B",
-            "reason": "needs a listening TCP socket (net.Server.listen requires a TCP relay / netBackend); in-process loopback connect times out in-container",
-            "location": "packages/node-runtime-shims/src/net-shim.ts",
-            "remediation": "configure tcpRelay or register a netBackend via createLiveShimRegistry"
-          },
-          "error": "TIMEOUT after 30000ms"
+          "status": "pass"
         }
       ]
     },
@@ -797,36 +781,29 @@
         {
           "file": "test-https-request-arguments.js",
           "status": "fail",
-          "error": "TIMEOUT after 30000ms"
+          "error": "exit code 137"
         },
         {
           "file": "test-https-close.js",
           "status": "fail",
-          "error": "TIMEOUT after 30000ms"
+          "error": "exit code 137"
         }
       ]
     },
     {
       "name": "tls",
-      "passed": 0,
+      "passed": 1,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
         "A": 0,
-        "B": 3,
+        "B": 2,
         "C": 0
       },
       "tests": [
         {
           "file": "test-tls-legacy-deprecated.js",
-          "status": "fail",
-          "expectedFail": {
-            "lane": "B",
-            "reason": "no default tls backend: TLS over TCP is pluggable-only and connect() throws ERR_BOL_UNSUPPORTED_TLS_BACKEND",
-            "location": "packages/node-web-shims/src/tls.ts",
-            "remediation": "register a tlsBackend via createLiveShimRegistry (TLS over an arbitrary transport has no Web API equivalent)"
-          },
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-tls-ticket-12.js",
@@ -854,12 +831,12 @@
     },
     {
       "name": "dgram",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
         "A": 0,
-        "B": 1,
+        "B": 0,
         "C": 0
       },
       "tests": [
@@ -869,14 +846,7 @@
         },
         {
           "file": "test-dgram-send-callback-buffer-empty-address.js",
-          "status": "fail",
-          "expectedFail": {
-            "lane": "B",
-            "reason": "UDP send callback semantics need a real socket backend; the skeleton can only report unsupported",
-            "location": "packages/node-web-shims/src/dgram.ts",
-            "remediation": "register a dgramBackend via createLiveShimRegistry (UDP has no Web API equivalent; needs a relay)"
-          },
-          "error": "Uncaught AssertionError: ifError got unwanted exception: dgram.Socket.send() requires a UDP backend: datagrams have no Web API equivalent. Register one via createLiveShimRegistry({ dgramBackend })"
+          "status": "pass"
         },
         {
           "file": "test-dgram-bind.js",
@@ -1078,36 +1048,22 @@
     },
     {
       "name": "module",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
         "A": 0,
-        "B": 2,
+        "B": 0,
         "C": 0
       },
       "tests": [
         {
           "file": "test-module-wrap.js",
-          "status": "fail",
-          "expectedFail": {
-            "lane": "B",
-            "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
-            "location": "packages/node-runtime-shims/src/module-shim.ts",
-            "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
-          },
-          "error": "Uncaught Error: Build failed with 1 error:"
+          "status": "pass"
         },
         {
           "file": "test-module-wrapper.js",
-          "status": "fail",
-          "expectedFail": {
-            "lane": "B",
-            "reason": "child_process.execFileSync exists via the worker sync channel, but the fixture requires('./not-main-module.js') — a relative .js require unsupported post-bundle (module shim only resolves builtins and .json), and the fixture is not vendored",
-            "location": "packages/node-runtime-shims/src/module-shim.ts",
-            "remediation": "vendor the fixture into node-tests or teach the module shim to resolve relative .js requires post-bundle"
-          },
-          "error": "Uncaught Error: Build failed with 1 error:"
+          "status": "pass"
         },
         {
           "file": "test-module-main-extension-lookup.js",
@@ -1117,8 +1073,8 @@
     },
     {
       "name": "string_decoder",
-      "passed": 2,
-      "total": 2,
+      "passed": 1,
+      "total": 1,
       "expectedFail": 0,
       "expectedFailByLane": {
         "A": 0,
@@ -1128,10 +1084,6 @@
       "tests": [
         {
           "file": "test-string-decoder-end.js",
-          "status": "pass"
-        },
-        {
-          "file": "test-string-decoder-fuzz.js",
           "status": "pass"
         }
       ]
@@ -1213,7 +1165,7 @@
     },
     {
       "name": "process-exit",
-      "passed": 9,
+      "passed": 8,
       "total": 9,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -1224,7 +1176,8 @@
       "tests": [
         {
           "file": "test-process-beforeexit-throw-exit.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "HARNESS CRASH: Error: page.evaluate: TypeError: window.__runNodeTests is not a function"
         },
         {
           "file": "test-process-beforeexit.js",
