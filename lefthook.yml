@@ -5,8 +5,15 @@
 # across packages/, apps/, examples/, tests/). Same gate CI runs, so catching
 # failures here saves a round-trip.
 # Bypass with `git push --no-verify` when you really need to.
+#
+# The hook is skipped when CI=true (GitHub Actions, GitLab CI, ...): CI already
+# runs the same gate as a dedicated workflow step, and automated pushes (e.g.
+# changesets/action pushing the release commit) must not be blocked by the
+# local hook. Local developer pushes are still gated.
 
 pre-push:
+  skip:
+    - run: test -n "$CI"
   commands:
     validate:
       run: pnpm validate

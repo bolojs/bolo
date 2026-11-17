@@ -15,7 +15,9 @@ const runNode = (source: string) => {
 };
 
 describe("process-program generator", () => {
-  it("renders syntactically valid programs that real Node runs to completion", () => {
+  // Each property run spawns real Node twice-plus; under parallel CI load the
+  // per-case wall time can blow past the vitest 5s default. Give it room.
+  it("renders syntactically valid programs that real Node runs to completion", { timeout: 60_000 }, () => {
     fc.assert(
       fc.property(programArb, (program) => {
         const r = runNode(renderProgram(program));
@@ -28,7 +30,7 @@ describe("process-program generator", () => {
     );
   });
 
-  it("is deterministic under the oracle (two Node runs agree)", () => {
+  it("is deterministic under the oracle (two Node runs agree)", { timeout: 60_000 }, () => {
     fc.assert(
       fc.property(programArb, (program) => {
         const src = renderProgram(program);
