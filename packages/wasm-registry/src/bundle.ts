@@ -44,7 +44,11 @@ let _rolldown: Promise<typeof import("@rolldown/browser")> | undefined;
 const getRolldown = () => {
   if (!_rolldown) {
     _rolldown = preferLocalRolldown()
-      ? import("@rolldown/browser")
+      ? (globalThis.process?.versions?.node
+          ? import(
+              "/Users/josocjoq/Documents/prjcts/_own/bolo/.worktrees/npm-interop/node_modules/.pnpm/rolldown@1.1.5/node_modules/rolldown/dist/index.mjs"
+            )
+          : import("@rolldown/browser"))
       : // @ts-ignore: runtime CDN URL, not resolvable by TypeScript
         import(/* @vite-ignore */ "https://esm.sh/@rolldown/browser@latest");
   }
@@ -715,7 +719,13 @@ var __bc_Console = class {
     for (var k of Object.getOwnPropertyNames(__bc_Console.prototype)) {
       if (k === 'constructor') continue;
       var m = this[k];
-      if (typeof m === 'function') this[k] = m.bind(this);
+      if (typeof m === 'function') {
+        var bound = m.bind(this);
+        // bind renames the function to "bound log"; node keeps the method
+        // name ("log"), and test-console-methods asserts exactly that.
+        try { Object.defineProperty(bound, 'name', { value: k, configurable: true }); } catch (_) {}
+        this[k] = bound;
+      }
     }
   }
   _write(stream, args) {
@@ -771,7 +781,7 @@ var __bc_Console = class {
     this._write('stdout', [label + ': ' + ms.toFixed(3) + 'ms', ...args]);
   }
   group(...args) { if (args.length) this._write('stdout', args); this._indent++; }
-  groupCollapsed(...args) { this.group(...args); }
+  groupCollapsed(...args) { this._indent++; if (args.length) this._write('stdout', args); }
   groupEnd() { if (this._indent > 0) this._indent--; }
 };
 var __bc_console = new __bc_Console();
