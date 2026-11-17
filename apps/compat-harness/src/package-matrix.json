@@ -85,8 +85,7 @@
     {
       "name": "parcel",
       "class": "Bundler",
-      "timeoutMs": 120000,
-      "source": "import parcel from 'parcel';\ntry {\n  if (typeof parcel !== 'object' && typeof parcel !== 'function') throw new Error('unexpected export');\n  console.log('PASS');\n} catch (e) {\n  console.error(e.message);\n  process.exit(1);\n}"
+      "source": "// parcel's core path runs through @parcel/rust, a napi-rs native binding. The\n// browser entry (@parcel/rust/browser.js → napi-wasm) exists in source form,\n// but the parcel_node_bindings.wasm artifact it needs is NEVER published —\n// not in any @parcel/rust tarball (2.8–2.16.4), not on jsdelivr, and there is\n// no @parcel/* wasm package. It is only built from source via\n// `yarn workspace @parcel/rust wasm:build-release`. @parcel/watcher is also\n// native-only. So even with a perfect browser-field entry resolution the\n// package cannot load — no browser-faithful build exists.\nconsole.log('SKIP: parcel needs @parcel/rust native bindings — parcel_node_bindings.wasm is never published to npm (built from source only) and @parcel/watcher is native-only');\nprocess.exit(0);"
     },
     {
       "name": "vitest",
