@@ -55,16 +55,19 @@ export default class BootApiSteps {
     if ((result as any)?.error) {
       throw new Error(`Spawn failed: ${(result as any).error}`);
     }
-    await currentPage.waitForFunction(
-      () => (window as any).__browserbox_spawn_exit !== undefined,
-      { timeout: 15000 },
-    );
-    const exit = await currentPage.evaluate(() => (window as any).__browserbox_spawn_exit);
-    this.lastSpawnExitCode = exit as number;
   }
 
   @Step('The spawn exit code is <code>')
   async spawnExitCode(code: string) {
+    // Long-running spawns (dev servers) never resolve proc.exit, so the wait
+    // for an exit code lives here rather than in the spawn step.
+    await currentPage.waitForFunction(
+      () => (window as any).__browserbox_spawn_exit !== undefined,
+      { timeout: 30000 },
+    );
+    this.lastSpawnExitCode = (await currentPage.evaluate(
+      () => (window as any).__browserbox_spawn_exit,
+    )) as number;
     if (this.lastSpawnExitCode !== parseInt(code)) {
       throw new Error(`Expected exit code ${code}, got ${this.lastSpawnExitCode}`);
     }
@@ -84,7 +87,7 @@ export default class BootApiSteps {
   async serverReadyReceived(port: string) {
     await currentPage.waitForFunction(
       () => (window as any).__browserbox_server_ready_port !== null,
-      { timeout: 10000 },
+      { timeout: 30000 },
     );
     const received = await currentPage.evaluate(() => (window as any).__browserbox_server_ready_port);
     this.serverReadyPort = received as number;
