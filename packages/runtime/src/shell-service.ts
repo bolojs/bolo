@@ -10,6 +10,8 @@ import {
   wasmAddonSpecifiers,
 } from "@bolojs/registry";
 import { BOLO_NODE_VERSION, createLiveShimRegistry } from "@bolojs/node-runtime-shims";
+import { setOkExpressionSourceReader } from "@bolojs/node-web-shims/dist/util/ok-expression.js";
+import { createBundleSourcemapReader } from "@bolojs/node-web-shims/dist/util/bundle-sourcemap.js";
 import type { NativeAddonLoader, SpawnedProcess, WasmRegistry } from "@bolojs/node-runtime-shims";
 import { curl } from "./commands/curl.js";
 import { git } from "./commands/git.js";
@@ -946,6 +948,10 @@ export class ShellService {
           // Identical source would hit the module cache and never re-execute.
           const unique = `\n//# bolo-run=${++runCounter}`;
           const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code + unique)}`;
+          // See node-process-worker: map bundle frames back to VFS sources
+          // for assert.ok's falsy-expression message.
+          const okReader = createBundleSourcemapReader(code, (f) => f === moduleUrl);
+          if (okReader) setOkExpressionSourceReader(okReader);
           const mod = (await import(/* @vite-ignore */ moduleUrl)) as {
             default?: { fetch?: (req: Request) => Promise<Response> };
           };

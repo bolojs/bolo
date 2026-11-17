@@ -28,6 +28,8 @@ import {
   instrumentPromises,
 } from "@bolojs/node-web-shims/dist/async_hooks.js";
 import { trackEventTargetListeners } from "@bolojs/node-web-shims/dist/events.js";
+import { setOkExpressionSourceReader } from "@bolojs/node-web-shims/dist/util/ok-expression.js";
+import { createBundleSourcemapReader } from "@bolojs/node-web-shims/dist/util/bundle-sourcemap.js";
 import { installStructuredCloneFallback, snapshotEnv, wrapEnv } from "./env-snapshot.js";
 
 // process.env is a coercion Proxy (process-shim); make structuredClone tolerate it.
@@ -486,6 +488,11 @@ const runProcess = async (msg: ProcRunMessage) => {
     }
     const blob = new Blob([msg.code], { type: "text/javascript" });
     const url = URL.createObjectURL(blob);
+    // assert.ok's "expression evaluated to a falsy value" message reads the
+    // caller's source line; bundle frames carry blob: positions, so resolve
+    // them through the bundle's inline sourcemap back to the VFS source.
+    const okReader = createBundleSourcemapReader(msg.code, (f) => f === url);
+    if (okReader) setOkExpressionSourceReader(okReader);
     const mod = (await import(/* @vite-ignore */ url)) as {
       default?: { fetch?: (req: Request) => Promise<Response> };
     };
