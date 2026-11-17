@@ -115,6 +115,9 @@ export interface RemoteDepsOptions {
 export const createRemoteDeps = (opts: RemoteDepsOptions): RemoteDeps => {
   const { rpc, syncCaller } = opts;
   let fetchHandlers = 0;
+  let fetchHandlerSeq = 0;
+  /** Worker-side id → handler, so `removeFetch` can unregister it. */
+  const fetchHandlerIds = new Map<number, (req: Request) => Promise<Response>>();
 
   const syncOp = (op: string, args: unknown[]): unknown =>
     decodeOpResult(decodeResponse(syncCaller.call(encodeOpCall(op, args))));
@@ -325,9 +328,12 @@ export const createRemoteDeps = (opts: RemoteDepsOptions): RemoteDeps => {
         // genuine fetch API surface (req.body, headers.entries(), arrayBuffer).
         onFetch: (handler: (req: Request) => Promise<Response>) => {
           fetchHandlers++;
+          const id = ++fetchHandlerSeq;
+          fetchHandlerIds.set(id, handler);
           void rpc
             .call(
               "sandbox.onFetch",
+              id,
               async (plain: {
                 url: string;
                 method: string;
@@ -353,6 +359,18 @@ export const createRemoteDeps = (opts: RemoteDepsOptions): RemoteDeps => {
             .catch((err) => {
               logger.warn("sandbox.onFetch registration failed", { error: String(err) });
             });
+          return id;
+        },
+        removeFetch: (handler: (req: Request) => Promise<Response>) => {
+          for (const [id, registered] of fetchHandlerIds) {
+            if (registered !== handler) continue;
+            fetchHandlerIds.delete(id);
+            fetchHandlers = Math.max(0, fetchHandlers - 1);
+            void rpc.call("sandbox.removeFetch", id).catch(() => {
+              // The main side may already be gone (worker shutting down).
+            });
+            return;
+          }
         },
       } as unknown as SWSandbox)
     : undefined;

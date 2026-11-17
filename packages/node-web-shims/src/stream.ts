@@ -2611,7 +2611,14 @@ Readable.prototype.removeAllListeners = function removeAllListeners(
   this: Readable,
   ev?: string | symbol,
 ): Readable {
-  const res = EventEmitter.prototype.removeAllListeners.apply(this, [ev] as never);
+  // unenv's EventEmitter.removeAllListeners branches on `arguments.length`,
+  // so passing an explicit `undefined` would only clear the listeners of the
+  // event named "undefined" instead of every listener. Node treats
+  // `removeAllListeners(undefined)` like the no-argument call.
+  const res =
+    ev === undefined
+      ? EventEmitter.prototype.removeAllListeners.call(this)
+      : EventEmitter.prototype.removeAllListeners.call(this, ev);
 
   if (ev === "readable" || ev === undefined) {
     nextTick(updateReadableListening, this);

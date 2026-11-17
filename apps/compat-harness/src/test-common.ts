@@ -51,7 +51,7 @@ function register(fn, name, exact, atLeast) {
   };
 }
 
-const mustCall = (fn, exact = 1) => register(fn, undefined, exact, undefined);
+const mustCall = (fn, exact = 1, name) => register(fn, typeof fn === 'number' ? undefined : name, typeof fn === 'number' ? fn : exact, undefined);
 const mustCallAtLeast = (fn, minimum = 1) => register(fn, undefined, undefined, minimum);
 const mustNotCall = (msg) => function mustNotCall(...args) {
   const argsInfo = args.length > 0 ? '\ncalled with arguments: ' + args.map(String).join(', ') : '';
@@ -241,6 +241,22 @@ const hasFipsCrypto = (() => {
 })();
 
 // Mirrors Node's test/common platformTimeout for the platforms we can detect.
+// Node's test/common escapePOSIXShell: build a POSIX shell command that
+// passes interpolated values through the environment instead of quoting them.
+const escapePOSIXShell = (cmdParts, ...args) => {
+  if (isWindows) {
+    return [String.raw({ raw: cmdParts }, ...args)];
+  }
+  const env = { ...process.env };
+  let cmd = cmdParts[0];
+  for (let i = 0; i < args.length; i++) {
+    const envVarName = 'ESCAPED_' + i;
+    env[envVarName] = args[i];
+    cmd += '\${' + envVarName + '}' + cmdParts[i + 1];
+  }
+  return [cmd, { env }];
+};
+
 const platformTimeout = (ms) => {
   const big = typeof ms === 'bigint';
   const two = big ? 2n : 2;
@@ -281,6 +297,7 @@ module.exports = {
   canCreateWorker: typeof Worker !== 'undefined',
   hasWasm: typeof WebAssembly !== 'undefined',
   platformTimeout,
+  escapePOSIXShell,
   skipIfWorker: noop,
   skipIfEslintDisabled: noop,
   skipIfInspectorDisabled: noop,

@@ -492,7 +492,11 @@ class ServerResponseImpl extends OutgoingMessageImpl {
    * - headers may be a flat `[name, value, …]` array or an object;
    * - a string second arg is the reason phrase;
    * - calling it after headers were sent throws ERR_HTTP_HEADERS_SENT;
-   * - an out-of-range status throws ERR_HTTP_INVALID_STATUS_CODE.
+   * - an out-of-range status throws ERR_HTTP_INVALID_STATUS_CODE;
+   * - a flat header array with an odd number of entries throws
+   *   ERR_INVALID_ARG_VALUE;
+   * - without an explicit reason phrase the status message defaults to the
+   *   standard reason for the code, or "unknown" for non-standard codes.
    */
   writeHead(
     statusCode: number,
@@ -519,6 +523,10 @@ class ServerResponseImpl extends OutgoingMessageImpl {
       headerSource = headers;
     } else {
       headerSource = reasonOrHeaders ?? headers;
+      // Node: `this.statusMessage ||= STATUS_CODES[statusCode] || 'unknown'`.
+      if (!this.statusMessage) {
+        this.statusMessage = STATUS_CODES[statusCode] || "unknown";
+      }
     }
     if (headerSource) this.applyWriteHeadHeaders(headerSource);
     this.headersSent = true;
@@ -534,6 +542,14 @@ class ServerResponseImpl extends OutgoingMessageImpl {
     source: Record<string, string | string[]> | (string | number)[],
   ): void {
     if (Array.isArray(source)) {
+      // Node: `if (obj.length % 2 !== 0) throw new ERR_INVALID_ARG_VALUE('headers', obj)`.
+      if (source.length % 2 !== 0) {
+        const err = new TypeError(
+          `The value of "headers" is invalid. Received ${String(source)}`,
+        ) as TypeError & { code: string };
+        err.code = "ERR_INVALID_ARG_VALUE";
+        throw err;
+      }
       for (let i = 0; i + 1 < source.length; i += 2) {
         const name = source[i];
         const value = source[i + 1];
@@ -999,6 +1015,8 @@ export class ServerImpl extends EventEmitter implements HttpServer {
   private sandbox?: SWSandbox;
   private onPortEvent?: (event: string, data: { port: number; url?: string }) => void;
   private releaseLiveness?: () => void;
+  /** The sandbox fetch handler registered by `listen()` — unregistered on close. */
+  private registeredFetchHandler?: (req: Request) => Promise<Response>;
 
   constructor(
     sandbox?: SWSandbox,
@@ -1102,6 +1120,7 @@ export class ServerImpl extends EventEmitter implements HttpServer {
       };
 
       this.sandbox.onFetch(fetchHandler);
+      this.registeredFetchHandler = fetchHandler;
     }
 
     queueMicrotask(() => {
@@ -1116,6 +1135,16 @@ export class ServerImpl extends EventEmitter implements HttpServer {
   close(callback?: (err?: Error) => void): this {
     this.releaseLiveness?.();
     this.releaseLiveness = undefined;
+    // Node: closing the server stops accepting — the sandbox-side fetch
+    // handler must go too, or the worker still reports a live server and
+    // never reaches natural exit.
+    const sandbox = this.sandbox as
+      | { removeFetch?: (handler: (req: Request) => Promise<Response>) => void }
+      | undefined;
+    if (sandbox?.removeFetch && this.registeredFetchHandler) {
+      sandbox.removeFetch(this.registeredFetchHandler);
+      this.registeredFetchHandler = undefined;
+    }
     if (this.listening) {
       this.onPortEvent?.("port-close", { port: this.serverPort });
       this.listening = false;

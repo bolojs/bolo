@@ -88,6 +88,39 @@ describe("SWSandbox", () => {
     expect(result.status).toBe(200);
   });
 
+  it("removeFetch() unregisters a previously registered handler", async () => {
+    const createPromise = SWSandbox.create({ origin: "http://localhost:3000", swPath: "/sw.js" });
+    portReadyTrigger = simulatePortReady;
+    const sandbox = await createPromise;
+
+    const handler = vi.fn().mockResolvedValue(new Response("handled"));
+    sandbox.onFetch(handler);
+
+    const req = new Request("http://localhost:3000/api/test");
+    expect((await sandbox.handleInterceptedRequest(1, req)).status).toBe(200);
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    sandbox.removeFetch(handler);
+
+    // The handler is gone: the request now falls through to the 404 branch.
+    expect((await sandbox.handleInterceptedRequest(2, req)).status).toBe(404);
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it("removeFetch() is a no-op for an unknown handler", async () => {
+    const createPromise = SWSandbox.create({ origin: "http://localhost:3000", swPath: "/sw.js" });
+    portReadyTrigger = simulatePortReady;
+    const sandbox = await createPromise;
+
+    const registered = vi.fn().mockResolvedValue(new Response("ok"));
+    sandbox.onFetch(registered);
+
+    expect(() => sandbox.removeFetch(vi.fn())).not.toThrow();
+
+    const req = new Request("http://localhost:3000/api/test");
+    expect((await sandbox.handleInterceptedRequest(1, req)).status).toBe(200);
+  });
+
   it("returns 404 when no handler matches", async () => {
     const createPromise = SWSandbox.create({ origin: "http://localhost:3000", swPath: "/sw.js" });
     portReadyTrigger = simulatePortReady;

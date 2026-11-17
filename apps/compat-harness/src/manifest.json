@@ -260,10 +260,7 @@
       ]
     },
     "string_decoder": {
-      "files": [
-        "test/parallel/test-string-decoder-end.js",
-        "test/parallel/test-string-decoder-fuzz.js"
-      ]
+      "files": ["test/parallel/test-string-decoder-end.js"]
     },
     "v8": {
       "files": [
