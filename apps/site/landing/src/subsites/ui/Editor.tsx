@@ -25,6 +25,9 @@ interface Props {
   onSelect(path: string): void;
   onClose(path: string): void;
   onChange(path: string, contents: string): void;
+  /** Render the built-in document tab bar (default true). The workbench
+   *  shell renders its own shared tab strip and passes false. */
+  showTabs?: boolean;
 }
 
 const buildTheme = (host: HTMLElement) => {
@@ -117,7 +120,10 @@ export default function Editor(props: Props) {
 
   return (
     <div data-panel="editor" class="flex h-full min-h-0 flex-col overflow-hidden">
-      <div class="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-border bg-[color-mix(in_srgb,var(--fg)_4%,transparent)] px-1.5 py-1">
+      <div
+        class="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-border bg-[color-mix(in_srgb,var(--fg)_4%,transparent)] px-1.5 py-1"
+        classList={{ hidden: props.showTabs === false }}
+      >
         {props.documents.map((doc) => (
           <span class="flex shrink-0 items-center gap-0.5">
             <button
