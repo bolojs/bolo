@@ -237,6 +237,25 @@ export interface BundleEntryOptions {
 export interface BundleEntryResult {
   readonly code: string;
   readonly warnings: string[];
+  /**
+   * The bundle's source map (v3), when one could be produced.
+   *
+   * A bundle runs from a single `blob:` URL, so every stack frame points at
+   * the bundle, not at the original module. The map carries the original
+   * modules' text in `sourcesContent`, which is what lets a host recover an
+   * `assert.ok(...)` call site (Node reads the caller's source file to report
+   * the falsy expression) without a filesystem.
+   */
+  readonly map?: RawBundleSourceMap;
+}
+
+/** The source-map shape `bundleEntry` returns (a v3 map). */
+export interface RawBundleSourceMap {
+  readonly version: number;
+  readonly sources: string[];
+  readonly sourcesContent?: (string | null)[];
+  readonly mappings: string;
+  readonly names?: string[];
 }
 
 const dirname = (path: string): string => {
@@ -1529,12 +1548,53 @@ export const bundleEntry = async (
     // The bundle executes from a single data:/blob: URL — relative chunk
     // imports (dynamic import() splitting) would be unresolvable.
     inlineDynamicImports: true,
+    // A hidden source map: not linked from the bundle (no `//# sourceMappingURL`
+    // comment), but returned to the caller so a host can resolve stack frames
+    // back to the original modules. `sourcesContent` carries the original
+    // module texts, so the map is self-contained.
+    sourcemap: "hidden",
   });
 
   const chunk = result.output.find((o) => o.type === "chunk");
   if (!chunk) throw new Error(`rolldown produced no output for entry "${entry}"`);
 
-  return { code: routeCjsThroughWrapper(chunk.code, options.cwd ?? "/"), warnings };
+  const { code, prependedLines } = routeCjsThroughWrapper(chunk.code, options.cwd ?? "/");
+  const rawMap = toRawSourceMap(chunk.map);
+  return {
+    code,
+    warnings,
+    // The CJS helper is prepended after the map was rendered — shift the map
+    // so its generated lines match the shipped code.
+    map: rawMap ? shiftSourceMapLines(rawMap, prependedLines) : undefined,
+  };
+};
+
+/**
+ * Normalises rolldown's source map into the plain v3 shape the runtime's
+ * source-map reader consumes. Rolldown's map is already v3; the conversion
+ * exists to drop the bundler's extra fields and to keep the result
+ * structurally-cloneable (it crosses a `postMessage` boundary to the process
+ * worker).
+ */
+const toRawSourceMap = (map: unknown): RawBundleSourceMap | undefined => {
+  if (!map || typeof map !== "object") return undefined;
+  const raw = map as {
+    version?: unknown;
+    sources?: unknown;
+    sourcesContent?: unknown;
+    mappings?: unknown;
+    names?: unknown;
+  };
+  if (!Array.isArray(raw.sources) || typeof raw.mappings !== "string") return undefined;
+  return {
+    version: typeof raw.version === "number" ? raw.version : 3,
+    sources: raw.sources.map((s) => String(s)),
+    sourcesContent: Array.isArray(raw.sourcesContent)
+      ? raw.sourcesContent.map((c) => (c === null || c === undefined ? null : String(c)))
+      : undefined,
+    mappings: raw.mappings,
+    names: Array.isArray(raw.names) ? raw.names.map((n) => String(n)) : undefined,
+  };
 };
 
 /**
@@ -1579,8 +1639,21 @@ var __bc_cjsModule = (path, cb) => {
 };
 `;
 
-const routeCjsThroughWrapper = (code: string, cwd: string): string => {
-  if (!code.includes("//#region ") || !code.includes("__commonJSMin(")) return code;
+/**
+ * Rewrites the CJS regions in a bundle to route through `__bc_cjsModule`.
+ *
+ * Returns the rewritten code *and* the number of lines the CJS helper
+ * prepends: the helper is added after the bundler rendered the chunk, so
+ * every generated line moves down by that many — the source map has to be
+ * shifted to match (see `shiftSourceMapLines`).
+ */
+const routeCjsThroughWrapper = (
+  code: string,
+  cwd: string,
+): { code: string; prependedLines: number } => {
+  if (!code.includes("//#region ") || !code.includes("__commonJSMin(")) {
+    return { code, prependedLines: 0 };
+  }
   const regionPattern = /\/\/#region ([^\n]*)\n([\s\S]*?)\n\/\/#endregion/g;
   let routed = false;
   const rewritten = code.replace(regionPattern, (match, path: string, body: string) => {
@@ -1597,7 +1670,28 @@ const routeCjsThroughWrapper = (code: string, cwd: string): string => {
     const next = body.replace("__commonJSMin(", `__bc_cjsModule(${JSON.stringify(absolute)}, `);
     return `//#region ${path}\n${next}\n//#endregion`;
   });
-  return routed ? CJS_MODULE_HELPER + rewritten : rewritten;
+  if (!routed) return { code: rewritten, prependedLines: 0 };
+  return { code: CJS_MODULE_HELPER + rewritten, prependedLines: lineCount(CJS_MODULE_HELPER) };
+};
+
+/** The number of lines in `text` (a trailing newline does not add a line). */
+const lineCount = (text: string): number => {
+  const lines = text.split("\n");
+  if (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
+  return lines.length;
+};
+
+/**
+ * Shifts a source map's mappings down by `lines` generated lines.
+ *
+ * Prepending code to a rendered chunk (the CJS helper) moves every generated
+ * line, so the map's line indices no longer match the code. A source map's
+ * `mappings` is `;`-separated per generated line, so the shift is a prefix of
+ * empty lines.
+ */
+const shiftSourceMapLines = (map: RawBundleSourceMap, lines: number): RawBundleSourceMap => {
+  if (lines <= 0) return map;
+  return { ...map, mappings: `${";".repeat(lines)}${map.mappings}` };
 };
 
 export interface TransformScriptOptions {

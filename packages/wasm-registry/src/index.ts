@@ -49,6 +49,7 @@ export { bundleEntry, transformScript, resetBundler } from "./bundle.js";
 export type {
   BundleEntryOptions,
   BundleEntryResult,
+  RawBundleSourceMap,
   TransformScriptOptions,
   TransformScriptResult,
 } from "./bundle.js";
