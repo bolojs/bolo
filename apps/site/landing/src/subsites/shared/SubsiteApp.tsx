@@ -170,7 +170,8 @@ export default function SubsiteApp(props: Props) {
 
   const runCommand = async (command: string, args: string[]) => {
     if (!container) return;
-    appendLine(`\r\n\x1b[2m~/project $ ${[command, ...args].join(" ")}\x1b[0m\r\n`);
+    // The terminal already echoes the submitted line at the prompt — a
+    // second dim echo here would print every command twice.
     const proc = container.spawn(command, args);
     currentProcess = proc;
     try {
