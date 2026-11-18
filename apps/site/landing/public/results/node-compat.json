@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.12.0",
-  "generatedAt": "2026-11-17T07:53:51.185Z",
+  "generatedAt": "2026-11-18T09:31:54.642Z",
   "validated": true,
   "total": 166,
-  "pass": 146,
-  "fail": 12,
+  "pass": 153,
+  "fail": 5,
   "skip": 1,
   "expectedFail": 7,
   "expectedFailByLane": {
@@ -41,7 +41,7 @@
     },
     {
       "name": "buffer",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -52,8 +52,7 @@
       "tests": [
         {
           "file": "test-buffer-alloc.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Expected values to be strictly deep-equal:"
+          "status": "pass"
         },
         {
           "file": "test-buffer-concat.js",
@@ -241,7 +240,7 @@
     },
     {
       "name": "assert",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -252,8 +251,7 @@
       "tests": [
         {
           "file": "test-assert.js",
-          "status": "fail",
-          "error": "ok 1 some basics"
+          "status": "pass"
         },
         {
           "file": "test-assert-fail.js",
@@ -267,7 +265,7 @@
     },
     {
       "name": "stream",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -282,8 +280,7 @@
         },
         {
           "file": "test-stream-readable-event.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Expected values to be strictly equal:"
+          "status": "pass"
         },
         {
           "file": "test-stream-writable-finished.js",
@@ -343,7 +340,7 @@
     },
     {
       "name": "http",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -354,8 +351,7 @@
       "tests": [
         {
           "file": "test-http-status-code.js",
-          "status": "fail",
-          "error": "--"
+          "status": "pass"
         },
         {
           "file": "test-http-methods.js",
@@ -363,8 +359,7 @@
         },
         {
           "file": "test-http-write-head.js",
-          "status": "fail",
-          "error": "exit code 137"
+          "status": "pass"
         }
       ]
     },
@@ -631,7 +626,7 @@
     },
     {
       "name": "console",
-      "passed": 2,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -650,8 +645,7 @@
         },
         {
           "file": "test-console-methods.js",
-          "status": "fail",
-          "error": "Uncaught AssertionError: Expected values to be strictly equal:"
+          "status": "pass"
         }
       ]
     },
@@ -765,7 +759,7 @@
     },
     {
       "name": "https",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -780,13 +774,11 @@
         },
         {
           "file": "test-https-request-arguments.js",
-          "status": "fail",
-          "error": "exit code 137"
+          "status": "pass"
         },
         {
           "file": "test-https-close.js",
-          "status": "fail",
-          "error": "exit code 137"
+          "status": "pass"
         }
       ]
     },
@@ -1048,7 +1040,7 @@
     },
     {
       "name": "module",
-      "passed": 3,
+      "passed": 1,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -1059,11 +1051,13 @@
       "tests": [
         {
           "file": "test-module-wrap.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught Error: Command failed: /usr/local/bin/node /home/harness/test/fixtures/cjs-module-wrap.js"
         },
         {
           "file": "test-module-wrapper.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught Error: Command failed: /usr/local/bin/node /home/harness/test/fixtures/cjs-module-wrapper.js"
         },
         {
           "file": "test-module-main-extension-lookup.js",
@@ -1165,7 +1159,7 @@
     },
     {
       "name": "process-exit",
-      "passed": 8,
+      "passed": 9,
       "total": 9,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -1176,8 +1170,7 @@
       "tests": [
         {
           "file": "test-process-beforeexit-throw-exit.js",
-          "status": "fail",
-          "error": "HARNESS CRASH: Error: page.evaluate: TypeError: window.__runNodeTests is not a function"
+          "status": "pass"
         },
         {
           "file": "test-process-beforeexit.js",
