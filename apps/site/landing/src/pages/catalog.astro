@@ -3,15 +3,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const title = 'Catalog | bolo';
 const description =
-  'Four things you can build on bolo, all running in the browser: an IDE, a Node sandbox, a full-stack app and an AI vibe-coding sandbox.';
+  'Four zero-setup environments, all running in your browser: an IDE, a Node sandbox, a full-stack app and an AI vibe-coding sandbox.';
 
 interface UseCase {
   href: string;
   name: string;
   tagline: string;
   detail: string;
+  chips: string[];
   inspiredBy: string;
-  status: 'live' | 'soon';
 }
 
 const useCases: UseCase[] = [
@@ -20,32 +20,32 @@ const useCases: UseCase[] = [
     name: 'IDE',
     tagline: 'File tree, editor, terminal and live preview.',
     detail: 'Open a Vite or Next.js project and run it entirely client-side, StackBlitz style.',
-    inspiredBy: 'StackBlitz',
-    status: 'live',
+    chips: ['Vite + React', 'Next.js', 'npm install', 'HMR preview'],
+    inspiredBy: 'StackBlitz · CodeSandbox',
   },
   {
     href: '/sandbox',
     name: 'Node sandbox',
     tagline: 'A terminal-first Node.js playground.',
     detail: 'Run scripts, a REPL and npm install with no server behind it.',
-    inspiredBy: 'justbash.dev',
-    status: 'live',
+    chips: ['Script + REPL', 'npm install', 'HTTP server', 'chalk demo'],
+    inspiredBy: 'JSFiddle · justbash.dev',
   },
   {
     href: '/app',
     name: 'Full-stack app',
     tagline: 'Frontend and backend, both in your tab.',
     detail: 'An API client whose routes are served by a virtual server through a service worker.',
-    inspiredBy: 'Postman, Data Studio, dits',
-    status: 'live',
+    chips: ['Route handlers', 'Request builder', 'Live reload', 'valibot contracts'],
+    inspiredBy: 'Hoppscotch · Postman',
   },
   {
     href: '/vibe',
     name: 'Vibe coding',
     tagline: 'Chat with an LLM that drives the sandbox.',
     detail: 'The model writes files, runs commands and previews the result. Bring your own key.',
-    inspiredBy: 'bolt.diy, bolt.new, v0',
-    status: 'live',
+    chips: ['BYO API key', 'OpenRouter', 'Live preview', 'Export zip'],
+    inspiredBy: 'bolt.new · v0',
   },
 ];
 ---
@@ -54,22 +54,154 @@ const useCases: UseCase[] = [
   <section class="catalog container" aria-labelledby="catalog-title">
     <header class="catalog-head">
       <h1 id="catalog-title">Catalog</h1>
-      <p class="lead">Four ways to use bolo. Everything runs in your browser, with zero server dependency.</p>
+      <p class="lead">
+        Four environments, all running in your browser. Pick one and it opens ready to run — no
+        signup, no install, no server.
+      </p>
     </header>
 
     <ul class="catalog-grid">
       {
-        useCases.map((u) => (
-          <li>
+        useCases.map((u, i) => (
+          <li class="catalog-item" style={`--i: ${i}`}>
             <a class="card" href={u.href} data-use-case={u.href.slice(1)}>
-              <span class="card-meta">
-                <span class="card-path">{u.href}</span>
-                {u.status === 'soon' && <span class="badge">In progress</span>}
-              </span>
-              <h2>{u.name}</h2>
-              <p class="card-tagline">{u.tagline}</p>
-              <p class="card-detail">{u.detail}</p>
-              <span class="card-foot">Inspired by {u.inspiredBy}</span>
+              <div class="mini" aria-hidden="true">
+                {u.href === '/ide' && (
+                  <div class="mini-inner">
+                    <div class="mini-bar">
+                      <span class="mini-dots">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                      <span class="mini-title">vite-project</span>
+                    </div>
+                    <div class="mini-body ide">
+                      <div class="ide-files">
+                        <span class="f-dir">src</span>
+                        <span class="f-file f-on" style="--f: 42%" />
+                        <span class="f-file" style="--f: 58%" />
+                        <span class="f-file" style="--f: 34%" />
+                      </div>
+                      <div class="ide-editor">
+                        <span class="c-line" style="--w: 46%; --d: 0ms" />
+                        <span class="c-line" style="--w: 72%; --d: 60ms" />
+                        <span class="c-line c-str" style="--w: 58%; --d: 120ms" />
+                        <span class="c-line" style="--w: 34%; --d: 180ms" />
+                        <span class="c-line" style="--w: 64%; --d: 240ms" />
+                      </div>
+                      <div class="ide-preview">
+                        <div class="pv-bar">
+                          <i class="pv-dot pv-live" />
+                          <span class="pv-url">localhost:5173</span>
+                        </div>
+                        <div class="pv-hero" />
+                        <span class="c-line" style="--w: 70%" />
+                        <span class="c-line" style="--w: 52%" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {u.href === '/sandbox' && (
+                  <div class="mini-inner">
+                    <div class="mini-tabs">
+                      <span class="t-on">Script</span>
+                      <span>REPL</span>
+                      <span class="t-status">
+                        <i class="pv-dot pv-live" /> ready
+                      </span>
+                    </div>
+                    <div class="mini-term">
+                      <div class="row">
+                        <span class="t-prompt">~ /project</span>
+                        <span class="cursor" />
+                      </div>
+                      <div class="row dim">added 3 packages in 1.2s</div>
+                      <div class="row">listening on http://localhost:3000</div>
+                    </div>
+                    <div class="mini-chips">
+                      <span>Run index.js</span>
+                      <span>Install chalk</span>
+                      <span>Start HTTP server</span>
+                    </div>
+                  </div>
+                )}
+                {u.href === '/app' && (
+                  <div class="mini-inner">
+                    <div class="mini-bar">
+                      <span class="mini-cap">Backend routes</span>
+                    </div>
+                    <div class="mini-body app">
+                      <div class="app-routes">
+                        <div class="route">
+                          <b>GET</b>
+                          <span>/api/v1/hello</span>
+                        </div>
+                        <div class="route r-on">
+                          <b>GET</b>
+                          <span>/api/v1/items</span>
+                        </div>
+                      </div>
+                      <div class="app-main">
+                        <div class="req">
+                          <b>GET</b>
+                          <span class="req-url">/api/v1/items</span>
+                          <span class="send">Send</span>
+                        </div>
+                        <div class="resp">
+                          <div class="row ok">200 OK · 12 ms</div>
+                          <div class="row dim">{'{ "items": [ … ] }'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {u.href === '/vibe' && (
+                  <div class="mini-inner">
+                    <div class="mini-bar">
+                      <span class="mini-cap">Assistant</span>
+                      <span class="t-status">
+                        <i class="pv-dot pv-live" /> ready
+                      </span>
+                    </div>
+                    <div class="mini-body vibe">
+                      <div class="msg u">Build a pomodoro timer with dark mode</div>
+                      <div class="msg b">
+                        <span class="file">index.html</span>
+                        <span class="file">Timer.tsx</span>
+                        <span class="ok">npm install · done</span>
+                      </div>
+                      <div class="vibe-input">
+                        <span>Describe what to build…</span>
+                        <i class="send-dot" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div class="card-body">
+                <div class="card-meta">
+                  <span class="card-path">{u.href}</span>
+                  <span class="card-inspired">{u.inspiredBy}</span>
+                </div>
+                <h2>{u.name}</h2>
+                <p class="card-tagline">{u.tagline}</p>
+                <p class="card-detail">{u.detail}</p>
+                <div class="card-foot">
+                  <div class="chip-row">
+                    {u.chips.map((c) => (
+                      <span class="chip">{c}</span>
+                    ))}
+                  </div>
+                  <span class="card-open">
+                    Open {u.name}
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
             </a>
           </li>
         ))
@@ -91,52 +223,402 @@ const useCases: UseCase[] = [
   }
   .lead {
     color: var(--muted);
-    max-width: 52ch;
+    max-width: 56ch;
     font-size: 1.125rem;
     margin-bottom: 2.5rem;
   }
   .catalog-grid {
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem;
     grid-template-columns: 1fr;
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  @media (min-width: 720px) {
+  @media (min-width: 860px) {
     .catalog-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+
+  .catalog-item {
+    opacity: 0;
+    animation: card-in 0.55s cubic-bezier(0.32, 0.72, 0, 1) both;
+    animation-delay: calc(var(--i) * 90ms + 60ms);
+  }
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .catalog-item {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
   .card {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
     height: 100%;
-    padding: 1.5rem;
     border: 1px solid var(--border);
     border-radius: 1rem;
+    overflow: hidden;
     color: var(--fg);
     text-decoration: none;
-    transition: border-color 150ms;
+    background: var(--surface-2, var(--bg));
+    transition: border-color 150ms ease, transform 150ms ease;
   }
   .card:hover,
   .card:focus-visible {
     border-color: var(--fg);
     text-decoration: none;
+    transform: translateY(-2px);
+  }
+
+  /* ---- miniature chrome (decorative) ---- */
+  .mini {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    height: 11rem;
+  }
+  .mini-bar,
+  .mini-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--muted);
+  }
+  .mini-dots {
+    display: inline-flex;
+    gap: 0.25rem;
+  }
+  .mini-dots i {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--border);
+  }
+  .mini-title,
+  .mini-cap {
+    letter-spacing: 0.02em;
+  }
+  .mini-cap {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.625rem;
+  }
+
+  .mini-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+
+  /* IDE: files | editor | preview */
+  .ide {
+    gap: 1px;
+    background: var(--border);
+  }
+  .ide > div {
+    background: var(--bg);
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+  .ide-files {
+    flex: 0 0 5.5rem;
+    gap: 0.35rem;
+  }
+  .ide-editor {
+    flex: 1.5;
+  }
+  .ide-preview {
+    flex: 1.2;
+  }
+  .f-dir,
+  .f-file {
+    flex: 0 0 auto;
+    height: 0.4375rem;
+    border-radius: 2px;
+  }
+  .f-dir {
+    width: 2.25rem;
+    background: color-mix(in srgb, var(--fg) 22%, transparent);
+  }
+  .f-file {
+    width: var(--f, 50%);
+    margin-left: 0.75rem;
+    background: var(--border);
+  }
+  .f-on {
+    background: color-mix(in srgb, var(--fg) 30%, transparent);
+  }
+  .c-line {
+    flex: 0 0 auto;
+    height: 0.375rem;
+    width: var(--w, 60%);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--fg) 16%, transparent);
+  }
+  .c-str {
+    background: color-mix(in srgb, var(--fg) 26%, transparent);
+  }
+  .pv-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.5625rem;
+    color: var(--muted);
+  }
+  .pv-dot {
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 999px;
+    background: var(--border);
+  }
+  .pv-live {
+    background: var(--success, #16a34a);
+  }
+  .pv-hero {
+    flex: 0 0 auto;
+    height: 1.75rem;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--fg) 10%, transparent);
+    margin-block: 0.15rem 0.3rem;
+  }
+
+  /* Sandbox: tabs + terminal + chips */
+  .mini-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .mini-tabs {
+    gap: 0.75rem;
+  }
+  .mini-tabs .t-status {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .t-on {
+    color: var(--fg);
+    border-bottom: 1px solid var(--fg);
+    padding-bottom: 0.1rem;
+  }
+  .mini-term {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: var(--fg);
+    min-height: 0;
+  }
+  .mini-term .row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+  }
+  .mini-term .dim {
+    color: var(--muted);
+  }
+  .t-prompt {
+    color: var(--muted);
+  }
+  .cursor {
+    width: 0.4rem;
+    height: 0.7rem;
+    background: var(--fg);
+    animation: blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cursor {
+      animation: none;
+    }
+  }
+  .mini-chips {
+    display: flex;
+    gap: 0.375rem;
+    padding: 0.45rem 0.75rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+  }
+  .mini-chips span {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.5625rem;
+    color: var(--muted);
+  }
+
+  /* App: routes | request+response */
+  .app {
+    flex-direction: column;
+  }
+  .app-routes {
+    display: flex;
+    gap: 0.375rem;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+  }
+  .route {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    padding: 0.15rem 0.5rem;
+    color: var(--muted);
+  }
+  .route b,
+  .req b {
+    font-weight: 600;
+    font-size: 0.5625rem;
+    color: var(--success, #16a34a);
+    letter-spacing: 0.04em;
+  }
+  .r-on {
+    color: var(--fg);
+    border-color: color-mix(in srgb, var(--fg) 30%, var(--border));
+  }
+  .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .req {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg);
+    flex: 0 0 auto;
+  }
+  .req-url {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .send {
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.5625rem;
+    color: var(--muted);
+  }
+  .resp {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 0;
+  }
+  .resp .ok {
+    color: var(--success, #16a34a);
+  }
+  .resp .dim {
+    color: var(--muted);
+  }
+
+  /* Vibe: chat */
+  .vibe {
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.6rem 0.75rem;
+    min-height: 0;
+  }
+  .msg {
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    max-width: 92%;
+  }
+  .msg.u {
+    align-self: flex-end;
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+  }
+  .msg.b {
+    align-self: flex-start;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+  .msg .file {
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    padding: 0 0.35rem;
+    font-size: 0.5625rem;
+    color: var(--muted);
+  }
+  .msg .ok {
+    color: var(--success, #16a34a);
+    font-size: 0.5625rem;
+  }
+  .vibe-input {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    color: var(--muted);
+    flex: 0 0 auto;
+  }
+  .send-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--fg) 24%, transparent);
+  }
+
+  /* ---- card body ---- */
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1.5rem 1.25rem;
+    flex: 1;
   }
   .card-meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-family: var(--font-mono, ui-monospace, monospace);
+    gap: 0.75rem;
+    font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--muted);
-  }
-  .badge {
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.125rem 0.625rem;
   }
   .card h2 {
     font-size: 1.5rem;
@@ -146,14 +628,46 @@ const useCases: UseCase[] = [
   .card-tagline {
     font-weight: 500;
   }
-  .card-detail,
-  .card-foot {
+  .card-detail {
     color: var(--muted);
     font-size: 0.9375rem;
   }
   .card-foot {
     margin-top: auto;
     padding-top: 0.75rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .chip {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .card-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
     font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--fg);
+  }
+  .card-open svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: transform 150ms ease;
+  }
+  .card:hover .card-open svg,
+  .card:focus-visible .card-open svg {
+    transform: translateX(2px);
   }
 </style>
