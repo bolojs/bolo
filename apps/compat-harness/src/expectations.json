@@ -35,12 +35,6 @@
     "location": "packages/node-web-shims/src/repl.ts",
     "remediation": "none browser-faithful"
   },
-  "test/parallel/test-timers-interval-promisified.js": {
-    "lane": "A",
-    "reason": "timers/promises signal handling needs NodeEventTarget internals plus a loop-wired scheduler (unenv timers race the worker event loop)",
-    "location": "packages/node-web-shims/src/timers_promises.ts",
-    "remediation": "wire timers/promises onto the worker event loop scheduler with signal support"
-  },
   "test/parallel/test-tls-ticket-12.js": {
     "lane": "B",
     "reason": "no default tls backend: session ticket handling needs a real TLS handshake via tlsBackend",
