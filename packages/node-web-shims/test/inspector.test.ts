@@ -1,11 +1,5 @@
 import { describe, it, expect } from "vitest";
-import inspector, {
-  open,
-  close,
-  url,
-  waitForDebugger,
-  Session,
-} from "../src/inspector.ts";
+import inspector, { open, close, url, waitForDebugger, Session } from "../src/inspector.ts";
 
 describe("node-web-shims: inspector", () => {
   it("open(99999) throws ERR_OUT_OF_RANGE with node's exact message (test-inspector-open-port-integer-overflow)", () => {
@@ -22,9 +16,7 @@ describe("node-web-shims: inspector", () => {
         message: 'The value of "port" is out of range. It must be >= 0 && <= 65535. Received -1',
       }),
     );
-    expect(() => open(1.5)).toThrowError(
-      expect.objectContaining({ code: "ERR_OUT_OF_RANGE" }),
-    );
+    expect(() => open(1.5)).toThrowError(expect.objectContaining({ code: "ERR_OUT_OF_RANGE" }));
   });
 
   it("open with a valid port fails honestly with ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND (no debug port in the browser)", () => {
@@ -70,9 +62,7 @@ describe("node-web-shims: inspector", () => {
 
   it("Session.post validates the method synchronously (ERR_INVALID_ARG_TYPE)", () => {
     const session = new Session();
-    expect(() =>
-      session.post(42 as unknown as string),
-    ).toThrowError(
+    expect(() => session.post(42 as unknown as string)).toThrowError(
       expect.objectContaining({
         code: "ERR_INVALID_ARG_TYPE",
         message: 'The "method" argument must be of type string. Received type number (42)',
@@ -90,7 +80,9 @@ describe("node-web-shims: inspector", () => {
     });
     expect(sync).toBe(false);
     expect(error).toBeInstanceOf(Error);
-    expect((error as unknown as { code?: string }).code).toBe("ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND");
+    expect((error as unknown as { code?: string }).code).toBe(
+      "ERR_BOL_UNSUPPORTED_INSPECTOR_BACKEND",
+    );
   });
 
   it("default export exposes the module surface", () => {

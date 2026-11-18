@@ -3,10 +3,9 @@ import { unsupportedError, withCode } from "../src/coded-error.ts";
 
 describe("unsupportedError", () => {
   it("produces an ERR_BOL_UNSUPPORTED_<SEAM> coded error naming the seam", () => {
-    const err = unsupportedError(
-      "TLS_BACKEND",
-      "tls.connect() requires a TLS backend",
-    ) as Error & { code?: string };
+    const err = unsupportedError("TLS_BACKEND", "tls.connect() requires a TLS backend") as Error & {
+      code?: string;
+    };
     expect(err).toBeInstanceOf(Error);
     expect(err.code).toBe("ERR_BOL_UNSUPPORTED_TLS_BACKEND");
     expect(err.message).toBe("tls.connect() requires a TLS backend");

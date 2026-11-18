@@ -147,31 +147,45 @@ export const createTimersPromisesShim = (host: TimerHost = defaultHost) => {
     validate(options);
     const { signal, ref = true } = options;
     if (signal?.aborted) throw abortError(signal);
-    let pending = 0;
+    // Mirrors Node's `lib/timers/promises.js` generator. Two details matter:
+    // 1. A single `callback` slot is reused, and the interval callback only
+    //    resolves it when it is currently parked. Resolving an already-settled
+    //    promise is a no-op, so a tick that lands while the consumer awaits
+    //    its own work must be *counted* (`notYielded`) rather than dropped.
+    // 2. The abort check happens at the top of the outer loop only, so ticks
+    //    already queued when the signal aborts are still yielded before the
+    //    AbortError propagates. The vendored Node test
+    //    `test-timers-interval-promisified.js` relies on this: it aborts
+    //    inside iteration 2 yet asserts `totalIterations >= 3`.
+    let notYielded = 0;
     let wake: (() => void) | undefined;
     const handle = host.setInterval(() => {
-      pending++;
-      wake?.();
+      notYielded++;
+      if (wake) {
+        wake();
+        wake = undefined;
+      }
     }, delay);
     if (!ref) (handle as { unref?: () => void })?.unref?.();
     const abort = () => {
       host.clearInterval(handle);
-      wake?.();
+      if (wake) {
+        wake();
+        wake = undefined;
+      }
     };
     signal?.addEventListener("abort", abort, { once: true });
     try {
-      for (;;) {
-        if (!pending && !signal?.aborted)
+      while (!signal?.aborted) {
+        if (notYielded === 0)
           await new Promise<void>((resolve) => {
             wake = resolve;
           });
-        if (signal?.aborted) throw abortError(signal);
-        while (pending > 0) {
-          pending--;
+        for (; notYielded > 0; notYielded--) {
           yield value;
-          if (signal?.aborted) throw abortError(signal);
         }
       }
+      throw abortError(signal!);
     } finally {
       host.clearInterval(handle);
       signal?.removeEventListener("abort", abort);

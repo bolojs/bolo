@@ -1,8 +1,8 @@
 import unenvUtil from "unenv/node/util";
 import { promisify as unenvPromisify } from "unenv/node/util";
-import unenvTypes from "unenv/node/util/types";
 
 import { customInspectSymbol, format, formatWithOptions, inspect } from "./util/inspect.js";
+import { utilTypes } from "./util/types.js";
 
 export * from "unenv/node/util";
 
@@ -10,9 +10,12 @@ export { format, formatWithOptions, inspect };
 export type { InspectOptions } from "./util/inspect.js";
 
 // unenv's util.mjs imports `node:util/types` itself, which lands as a dead
-// `browser_external_*` namespace in consumer bundles — import the real,
-// self-contained module directly instead.
-export const types = unenvTypes;
+// `browser_external_*` namespace in consumer bundles. unenv's own
+// `node/util/types` module is used as the base, but its predicates are mostly
+// `notImplemented()` stubs (they throw) and its `isExternal` is a constant
+// `false`, so the browser-faithful implementation in ./util/types.ts replaces
+// it wholesale.
+export const types = utilTypes;
 
 /**
  * unenv's `promisify()` reads its own custom-promisify symbol (not Node's
@@ -57,7 +60,7 @@ export const toUSVString = (val: unknown): string => {
 
 const util = {
   ...unenvUtil,
-  types: unenvTypes,
+  types: utilTypes,
   inspect,
   format,
   formatWithOptions,
