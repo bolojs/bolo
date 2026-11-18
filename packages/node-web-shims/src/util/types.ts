@@ -265,3 +265,8 @@ export const utilTypes = {
 } as const;
 
 export type UtilTypes = typeof utilTypes;
+
+// unenv's `util.mjs` consumes this module via
+// `import types from "node:util/types"` — the module must keep a default
+// export even though real Node's `util/types` has none (CJS namespace shape).
+export default utilTypes;
