@@ -29,7 +29,15 @@ describe("expected-fail ledger", () => {
     expect(laneOf("test-tls-wrap-no-abort.js")).toBe("B");
     expect(laneOf("test-inspector-stops-no-file.js")).toBe("C");
     expect(laneOf("test-dns-set-default-order.js")).toBe("C");
-    expect(laneOf("test-timers-interval-promisified.js")).toBe("A");
+  });
+
+  it("keeps the timers interval test out of the ledger now that it passes", () => {
+    // It was lane A until the timers/promises setInterval generator was
+    // fixed to drain queued ticks before aborting. Leaving it in the ledger
+    // would make every harness run report a stale expectation.
+    const laneOf = (suffix: string) =>
+      Object.entries(entries).find(([file]) => file.endsWith(suffix))?.[1].lane;
+    expect(laneOf("test-timers-interval-promisified.js")).toBeUndefined();
   });
 });
 
