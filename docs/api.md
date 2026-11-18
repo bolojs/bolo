@@ -313,3 +313,52 @@ if (window.__browserbox_ready) {
 ```
 
 This is the demo shell's external API, not a published library export.
+
+---
+
+## `/probe/` (the agent endpoint)
+
+A live endpoint on `https://bolojs.dev/probe/` that boots the real runtime and evaluates code in it. It exists so an agent or script can ask the browser runtime a question without a UI.
+
+### Usage
+
+```bash
+# base64url-encode the code, then load the page in any headless browser
+CODE=$(printf '1+1' | base64 | tr '+/' '-_' | tr -d '=')
+```
+
+```
+GET https://bolojs.dev/probe/                  -> runtime info and usage
+GET https://bolojs.dev/probe/?run=<base64url>  -> evaluate and return JSON
+```
+
+`run` accepts base64url (preferred: no escaping issues) or raw source. The response document is a single `<pre>` holding machine-shaped JSON, so any browser automation can read it as text.
+
+### Response shape
+
+```json
+{
+  "ok": true,
+  "result": "2",
+  "durationMs": 56.73,
+  "runtime": { "version": "0.x", "node": "in-container" }
+}
+```
+
+On failure `ok` is `false` and `error` carries the message instead of `result`. The document title is `ok | bolo probe` or `error | bolo probe`, so a script can branch on the title without parsing the body.
+
+### What the code can do
+
+The snippet runs through `node -e` inside the container, so it gets the surface an agent would write against:
+
+```js
+const fs = require("node:fs");
+console.log(fs.readdirSync("/").length);
+```
+
+`require`, `console.log` and `process` all work. The snippet is evaluated as the body of an async function, so `const`, `throw` and `await` are all valid. The value of the last expression is returned as `result` when it is not `undefined`, so `?run=<b64 of 1+1>` answers `2`.
+
+### Notes
+
+- The runtime boots per request, so the first call pays the boot cost; `durationMs` measures only the evaluation.
+- There is no server behind it. The endpoint is a static page that runs the runtime in your browser, which is why it needs a browser to answer.
