@@ -1,0 +1,21 @@
+---
+// Agent-facing probe endpoint: boots the runtime and evaluates code from the
+// URL, returning JSON. Not linked from nav — this is for scripts and agents.
+//
+//   GET /probe/                  -> runtime info + usage
+//   GET /probe/?run=<b64url>     -> evaluate base64url (or raw) code
+//
+// The page body is a single <pre> with machine-shaped JSON:
+//   { ok, result | error, durationMs, runtime: { version, node } }
+// Read it headlessly with any browser automation: the document is one node.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProbeApp from '../demo/ProbeApp.tsx';
+
+const title = 'probe | bolo';
+---
+
+<BaseLayout title={title}>
+  <Fragment slot="navbar"></Fragment>
+  <ProbeApp client:only="solid-js" />
+  <Fragment slot="footer"></Fragment>
+</BaseLayout>
