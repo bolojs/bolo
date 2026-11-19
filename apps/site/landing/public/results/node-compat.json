@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.12.0",
-  "generatedAt": "2026-11-18T21:27:10.565Z",
+  "generatedAt": "2026-11-19T09:45:48.916Z",
   "validated": true,
   "total": 166,
-  "pass": 156,
-  "fail": 2,
+  "pass": 154,
+  "fail": 4,
   "skip": 1,
   "expectedFail": 7,
   "expectedFailByLane": {
@@ -1033,7 +1033,7 @@
     },
     {
       "name": "module",
-      "passed": 3,
+      "passed": 1,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -1044,11 +1044,13 @@
       "tests": [
         {
           "file": "test-module-wrap.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught Error: Command failed: /usr/local/bin/node /home/harness/test/fixtures/cjs-module-wrap.js"
         },
         {
           "file": "test-module-wrapper.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "Uncaught Error: Command failed: /usr/local/bin/node /home/harness/test/fixtures/cjs-module-wrapper.js"
         },
         {
           "file": "test-module-main-extension-lookup.js",
