@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T09:29:20.216Z",
+  "generatedAt": "2026-11-21T09:04:22.940Z",
   "validated": true,
   "packages": [
     {
@@ -7,57 +7,56 @@
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 418.2400000000198
+      "duration": 478.8549999999814
     },
     {
       "name": "axios",
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1851.1749999999884
+      "duration": 4311.854999999981
     },
     {
       "name": "node-fetch",
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 886.2350000000151
+      "duration": 1668.3649999999907
     },
     {
       "name": "undici",
       "class": "HTTP client",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30168.11500000002,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "[bundle warning] \"node:sqlite\" required by \"/home/harness/node_modules/.bolo/undici@8.13.1/node_modules/undici/lib/cache/sqlite-cache-store.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"node:sqlite\" required by \"/home/harness/node_modules/.bolo/undici@8.13.1/node_modules/undici/lib/util/runtime-features.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\nPASS\n",
+      "duration": 1320.7300000000396
     },
     {
       "name": "fs-extra",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 535.4799999999814
+      "duration": 1374.8400000000256
     },
     {
       "name": "globby",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1637.954999999958
+      "duration": 4919.665000000037
     },
     {
       "name": "chokidar",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 596.5599999999977
+      "duration": 972.0800000000163
     },
     {
       "name": "esbuild",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 355.4349999999977,
+      "duration": 430.25500000000466,
       "expectation": {
         "lane": "A",
         "reason": "drives a native platform binary through child_process and an ESM binary loader; the npm package has no in-browser build",
@@ -69,51 +68,51 @@
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 811.109999999986
+      "duration": 1401.4249999999884
     },
     {
       "name": "tsc",
       "class": "Build tool",
       "status": "pass",
       "output": "[bundle warning] home/harness/node_modules/.bolo/typescript@5.9.3/node_modules/typescript/lib/typescript.js (200276:115) [COMMONJS_VARIABLE_IN_ESM] The CommonJS `module` variable is treated as a global variable in an ECMAScript module and may not work as expected\n        ╭─[ node_modules/.bolo/typescript@5.9.3/node_modules/typescript/lib/typescript.js:200276:116 ]\n        │\n 200276 │ })({ get exports() { return ts; }, set exports(v) { ts = v; if (typeof module !== \"undefined\" && module.exports) { module.exports = v; } } })\n        │                                                                                                                    ───┬──  \n        │                                                                                                                       ╰──── \n        │ \n 200279 │ export default ts;\n        │ ───┬──  \n        │    ╰──── This file is considered to be an ECMAScript module because of the `export` keyword here:\n────────╯\n\n[bundle warning] home/harness/probe/tsc.mjs (5:13) [IMPORT_IS_UNDEFINED] Import `transpile` will always be undefined because there is no matching export in 'node_modules/.bolo/typescript@5.9.3/node_modules/typescript/lib/typescript.js'\n   ╭─[ probe/tsc.mjs:5:14 ]\n   │\n 5 │   const ts = tsNs.transpile ? tsNs : tsDefault?.transpile ? tsDefault : tsNs.default?.transpile ? tsNs.default : tsNs.default?.default;\n   │              ───────┬──────  \n   │                     ╰──────── \n───╯\n\nPASS\n",
-      "duration": 2667.5950000000303
+      "duration": 3429.070000000007
     },
     {
       "name": "sass",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 2370.1199999999953
+      "duration": 5022.739999999991
     },
     {
       "name": "rollup",
       "class": "Bundler",
       "status": "pass",
       "output": "[bundle warning] \"/home/harness/node_modules/.bolo/fsevents@2.3.3/node_modules/fsevents/fsevents.node\" is a native addon — stubbed as an empty module (no browser build)\nPASS\n",
-      "duration": 1041.4099999999744
+      "duration": 1674.5849999999627
     },
     {
       "name": "webpack",
       "class": "Bundler",
       "status": "fail",
       "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 32353.330000000016,
+      "duration": 39813.66499999998,
       "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "vite",
       "class": "Bundler",
       "status": "fail",
-      "output": "[bundle warning] \"esbuild\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"yaml\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/integration\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"jiti\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"tsx/cjs/api\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/config\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1200:35\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:572:48\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1376:47\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1379:2\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1436:2\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1443:2\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n\nNode.js v22.12.0\n",
-      "duration": 8507.955000000016,
-      "error": "[bundle warning] \"esbuild\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"yaml\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/integration\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"jiti\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"tsx/cjs/api\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/config\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1200:35\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:572:48\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1376:47\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1379:2\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1436:2\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:1443:2\n    at blob:http://localhost:5173/bf1f7368-cc50-4564-ad77-f4f8a6aee890:323:23\n\nNode.js v22.12.0\n(bolo diagnostics: .logs/latest.jsonl)"
+      "output": "[bundle warning] \"esbuild\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"yaml\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/integration\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"jiti\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"tsx/cjs/api\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/config\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1200:35\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:572:48\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1376:47\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1379:2\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1436:2\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1443:2\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n\nNode.js v22.12.0\n",
+      "duration": 14767.975000000035,
+      "error": "[bundle warning] \"esbuild\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"yaml\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/integration\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"jiti\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"tsx/cjs/api\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@vitejs/devtools/config\" required by \"/home/harness/node_modules/.bolo/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\nUncaught Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1200:35\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:572:48\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1376:47\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1379:2\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1436:2\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:1443:2\n    at blob:http://localhost:5173/2aa9eacb-79ca-4682-a182-eed3c09a0036:323:23\n\nNode.js v22.12.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "parcel",
       "class": "Bundler",
       "status": "skip",
       "output": "SKIP: parcel needs @parcel/rust native bindings — parcel_node_bindings.wasm is never published to npm (built from source only) and @parcel/watcher is native-only\n",
-      "duration": 343.0899999999674,
+      "duration": 441.53999999997905,
       "expectation": {
         "lane": "C",
         "reason": "parcel's core path runs through @parcel/rust, a napi-rs native binding; the browser entry (browser.js → napi-wasm) needs a parcel_node_bindings.wasm artifact that is never published to npm (it is only built from source via yarn wasm:build-release), and @parcel/watcher is native-only",
@@ -125,59 +124,58 @@
       "class": "Testing",
       "status": "pass",
       "output": "[bundle warning] \"vite/module-runner\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\n[bundle warning] \"vite/module-runner\" could not be resolved off the installed node_modules — falling back to https://esm.sh/vite/module-runner\nPASS\n",
-      "duration": 1885.929999999993
+      "duration": 3280.6849999999977
     },
     {
       "name": "jest",
       "class": "Testing",
       "status": "fail",
       "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 43178.484999999986,
+      "duration": 77247.44,
       "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "express",
       "class": "HTTP server",
-      "status": "pass",
-      "output": "PASS\n",
-      "duration": 2856.6199999999953
+      "status": "fail",
+      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
+      "duration": 36362.109999999986,
+      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "fastify",
       "class": "HTTP server",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 31727.059999999998,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "PASS\n",
+      "duration": 8370.825000000012
     },
     {
       "name": "h3",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 781.289999999979
+      "duration": 1205.0299999999697
     },
     {
       "name": "polka",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 807.359999999986
+      "duration": 1492.7000000000116
     },
     {
       "name": "crypto-js",
       "class": "Crypto",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30132.655000000028,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "PASS\n",
+      "duration": 741.9249999999884
     },
     {
       "name": "bcrypt",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 881.4199999999837,
+      "duration": 1419.195000000007,
       "expectation": {
         "lane": "A",
         "reason": "native .node addon via node-pre-gyp; bcrypt ships no WASM or browser build",
@@ -189,7 +187,7 @@
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 839.5650000000023,
+      "duration": 1415.795000000042,
       "expectation": {
         "lane": "A",
         "reason": "native .node addon built with node-gyp; argon2 itself ships no browser or WASM build",
@@ -201,21 +199,21 @@
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 739.9699999999721
+      "duration": 1537.6650000000373
     },
     {
       "name": "ejs",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 472.179999999993
+      "duration": 721.210000000021
     },
     {
       "name": "pug",
       "class": "Template",
       "status": "fail",
       "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 31812.97000000003,
+      "duration": 34579.59499999997,
       "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
@@ -223,140 +221,142 @@
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 719.9899999999907
+      "duration": 994.9199999999837
     },
     {
       "name": "elysia",
       "class": "HTTP server",
-      "status": "pass",
-      "output": "[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/system\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\n[bundle warning] \"file-type\" required by \"/home/harness/node_modules/.bolo/elysia@1.4.32/node_modules/elysia/dist/type-system/utils.mjs\" is not installed — deferring to a require-time MODULE_NOT_FOUND\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/system\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/system\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/value\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/value\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\n[bundle warning] \"@sinclair/typebox/compiler\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox/compiler\n[bundle warning] \"@sinclair/typebox\" could not be resolved off the installed node_modules — falling back to https://esm.sh/@sinclair/typebox\nPASS\n",
-      "duration": 1487.9250000000466
+      "status": "fail",
+      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
+      "duration": 30993.169999999955,
+      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "itty-router",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 482.86000000004424
+      "duration": 864.2300000000978
     },
     {
       "name": "koa",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1371.765000000014
+      "duration": 3800.1699999999255
     },
     {
       "name": "zod",
       "class": "Validation",
-      "status": "pass",
-      "output": "PASS\n",
-      "duration": 791.2050000000163
+      "status": "fail",
+      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
+      "duration": 30463.865000000107,
+      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "uuid",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 488.6900000000023
+      "duration": 727.2800000000279
     },
     {
       "name": "lodash",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 591.8099999999977
+      "duration": 768.359999999986
     },
     {
       "name": "chalk",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 399.429999999993
+      "duration": 622.234999999986
     },
     {
       "name": "events",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 365.8949999999604
+      "duration": 409.64000000001397
     },
     {
       "name": "stream",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 387.2749999999651
+      "duration": 407.6700000000419
     },
     {
       "name": "buffer",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 347.54999999998836
+      "duration": 441.93499999993946
     },
     {
       "name": "crypto",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 357.61999999999534
+      "duration": 433.6799999999348
     },
     {
       "name": "path",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 385.4550000000163
+      "duration": 424.82500000006985
     },
     {
       "name": "url",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 350.7950000000419
+      "duration": 445.75500000000466
     },
     {
       "name": "querystring",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 366
+      "duration": 403.7850000000326
     },
     {
       "name": "zlib",
       "class": "Node core API",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 371.0999999999767
+      "duration": 409.0350000000326
     },
     {
       "name": "ajv",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 557.4899999999907
+      "duration": 582.8449999999721
     },
     {
       "name": "joi",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 842.4150000000373
+      "duration": 1685.6800000000512
     },
     {
       "name": "valibot",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 524.25
+      "duration": 742.1949999999488
     },
     {
       "name": "yup",
       "class": "Validation",
       "status": "fail",
       "output": "Build failed with 7 errors:\n\n[MISSING_EXPORT] \"getter\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:10 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │          ───┬──  \n   │             ╰──── Missing export\n───╯\n\n[MISSING_EXPORT] \"forEach\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:18 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                  ───┬───  \n   │                     ╰───── Missing export\n───╯\n\n[MISSING_EXPORT] \"split\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:27 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                           ──┬──  \n   │                             ╰──── Missing export\n───╯\n\n[MISSING_EXPORT] \"normalizePath\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:34 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                                  ──────┬──────  \n   │                                        ╰──────── Missing export\n───╯\n\n[MISSING_EXPORT] \"join\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:49 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                                                 ──┬─  \n   │                                                   ╰─── Missing export\n───╯\n\n...",
-      "duration": 334.5900000000256,
+      "duration": 945.2849999999162,
       "error": "Build failed with 7 errors:\n\n[MISSING_EXPORT] \"getter\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:10 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │          ───┬──  \n   │             ╰──── Missing export\n───╯\n\n[MISSING_EXPORT] \"forEach\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:18 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                  ───┬───  \n   │                     ╰───── Missing export\n───╯\n\n[MISSING_EXPORT] \"split\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:27 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                           ──┬──  \n   │                             ╰──── Missing export\n───╯\n\n[MISSING_EXPORT] \"normalizePath\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:34 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                                  ──────┬──────  \n   │                                        ╰──────── Missing export\n───╯\n\n[MISSING_EXPORT] \"join\" is not exported by \"node_modules/.bolo/property-expr@2.0.6/node_modules/property-expr/index.js\".\n   ╭─[ node_modules/.bolo/yup@1.7.1/node_modules/yup/index.esm.js:1:49 ]\n   │\n 1 │ import { getter, forEach, split, normalizePath, join } from 'property-expr';\n   │                                                 ──┬─  \n   │                                                   ╰─── Missing export\n───╯\n\n...\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
@@ -364,304 +364,303 @@
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 614.9699999999721
+      "duration": 718.8249999999534
     },
     {
       "name": "superstruct",
       "class": "Validation",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 543.7600000000093
+      "duration": 675.3699999999953
     },
     {
       "name": "io-ts",
       "class": "Validation",
       "status": "pass",
       "output": "[bundle warning] \"fp-ts/es6/Either\" could not be resolved off the installed node_modules — falling back to https://esm.sh/fp-ts/es6/Either\nPASS\n",
-      "duration": 821.4249999999884
+      "duration": 876.8399999999674
     },
     {
       "name": "nanoid",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 404.7050000000163
+      "duration": 538.25
     },
     {
       "name": "dotenv",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 494.5
+      "duration": 639.7950000000419
     },
     {
       "name": "js-yaml",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 487.8300000000163
+      "duration": 687.9549999999581
     },
     {
       "name": "json5",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 410.5650000000023
+      "duration": 468.7600000000093
     },
     {
       "name": "semver",
       "class": "Utility",
       "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30033.50999999998,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "output": "Uncaught TypeError: Cannot read properties of undefined (reading 'module.exports')\n    at __bc_cjsNs (blob:http://localhost:5173/50289356-6b37-4488-85bc-dd8f96afa5c4:149:28)\n    at blob:http://localhost:5173/50289356-6b37-4488-85bc-dd8f96afa5c4:1581:22\n\nNode.js v22.12.0\n",
+      "duration": 458.67500000004657,
+      "error": "Uncaught TypeError: Cannot read properties of undefined (reading 'module.exports')\n    at __bc_cjsNs (blob:http://localhost:5173/50289356-6b37-4488-85bc-dd8f96afa5c4:149:28)\n    at blob:http://localhost:5173/50289356-6b37-4488-85bc-dd8f96afa5c4:1581:22\n\nNode.js v22.12.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "ms",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 349.65500000002794
+      "duration": 551.9149999999208
     },
     {
       "name": "debug",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 367.41500000003725
+      "duration": 556.5250000000233
     },
     {
       "name": "deepmerge",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 387.6350000000093
+      "duration": 464.50500000000466
     },
     {
       "name": "query-string",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 716.5049999998882
+      "duration": 1029.8950000000186
     },
     {
       "name": "fast-deep-equal",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 339.5549999999348
+      "duration": 566.2000000000698
     },
     {
       "name": "change-case",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 446.5799999999581
+      "duration": 655.6450000000186
     },
     {
       "name": "p-limit",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 500.7600000000093
+      "duration": 720.7900000000373
     },
     {
       "name": "lru-cache",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 404.33500000007916
+      "duration": 516.3249999999534
     },
     {
       "name": "date-fns",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 732.9649999999674
+      "duration": 1231.829999999958
     },
     {
       "name": "dayjs",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 486.2750000000233
+      "duration": 706.8150000000605
     },
     {
       "name": "luxon",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 512.9400000000605
+      "duration": 900.4899999999907
     },
     {
       "name": "throttle-debounce",
       "class": "Utility",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 443.5350000000326
+      "duration": 672.3449999999721
     },
     {
       "name": "rimraf",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 844.0450000000419
+      "duration": 1638.3500000000931
     },
     {
       "name": "glob",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 478.5
+      "duration": 567.9699999999721
     },
     {
       "name": "mkdirp",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 454.23499999998603
+      "duration": 688.6950000000652
     },
     {
       "name": "del",
       "class": "File system",
-      "status": "pass",
-      "output": "PASS\n",
-      "duration": 1596.6900000000605
+      "status": "fail",
+      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
+      "duration": 31890.68499999994,
+      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "memfs",
       "class": "File system",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1634
+      "duration": 5697.770000000019
     },
     {
       "name": "cors",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 458.6599999999162
+      "duration": 823.4349999999395
     },
     {
       "name": "helmet",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 462.2700000000186
+      "duration": 653.4950000001118
     },
     {
       "name": "morgan",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 641.9000000000233
+      "duration": 1427.2749999999069
     },
     {
       "name": "compression",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 671.3199999999488
+      "duration": 1336.5600000000559
     },
     {
       "name": "serve-static",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 518.7800000000279
+      "duration": 744.1649999999208
     },
     {
       "name": "cookie-parser",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 412.3499999999767
+      "duration": 810.1050000000978
     },
     {
       "name": "body-parser",
       "class": "HTTP server",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30149.14500000002,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "PASS\n",
+      "duration": 1649.5449999999255
     },
     {
       "name": "pino",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 470.01500000001397
+      "duration": 535.5100000000093
     },
     {
       "name": "winston",
       "class": "HTTP server",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1918.2299999999814
+      "duration": 4000.3800000000047
     },
     {
       "name": "got",
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1317.170000000042
+      "duration": 3547.890000000014
     },
     {
       "name": "ky",
       "class": "HTTP client",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30134.01000000001,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "PASS\n",
+      "duration": 751.9399999999441
     },
     {
       "name": "http-proxy-agent",
       "class": "HTTP client",
       "status": "pass",
       "output": "[bundle warning] \"kerberos\" required by \"/home/harness/node_modules/.bolo/proxy-agent-negotiate@1.1.0/node_modules/proxy-agent-negotiate/dist/index.js\" is not installed — deferring to a require-time MODULE_NOT_FOUND\nPASS\n",
-      "duration": 618.7049999999581
+      "duration": 1118.1600000000326
     },
     {
       "name": "form-data",
       "class": "HTTP client",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 823.7950000000419
+      "duration": 1005.3299999999581
     },
     {
       "name": "sha.js",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1369.8150000000605
+      "duration": 3269.605000000098
     },
     {
       "name": "hash.js",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 566.125
+      "duration": 949.4099999999162
     },
     {
       "name": "md5",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 575.4949999999953
+      "duration": 1106.1050000000978
     },
     {
       "name": "create-hash",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 983.8050000000512
+      "duration": 2127.4199999999255
     },
     {
       "name": "jose",
       "class": "Crypto",
       "status": "fail",
       "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30144.935000000056,
+      "duration": 30309.580000000075,
       "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
@@ -669,101 +668,99 @@
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1068.3200000000652
+      "duration": 2187.8649999999907
     },
     {
       "name": "pbkdf2",
       "class": "Crypto",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 771.8850000000093
+      "duration": 1228.3399999999674
     },
     {
       "name": "marked",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 471.24499999999534
+      "duration": 743.9150000000373
     },
     {
       "name": "markdown-it",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 702.5
+      "duration": 1365.8099999999395
     },
     {
       "name": "micromark",
       "class": "Template",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 31163.359999999986,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "PASS\n",
+      "duration": 5034.420000000042
     },
     {
       "name": "nunjucks",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 778.9150000000373
+      "duration": 1065.8100000000559
     },
     {
       "name": "liquidjs",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 537.1700000000419
+      "duration": 1206.4049999999115
     },
     {
       "name": "mustache",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 469.8850000000093
+      "duration": 714
     },
     {
       "name": "twig",
       "class": "Template",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 1220.3399999999674
+      "duration": 2876.29999999993
     },
     {
       "name": "chai",
       "class": "Testing",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 462.5899999999674
+      "duration": 609.9050000000279
     },
     {
       "name": "sinon",
       "class": "Testing",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 918.4749999999767
+      "duration": 1419.2749999999069
     },
     {
       "name": "dompurify",
       "class": "Testing",
       "status": "fail",
       "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30861.02000000002,
+      "duration": 31962.30500000005,
       "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "linkedom",
       "class": "Testing",
-      "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30753.704999999958,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "status": "pass",
+      "output": "[bundle warning] \"canvas\" required by \"/home/harness/node_modules/.bolo/linkedom@0.18.15/node_modules/linkedom/commonjs/canvas.cjs\" is not installed — deferring to a require-time MODULE_NOT_FOUND\nPASS\n",
+      "duration": 3685.4250000000466
     },
     {
       "name": "lightningcss",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 2052.6450000000186,
+      "duration": 3166.069999999949,
       "expectation": {
         "lane": "A",
         "reason": "loads a native .node binding through per-platform optional dependencies; no WASM fallback ships in this package",
@@ -775,36 +772,36 @@
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 524.3050000000512
+      "duration": 784.9699999999721
     },
     {
       "name": "babel",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 2397.914999999921
+      "duration": 5541.334999999963
     },
     {
       "name": "sucrase",
       "class": "Build tool",
       "status": "fail",
-      "output": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset",
-      "duration": 30619.619999999995,
-      "error": "bundleEntry timed out after 30000ms — bundler wedged, module cache reset\n(bolo diagnostics: .logs/latest.jsonl)"
+      "output": "[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (7:25) [IMPORT_IS_UNDEFINED] Import `union` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n   ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:7:26 ]\n   │\n 7 │ export const Transform = t.union(\n   │                          ───┬───  \n   │                             ╰───── \n───╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (8:2) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n   ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:8:3 ]\n   │\n 8 │   t.lit(\"jsx\"),\n   │   ──┬──  \n   │     ╰──── \n───╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (9:2) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n   ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:9:3 ]\n   │\n 9 │   t.lit(\"typescript\"),\n   │   ──┬──  \n   │     ╰──── \n───╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (10:2) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:10:3 ]\n    │\n 10 │   t.lit(\"flow\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (11:2) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:11:3 ]\n    │\n 11 │   t.lit(\"imports\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (12:2) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:12:3 ]\n    │\n 12 │   t.lit(\"react-hot-loader\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (13:2) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:13:3 ]\n    │\n 13 │   t.lit(\"jest\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (16:32) [IMPORT_IS_UNDEFINED] Import `iface` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:16:33 ]\n    │\n 16 │ export const SourceMapOptions = t.iface([], {\n    │                                 ───┬───  \n    │                                    ╰───── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (20:23) [IMPORT_IS_UNDEFINED] Import `iface` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:20:24 ]\n    │\n 20 │ export const Options = t.iface([], {\n    │                        ───┬───  \n    │                           ╰───── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (21:14) [IMPORT_IS_UNDEFINED] Import `array` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:21:15 ]\n    │\n 21 │   transforms: t.array(\"Transform\"),\n    │               ───┬───  \n    │                  ╰───── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (22:23) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:22:24 ]\n    │\n 22 │   disableESTransforms: t.opt(\"boolean\"),\n    │                        ──┬──  \n    │                          ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (23:14) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:23:15 ]\n    │\n 23 │   jsxRuntime: t.opt(t.union(t.lit(\"classic\"), t.lit(\"automatic\"), t.lit(\"preserve\"))),\n    │               ──┬──  \n    │                 ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (23:20) [IMPORT_IS_UNDEFINED] Import `union` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:23:21 ]\n    │\n 23 │   jsxRuntime: t.opt(t.union(t.lit(\"classic\"), t.lit(\"automatic\"), t.lit(\"preserve\"))),\n    │                     ───┬───  \n    │                        ╰───── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (23:28) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:23:29 ]\n    │\n 23 │   jsxRuntime: t.opt(t.union(t.lit(\"classic\"), t.lit(\"automatic\"), t.lit(\"preserve\"))),\n    │                             ──┬──  \n    │                               ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (23:46) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:23:47 ]\n    │\n 23 │   jsxRuntime: t.opt(t.union(t.lit(\"classic\"), t.lit(\"automatic\"), t.lit(\"preserve\"))),\n    │                                               ──┬──  \n    │                                                 ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (23:66) [IMPORT_IS_UNDEFINED] Import `lit` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:23:67 ]\n    │\n 23 │   jsxRuntime: t.opt(t.union(t.lit(\"classic\"), t.lit(\"automatic\"), t.lit(\"preserve\"))),\n    │                                                                   ──┬──  \n    │                                                                     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (24:14) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:24:15 ]\n    │\n 24 │   production: t.opt(\"boolean\"),\n    │               ──┬──  \n    │                 ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (25:19) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:25:20 ]\n    │\n 25 │   jsxImportSource: t.opt(\"string\"),\n    │                    ──┬──  \n    │                      ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (26:13) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:26:14 ]\n    │\n 26 │   jsxPragma: t.opt(\"string\"),\n    │              ──┬──  \n    │                ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (27:21) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:27:22 ]\n    │\n 27 │   jsxFragmentPragma: t.opt(\"string\"),\n    │                      ──┬──  \n    │                        ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (28:21) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:28:22 ]\n    │\n 28 │   keepUnusedImports: t.opt(\"boolean\"),\n    │                      ──┬──  \n    │                        ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (29:25) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:29:26 ]\n    │\n 29 │   preserveDynamicImport: t.opt(\"boolean\"),\n    │                          ──┬──  \n    │                            ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (30:39) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:30:40 ]\n    │\n 30 │   injectCreateRequireForImportRequire: t.opt(\"boolean\"),\n    │                                        ──┬──  \n    │                                          ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (31:39) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:31:40 ]\n    │\n 31 │   enableLegacyTypeScriptModuleInterop: t.opt(\"boolean\"),\n    │                                        ──┬──  \n    │                                          ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (32:35) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:32:36 ]\n    │\n 32 │   enableLegacyBabel5ModuleInterop: t.opt(\"boolean\"),\n    │                                    ──┬──  \n    │                                      ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (33:20) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:33:21 ]\n    │\n 33 │   sourceMapOptions: t.opt(\"SourceMapOptions\"),\n    │                     ──┬──  \n    │                       ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (34:12) [IMPORT_IS_UNDEFINED] Import `opt` will always be undefined because there is no matching export in 'node_modules/.bolo/ts-interface-checker@0.1.13/node_modules/ts-interface-checker/dist/index.js'\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:34:13 ]\n    │\n 34 │   filePath: t.opt(\"string\"),\n    │             ──┬──  \n    │               ╰──── \n────╯\n\nUncaught TypeError: (void 0) is not a function\n    at blob:http://localhost:5173/16678b1e-8fc3-4130-a24e-a313dd7882a3:13740:30\n\nNode.js v22.12.0\n",
+      "duration": 2158.060000000056,
+      "error": "[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (7:25… <199 chars elided>\n   ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:7:26 ]\n   │\n 7 │ export const Transform = t.union(\n   │                          ───┬───  \n   │                             ╰───── \n───╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (8:2)… <196 chars elided>\n   ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:8:3 ]\n   │\n 8 │   t.lit(\"jsx\"),\n   │   ──┬──  \n   │     ╰──── \n───╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (9:2)… <196 chars elided>\n   ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:9:3 ]\n   │\n 9 │   t.lit(\"typescript\"),\n   │   ──┬──  \n   │     ╰──── \n───╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (10:2… <197 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:10:3 ]\n    │\n 10 │   t.lit(\"flow\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (11:2… <197 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:11:3 ]\n    │\n 11 │   t.lit(\"imports\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (12:2… <197 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:12:3 ]\n    │\n 12 │   t.lit(\"react-hot-loader\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (13:2… <197 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:13:3 ]\n    │\n 13 │   t.lit(\"jest\"),\n    │   ──┬──  \n    │     ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (16:3… <200 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:16:33 ]\n    │\n 16 │ export const SourceMapOptions = t.iface([], {\n    │                                 ───┬───  \n    │                                    ╰───── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (20:2… <200 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:20:24 ]\n    │\n 20 │ export const Options = t.iface([], {\n    │                        ───┬───  \n    │                           ╰───── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (21:1… <200 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:21:15 ]\n    │\n 21 │   transforms: t.array(\"Transform\"),\n    │               ───┬───  \n    │                  ╰───── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (22:2… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:22:24 ]\n    │\n 22 │   disableESTransforms: t.opt(\"boolean\"),\n    │                        ──┬──  \n    │                          ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (23:1… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:23:\n…\n               ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (25:1… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:25:20 ]\n    │\n 25 │   jsxImportSource: t.opt(\"string\"),\n    │                    ──┬──  \n    │                      ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (26:1… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:26:14 ]\n    │\n 26 │   jsxPragma: t.opt(\"string\"),\n    │              ──┬──  \n    │                ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (27:2… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:27:22 ]\n    │\n 27 │   jsxFragmentPragma: t.opt(\"string\"),\n    │                      ──┬──  \n    │                        ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (28:2… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:28:22 ]\n    │\n 28 │   keepUnusedImports: t.opt(\"boolean\"),\n    │                      ──┬──  \n    │                        ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (29:2… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:29:26 ]\n    │\n 29 │   preserveDynamicImport: t.opt(\"boolean\"),\n    │                          ──┬──  \n    │                            ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (30:3… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:30:40 ]\n    │\n 30 │   injectCreateRequireForImportRequire: t.opt(\"boolean\"),\n    │                                        ──┬──  \n    │                                          ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (31:3… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:31:40 ]\n    │\n 31 │   enableLegacyTypeScriptModuleInterop: t.opt(\"boolean\"),\n    │                                        ──┬──  \n    │                                          ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (32:3… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:32:36 ]\n    │\n 32 │   enableLegacyBabel5ModuleInterop: t.opt(\"boolean\"),\n    │                                    ──┬──  \n    │                                      ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (33:2… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:33:21 ]\n    │\n 33 │   sourceMapOptions: t.opt(\"SourceMapOptions\"),\n    │                     ──┬──  \n    │                       ╰──── \n────╯\n\n[bundle warning] home/harness/node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js (34:1… <198 chars elided>\n    ╭─[ node_modules/.bolo/sucrase@3.35.1/node_modules/sucrase/dist/esm/Options-gen-types.js:34:13 ]\n    │\n 34 │   filePath: t.opt(\"string\"),\n    │             ──┬──  \n    │               ╰──── \n────╯\n\nUncaught TypeError: (void 0) is not a function\n    at blob:http://localhost:5173/16678b1e-8fc3-4130-a24e-a313dd7882a3:13740:30\n\nNode.js v22.12.0\n(bolo diagnostics: .logs/latest.jsonl)"
     },
     {
       "name": "acorn",
       "class": "Build tool",
       "status": "pass",
       "output": "PASS\n",
-      "duration": 632.9899999999907
+      "duration": 785.3350000000792
     },
     {
       "name": "rspack",
       "class": "Bundler",
       "status": "skip",
       "output": "SKIP: @rspack/core needs its native binding — @rspack/browser is the browser package\n",
-      "duration": 331.19000000006054,
+      "duration": 445.11999999999534,
       "expectation": {
         "lane": "C",
         "reason": "@rspack/core requires its native Rust binding (@rspack/binding-*, a .node addon) via dynamic require; the browser build is a separate package",
@@ -816,7 +813,7 @@
       "class": "Bundler",
       "status": "skip",
       "output": "SKIP: turbo is a native Rust binary wrapper — no browser-compatible build exists\n",
-      "duration": 402.00500000000466,
+      "duration": 460.4450000000652,
       "expectation": {
         "lane": "C",
         "reason": "turbo is a wrapper around a native Rust binary; there is no browser-compatible build",
@@ -828,7 +825,7 @@
       "class": "HTTP server",
       "status": "skip",
       "output": "[bundle warning] home/harness/probe/ws.mjs (3:13) [IMPORT_IS_UNDEFINED] Import `WebSocket` will always be undefined because there is no matching export in 'node_modules/.bolo/ws@8.23.0/node_modules/ws/browser.js'\n   ╭─[ probe/ws.mjs:3:14 ]\n   │\n 3 │   if (typeof wsNs.WebSocket === 'function') {\n   │              ───────┬──────  \n   │                     ╰──────── \n───╯\n\nSKIP: ws browser field ships a throwing stub by design — native WebSocket is the browser path\n",
-      "duration": 595.5899999999674
+      "duration": 707.8699999999953
     }
   ]
 }
