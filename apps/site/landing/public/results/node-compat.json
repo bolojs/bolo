@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.12.0",
-  "generatedAt": "2026-11-24T11:52:29.680Z",
+  "generatedAt": "2026-11-25T10:50:02.585Z",
   "validated": true,
   "total": 166,
-  "pass": 154,
-  "fail": 4,
+  "pass": 153,
+  "fail": 5,
   "skip": 1,
   "expectedFail": 7,
   "expectedFailByLane": {
@@ -1152,7 +1152,7 @@
     },
     {
       "name": "process-exit",
-      "passed": 9,
+      "passed": 8,
       "total": 9,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -1175,7 +1175,8 @@
         },
         {
           "file": "test-process-exit-code.js",
-          "status": "pass"
+          "status": "fail",
+          "error": "exit code 137"
         },
         {
           "file": "test-process-exit-from-before-exit.js",

@@ -1,617 +1,617 @@
 {
   "fetch": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "axios": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "node-fetch": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "undici": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "got": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "ky": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "http-proxy-agent": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "form-data": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "fs-extra": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "globby": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "chokidar": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "rimraf": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "glob": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "mkdirp": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "del": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "memfs": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "esbuild": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "swc": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "tsc": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "sass": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "lightningcss": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "postcss": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "babel": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "sucrase": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "acorn": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "rollup": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "webpack": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "vite": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "parcel": {
     "status": "unsupported",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "rspack": {
     "status": "unsupported",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "turbo": {
     "status": "unsupported",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "vitest": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "jest": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "chai": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "sinon": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "dompurify": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "linkedom": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "express": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "fastify": {
-    "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "status": "fail",
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "h3": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "polka": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "hono": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "elysia": {
-    "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "status": "fail",
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "itty-router": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "koa": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "cors": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "helmet": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "morgan": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "compression": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "serve-static": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "cookie-parser": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "body-parser": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "pino": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "winston": {
-    "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "status": "fail",
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "ws": {
     "status": "unknown",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "crypto-js": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "bcrypt": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "argon2": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "sha-js": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "hash-js": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "md5": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "create-hash": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "jose": {
-    "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "status": "fail",
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "jsonwebtoken": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "pbkdf2": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "handlebars": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "ejs": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "pug": {
-    "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "status": "fail",
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "marked": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "markdown-it": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "micromark": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "nunjucks": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "liquidjs": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "mustache": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "twig": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "zod": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "ajv": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "joi": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "valibot": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "yup": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "fast-json-stringify": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "superstruct": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "io-ts": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "uuid": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "lodash": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "chalk": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "nanoid": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "dotenv": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "js-yaml": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "json5": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "semver": {
     "status": "fail",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "ms": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "debug": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "deepmerge": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "query-string": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "fast-deep-equal": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "change-case": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "p-limit": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "lru-cache": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "date-fns": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "dayjs": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "luxon": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "throttle-debounce": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "events": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "stream": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "buffer": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "crypto": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "path": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "url": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "querystring": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "os": {
     "status": "unsupported",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "util": {
     "status": "unsupported",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "assert": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "fs": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "http": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "process": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "timers": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "console": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "child-process": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "worker-threads": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "perf-hooks": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "net": {
     "status": "pass",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   },
   "dns": {
     "status": "unsupported",
-    "date": "2026-11-24",
-    "link": "https://github.com/bolojs/bolo/actions/runs/45386793064"
+    "date": "2026-11-25",
+    "link": "https://github.com/bolojs/bolo/actions/runs/45596791994"
   }
 }
