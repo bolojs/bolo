@@ -1,10 +1,10 @@
 {
   "nodeVersion": "22.12.0",
-  "generatedAt": "2026-11-26T10:18:14.302Z",
+  "generatedAt": "2026-11-27T10:21:11.872Z",
   "validated": true,
   "total": 166,
-  "pass": 152,
-  "fail": 6,
+  "pass": 154,
+  "fail": 4,
   "skip": 1,
   "expectedFail": 7,
   "expectedFailByLane": {
@@ -290,7 +290,7 @@
     },
     {
       "name": "fs",
-      "passed": 1,
+      "passed": 3,
       "total": 3,
       "expectedFail": 0,
       "expectedFailByLane": {
@@ -301,13 +301,11 @@
       "tests": [
         {
           "file": "test-fs-mkdir.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-fs-write-file.js",
-          "status": "fail",
-          "error": "Mismatched <anonymous> function calls. Expected 1, actual 0."
+          "status": "pass"
         },
         {
           "file": "test-fs-readfile.js",
